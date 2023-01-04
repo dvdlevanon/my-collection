@@ -1,0 +1,87 @@
+
+.super-tags {
+    height: 70px;
+    background-color: black;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+}
+
+.super-tag {
+    user-select: none;
+    background-color: white;
+    flex-grow: 2;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: "Times, Times New Roman, serif";
+    border-radius: 10px;
+}
+
+.super-tag:hover {
+    background-color: gray;
+}
+
+.tags {
+    opacity: 0.95;
+    z-index: 100;
+    position: absolute;
+    top: 0px;
+    display: flex;
+    flex-direction: row;
+    background-color: black;
+    padding: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.tag {
+    user-select: none;
+    background-color: wheat;
+    padding: 3px;	
+    border: 1px solid black;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 18px;
+    font-family: "Times, Times New Roman, serif";
+    height: 300px;
+    width: 250px;
+}
+
+.tag.selected {
+    background-color: rgb(112, 98, 73);
+}
+
+.tag:hover {
+    background-color: rgb(223, 149, 12);
+}
+
+.active-tags {
+    opacity: 0.95;
+    position: absolute;
+    top: 0px;
+    display: flex;
+    flex-direction: column;
+    background-color: gray;
+    padding: 10px;
+    gap: 10px;
+    flex-wrap: wrap;
+    min-width: 200px;
+}
+
+.active-tag {
+    user-select: none;
+    background-color: rgb(78, 52, 4);
+    padding: 3px;	
+    border: 1px solid black;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 18px;
+    font-family: "Times, Times New Roman, serif";
+}
+
+.active-tag.selected {
+    background-color: wheat;
+}

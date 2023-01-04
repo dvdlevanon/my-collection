@@ -1,0 +1,41 @@
+/* .gallery {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 3px;
+    user-select: none;
+    height: 100%;
+}
+
+.gallery div {
+    display: flex;
+    position: relative;
+    border: 1px solid black;
+    background-color: black;
+}
+
+.gallery div:hover {
+    border: 1px solid #555555;
+    background-color: #222222;
+}
+
+img {
+    -webkit-user-drag: none;
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    cursor: pointer;
+}
+
+span {
+    cursor: pointer;
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    width: 100%;
+    text-align: center;
+    color: white;
+    background-color: black;
+    opacity: 75%;
+    user-select: none;
+} */
