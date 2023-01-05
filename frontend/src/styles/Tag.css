@@ -60,11 +60,9 @@
 
 .active-tags {
     opacity: 0.95;
-    position: absolute;
     top: 0px;
     display: flex;
     flex-direction: column;
-    background-color: gray;
     padding: 10px;
     gap: 10px;
     flex-wrap: wrap;

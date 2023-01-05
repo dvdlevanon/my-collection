@@ -6,6 +6,7 @@ import Tags from './components/Tags';
 import './styles/Tag.css';
 import './styles/Gallery.css';
 import ActiveTags from './components/ActiveTags';
+import SidePanel from './components/SidePanel';
 
 function App() {
 	let [tags, setTags] = useState([]);
@@ -74,25 +75,41 @@ function App() {
 		if (tag.active) {
 			return
 		}
+		
+		updateTag(tag, (tag) => { 
+			tag.active = true;
+			tag.selected = true; 
+		});
 
-		tag.active = true;
-		tag.selected = true;
 		setActiveTags([...activeTags, tag])
 	}
 
 	const onTagDeactivated = (tag) => {
-		tag.active = false;
-		tag.selected = false;
+		updateTag(tag, (tag) => { 
+			tag.active = false;
+			tag.selected = false; 
+		});
+
 		setActiveTags(activeTags.filter((cur) => cur.id != tag.id ))
 	}
 
+	const updateTag = (tag, updater) => {
+		setTags(tags.map((cur) => {
+			if (tag.id == cur.id) {
+				updater(cur)
+			}
+
+			return cur
+		}));
+	}
+
 	const onTagSelected = (tag) => {
-		tag.selected = true;
+		updateTag(tag, (tag) => { tag.selected = true })
 		setSelectedTags([...selectedTags, tag])
 	}
 
 	const onTagDeselected = (tag) => {
-		tag.selected = false;
+		updateTag(tag, (tag) => { tag.selected = false })
 		setSelectedTags(selectedTags.filter((cur) => cur.id != tag.id ))
 	}
 
@@ -100,11 +117,13 @@ function App() {
 		if (!superTag.children) {
 			return [];
 		}
-		return superTag.children.map((tag) => {
+		let children = superTag.children.map((tag) => {
 			return tags.filter((cur) => {
 				return cur.id == tag.id;
 			})[0];
 		});
+
+		return children
 	};
 
 	return (
@@ -118,13 +137,10 @@ function App() {
 			/>
 			<div className="center-content">
 				{selectedSuperTag ? <Tags tags={getTags(selectedSuperTag)} onTagActivated={onTagActivated} /> : ''}
-				{ activeTags.length > 0 ? 
-					<ActiveTags activeTags={activeTags} onTagDeactivated={onTagDeactivated} 
-						onTagSelected={onTagSelected} onTagDeselected={onTagDeselected} />
-					: ''
-				}
+				<SidePanel activeTags={activeTags} onTagDeactivated={onTagDeactivated} 
+               		onTagSelected={onTagSelected} onTagDeselected={onTagDeselected} />
+				<Gallery items={items} />
 			</div>
-			{/* <Gallery items={selectedItems} /> */}
 		</div>
 	);
 }

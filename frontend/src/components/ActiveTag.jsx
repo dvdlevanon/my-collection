@@ -11,10 +11,15 @@ function ActiveTag({tag, onTagDeactivated, onTagSelected, onTagDeselected }) {
       onTagSelected(tag);
     }
   }
+  
+  const onCloseClicked = (e) => {
+    e.stopPropagation()
+    onTagDeactivated(tag)
+  }
 
   return (
     <div className={tag.selected ? "active-tag selected" : "active-tag"} onClick={(e) => onTagClicked(e)}>
-      <IconButton onClick={() => onTagDeactivated(tag)}>
+      <IconButton onClick={(e) => onCloseClicked(e)}>
         <CloseIcon/>
       </IconButton>
       {tag.title}
