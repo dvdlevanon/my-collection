@@ -5,7 +5,6 @@ import SuperTags from './components/SuperTags';
 import Tags from './components/Tags';
 import './styles/Tag.css';
 import './styles/Gallery.css';
-import ActiveTags from './components/ActiveTags';
 import SidePanel from './components/SidePanel';
 
 function App() {
@@ -14,7 +13,7 @@ function App() {
 	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
 	let [activeTags, setActiveTags] = useState([]);
 	let [selectedTags, setSelectedTags] = useState([]);
-	// let [selectedItems, setSelectedItems] = useState([]);
+	let [conditionType, setConditionType] = useState("||");
 
 	useEffect(() => {
 		fetch('http://localhost:8080/items')
@@ -25,39 +24,33 @@ function App() {
 			.then((tags) => setTags(tags));
 	}, []);
 
-	// const getSeletedItems = (selectedTags) => {
-	// 	let result = items.filter((item) => {
-	// 		let tagsWithItem = selectedTags.filter((tag) => {
-	// 			if (!tag.items) {
-	// 				return false;
-	// 			}
+	const getSeletedItems = (selectedTags) => {
+		if (selectedTags.length === 0) {
+			return []
+		}
 
-	// 			return (
-	// 				tag.items.filter((cur) => {
-	// 					return cur.id == item.id;
-	// 				}).length > 0
-	// 			);
-	// 		});
+		let result = items.filter((item) => {
+			let tagsWithItem = selectedTags.filter((tag) => {
+				if (!tag.items) {
+					return false;
+				}
 
-	// 		return tagsWithItem.length === selectedTags.length;
-	// 	});
+				return (
+					tag.items.filter((cur) => {
+						return cur.id == item.id;
+					}).length > 0
+				);
+			});
 
-	// 	return result;
-	// };
+			if (conditionType == "&&") {
+				return tagsWithItem.length === selectedTags.length;
+			} else {
+				return tagsWithItem.length > 0;
+			}
+		});
 
-	// const onToggleTag = (tag) => {
-	// 	if (tag.selected) {
-	// 		tag.selected = false;
-	// 		let selected = selectedTags.filter((cur) => cur.id !== tag.id);
-	// 		setSelectedTags(selected);
-	// 		// setSelectedItems(() => getSeletedItems(selected));
-	// 	} else {
-	// 		tag.selected = true;
-	// 		let selected = [...selectedTags, tag];
-	// 		setSelectedTags(selected);
-	// 		// setSelectedItems(() => getSeletedItems(selected));
-	// 	}
-	// };
+		return result;
+	};
 
 	const onSuperTagSelected = (superTag) => {
 		superTag.selected = true;
@@ -75,13 +68,14 @@ function App() {
 		if (tag.active) {
 			return
 		}
-		
+
 		updateTag(tag, (tag) => { 
 			tag.active = true;
 			tag.selected = true; 
 		});
 
 		setActiveTags([...activeTags, tag])
+		setSelectedTags([...selectedTags, tag])
 	}
 
 	const onTagDeactivated = (tag) => {
@@ -91,6 +85,7 @@ function App() {
 		});
 
 		setActiveTags(activeTags.filter((cur) => cur.id != tag.id ))
+		setSelectedTags(selectedTags.filter((cur) => cur.id != tag.id ))
 	}
 
 	const updateTag = (tag, updater) => {
@@ -126,6 +121,10 @@ function App() {
 		return children
 	};
 
+	const onChangeCondition = (conditionType) => {
+		setConditionType(conditionType)
+	}
+
 	return (
 		<div className="center">
 			<SuperTags
@@ -138,8 +137,8 @@ function App() {
 			<div className="center-content">
 				{selectedSuperTag ? <Tags tags={getTags(selectedSuperTag)} onTagActivated={onTagActivated} /> : ''}
 				<SidePanel activeTags={activeTags} onTagDeactivated={onTagDeactivated} 
-               		onTagSelected={onTagSelected} onTagDeselected={onTagDeselected} />
-				<Gallery items={items} />
+               		onTagSelected={onTagSelected} onTagDeselected={onTagDeselected} onChangeCondition={onChangeCondition} />
+				<Gallery items={getSeletedItems(selectedTags)} />
 			</div>
 		</div>
 	);
