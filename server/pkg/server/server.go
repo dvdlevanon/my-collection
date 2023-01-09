@@ -3,7 +3,7 @@ package server
 import (
 	"encoding/json"
 	"io"
-	"my-collection/server/pkg/db"
+	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	"net/http"
 	"strconv"
@@ -14,14 +14,14 @@ import (
 )
 
 type Server struct {
-	router *gin.Engine
-	db     *db.Database
+	router  *gin.Engine
+	gallery *gallery.Gallery
 }
 
-func New(db *db.Database) *Server {
+func New(gallery *gallery.Gallery) *Server {
 	server := &Server{
-		router: gin.Default(),
-		db:     db,
+		router:  gin.Default(),
+		gallery: gallery,
 	}
 
 	server.init()
@@ -53,7 +53,7 @@ func (s *Server) createItem(c *gin.Context) {
 		return
 	}
 
-	if err = s.db.CreateOrUpdateItem(&item); err != nil {
+	if err = s.gallery.CreateOrUpdateItem(&item); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
 		return
 	}
@@ -74,7 +74,7 @@ func (s *Server) createTag(c *gin.Context) {
 		return
 	}
 
-	if err = s.db.CreateOrUpdateTag(&tag); err != nil {
+	if err = s.gallery.CreateOrUpdateTag(&tag); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
 		return
 	}
@@ -109,7 +109,7 @@ func (s *Server) updateItem(c *gin.Context) {
 
 	item.Id = itemId
 
-	if err = s.db.UpdateItem(&item); err != nil {
+	if err = s.gallery.UpdateItem(&item); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
 		return
 	}
@@ -144,7 +144,7 @@ func (s *Server) updateTag(c *gin.Context) {
 
 	tag.Id = tagId
 
-	if err = s.db.UpdateTag(&tag); err != nil {
+	if err = s.gallery.UpdateTag(&tag); err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
 		return
 	}
@@ -160,7 +160,7 @@ func (s *Server) getItem(c *gin.Context) {
 		return
 	}
 
-	item, err := s.db.GetItem(itemId)
+	item, err := s.gallery.GetItem(itemId)
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
@@ -178,7 +178,7 @@ func (s *Server) getTag(c *gin.Context) {
 		return
 	}
 
-	tag, err := s.db.GetTag(tagId)
+	tag, err := s.gallery.GetTag(tagId)
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
@@ -189,7 +189,7 @@ func (s *Server) getTag(c *gin.Context) {
 }
 
 func (s *Server) getTags(c *gin.Context) {
-	tags, err := s.db.GetAllTags()
+	tags, err := s.gallery.GetAllTags()
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
@@ -200,7 +200,7 @@ func (s *Server) getTags(c *gin.Context) {
 }
 
 func (s *Server) getItems(c *gin.Context) {
-	items, err := s.db.GetAllItems()
+	items, err := s.gallery.GetAllItems()
 
 	if err != nil {
 		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))

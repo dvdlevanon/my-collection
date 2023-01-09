@@ -12,5 +12,6 @@ type Item struct {
 	Id    uint64 `json:"id,omitempty"`
 	Title string `json:"title,omitempty" gorm:"uniqueIndex"`
 	Cover string `json:"cover,omitempty"`
+	Url   string `json:"url,omitempty"`
 	Tags  []*Tag `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 }
