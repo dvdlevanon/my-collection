@@ -1,0 +1,18 @@
+package ffmpeg
+
+import (
+	"testing"
+
+	"github.com/stretchr/testify/assert"
+)
+
+func TestGetDuration(t *testing.T) {
+	duration, err := GetDurationInSeconds("test.mp4")
+	assert.NoError(t, err)
+	assert.Equal(t, duration, uint64(5))
+}
+
+func TestTakeScreenshot(t *testing.T) {
+	err := TakeScreenshot("test.mp4", 3, "test-screenshot.png")
+	assert.NoError(t, err)
+}

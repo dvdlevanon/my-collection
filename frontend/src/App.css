@@ -14,22 +14,3 @@ time, mark, audio, video {
     margin: 0;
     padding: 0;
 }
-
-.center-content {
-    position: relative;
-    display: flex;
-}
-
-.side-panel {
-    display: flex;
-    flex-direction: column;
-    background-color: gray;
-}
-
-.condition-switch {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-}

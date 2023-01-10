@@ -9,9 +9,15 @@ type Tag struct {
 }
 
 type Item struct {
-	Id    uint64 `json:"id,omitempty"`
-	Title string `json:"title,omitempty" gorm:"uniqueIndex"`
-	Cover string `json:"cover,omitempty"`
-	Url   string `json:"url,omitempty"`
-	Tags  []*Tag `json:"tags,omitempty" gorm:"many2many:tag_items;"`
+	Id       uint64    `json:"id,omitempty"`
+	Title    string    `json:"title,omitempty" gorm:"uniqueIndex"`
+	Url      string    `json:"url,omitempty"`
+	Previews []Preview `json:"previews,omitempty"`
+	Tags     []*Tag    `json:"tags,omitempty" gorm:"many2many:tag_items;"`
+}
+
+type Preview struct {
+	Id     uint64 `json:"id,omitempty"`
+	Url    string `json:"url,omitempty"`
+	ItemId uint64 `json:"itemId,omitempty"`
 }

@@ -5,6 +5,7 @@ import (
 	"io"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/storage"
 	"net/http"
 	"strconv"
 
@@ -16,12 +17,14 @@ import (
 type Server struct {
 	router  *gin.Engine
 	gallery *gallery.Gallery
+	storage *storage.Storage
 }
 
-func New(gallery *gallery.Gallery) *Server {
+func New(gallery *gallery.Gallery, storage *storage.Storage) *Server {
 	server := &Server{
 		router:  gin.Default(),
 		gallery: gallery,
+		storage: storage,
 	}
 
 	server.init()
@@ -38,6 +41,9 @@ func (s *Server) init() {
 	s.router.GET("/tags/:tag", s.getTag)
 	s.router.GET("/tags", s.getTags)
 	s.router.GET("/items", s.getItems)
+	s.router.GET("/items/refresh-preview", s.refreshItemsPreview)
+	s.router.GET("/items/:item/watch", s.watchItem)
+	s.router.GET("/storage/*path", s.getStorageFile)
 }
 
 func (s *Server) createItem(c *gin.Context) {
@@ -54,7 +60,7 @@ func (s *Server) createItem(c *gin.Context) {
 	}
 
 	if err = s.gallery.CreateOrUpdateItem(&item); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -75,7 +81,7 @@ func (s *Server) createTag(c *gin.Context) {
 	}
 
 	if err = s.gallery.CreateOrUpdateTag(&tag); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -110,7 +116,7 @@ func (s *Server) updateItem(c *gin.Context) {
 	item.Id = itemId
 
 	if err = s.gallery.UpdateItem(&item); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -145,7 +151,7 @@ func (s *Server) updateTag(c *gin.Context) {
 	tag.Id = tagId
 
 	if err = s.gallery.UpdateTag(&tag); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -163,11 +169,27 @@ func (s *Server) getItem(c *gin.Context) {
 	item, err := s.gallery.GetItem(itemId)
 
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, item)
+}
+
+func (s *Server) watchItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		return
+	}
+
+	if err = s.gallery.Watch(itemId); err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (s *Server) getTag(c *gin.Context) {
@@ -181,7 +203,7 @@ func (s *Server) getTag(c *gin.Context) {
 	tag, err := s.gallery.GetTag(tagId)
 
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -192,7 +214,7 @@ func (s *Server) getTags(c *gin.Context) {
 	tags, err := s.gallery.GetAllTags()
 
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
@@ -203,11 +225,27 @@ func (s *Server) getItems(c *gin.Context) {
 	items, err := s.gallery.GetAllItems()
 
 	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}
 
 	c.JSON(http.StatusOK, items)
+}
+
+func (s *Server) refreshItemsPreview(c *gin.Context) {
+	err := s.gallery.RefreshItemsPreview()
+
+	if err != nil {
+		c.AbortWithError(http.StatusInternalServerError, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) getStorageFile(c *gin.Context) {
+	path := c.Param("path")
+	http.ServeFile(c.Writer, c.Request, s.storage.GetFile(path))
 }
 
 func (s *Server) Run() {

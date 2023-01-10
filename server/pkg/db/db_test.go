@@ -21,45 +21,42 @@ func setupNewDb(t *testing.T, filename string) (*Database, error) {
 func TestCreate(t *testing.T) {
 	db, err := setupNewDb(t, "create-test.sqlite")
 	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1", Cover: "cover1"}
+	item1 := &model.Item{Title: "title1"}
 	assert.Equal(t, item1.Id, uint64(0))
 	assert.NoError(t, db.CreateItem(item1))
 	assert.Equal(t, item1.Id, uint64(1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Cover, item1.Cover)
 	assert.Equal(t, itemFromDB.Title, item1.Title)
-	item1.Cover = "update-cover"
+	item1.Title = "update-title"
 	assert.Error(t, db.CreateItem(item1))
 }
 
 func TestGetBy(t *testing.T) {
 	db, err := setupNewDb(t, "create-test-get-by.sqlite")
 	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1", Cover: "cover1"}
+	item1 := &model.Item{Title: "title1"}
 	assert.Equal(t, item1.Id, uint64(0))
 	assert.NoError(t, db.CreateItem(item1))
 	assert.Equal(t, item1.Id, uint64(1))
 	itemFromDB, err := db.GetItem("title = ?", item1.Title)
 	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Cover, item1.Cover)
 	assert.Equal(t, itemFromDB.Title, item1.Title)
-	item1.Cover = "update-cover"
+	item1.Title = "updated-title"
 	assert.Error(t, db.CreateItem(item1))
 }
 
 func TestCreateOrUpdate(t *testing.T) {
 	db, err := setupNewDb(t, "create-or-update-test.sqlite")
 	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1", Cover: "cover1"}
+	item1 := &model.Item{Title: "title1"}
 	assert.Equal(t, item1.Id, uint64(0))
 	assert.NoError(t, db.CreateItem(item1))
 	assert.Equal(t, item1.Id, uint64(1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Cover, item1.Cover)
 	assert.Equal(t, itemFromDB.Title, item1.Title)
-	item1.Cover = "update-cover"
+	item1.Url = "updated-url"
 	item1.Id = 0
 	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	item1.Id = 0
@@ -68,20 +65,18 @@ func TestCreateOrUpdate(t *testing.T) {
 	assert.Equal(t, item1.Id, uint64(2))
 	item5FromDB, err := db.GetItem(2)
 	assert.NoError(t, err)
-	assert.Equal(t, item5FromDB.Cover, item1.Cover)
 	assert.Equal(t, item5FromDB.Title, item1.Title)
 }
 
 func TestUpdate(t *testing.T) {
 	db, err := setupNewDb(t, "update-test.sqlite")
 	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1", Cover: "cover1"}
+	item1 := &model.Item{Title: "title1"}
 	assert.NoError(t, db.CreateItem(item1))
 	item1.Title = "update-title"
 	assert.NoError(t, db.UpdateItem(item1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Cover, item1.Cover)
 	assert.Equal(t, itemFromDB.Title, item1.Title)
 }
 
@@ -100,7 +95,6 @@ func TestManyToMany(t *testing.T) {
 	assert.NoError(t, err)
 	tagFromDB, err := db.GetTag(1)
 	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Cover, item.Cover)
 	assert.Equal(t, itemFromDB.Title, item.Title)
 	assert.Equal(t, tagFromDB.Title, tag.Title)
 	assert.Equal(t, len(itemFromDB.Tags), len(item.Tags))
@@ -108,7 +102,6 @@ func TestManyToMany(t *testing.T) {
 	assert.Equal(t, itemFromDB.Tags[0].Id, item.Tags[0].Id)
 	assert.Empty(t, itemFromDB.Tags[0].Title)
 	assert.Equal(t, tagFromDB.Items[0].Id, tag.Items[0].Id)
-	assert.Empty(t, tagFromDB.Items[0].Cover)
 	assert.Empty(t, tagFromDB.Items[0].Title)
 }
 
@@ -137,4 +130,32 @@ func TestOneToManyParent(t *testing.T) {
 	assert.Equal(t, parentFromDB.Children[1].Id, parent.Children[1].Id)
 	assert.Equal(t, *child1FromDB.ParentID, parent.Id)
 	assert.Equal(t, *child2FromDB.ParentID, parent.Id)
+}
+
+func TestOneToMany(t *testing.T) {
+	db, err := setupNewDb(t, "one-to-many-test.sqlite")
+	assert.NoError(t, err)
+	item1 := &model.Item{Title: "title1"}
+	assert.NoError(t, db.CreateItem(item1))
+	itemFromDB, err := db.GetItem(1)
+	assert.NoError(t, err)
+	itemFromDB.Previews = []model.Preview{
+		{
+			Url: "preview1",
+		},
+		{
+			Url: "preview2",
+		},
+	}
+	err = db.UpdateItem(itemFromDB)
+	assert.NoError(t, err)
+	updatedFromDB, err := db.GetItem(1)
+	assert.NoError(t, err)
+	assert.Equal(t, len(itemFromDB.Previews), len(updatedFromDB.Previews))
+	assert.Equal(t, updatedFromDB.Previews[0].ItemId, uint64(1))
+	assert.Equal(t, updatedFromDB.Previews[1].ItemId, uint64(1))
+	assert.Equal(t, updatedFromDB.Previews[0].Id, uint64(1))
+	assert.Equal(t, updatedFromDB.Previews[1].Id, uint64(2))
+	assert.Equal(t, updatedFromDB.Previews[0].Url, itemFromDB.Previews[0].Url)
+	assert.Equal(t, updatedFromDB.Previews[1].Url, itemFromDB.Previews[1].Url)
 }

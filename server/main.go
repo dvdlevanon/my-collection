@@ -6,6 +6,8 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/server"
+	"my-collection/server/pkg/storage"
+	"path/filepath"
 
 	"github.com/go-errors/errors"
 )
@@ -20,8 +22,14 @@ func run() error {
 		return err
 	}
 
-	gallery := gallery.New(db, *rootDirectory)
-	server.New(gallery).Run()
+	storage, err := storage.New(filepath.Join(*rootDirectory, ".storage"))
+
+	if err != nil {
+		return err
+	}
+
+	gallery := gallery.New(db, storage, *rootDirectory)
+	server.New(gallery, storage).Run()
 	return nil
 }
 

@@ -7,6 +7,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/storage"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -23,13 +24,15 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, os.Remove(dbpath))
 	db, err := db.New(dbpath)
 	assert.NoError(t, err)
-	gallery := gallery.New(db, "")
-	return New(gallery)
+	storage, err := storage.New("/tmp/root-directory/.storage")
+	assert.NoError(t, err)
+	gallery := gallery.New(db, storage, "")
+	return New(gallery, storage)
 }
 
 func TestCreateAndGetItem(t *testing.T) {
 	server := setupNewServer(t, "create-item-test.sqlite")
-	item := model.Item{Title: "title1", Cover: "cover1", Url: "url1"}
+	item := model.Item{Title: "title1", Url: "url1"}
 	payload, err := json.Marshal(item)
 	assert.NoError(t, err)
 	req := httptest.NewRequest("POST", "/items", bytes.NewReader(payload))
@@ -49,7 +52,6 @@ func TestCreateAndGetItem(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, returnedItem.Id, returnedId.Id)
 	assert.Equal(t, returnedItem.Title, item.Title)
-	assert.Equal(t, returnedItem.Cover, item.Cover)
 	assert.Equal(t, returnedItem.Url, item.Url)
 }
 
@@ -79,7 +81,7 @@ func TestCreateAndGetTag(t *testing.T) {
 
 func TestUpdateItem(t *testing.T) {
 	server := setupNewServer(t, "update-item-test.sqlite")
-	item := model.Item{Title: "title1", Cover: "cover1"}
+	item := model.Item{Title: "title1"}
 	payload, err := json.Marshal(item)
 	assert.NoError(t, err)
 	req := httptest.NewRequest("POST", "/items", bytes.NewReader(payload))
@@ -106,7 +108,6 @@ func TestUpdateItem(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, returnedItem.Id, returnedId.Id)
 	assert.Equal(t, returnedItem.Title, "title1")
-	assert.Equal(t, returnedItem.Cover, "cover1")
 	assert.Equal(t, returnedItem.Url, "update-url")
 }
 

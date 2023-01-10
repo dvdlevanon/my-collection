@@ -29,6 +29,10 @@ func New(filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
+	if err = db.AutoMigrate(&model.Preview{}); err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
 	return &Database{
 		db: db,
 	}, nil
@@ -112,14 +116,17 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 	return tag, err
 }
 
-func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
-	item := &model.Item{}
-
+func (d *Database) getItemModel() *gorm.DB {
 	tagsPreloading := func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID")
 	}
 
-	err := d.db.Model(item).Preload("Tags", tagsPreloading).Find(item, conds...).Error
+	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Previews")
+}
+
+func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
+	item := &model.Item{}
+	err := d.getItemModel().Find(item, conds...).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)
@@ -146,12 +153,7 @@ func (d *Database) GetAllTags() (*[]model.Tag, error) {
 
 func (d *Database) GetAllItems() (*[]model.Item, error) {
 	var items []model.Item
-
-	tagsPreloading := func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID")
-	}
-
-	err := d.db.Model(model.Item{}).Preload("Tags", tagsPreloading).Find(&items).Error
+	err := d.getItemModel().Find(&items).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)

@@ -1,0 +1,53 @@
+
+.center-content {
+    position: relative;
+    display: flex;
+}
+
+.side-panel {
+    display: flex;
+    flex-direction: column;
+    background-color: gray;
+}
+
+.condition-switch {
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+}
+
+.all {
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.top {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+.player {
+    padding: 10px;
+    background-color: red;
+    flex-grow: 1;
+}
+
+.tags-editor {
+    padding: 10px;
+    background-color: blue;
+}
+
+.related-items {
+    padding: 10px;
+    background-color: green;
+}
+
+.top-bar {
+    padding: 5px;
+    display: flex;
+}
