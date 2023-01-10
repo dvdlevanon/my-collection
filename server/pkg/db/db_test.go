@@ -15,7 +15,7 @@ func setupNewDb(t *testing.T, filename string) (*Database, error) {
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	return New(dbpath)
+	return New("", dbpath)
 }
 
 func TestCreate(t *testing.T) {

@@ -22,7 +22,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	db, err := db.New(dbpath)
+	db, err := db.New("", dbpath)
 	assert.NoError(t, err)
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)

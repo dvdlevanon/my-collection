@@ -12,7 +12,10 @@ import (
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
+	"github.com/op/go-logging"
 )
+
+var logger = logging.MustGetLogger("server")
 
 type Server struct {
 	router  *gin.Engine
@@ -21,8 +24,10 @@ type Server struct {
 }
 
 func New(gallery *gallery.Gallery, storage *storage.Storage) *Server {
+	gin.SetMode("release")
+
 	server := &Server{
-		router:  gin.Default(),
+		router:  gin.New(),
 		gallery: gallery,
 		storage: storage,
 	}
@@ -33,6 +38,7 @@ func New(gallery *gallery.Gallery, storage *storage.Storage) *Server {
 
 func (s *Server) init() {
 	s.router.Use(cors.Default())
+	s.router.Use(httpLogger)
 	s.router.POST("/items", s.createItem)
 	s.router.POST("/tags", s.createTag)
 	s.router.POST("/items/:item", s.updateItem)
@@ -218,6 +224,7 @@ func (s *Server) getTags(c *gin.Context) {
 		return
 	}
 
+	logger.Infof("Get tags return %d tags", len(*tags))
 	c.JSON(http.StatusOK, tags)
 }
 
@@ -229,6 +236,7 @@ func (s *Server) getItems(c *gin.Context) {
 		return
 	}
 
+	logger.Infof("Get items return %d items", len(*items))
 	c.JSON(http.StatusOK, items)
 }
 
@@ -248,6 +256,7 @@ func (s *Server) getStorageFile(c *gin.Context) {
 	http.ServeFile(c.Writer, c.Request, s.storage.GetFile(path))
 }
 
-func (s *Server) Run() {
-	s.router.Run()
+func (s *Server) Run(addr string) {
+	logger.Infof("Starting server at address %s", addr)
+	s.router.Run(addr)
 }

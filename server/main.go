@@ -2,34 +2,81 @@ package main
 
 import (
 	"flag"
-	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
+	"os"
 	"path/filepath"
 
 	"github.com/go-errors/errors"
+	"github.com/op/go-logging"
 )
 
-var help = flag.Bool("help", false, "Print help")
-var rootDirectory = flag.String("root-directory", "", "Server root directory")
+var logger = logging.MustGetLogger("main")
+
+var (
+	help          = flag.Bool("help", false, "Print help")
+	rootDirectory = flag.String("root-directory", "", "Server root directory")
+	listenAddress = flag.String("address", ":8080", "Server listen address")
+)
+
+func configureLogger() error {
+	logFormat := `[%{time:2006-01-02 15:04:05.000}] %{color}%{level:-7s}%{color:reset} %{message} [%{module} - %{shortfile}]`
+	formatter, err := logging.NewStringFormatter(logFormat)
+	if err != nil {
+		return err
+	}
+
+	logging.SetBackend(logging.NewLogBackend(os.Stdout, "", 0))
+	logging.SetFormatter(formatter)
+
+	logger.Debugf("Logger initialized with format %v", logFormat)
+	return nil
+}
+
+func getRootDirectory() (string, error) {
+	if *rootDirectory != "" {
+		return *rootDirectory, nil
+	}
+
+	path, err := os.Getwd()
+
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.Join(path, ".storage"), nil
+}
 
 func run() error {
-	db, err := db.New("test.sqlite")
+	flag.Parse()
+	if *help {
+		flag.Usage()
+		return nil
+	}
 
+	if err := configureLogger(); err != nil {
+		return err
+	}
+
+	rootdir, err := getRootDirectory()
 	if err != nil {
 		return err
 	}
 
-	storage, err := storage.New(filepath.Join(*rootDirectory, ".storage"))
-
+	db, err := db.New(rootdir, "test.sqlite")
 	if err != nil {
 		return err
 	}
 
-	gallery := gallery.New(db, storage, *rootDirectory)
-	server.New(gallery, storage).Run()
+	storage, err := storage.New(filepath.Join(rootdir, ".storage"))
+	if err != nil {
+		return err
+	}
+
+	gallery := gallery.New(db, storage, rootdir)
+	server.New(gallery, storage).Run(*listenAddress)
 	return nil
 }
 
@@ -40,19 +87,12 @@ func logError(err error) {
 
 	var e *errors.Error
 	if errors.As(err, &e) {
-		fmt.Printf("Error: %v", e.ErrorStack())
+		logger.Errorf("Error: %v", e.ErrorStack())
 	} else {
-		fmt.Printf("Error: %v", err)
+		logger.Errorf("Error: %v", err)
 	}
 }
 
 func main() {
-	flag.Parse()
-
-	if *help {
-		flag.Usage()
-		return
-	}
-
 	logError(run())
 }

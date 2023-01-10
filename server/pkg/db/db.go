@@ -2,20 +2,25 @@ package db
 
 import (
 	"my-collection/server/pkg/model"
+	"path/filepath"
 
 	"github.com/go-errors/errors"
 	"github.com/mattn/go-sqlite3"
+	"github.com/op/go-logging"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
+var logger = logging.MustGetLogger("server")
+
 type Database struct {
 	db *gorm.DB
 }
 
-func New(filename string) (*Database, error) {
-	db, err := gorm.Open(sqlite.Open(filename), &gorm.Config{})
+func New(rootDirectory string, filename string) (*Database, error) {
+	actualpath := filepath.Join(rootDirectory, filename)
+	db, err := gorm.Open(sqlite.Open(actualpath), &gorm.Config{})
 
 	if err != nil {
 		return nil, errors.Wrap(err, 0)
@@ -32,6 +37,8 @@ func New(filename string) (*Database, error) {
 	if err = db.AutoMigrate(&model.Preview{}); err != nil {
 		return nil, errors.Wrap(err, 0)
 	}
+
+	logger.Infof("DB initialized with db file: %s", actualpath)
 
 	return &Database{
 		db: db,
