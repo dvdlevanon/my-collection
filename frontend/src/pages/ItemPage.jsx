@@ -19,7 +19,7 @@ function ItemPage() {
             <div className='top'>
                 <div className="player">
                     { item ? 
-                        <video controls width="100%" height="700px">
+                        <video muted controls width="100%" height="700px">
                             <source src={"http://localhost:8080/stream/" + item.url} />
                         </video>
                         : ""

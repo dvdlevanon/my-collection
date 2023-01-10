@@ -7,22 +7,57 @@ import ItemsList from "../components/Items";
 import SuperTags from '../components/SuperTags';
 import Tags from '../components/Tags';
 import SidePanel from '../components/SidePanel';
+import { useRecoilState, atom } from 'recoil';
+
+const tagsAtom = atom({
+	key: "tags",
+	default: []
+});
+
+const itemsAtom = atom({
+	key: "items",
+	default: []
+});
+
+const selectedSuperTagAtom = atom({
+	key: "selectedSuperTag",
+	default: null
+});
+
+const activeTagsAtom = atom({
+	key: "activeTags",
+	default: []
+});
+
+const selectedTagsAtom = atom({
+	key: "selectedTags",
+	default: []
+});
+
+const conditionTypeAtom = atom({
+	key: "conditionType",
+	default: "||"
+});
 
 function Gallery() {
-    let [tags, setTags] = useState([]);
-	let [items, setItems] = useState([]);
-	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
-	let [activeTags, setActiveTags] = useState([]);
-	let [selectedTags, setSelectedTags] = useState([]);
-	let [conditionType, setConditionType] = useState("||");
+    let [tags, setTags] = useRecoilState(tagsAtom);
+	let [items, setItems] = useRecoilState(itemsAtom);
+	let [selectedSuperTag, setSelectedSuperTag] = useRecoilState(selectedSuperTagAtom);
+	let [activeTags, setActiveTags] = useRecoilState(activeTagsAtom);
+	let [selectedTags, setSelectedTags] = useRecoilState(selectedTagsAtom);
+	let [conditionType, setConditionType] = useRecoilState(conditionTypeAtom);
 
 	useEffect(() => {
-		fetch('http://localhost:8080/items')
-			.then((response) => response.json())
-			.then((items) => setItems(items));
-		fetch('http://localhost:8080/tags')
-			.then((response) => response.json())
-			.then((tags) => setTags(tags));
+		if (items.length == 0) {
+			fetch('http://localhost:8080/items')
+				.then((response) => response.json())
+				.then((items) => setItems(items));
+		}
+		if (tags.length == 0) {
+			fetch('http://localhost:8080/tags')
+				.then((response) => response.json())
+				.then((tags) => setTags(tags));
+		}
 	}, []);
 
 	const getSeletedItems = (selectedTags) => {
@@ -54,12 +89,20 @@ function Gallery() {
 	};
 
 	const onSuperTagSelected = (superTag) => {
-		superTag.selected = true;
+		superTag = updateTag(superTag, (tag) => { 
+			tag.selected = true;
+			return tag;
+		});
+
 		setSelectedSuperTag(superTag);
 	};
 
 	const onSuperTagDeselected = (superTag) => {
-		selectedSuperTag.selected = false;
+		superTag = updateTag(superTag, (tag) => { 
+			tag.selected = false;
+			return tag;
+		});
+
 		setSelectedSuperTag(null)
 	};
 
@@ -70,9 +113,10 @@ function Gallery() {
 			return
 		}
 
-		updateTag(tag, (tag) => { 
+		tag = updateTag(tag, (tag) => { 
 			tag.active = true;
-			tag.selected = true; 
+			tag.selected = true;
+			return tag;
 		});
 
 		setActiveTags([...activeTags, tag])
@@ -80,9 +124,10 @@ function Gallery() {
 	}
 
 	const onTagDeactivated = (tag) => {
-		updateTag(tag, (tag) => { 
+		tag = updateTag(tag, (tag) => { 
 			tag.active = false;
-			tag.selected = false; 
+			tag.selected = false;
+			return tag;
 		});
 
 		setActiveTags(activeTags.filter((cur) => cur.id != tag.id ))
@@ -90,22 +135,31 @@ function Gallery() {
 	}
 	
 	const updateTag = (tag, updater) => {
-		setTags(tags.map((cur) => {
+		let newTags = tags.map((cur) => {
 			if (tag.id == cur.id) {
-				updater(cur)
+				return updater({...cur})
 			}
 
 			return cur
-		}));
+		})
+
+		setTags(newTags);
+		return newTags.filter((cur) => cur.id == tag.id)[0]
 	}
 
 	const onTagSelected = (tag) => {
-		updateTag(tag, (tag) => { tag.selected = true })
+		tag = updateTag(tag, (tag) => { 
+			tag.selected = true;
+			return tag;
+		})
 		setSelectedTags([...selectedTags, tag])
 	}
 
 	const onTagDeselected = (tag) => {
-		updateTag(tag, (tag) => { tag.selected = false })
+		tag = updateTag(tag, (tag) => {
+			tag.selected = false;
+			return tag;
+		})
 		setSelectedTags(selectedTags.filter((cur) => cur.id != tag.id ))
 	}
 
