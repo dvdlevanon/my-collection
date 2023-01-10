@@ -6,9 +6,13 @@ import (
 	"fmt"
 	"os/exec"
 	"strconv"
+	"strings"
 
 	"github.com/go-errors/errors"
+	"github.com/op/go-logging"
 )
+
+var logger = logging.MustGetLogger("ffmpeg")
 
 type ffprobeShowFormatOutput struct {
 	Format ffprobeFormatOutput `json:"format"`
@@ -19,7 +23,7 @@ type ffprobeFormatOutput struct {
 }
 
 func execute(name string, arg ...string) ([]byte, error) {
-	fmt.Printf("Running %v %v\n", name, arg)
+	logger.Debugf("Running %s \"%s\"", name, strings.Join(arg, "\" \""))
 
 	cmd := exec.Command(name, arg...)
 	var stderr bytes.Buffer

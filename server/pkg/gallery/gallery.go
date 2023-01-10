@@ -8,7 +8,11 @@ import (
 	"my-collection/server/pkg/storage"
 	"path/filepath"
 	"strings"
+
+	"github.com/op/go-logging"
 )
+
+var logger = logging.MustGetLogger("gallery")
 
 type Gallery struct {
 	*db.Database
@@ -25,29 +29,27 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 }
 
 func (g *Gallery) CreateItem(item *model.Item) error {
-	return g.Database.CreateItem(g.normalizeUrl(item))
+	item.Url = g.getRelativePath(item.Url)
+	return g.Database.CreateItem(item)
 }
 
 func (g *Gallery) CreateOrUpdateItem(item *model.Item) error {
-	return g.Database.CreateOrUpdateItem(g.normalizeUrl(item))
+	item.Url = g.getRelativePath(item.Url)
+	return g.Database.CreateOrUpdateItem(item)
 }
 
-func (g *Gallery) normalizeUrl(item *model.Item) *model.Item {
-	item.Url = strings.TrimPrefix(item.Url, g.rootDirectory)
-	item.Url = strings.TrimPrefix(item.Url, string(filepath.Separator))
-	return item
-}
-
-func (g *Gallery) Watch(itemId uint64) error {
-	item, err := g.GetItem(itemId)
-
-	if err != nil {
-		return err
+func (g *Gallery) getRelativePath(url string) string {
+	if !strings.HasPrefix(url, g.rootDirectory) {
+		return url
 	}
+	return strings.TrimPrefix(strings.TrimPrefix(url, g.rootDirectory), string(filepath.Separator))
+}
 
-	fmt.Printf("Watching %s/%s\n", g.rootDirectory, item.Url)
-
-	return nil
+func (g *Gallery) GetItemAbsolutePath(url string) string {
+	if strings.HasPrefix(url, string(filepath.Separator)) {
+		return url
+	}
+	return filepath.Join(g.rootDirectory, url)
 }
 
 func (g *Gallery) RefreshItemsPreview() error {
@@ -62,19 +64,17 @@ func (g *Gallery) RefreshItemsPreview() error {
 			continue
 		}
 
-		fmt.Printf("Setting preview for %v %v\n", item.Id, len(item.Previews))
+		videoFile := g.GetItemAbsolutePath(item.Url)
+		logger.Infof("Setting preview for item %d - file %s", item.Id, videoFile)
 
-		videoFile := filepath.Join(g.rootDirectory, item.Url)
 		duration, err := ffmpeg.GetDurationInSeconds(videoFile)
-
 		if err != nil {
 			return err
 		}
 
 		outputFile := g.storage.GetFile(fmt.Sprintf("%d.png", item.Id))
-
 		if err := ffmpeg.TakeScreenshot(videoFile, uint64(duration/2), outputFile); err != nil {
-			fmt.Printf("ERROR %v\n", err)
+			logger.Errorf("Error taking screenshot for item %d, error %v", item.Id, err)
 			continue
 		}
 

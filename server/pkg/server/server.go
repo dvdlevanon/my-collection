@@ -48,7 +48,7 @@ func (s *Server) init() {
 	s.router.GET("/tags", s.getTags)
 	s.router.GET("/items", s.getItems)
 	s.router.GET("/items/refresh-preview", s.refreshItemsPreview)
-	s.router.GET("/items/:item/watch", s.watchItem)
+	s.router.GET("/stream/*path", s.streamFile)
 	s.router.GET("/storage/*path", s.getStorageFile)
 }
 
@@ -182,22 +182,6 @@ func (s *Server) getItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
-func (s *Server) watchItem(c *gin.Context) {
-	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
-		return
-	}
-
-	if err = s.gallery.Watch(itemId); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
-		return
-	}
-
-	c.Status(http.StatusOK)
-}
-
 func (s *Server) getTag(c *gin.Context) {
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 
@@ -254,6 +238,11 @@ func (s *Server) refreshItemsPreview(c *gin.Context) {
 func (s *Server) getStorageFile(c *gin.Context) {
 	path := c.Param("path")
 	http.ServeFile(c.Writer, c.Request, s.storage.GetFile(path))
+}
+
+func (s *Server) streamFile(c *gin.Context) {
+	path := c.Param("path")
+	http.ServeFile(c.Writer, c.Request, s.gallery.GetItemAbsolutePath(path))
 }
 
 func (s *Server) Run(addr string) {
