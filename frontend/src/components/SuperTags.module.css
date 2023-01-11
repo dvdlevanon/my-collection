@@ -1,0 +1,8 @@
+.super_tags {
+    height: 70px;
+    background-color: black;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    padding: 10px;
+}

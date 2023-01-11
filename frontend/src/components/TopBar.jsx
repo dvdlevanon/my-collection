@@ -1,5 +1,5 @@
+import styles from './TopBar.module.css';
 import { Button } from '@mui/material'
-import React from 'react'
 
 function TopBar() {
     const refreshClicked = (e) => {
@@ -7,7 +7,7 @@ function TopBar() {
     }
 
     return (
-        <div className='top-bar'>
+        <div className={styles.top_bar}>
             <Button variant="outlined" onClick={(e) => refreshClicked(e)}>Refresh Gallery</Button>
         </div>
     )

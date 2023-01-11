@@ -1,3 +1,4 @@
+import styles from './Item.module.css';
 import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
 
@@ -11,10 +12,10 @@ function Item({ item }) {
 	}
 
     return (
-		<Link to={"item/" + item.id} className="item">
-			<img src={getCover()} alt='' />
+		<Link className={styles.item} to={"item/" + item.id}>
+			<img className={styles.image} src={getCover()} alt='' />
 			<Tooltip title={item.title} arrow followCursor >
-			<span className="item-title">{item.title}</span>
+			<span className={styles.item_title}>{item.title}</span>
 			</Tooltip>
 		</Link>
     )

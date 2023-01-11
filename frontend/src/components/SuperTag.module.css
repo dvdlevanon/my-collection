@@ -1,0 +1,16 @@
+
+.super_tag {
+    user-select: none;
+    background-color: white;
+    flex-grow: 2;
+    padding: 10px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 20px;
+    font-family: "Times, Times New Roman, serif";
+    border-radius: 10px;
+}
+
+.super_tag:hover {
+    background-color: gray;
+}

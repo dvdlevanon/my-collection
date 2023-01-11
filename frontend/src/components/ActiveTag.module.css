@@ -1,0 +1,18 @@
+.tag {
+    user-select: none;
+    
+    padding: 3px;	
+    border: 1px solid black;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 18px;
+    font-family: "Times, Times New Roman, serif";
+}
+
+.selected {
+    background-color: wheat;
+}
+
+.unselected {
+    background-color: rgb(78, 52, 4);
+}

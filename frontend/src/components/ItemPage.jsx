@@ -1,10 +1,8 @@
-import React from 'react'
+import styles from './ItemPage.module.css';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'
-import '../styles/Pages.css';
-import '../styles/ItemPage.css';
-import Player from '../components/Player';
-import ItemTags from '../components/ItemTags';
+import Player from './Player';
+import ItemTags from './ItemTags';
 
 function ItemPage() {
     const { itemId } = useParams()
@@ -17,12 +15,12 @@ function ItemPage() {
 	}, []);
 
     return (
-        <div className='all'>
-            <div className='top'>
+        <div className={styles.all}>
+            <div className={styles.top}>
                 { item ? <Player item={item} /> : "" }
                 { item ? <ItemTags item={item} /> : "" }
             </div>
-            <div className='related-items'>
+            <div className={styles.related_items}>
                 related-items
             </div>
         </div>

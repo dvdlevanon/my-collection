@@ -1,13 +1,3 @@
-.items {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    padding: 3px;
-    gap: 3px;
-    user-select: none;
-    height: 100%;
-}
-
 .item {
     padding: 3px;
     display: flex;
@@ -21,7 +11,7 @@
     background-color: #222222;
 }
 
-img {
+.image {
     -webkit-user-drag: none;
     width: 350px;
     height: 300px;
@@ -29,7 +19,7 @@ img {
     cursor: pointer;
 }
 
-.item-title {
+.item_title {
     white-space: nowrap;
     overflow:hidden;
     text-overflow: ellipsis;

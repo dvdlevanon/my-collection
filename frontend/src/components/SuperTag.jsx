@@ -1,3 +1,4 @@
+import styles from './SuperTag.module.css';
 
 function SuperTag({ superTag, onSuperTagSelected, onSuperTagDeselected }) {
 
@@ -10,7 +11,7 @@ function SuperTag({ superTag, onSuperTagSelected, onSuperTagDeselected }) {
     }
 
     return (
-        <div className="super-tag" onClick={(e) => superTagClicked(e)}>
+        <div className={styles.super_tag} onClick={(e) => superTagClicked(e)}>
             {superTag.title}
         </div>
     )

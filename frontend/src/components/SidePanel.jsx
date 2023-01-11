@@ -1,6 +1,6 @@
-import React from 'react'
+import styles from './SidePanel.module.css';
 import ActiveTags from './ActiveTags'
-import { CssBaseline, Switch } from '@mui/material';
+import { Switch } from '@mui/material';
 
 function SidePanel({activeTags, onTagDeactivated, onTagSelected, onTagDeselected, onChangeCondition }) {
 
@@ -9,9 +9,9 @@ function SidePanel({activeTags, onTagDeactivated, onTagSelected, onTagDeselected
     }
 
     return (
-        <div className="side-panel" >
+        <div className={styles.side_panel} >
             { activeTags.length > 1 ? 
-            <div className="condition-switch">
+            <div className={styles.condition_switch}>
                 <span>||</span>
                 <Switch onChange={(e) => onConditionChanged(e)} />
                 <span>&&</span>

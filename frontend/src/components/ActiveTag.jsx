@@ -1,4 +1,4 @@
-import React from 'react'
+import styles from './ActiveTag.module.css';
 import { IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 
@@ -18,7 +18,7 @@ function ActiveTag({tag, onTagDeactivated, onTagSelected, onTagDeselected }) {
   }
 
   return (
-    <div className={tag.selected ? "active-tag selected" : "active-tag"} onClick={(e) => onTagClicked(e)}>
+    <div className={styles.tag + " " + (tag.selected ? styles.selected : styles.unselected)} onClick={(e) => onTagClicked(e)}>
       <IconButton onClick={(e) => onCloseClicked(e)}>
         <CloseIcon/>
       </IconButton>

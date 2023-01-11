@@ -1,16 +1,11 @@
 
-.center-content {
-    position: relative;
-    display: flex;
-}
-
-.side-panel {
+.side_panel {
     display: flex;
     flex-direction: column;
     background-color: gray;
 }
 
-.condition-switch {
+.condition_switch {
     width: 100%;
     display: flex;
     flex-direction: row;
