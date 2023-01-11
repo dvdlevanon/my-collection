@@ -179,7 +179,7 @@ function Gallery() {
 	};
 
     return (
-        <div className="center">
+        <div>
 			<SuperTags
 				superTags={tags.filter((tag) => {
 					return !tag.parentId;

@@ -1,0 +1,10 @@
+.tag_chooser {
+    height: 500px;
+    /* width: 1000px;
+    height: 500px; */
+}
+
+.tags_holder {
+    position: relative;
+}
+
