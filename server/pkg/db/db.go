@@ -123,9 +123,13 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 	return tag, err
 }
 
-func (d *Database) getItemModel() *gorm.DB {
+func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 	tagsPreloading := func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID")
+		if includeTagIdsOnly {
+			return db.Select("ID")
+		} else {
+			return db
+		}
 	}
 
 	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Previews")
@@ -133,7 +137,7 @@ func (d *Database) getItemModel() *gorm.DB {
 
 func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
 	item := &model.Item{}
-	err := d.getItemModel().Find(item, conds...).Error
+	err := d.getItemModel(false).Find(item, conds...).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)
@@ -160,7 +164,7 @@ func (d *Database) GetAllTags() (*[]model.Tag, error) {
 
 func (d *Database) GetAllItems() (*[]model.Item, error) {
 	var items []model.Item
-	err := d.getItemModel().Find(&items).Error
+	err := d.getItemModel(true).Find(&items).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)

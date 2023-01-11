@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom'
 import '../styles/Pages.css';
 import '../styles/ItemPage.css';
+import Player from '../components/Player';
+import ItemTags from '../components/ItemTags';
 
 function ItemPage() {
     const { itemId } = useParams()
@@ -17,17 +19,8 @@ function ItemPage() {
     return (
         <div className='all'>
             <div className='top'>
-                <div className="player">
-                    { item ? 
-                        <video muted controls width="100%" height="700px">
-                            <source src={"http://localhost:8080/stream/" + item.url} />
-                        </video>
-                        : ""
-                    }
-                </div>
-                <div className='tags-editor'>
-                    tag-editor
-                </div>
+                { item ? <Player item={item} /> : "" }
+                { item ? <ItemTags item={item} /> : "" }
             </div>
             <div className='related-items'>
                 related-items

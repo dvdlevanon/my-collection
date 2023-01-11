@@ -100,7 +100,7 @@ func TestManyToMany(t *testing.T) {
 	assert.Equal(t, len(itemFromDB.Tags), len(item.Tags))
 	assert.Equal(t, len(tagFromDB.Items), len(tag.Items))
 	assert.Equal(t, itemFromDB.Tags[0].Id, item.Tags[0].Id)
-	assert.Empty(t, itemFromDB.Tags[0].Title)
+	assert.Equal(t, itemFromDB.Tags[0].Title, item.Tags[0].Title)
 	assert.Equal(t, tagFromDB.Items[0].Id, tag.Items[0].Id)
 	assert.Empty(t, tagFromDB.Items[0].Title)
 }

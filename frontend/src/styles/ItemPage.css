@@ -14,22 +14,30 @@
 
 .player {
     padding: 10px;
-    background-color: red;
     flex-grow: 1;
 }
 
-.tags-editor {
+.item-tags {
     padding: 10px;
-    background-color: blue;
     min-width: 200px;
 }
 
 .related-items {
     padding: 10px;
-    background-color: green;
 }
 
 .top-bar {
     padding: 5px;
     display: flex;
+}
+
+.item-tag {
+    user-select: none;
+    background-color: wheat;
+    padding: 3px;	
+    border: 1px solid black;
+    border-radius: 7px;
+    cursor: pointer;
+    font-size: 18px;
+    font-family: "Times, Times New Roman, serif";
 }
