@@ -141,3 +141,19 @@ func TestUpdateTag(t *testing.T) {
 	assert.Equal(t, returnedTag.Id, returnedId.Id)
 	assert.Equal(t, returnedTag.Title, "updated-title")
 }
+
+func TestItemNotFound(t *testing.T) {
+	server := setupNewServer(t, "item-not-found-test.sqlite")
+	req := httptest.NewRequest("GET", fmt.Sprintf("/items/%d", 666), nil)
+	resp := httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusNotFound)
+}
+
+func TestTagNotFound(t *testing.T) {
+	server := setupNewServer(t, "tag-not-found-test.sqlite")
+	req := httptest.NewRequest("GET", fmt.Sprintf("/tags/%d", 666), nil)
+	resp := httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusNotFound)
+}

@@ -118,7 +118,7 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 		return db.Select("ID")
 	}
 
-	err := d.db.Model(tag).Preload("Children").Preload("Items", itemsPreloading).Find(tag, conds...).Error
+	err := d.db.Model(tag).Preload("Children").Preload("Items", itemsPreloading).First(tag, conds...).Error
 
 	return tag, err
 }
@@ -137,7 +137,7 @@ func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 
 func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
 	item := &model.Item{}
-	err := d.getItemModel(false).Find(item, conds...).Error
+	err := d.getItemModel(false).First(item, conds...).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)

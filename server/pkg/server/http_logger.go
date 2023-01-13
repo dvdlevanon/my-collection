@@ -40,9 +40,7 @@ func httpLogger(c *gin.Context) {
 
 	logger.Infof("%s %d %s (resp: %d) (took: %dms) (remote: %s)", method, statusCode, path, respSize, millis, clientIP)
 
-	for _, err := range c.Errors {
-		logError(err)
-	}
-
-	// c.Errors
+	// for _, err := range c.Errors {
+	// 	logError(err)
+	// }
 }

@@ -13,6 +13,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
+	"gorm.io/gorm"
 )
 
 var logger = logging.MustGetLogger("server")
@@ -54,19 +55,18 @@ func (s *Server) init() {
 
 func (s *Server) createItem(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	var item model.Item
 	if err = json.Unmarshal(body, &item); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		s.handleError(c, err)
 		return
 	}
 
 	if err = s.gallery.CreateOrUpdateItem(&item); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		s.handleError(c, err)
 		return
 	}
 
@@ -75,19 +75,18 @@ func (s *Server) createItem(c *gin.Context) {
 
 func (s *Server) createTag(c *gin.Context) {
 	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	var tag model.Tag
 	if err = json.Unmarshal(body, &tag); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		s.handleError(c, err)
 		return
 	}
 
 	if err = s.gallery.CreateOrUpdateTag(&tag); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		s.handleError(c, err)
 		return
 	}
 
@@ -96,33 +95,29 @@ func (s *Server) createTag(c *gin.Context) {
 
 func (s *Server) updateItem(c *gin.Context) {
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	var item model.Item
 	if err = json.Unmarshal(body, &item); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		s.handleError(c, err)
 		return
 	}
 
 	if item.Id != 0 && item.Id != itemId {
-		c.AbortWithError(http.StatusInternalServerError, errors.Errorf("Mismatch IDs %d != %d", item.Id, itemId))
+		s.handleError(c, errors.Errorf("Mismatch IDs %d != %d", item.Id, itemId))
 		return
 	}
 
 	item.Id = itemId
-
 	if err = s.gallery.UpdateItem(&item); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		s.handleError(c, err)
 		return
 	}
 
@@ -131,33 +126,29 @@ func (s *Server) updateItem(c *gin.Context) {
 
 func (s *Server) updateTag(c *gin.Context) {
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	var tag model.Tag
 	if err = json.Unmarshal(body, &tag); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+		s.handleError(c, err)
 		return
 	}
 
 	if tag.Id != 0 && tag.Id != tagId {
-		c.AbortWithError(http.StatusInternalServerError, errors.Errorf("Mismatch IDs %d != %d", tag.Id, tagId))
+		s.handleError(c, errors.Errorf("Mismatch IDs %d != %d", tag.Id, tagId))
 		return
 	}
 
 	tag.Id = tagId
-
 	if err = s.gallery.UpdateTag(&tag); err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+		s.handleError(c, err)
 		return
 	}
 
@@ -166,16 +157,12 @@ func (s *Server) updateTag(c *gin.Context) {
 
 func (s *Server) getItem(c *gin.Context) {
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	item, err := s.gallery.GetItem(itemId)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if s.handleError(c, err) {
 		return
 	}
 
@@ -184,16 +171,12 @@ func (s *Server) getItem(c *gin.Context) {
 
 func (s *Server) getTag(c *gin.Context) {
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, errors.Wrap(err, 0))
+	if s.handleError(c, err) {
 		return
 	}
 
 	tag, err := s.gallery.GetTag(tagId)
-
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if s.handleError(c, err) {
 		return
 	}
 
@@ -203,8 +186,7 @@ func (s *Server) getTag(c *gin.Context) {
 func (s *Server) getTags(c *gin.Context) {
 	tags, err := s.gallery.GetAllTags()
 
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if s.handleError(c, err) {
 		return
 	}
 
@@ -215,8 +197,7 @@ func (s *Server) getTags(c *gin.Context) {
 func (s *Server) getItems(c *gin.Context) {
 	items, err := s.gallery.GetAllItems()
 
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if s.handleError(c, err) {
 		return
 	}
 
@@ -227,8 +208,7 @@ func (s *Server) getItems(c *gin.Context) {
 func (s *Server) refreshItemsPreview(c *gin.Context) {
 	err := s.gallery.RefreshItemsPreview()
 
-	if err != nil {
-		c.AbortWithError(http.StatusInternalServerError, err)
+	if s.handleError(c, err) {
 		return
 	}
 
@@ -248,4 +228,18 @@ func (s *Server) streamFile(c *gin.Context) {
 func (s *Server) Run(addr string) {
 	logger.Infof("Starting server at address %s", addr)
 	s.router.Run(addr)
+}
+
+func (s *Server) handleError(c *gin.Context, err error) bool {
+	if err == nil {
+		return false
+	}
+
+	httpError := http.StatusInternalServerError
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		httpError = http.StatusNotFound
+	}
+
+	c.AbortWithError(httpError, err)
+	return true
 }

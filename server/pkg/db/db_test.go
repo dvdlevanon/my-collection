@@ -159,3 +159,17 @@ func TestOneToMany(t *testing.T) {
 	assert.Equal(t, updatedFromDB.Previews[0].Url, itemFromDB.Previews[0].Url)
 	assert.Equal(t, updatedFromDB.Previews[1].Url, itemFromDB.Previews[1].Url)
 }
+
+func TestGetMissingItem(t *testing.T) {
+	db, err := setupNewDb(t, "missing-item-test.sqlite")
+	assert.NoError(t, err)
+	_, err = db.GetItem(666)
+	assert.Error(t, err)
+}
+
+func TestGetMissingTag(t *testing.T) {
+	db, err := setupNewDb(t, "missing-tag-test.sqlite")
+	assert.NoError(t, err)
+	_, err = db.GetTag(666)
+	assert.Error(t, err)
+}
