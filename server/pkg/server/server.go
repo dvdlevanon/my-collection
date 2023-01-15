@@ -43,6 +43,7 @@ func (s *Server) init() {
 	s.router.POST("/items", s.createItem)
 	s.router.POST("/tags", s.createTag)
 	s.router.POST("/items/:item", s.updateItem)
+	s.router.POST("/items/:item/remove-tag/:tag", s.removeTagFromItem)
 	s.router.POST("/tags/:tag", s.updateTag)
 	s.router.GET("/items/:item", s.getItem)
 	s.router.GET("/tags/:tag", s.getTag)
@@ -118,6 +119,24 @@ func (s *Server) updateItem(c *gin.Context) {
 	item.Id = itemId
 	if err = s.gallery.UpdateItem(&item); err != nil {
 		s.handleError(c, err)
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) removeTagFromItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	if s.handleError(c, s.gallery.RemoveTagFromItem(itemId, tagId)) {
 		return
 	}
 

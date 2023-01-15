@@ -1,23 +1,14 @@
 import { Dialog } from "@mui/material"
 import { useEffect, useState } from "react";
+import { atom, useRecoilState } from "recoil";
 import SuperTags from "./SuperTags";
 import styles from "./TagChooser.module.css"
 import Tags from "./Tags";
 
-function TagChooser({item, onTagAdded}) {
-    let [tags, setTags] = useState([]);
+function TagChooser({tags, onTagSelected}) {
+	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
 
-	useEffect(() => {
-		if (tags.length != 0) {
-			return;
-		}
-
-		fetch('http://localhost:8080/tags')
-			.then((response) => response.json())
-			.then((tags) => setTags(tags));
-	}, []);
-
-	const getSelectedSuperTag = () => {
+    const getSelectedSuperTag = () => {
 		let selectedSupertTags = tags.filter((tag) => {
 			return tag.selected && !tag.parentId;
 		})
@@ -42,31 +33,19 @@ function TagChooser({item, onTagAdded}) {
 
 		return children
 	};
-	const onSuperTagSelected = (superTag) => {
-		updateTag(superTag, (superTag) => {
-			superTag.selected = true;
-			return superTag;
-		})
+
+	const onSuperTagClicked = (superTag) => {
+		if (selectedSuperTag == superTag) {
+			setSelectedSuperTag(null);
+		} else {
+			setSelectedSuperTag(superTag);
+		}
 	};
 
-	const updateTag = (tag, updater) => {
-		setTags((tags) => { 
-			return tags.map((cur) => {
-				if (tag.id == cur.id) {
-					return updater({...cur})
-				}
-
-				return cur
-			})
-		});
+	const tagSelectedHandler = (tag) => {
+		setSelectedSuperTag(null); 
+		onTagSelected(tag);
 	}
-
-	const onSuperTagDeselected = (superTag) => {
-		updateTag(superTag, (superTag) => {
-			superTag.selected = false;
-			return superTag;
-		})
-	};
 
     return (
         <div className={styles.tag_chooser}>
@@ -74,11 +53,10 @@ function TagChooser({item, onTagAdded}) {
 				superTags={tags.filter((tag) => {
 					return !tag.parentId;
 				})}
-				onSuperTagSelected={onSuperTagSelected}
-				onSuperTagDeselected={onSuperTagDeselected}
+				onSuperTagClicked={onSuperTagClicked}
 			/>
             <div className={styles.tags_holder}>
-                {getSelectedSuperTag() ? <Tags tags={getTags(getSelectedSuperTag())} onTagActivated={onTagAdded} /> : ''}
+                {selectedSuperTag ? <Tags tags={getTags(selectedSuperTag)} onTagSelected={tagSelectedHandler} /> : ''}
             </div>
         </div>
     )

@@ -172,3 +172,7 @@ func (d *Database) GetAllItems() (*[]model.Item, error) {
 
 	return &items, err
 }
+
+func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {
+	return d.db.Model(&model.Item{Id: itemId}).Association("Tags").Delete(model.Tag{Id: tagId})
+}

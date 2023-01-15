@@ -5,6 +5,7 @@ import ItemsList from "./Items";
 import SuperTags from './SuperTags';
 import Tags from './Tags';
 import SidePanel from './SidePanel';
+import TagChooser from './TagChooser';
 
 const tagsAtom = atom({
 	key: "tags",
@@ -58,18 +59,6 @@ function Gallery() {
 		})
 	}
 
-	const getSelectedSuperTag = () => {
-		let selectedSupertTags = tags.filter((tag) => {
-			return tag.selected && !tag.parentId;
-		})
-
-		if (selectedSupertTags.length > 0) {
-			return selectedSupertTags[0];
-		}
-
-		return null;
-	}
-
 	const getSeletedItems = (selectedTags) => {
 		if (selectedTags.length === 0) {
 			return []
@@ -98,23 +87,7 @@ function Gallery() {
 		return result;
 	};
 
-	const onSuperTagSelected = (superTag) => {
-		updateTag(superTag, (superTag) => {
-			superTag.selected = true;
-			return superTag;
-		})
-	};
-
-	const onSuperTagDeselected = (superTag) => {
-		updateTag(superTag, (superTag) => {
-			superTag.selected = false;
-			return superTag;
-		})
-	};
-
 	const onTagActivated = (tag) => {
-		onSuperTagDeselected(getSelectedSuperTag())
-
 		if (tag.active) {
 			return
 		}
@@ -180,15 +153,8 @@ function Gallery() {
 
     return (
         <div>
-			<SuperTags
-				superTags={tags.filter((tag) => {
-					return !tag.parentId;
-				})}
-				onSuperTagSelected={onSuperTagSelected}
-				onSuperTagDeselected={onSuperTagDeselected}
-			/>
+			<TagChooser tags={tags} onTagSelected={onTagActivated} />
 			<div className={styles.gallery_center}>
-				{getSelectedSuperTag() ? <Tags tags={getTags(getSelectedSuperTag())} onTagActivated={onTagActivated} /> : ''}
 				<SidePanel activeTags={getActiveTags()} onTagDeactivated={onTagDeactivated} 
 					   onTagSelected={onTagSelected} onTagDeselected={onTagDeselected} onChangeCondition={onChangeCondition} />
 				<ItemsList items={getSeletedItems(getSelectedTags())} />

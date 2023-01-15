@@ -1,0 +1,10 @@
+.dialog_content {
+    height: 500px;
+}
+
+.close_button {
+    position: absolute;
+    top: 0px;
+    right: 0px;
+    margin: 10px;
+}

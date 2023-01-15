@@ -173,3 +173,27 @@ func TestGetMissingTag(t *testing.T) {
 	_, err = db.GetTag(666)
 	assert.Error(t, err)
 }
+
+func TestRemoveTag(t *testing.T) {
+	db, err := setupNewDb(t, "remove-tag-test.sqlite")
+	assert.NoError(t, err)
+	item := &model.Item{Title: "item1"}
+	tag := &model.Tag{Title: "tag1"}
+	assert.NoError(t, db.CreateItem(item))
+	assert.NoError(t, db.CreateTag(tag))
+	item.Tags = append(item.Tags, tag)
+	tag.Items = append(tag.Items, item)
+	assert.NoError(t, db.UpdateItem(item))
+	assert.NoError(t, db.UpdateTag(tag))
+	itemFromDB, err := db.GetItem(1)
+	assert.NoError(t, err)
+	assert.Equal(t, len(itemFromDB.Tags), len(item.Tags))
+	assert.NoError(t, db.RemoveTagFromItem(item.Id, item.Tags[0].Id))
+	itemFromDBAfterRemoval, err := db.GetItem(1)
+	assert.NoError(t, err)
+	assert.NotEqual(t, len(itemFromDB.Tags), len(itemFromDBAfterRemoval.Tags))
+	assert.NotEqual(t, uint64(0), len(itemFromDBAfterRemoval.Tags))
+	tagFromDB, err := db.GetTag(1)
+	assert.NoError(t, err)
+	assert.Equal(t, tagFromDB.Title, tag.Title)
+}
