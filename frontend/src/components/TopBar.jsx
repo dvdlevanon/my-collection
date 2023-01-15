@@ -1,6 +1,6 @@
-import styles from './TopBar.module.css';
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
+import styles from './TopBar.module.css';
 
 function TopBar() {
 	const refreshClicked = (e) => {

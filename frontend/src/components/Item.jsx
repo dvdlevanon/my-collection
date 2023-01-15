@@ -1,6 +1,6 @@
-import styles from './Item.module.css';
 import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
+import styles from './Item.module.css';
 
 function Item({ item }) {
 	const getCover = () => {

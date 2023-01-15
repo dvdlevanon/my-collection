@@ -1,5 +1,5 @@
-import styles from './SuperTags.module.css';
 import SuperTag from './SuperTag';
+import styles from './SuperTags.module.css';
 
 function SuperTags({ superTags, onSuperTagClicked }) {
 	return (

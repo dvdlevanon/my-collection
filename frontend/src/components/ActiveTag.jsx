@@ -1,6 +1,6 @@
-import styles from './ActiveTag.module.css';
-import { IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { IconButton } from '@mui/material';
+import styles from './ActiveTag.module.css';
 
 function ActiveTag({ tag, onTagDeactivated, onTagSelected, onTagDeselected }) {
 	const onTagClicked = (e) => {

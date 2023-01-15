@@ -1,7 +1,7 @@
-import styles from './AddTagDialog.module.css';
-import React from 'react';
-import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
+import React from 'react';
+import styles from './AddTagDialog.module.css';
 import TagChooser from './TagChooser';
 
 function AddTagDialog({ open, item, tags, onTagAdded, onClose }) {

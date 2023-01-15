@@ -1,5 +1,5 @@
-import styles from './ActiveTags.module.css';
 import ActiveTag from './ActiveTag';
+import styles from './ActiveTags.module.css';
 
 function ActiveTags({ activeTags, onTagDeactivated, onTagSelected, onTagDeselected }) {
 	return (

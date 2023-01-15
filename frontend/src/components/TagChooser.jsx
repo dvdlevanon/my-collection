@@ -1,6 +1,4 @@
-import { Dialog } from '@mui/material';
-import { useEffect, useState } from 'react';
-import { atom, useRecoilState } from 'recoil';
+import { useState } from 'react';
 import SuperTags from './SuperTags';
 import styles from './TagChooser.module.css';
 import Tags from './Tags';

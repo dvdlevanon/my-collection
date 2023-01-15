@@ -1,10 +1,10 @@
-import './App.css';
-import { BrowserRouter, Route, Link, Routes } from 'react-router-dom';
+import { CssBaseline, StyledEngineProvider } from '@mui/material';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
+import './App.css';
 import Gallery from './components/Gallery';
 import ItemPage from './components/ItemPage';
 import TopBar from './components/TopBar';
-import { CssBaseline, StyledEngineProvider } from '@mui/material';
 
 function App() {
 	return (

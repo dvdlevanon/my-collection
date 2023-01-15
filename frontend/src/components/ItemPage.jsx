@@ -1,10 +1,10 @@
-import styles from './ItemPage.module.css';
-import { useEffect, useState } from 'react';
-import { json, useParams } from 'react-router-dom';
-import Player from './Player';
-import ItemTags from './ItemTags';
-import AddTagDialog from './AddTagDialog';
 import { Typography } from '@mui/material';
+import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
+import AddTagDialog from './AddTagDialog';
+import styles from './ItemPage.module.css';
+import ItemTags from './ItemTags';
+import Player from './Player';
 
 function ItemPage() {
 	const { itemId } = useParams();
@@ -63,7 +63,6 @@ function ItemPage() {
 				{item ? <Player item={item} /> : ''}
 				{item ? <ItemTags item={item} onAddTag={onAddTag} onTagRemoved={onTagRemoved} /> : ''}
 			</div>
-			<div className={styles.related_items}>related-items</div>
 			{item ? (
 				<AddTagDialog
 					open={addTagMode}

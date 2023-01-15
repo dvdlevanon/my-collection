@@ -1,7 +1,7 @@
-import styles from './Tags.module.css';
-import Tag from './Tag';
 import { TextField } from '@mui/material';
 import { useState } from 'react';
+import Tag from './Tag';
+import styles from './Tags.module.css';
 
 function Tags({ tags, onTagSelected }) {
 	let [searchTerm, setSearchTerm] = useState('');

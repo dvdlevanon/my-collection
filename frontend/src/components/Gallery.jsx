@@ -1,10 +1,7 @@
-import styles from './Gallery.module.css';
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { atom, useRecoilState } from 'recoil';
+import GalleryFilters from './GalleryFilters';
 import ItemsList from './Items';
-import SuperTags from './SuperTags';
-import Tags from './Tags';
-import SidePanel from './SidePanel';
 import TagChooser from './TagChooser';
 
 const tagsAtom = atom({
@@ -154,7 +151,15 @@ function Gallery() {
 	return (
 		<div>
 			<TagChooser tags={tags} onTagSelected={onTagActivated} />
-			<div className={styles.gallery_center}>
+			<GalleryFilters
+				activeTags={getActiveTags()}
+				onTagDeactivated={onTagDeactivated}
+				onTagSelected={onTagSelected}
+				onTagDeselected={onTagDeselected}
+				onChangeCondition={onChangeCondition}
+			/>
+			<ItemsList items={getSeletedItems(getSelectedTags())} />
+			{/* <div className={styles.gallery_center}>
 				<SidePanel
 					activeTags={getActiveTags()}
 					onTagDeactivated={onTagDeactivated}
@@ -162,8 +167,7 @@ function Gallery() {
 					onTagDeselected={onTagDeselected}
 					onChangeCondition={onChangeCondition}
 				/>
-				<ItemsList items={getSeletedItems(getSelectedTags())} />
-			</div>
+			</div> */}
 		</div>
 	);
 }

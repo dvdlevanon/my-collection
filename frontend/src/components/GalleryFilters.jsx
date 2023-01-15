@@ -1,6 +1,6 @@
-import styles from './SidePanel.module.css';
-import ActiveTags from './ActiveTags';
 import { Switch } from '@mui/material';
+import ActiveTags from './ActiveTags';
+import styles from './GalleryFilters.module.css';
 
 function SidePanel({ activeTags, onTagDeactivated, onTagSelected, onTagDeselected, onChangeCondition }) {
 	const onConditionChanged = (e) => {
@@ -9,15 +9,6 @@ function SidePanel({ activeTags, onTagDeactivated, onTagSelected, onTagDeselecte
 
 	return (
 		<div className={styles.side_panel}>
-			{activeTags.length > 1 ? (
-				<div className={styles.condition_switch}>
-					<span>||</span>
-					<Switch onChange={(e) => onConditionChanged(e)} />
-					<span>&&</span>
-				</div>
-			) : (
-				''
-			)}
 			{activeTags.length > 0 ? (
 				<ActiveTags
 					activeTags={activeTags}
@@ -25,6 +16,15 @@ function SidePanel({ activeTags, onTagDeactivated, onTagSelected, onTagDeselecte
 					onTagSelected={onTagSelected}
 					onTagDeselected={onTagDeselected}
 				/>
+			) : (
+				''
+			)}
+			{activeTags.length > 1 ? (
+				<div className={styles.condition_switch}>
+					<span>||</span>
+					<Switch onChange={(e) => onConditionChanged(e)} />
+					<span>&&</span>
+				</div>
 			) : (
 				''
 			)}

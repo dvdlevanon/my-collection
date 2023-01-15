@@ -1,6 +1,6 @@
-import styles from './ItemTag.module.css';
-import { IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { IconButton } from '@mui/material';
+import styles from './ItemTag.module.css';
 
 function ItemTag({ tag, onRemoveClicked }) {
 	const removeHandler = (e) => {
