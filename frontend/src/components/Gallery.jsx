@@ -1,48 +1,34 @@
-import { useEffect } from 'react';
-import { atom, useRecoilState } from 'recoil';
+import { useEffect, useState } from 'react';
+import Client from '../network/client';
 import GalleryFilters from './GalleryFilters';
 import ItemsList from './Items';
 import TagChooser from './TagChooser';
 
-const tagsAtom = atom({
-	key: 'tags',
-	default: [],
-});
+// const tagsAtom = atom({
+// 	key: 'tags',
+// 	default: [],
+// });
 
-const itemsAtom = atom({
-	key: 'items',
-	default: [],
-});
+// const itemsAtom = atom({
+// 	key: 'items',
+// 	default: [],
+// });
 
-const conditionTypeAtom = atom({
-	key: 'conditionType',
-	default: '||',
-});
+// const conditionTypeAtom = atom({
+// 	key: 'conditionType',
+// 	default: '||',
+// });
 
 function Gallery() {
-	let [tags, setTags] = useRecoilState(tagsAtom);
-	let [items, setItems] = useRecoilState(itemsAtom);
-	let [conditionType, setConditionType] = useRecoilState(conditionTypeAtom);
+	// let [tags, setTags] = useRecoilState(tagsAtom);
+	// let [items, setItems] = useRecoilState(itemsAtom);
+	// let [conditionType, setConditionType] = useRecoilState(conditionTypeAtom);
+	let [tags, setTags] = useState([]);
+	let [items, setItems] = useState([]);
+	let [conditionType, setConditionType] = useState('||');
 
-	useEffect(() => {
-		if (tags.length != 0) {
-			return;
-		}
-
-		fetch('http://localhost:8080/tags')
-			.then((response) => response.json())
-			.then((tags) => setTags(tags));
-	}, []);
-
-	useEffect(() => {
-		if (items.length != 0) {
-			return;
-		}
-
-		fetch('http://localhost:8080/items')
-			.then((response) => response.json())
-			.then((items) => setItems(items));
-	}, []);
+	useEffect(() => Client.getTags((tags) => setTags(tags)), []);
+	useEffect(() => Client.getItems((items) => setItems(items)), []);
 
 	const getSelectedTags = () => {
 		return tags.filter((tag) => {

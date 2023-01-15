@@ -1,11 +1,12 @@
 import { Tooltip } from '@mui/material';
 import { Link } from 'react-router-dom';
+import Client from '../network/client';
 import styles from './Item.module.css';
 
 function Item({ item }) {
 	const getCover = () => {
 		if (item.previews && item.previews.length > 0) {
-			return 'http://localhost:8080/storage/' + encodeURIComponent(item.previews[0].url);
+			return Client.buildStorageUrl(item.previews[0].url);
 		} else {
 			return 'empty';
 		}

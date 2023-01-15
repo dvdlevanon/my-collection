@@ -1,6 +1,7 @@
 import { Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
+import Client from '../network/client';
 import AddTagDialog from './AddTagDialog';
 import styles from './ItemPage.module.css';
 import ItemTags from './ItemTags';
@@ -12,20 +13,11 @@ function ItemPage() {
 	let [tags, setTags] = useState([]);
 	let [addTagMode, setAddTagMode] = useState(false);
 
-	useEffect(() => {
-		reloadItem();
-	}, []);
-
-	useEffect(() => {
-		fetch('http://localhost:8080/tags')
-			.then((response) => response.json())
-			.then((tags) => setTags(tags));
-	}, []);
+	useEffect(() => Client.getTags((tags) => setTags(tags)), []);
+	useEffect(() => reloadItem(), []);
 
 	const reloadItem = () => {
-		fetch('http://localhost:8080/items/' + itemId)
-			.then((response) => response.json())
-			.then((item) => setItem(item));
+		Client.getItem(itemId, (item) => setItem(item));
 	};
 
 	const onAddTag = () => {
@@ -40,20 +32,11 @@ function ItemPage() {
 		}
 
 		item.tags.push(tag);
-
-		fetch('http://localhost:8080/items/' + itemId, {
-			method: 'POST',
-			body: JSON.stringify(item),
-		}).then(reloadItem);
+		Client.saveItem(item, reloadItem);
 	};
 
 	const onTagRemoved = (tag) => {
-		fetch('http://localhost:8080/items/' + itemId + '/remove-tag/' + tag.id, {
-			method: 'POST',
-			body: JSON.stringify(item),
-		}).then(reloadItem);
-
-		reloadItem();
+		Client.removeTagFromItem(item.id, tag.id, reloadItem);
 	};
 
 	return (

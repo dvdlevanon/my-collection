@@ -1,10 +1,11 @@
 import { Button } from '@mui/material';
 import { Link } from 'react-router-dom';
+import Client from '../network/client';
 import styles from './TopBar.module.css';
 
 function TopBar() {
 	const refreshClicked = (e) => {
-		fetch('http://localhost:8080/items/refresh-preview');
+		Client.refreshPreview();
 	};
 
 	return (
