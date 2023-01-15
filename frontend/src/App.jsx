@@ -1,6 +1,6 @@
 import './App.css';
-import { BrowserRouter, Route, Link, Routes } from "react-router-dom";
-import { RecoilRoot } from "recoil";
+import { BrowserRouter, Route, Link, Routes } from 'react-router-dom';
+import { RecoilRoot } from 'recoil';
 import Gallery from './components/Gallery';
 import ItemPage from './components/ItemPage';
 import TopBar from './components/TopBar';

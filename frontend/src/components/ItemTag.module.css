@@ -1,11 +1,10 @@
-
 .item_tag {
-    user-select: none;
-    background-color: wheat;
-    padding: 3px;	
-    border: 1px solid black;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 18px;
-    font-family: "Times, Times New Roman, serif";
+	user-select: none;
+	background-color: wheat;
+	padding: 3px;
+	border: 1px solid black;
+	border-radius: 7px;
+	cursor: pointer;
+	font-size: 18px;
+	font-family: 'Times, Times New Roman, serif';
 }

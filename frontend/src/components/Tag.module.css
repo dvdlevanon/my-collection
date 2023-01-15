@@ -1,24 +1,23 @@
-
 .tag {
-    user-select: none;
-    padding: 3px;	
-    border: 1px solid black;
-    border-radius: 7px;
-    cursor: pointer;
-    font-size: 18px;
-    font-family: "Times, Times New Roman, serif";
-    height: 300px;
-    width: 250px;
+	user-select: none;
+	padding: 3px;
+	border: 1px solid black;
+	border-radius: 7px;
+	cursor: pointer;
+	font-size: 18px;
+	font-family: 'Times, Times New Roman, serif';
+	height: 300px;
+	width: 250px;
 }
 
 .unselected {
-    background-color: wheat;
+	background-color: wheat;
 }
 
 .selected {
-    background-color: rgb(112, 98, 73);
+	background-color: rgb(112, 98, 73);
 }
 
 .tag:hover {
-    background-color: rgb(223, 149, 12);
+	background-color: rgb(223, 149, 12);
 }

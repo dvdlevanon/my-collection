@@ -1,18 +1,17 @@
-
 .all {
-    position: relative;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
+	position: relative;
+	padding: 10px;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
 }
 
 .top {
-    display: flex;
-    flex-direction: row;
-    gap: 10px;
+	display: flex;
+	flex-direction: row;
+	gap: 10px;
 }
 
 .related_items {
-    padding: 10px;
+	padding: 10px;
 }

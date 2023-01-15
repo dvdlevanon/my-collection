@@ -1,29 +1,29 @@
 import styles from './Gallery.module.css';
 import { useEffect, useState } from 'react';
-import { atom, useRecoilState } from 'recoil'
-import ItemsList from "./Items";
+import { atom, useRecoilState } from 'recoil';
+import ItemsList from './Items';
 import SuperTags from './SuperTags';
 import Tags from './Tags';
 import SidePanel from './SidePanel';
 import TagChooser from './TagChooser';
 
 const tagsAtom = atom({
-	key: "tags",
-	default: []
+	key: 'tags',
+	default: [],
 });
 
 const itemsAtom = atom({
-	key: "items",
-	default: []
+	key: 'items',
+	default: [],
 });
 
 const conditionTypeAtom = atom({
-	key: "conditionType",
-	default: "||"
+	key: 'conditionType',
+	default: '||',
 });
 
 function Gallery() {
-    let [tags, setTags] = useRecoilState(tagsAtom);
+	let [tags, setTags] = useRecoilState(tagsAtom);
 	let [items, setItems] = useRecoilState(itemsAtom);
 	let [conditionType, setConditionType] = useRecoilState(conditionTypeAtom);
 
@@ -50,18 +50,18 @@ function Gallery() {
 	const getSelectedTags = () => {
 		return tags.filter((tag) => {
 			return tag.selected;
-		})
-	}
+		});
+	};
 
 	const getActiveTags = () => {
 		return tags.filter((tag) => {
 			return tag.active;
-		})
-	}
+		});
+	};
 
 	const getSeletedItems = (selectedTags) => {
 		if (selectedTags.length === 0) {
-			return []
+			return [];
 		}
 
 		let result = items.filter((item) => {
@@ -77,7 +77,7 @@ function Gallery() {
 				);
 			});
 
-			if (conditionType == "&&") {
+			if (conditionType == '&&') {
 				return tagsWithItem.length === selectedTags.length;
 			} else {
 				return tagsWithItem.length > 0;
@@ -89,49 +89,49 @@ function Gallery() {
 
 	const onTagActivated = (tag) => {
 		if (tag.active) {
-			return
+			return;
 		}
 
-		updateTag(tag, (tag) => { 
+		updateTag(tag, (tag) => {
 			tag.active = true;
 			tag.selected = true;
 			return tag;
 		});
-	}
+	};
 
 	const onTagDeactivated = (tag) => {
-		updateTag(tag, (tag) => { 
+		updateTag(tag, (tag) => {
 			tag.active = false;
-			tag.selected = false; 
+			tag.selected = false;
 			return tag;
 		});
-	}
-	
+	};
+
 	const updateTag = (tag, updater) => {
-		setTags((tags) => { 
+		setTags((tags) => {
 			return tags.map((cur) => {
 				if (tag.id == cur.id) {
-					return updater({...cur})
+					return updater({ ...cur });
 				}
 
-				return cur
-			})
+				return cur;
+			});
 		});
-	}
+	};
 
 	const onTagSelected = (tag) => {
-		updateTag(tag, (tag) => { 
-			tag.selected = true 
+		updateTag(tag, (tag) => {
+			tag.selected = true;
 			return tag;
-		})
-	}
+		});
+	};
 
 	const onTagDeselected = (tag) => {
-		updateTag(tag, (tag) => { 
-			tag.selected = false 
+		updateTag(tag, (tag) => {
+			tag.selected = false;
 			return tag;
-		})
-	}
+		});
+	};
 
 	const getTags = (superTag) => {
 		if (!superTag.children) {
@@ -144,23 +144,28 @@ function Gallery() {
 			})[0];
 		});
 
-		return children
+		return children;
 	};
 
 	const onChangeCondition = (conditionType) => {
-		setConditionType(conditionType)
+		setConditionType(conditionType);
 	};
 
-    return (
-        <div>
+	return (
+		<div>
 			<TagChooser tags={tags} onTagSelected={onTagActivated} />
 			<div className={styles.gallery_center}>
-				<SidePanel activeTags={getActiveTags()} onTagDeactivated={onTagDeactivated} 
-					   onTagSelected={onTagSelected} onTagDeselected={onTagDeselected} onChangeCondition={onChangeCondition} />
+				<SidePanel
+					activeTags={getActiveTags()}
+					onTagDeactivated={onTagDeactivated}
+					onTagSelected={onTagSelected}
+					onTagDeselected={onTagDeselected}
+					onChangeCondition={onChangeCondition}
+				/>
 				<ItemsList items={getSeletedItems(getSelectedTags())} />
 			</div>
 		</div>
-    )
+	);
 }
 
-export default Gallery
+export default Gallery;

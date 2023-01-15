@@ -1,37 +1,37 @@
 .item {
-    padding: 3px;
-    display: flex;
-    position: relative;
-    border: 1px solid black;
-    background-color: black;
+	padding: 3px;
+	display: flex;
+	position: relative;
+	border: 1px solid black;
+	background-color: black;
 }
 
 .item:hover {
-    border: 1px solid #555555;
-    background-color: #222222;
+	border: 1px solid #555555;
+	background-color: #222222;
 }
 
 .image {
-    -webkit-user-drag: none;
-    width: 350px;
-    height: 300px;
-    object-fit: contain;
-    cursor: pointer;
+	-webkit-user-drag: none;
+	width: 350px;
+	height: 300px;
+	object-fit: contain;
+	cursor: pointer;
 }
 
 .item_title {
-    white-space: nowrap;
-    overflow:hidden;
-    text-overflow: ellipsis;
-    cursor: pointer;
-    position: absolute;
-    left: 0px;
-    bottom: 0px;
-    width: 100%;
-    max-width: 100%;
-    text-align: center;
-    color: white;
-    opacity: 75%;
-    user-select: none;
-    padding: 5px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	cursor: pointer;
+	position: absolute;
+	left: 0px;
+	bottom: 0px;
+	width: 100%;
+	max-width: 100%;
+	text-align: center;
+	color: white;
+	opacity: 75%;
+	user-select: none;
+	padding: 5px;
 }

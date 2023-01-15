@@ -1,16 +1,15 @@
-
 .item_tags_editor {
-    position: relative;
+	position: relative;
 }
 
 .item_tags {
-    padding: 10px;
-    min-width: 200px;
+	padding: 10px;
+	min-width: 200px;
 }
 
 .add_tag_button {
-    padding: 10px;
-    position: absolute;
-    bottom: 0px;
-    right: 0px;
+	padding: 10px;
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
 }

@@ -1,10 +1,10 @@
 .active_tags {
-    opacity: 0.95;
-    top: 0px;
-    display: flex;
-    flex-direction: column;
-    padding: 10px;
-    gap: 10px;
-    flex-wrap: wrap;
-    min-width: 200px;
+	opacity: 0.95;
+	top: 0px;
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	gap: 10px;
+	flex-wrap: wrap;
+	min-width: 200px;
 }

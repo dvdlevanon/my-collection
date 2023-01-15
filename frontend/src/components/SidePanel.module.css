@@ -1,14 +1,13 @@
-
 .side_panel {
-    display: flex;
-    flex-direction: column;
-    background-color: gray;
+	display: flex;
+	flex-direction: column;
+	background-color: gray;
 }
 
 .condition_switch {
-    width: 100%;
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
+	width: 100%;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	justify-content: center;
 }
