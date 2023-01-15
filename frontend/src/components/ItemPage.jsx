@@ -4,6 +4,7 @@ import { json, useParams } from 'react-router-dom'
 import Player from './Player';
 import ItemTags from './ItemTags';
 import AddTagDialog from './AddTagDialog';
+import { Typography } from '@mui/material';
 
 function ItemPage() {
     const { itemId } = useParams()
@@ -57,6 +58,9 @@ function ItemPage() {
 
     return (
         <div className={styles.all}>
+            <Typography variant='h5'>
+                { item ? item.title : "" }
+            </Typography>
             <div className={styles.top}>
                 { item ? <Player item={item} /> : "" }
                 { item ? <ItemTags item={item} onAddTag={onAddTag} onTagRemoved={onTagRemoved} /> : "" }

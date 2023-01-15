@@ -10,9 +10,9 @@ function App() {
 	return (
 		<CssBaseline>
 			<StyledEngineProvider injectFirst>
-				<TopBar />
 				<RecoilRoot>
 					<BrowserRouter>
+						<TopBar />
 						<Routes>
 							<Route index element={<Gallery />} />
 							<Route path="/item/:itemId" element={<ItemPage />} />
