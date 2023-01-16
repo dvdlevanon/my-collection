@@ -1,4 +1,6 @@
 .tag {
+	display: flex;
+	flex-direction: column;
 	user-select: none;
 	padding: 3px;
 	border: 1px solid black;
@@ -8,6 +10,8 @@
 	font-family: 'Times, Times New Roman, serif';
 	height: 300px;
 	width: 250px;
+	justify-content: space-between;
+	position: relative;
 }
 
 .unselected {
@@ -20,4 +24,23 @@
 
 .tag:hover {
 	background-color: rgb(223, 149, 12);
+}
+
+.tag_actions_button {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 5px;
+}
+
+.title {
+	padding: 5px;
+}
+
+.choose_file_dialog {
+	display: none;
+}
+
+.image {
+	object-fit: contain;
 }

@@ -7,6 +7,7 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
 	"net/http"
+	"path/filepath"
 	"strconv"
 
 	"github.com/gin-contrib/cors"
@@ -52,6 +53,28 @@ func (s *Server) init() {
 	s.router.GET("/items/refresh-preview", s.refreshItemsPreview)
 	s.router.GET("/stream/*path", s.streamFile)
 	s.router.GET("/storage/*path", s.getStorageFile)
+	s.router.POST("/upload-file", s.uploadFile)
+}
+
+func (s *Server) uploadFile(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if s.handleError(c, err) {
+		return
+	}
+
+	path := form.Value["path"][0]
+	file := form.File["file"][0]
+	relativeFile := filepath.Join(path, file.Filename)
+	storageFile, err := s.storage.GetFileForWriting(relativeFile)
+	if s.handleError(c, err) {
+		return
+	}
+
+	if s.handleError(c, c.SaveUploadedFile(file, storageFile)) {
+		return
+	}
+
+	c.JSON(http.StatusOK, model.FileUrl{Url: relativeFile})
 }
 
 func (s *Server) createItem(c *gin.Context) {

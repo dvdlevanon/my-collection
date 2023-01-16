@@ -3,20 +3,8 @@ import SuperTags from './SuperTags';
 import styles from './TagChooser.module.css';
 import Tags from './Tags';
 
-function TagChooser({ tags, onTagSelected }) {
+function TagChooser({ tags, markActive, onTagSelected }) {
 	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
-
-	const getSelectedSuperTag = () => {
-		let selectedSupertTags = tags.filter((tag) => {
-			return tag.selected && !tag.parentId;
-		});
-
-		if (selectedSupertTags.length > 0) {
-			return selectedSupertTags[0];
-		}
-
-		return null;
-	};
 
 	const getTags = (superTag) => {
 		if (!superTag.children) {
@@ -54,7 +42,11 @@ function TagChooser({ tags, onTagSelected }) {
 				onSuperTagClicked={onSuperTagClicked}
 			/>
 			<div className={styles.tags_holder}>
-				{selectedSuperTag ? <Tags tags={getTags(selectedSuperTag)} onTagSelected={tagSelectedHandler} /> : ''}
+				{selectedSuperTag ? (
+					<Tags tags={getTags(selectedSuperTag)} markActive={markActive} onTagSelected={tagSelectedHandler} />
+				) : (
+					''
+				)}
 			</div>
 		</div>
 	);

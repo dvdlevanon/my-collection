@@ -37,3 +37,12 @@ func (s *Storage) Get(name string) ([]byte, error) {
 func (s *Storage) GetFile(name string) string {
 	return filepath.Join(s.rootDirectory, name)
 }
+
+func (s *Storage) GetFileForWriting(name string) (string, error) {
+	path := s.GetFile(name)
+	if err := os.MkdirAll(filepath.Dir(path), 0750); err != nil {
+		return "", errors.Wrap(err, 0)
+	}
+
+	return path, nil
+}

@@ -14,7 +14,7 @@ function AddTagDialog({ open, item, tags, onTagAdded, onClose }) {
 				</IconButton>
 			</DialogTitle>
 			<DialogContent className={styles.dialog_content}>
-				<TagChooser tags={tags} onTagSelected={onTagAdded} />
+				<TagChooser tags={tags} markActive={false} onTagSelected={onTagAdded} />
 			</DialogContent>
 		</Dialog>
 	);

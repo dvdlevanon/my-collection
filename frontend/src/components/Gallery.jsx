@@ -4,25 +4,7 @@ import GalleryFilters from './GalleryFilters';
 import ItemsList from './Items';
 import TagChooser from './TagChooser';
 
-// const tagsAtom = atom({
-// 	key: 'tags',
-// 	default: [],
-// });
-
-// const itemsAtom = atom({
-// 	key: 'items',
-// 	default: [],
-// });
-
-// const conditionTypeAtom = atom({
-// 	key: 'conditionType',
-// 	default: '||',
-// });
-
 function Gallery() {
-	// let [tags, setTags] = useRecoilState(tagsAtom);
-	// let [items, setItems] = useRecoilState(itemsAtom);
-	// let [conditionType, setConditionType] = useRecoilState(conditionTypeAtom);
 	let [tags, setTags] = useState([]);
 	let [items, setItems] = useState([]);
 	let [conditionType, setConditionType] = useState('||');
@@ -71,63 +53,25 @@ function Gallery() {
 	};
 
 	const onTagActivated = (tag) => {
-		if (tag.active) {
-			return;
-		}
-
-		updateTag(tag, (tag) => {
-			tag.active = true;
-			tag.selected = true;
-			return tag;
-		});
+		tag.active = true;
+		tag.selected = true;
+		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
 	};
 
 	const onTagDeactivated = (tag) => {
-		updateTag(tag, (tag) => {
-			tag.active = false;
-			tag.selected = false;
-			return tag;
-		});
-	};
-
-	const updateTag = (tag, updater) => {
-		setTags((tags) => {
-			return tags.map((cur) => {
-				if (tag.id == cur.id) {
-					return updater({ ...cur });
-				}
-
-				return cur;
-			});
-		});
+		tag.active = false;
+		tag.selected = false;
+		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
 	};
 
 	const onTagSelected = (tag) => {
-		updateTag(tag, (tag) => {
-			tag.selected = true;
-			return tag;
-		});
+		tag.selected = true;
+		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
 	};
 
 	const onTagDeselected = (tag) => {
-		updateTag(tag, (tag) => {
-			tag.selected = false;
-			return tag;
-		});
-	};
-
-	const getTags = (superTag) => {
-		if (!superTag.children) {
-			return [];
-		}
-
-		let children = superTag.children.map((tag) => {
-			return tags.filter((cur) => {
-				return cur.id == tag.id;
-			})[0];
-		});
-
-		return children;
+		tag.selected = false;
+		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
 	};
 
 	const onChangeCondition = (conditionType) => {
@@ -136,7 +80,7 @@ function Gallery() {
 
 	return (
 		<div>
-			<TagChooser tags={tags} onTagSelected={onTagActivated} />
+			<TagChooser tags={tags} markActive={true} onTagSelected={onTagActivated} />
 			<GalleryFilters
 				activeTags={getActiveTags()}
 				onTagDeactivated={onTagDeactivated}
@@ -145,15 +89,6 @@ function Gallery() {
 				onChangeCondition={onChangeCondition}
 			/>
 			<ItemsList items={getSeletedItems(getSelectedTags())} />
-			{/* <div className={styles.gallery_center}>
-				<SidePanel
-					activeTags={getActiveTags()}
-					onTagDeactivated={onTagDeactivated}
-					onTagSelected={onTagSelected}
-					onTagDeselected={onTagDeselected}
-					onChangeCondition={onChangeCondition}
-				/>
-			</div> */}
 		</div>
 	);
 }

@@ -7,6 +7,13 @@ export default class Client {
 			.then((tags) => successCallback(tags));
 	}
 
+	static saveTag(tag, successCallback) {
+		fetch(`${Client.baseUrl}/tags/${tag.id}`, {
+			method: 'POST',
+			body: JSON.stringify(tag),
+		}).then(successCallback);
+	}
+
 	static getItems(successCallback) {
 		fetch(`${Client.baseUrl}/items`)
 			.then((response) => response.json())
@@ -30,6 +37,19 @@ export default class Client {
 		fetch(`${Client.baseUrl}/items/${itemId}/remove-tag/${tagId}`, {
 			method: 'POST',
 		}).then(successCallback);
+	}
+
+	static uploadFile(storagePath, file, successCallback) {
+		let formData = new FormData();
+		formData.append('path', storagePath);
+		formData.append('file', file);
+
+		fetch(`${Client.baseUrl}/upload-file`, {
+			method: 'POST',
+			body: formData,
+		})
+			.then((response) => response.json())
+			.then((fileUrl) => successCallback(fileUrl));
 	}
 
 	static refreshPreview() {

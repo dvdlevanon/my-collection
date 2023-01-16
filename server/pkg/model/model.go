@@ -6,6 +6,9 @@ type Tag struct {
 	Items    []*Item `json:"items,omitempty" gorm:"many2many:tag_items;"`
 	Children []*Tag  `json:"children,omitempty" gorm:"foreignkey:ParentID"`
 	ParentID *uint64 `json:"parentId,omitempty"`
+	Active   *bool   `json:"active,omitempty"`
+	Selected *bool   `json:"selected,omitempty"`
+	Image    string  `json:"imageUrl,emitempty"`
 }
 
 type Item struct {
@@ -20,4 +23,8 @@ type Preview struct {
 	Id     uint64 `json:"id,omitempty"`
 	Url    string `json:"url,omitempty"`
 	ItemId uint64 `json:"itemId,omitempty"`
+}
+
+type FileUrl struct {
+	Url string `json:"url,omitempty"`
 }
