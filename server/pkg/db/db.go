@@ -34,7 +34,7 @@ func New(rootDirectory string, filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
-	if err = db.AutoMigrate(&model.Preview{}); err != nil {
+	if err = db.AutoMigrate(&model.Cover{}); err != nil {
 		return nil, errors.Wrap(err, 0)
 	}
 
@@ -132,7 +132,7 @@ func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 		}
 	}
 
-	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Previews")
+	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Covers")
 }
 
 func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {

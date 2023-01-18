@@ -3,18 +3,18 @@ import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Client from '../network/client';
 import styles from './Item.module.css';
-import ItemPreviewIndicator from './ItemPreviewIndicator';
+import ItemCoverIndicator from './ItemCoverIndicator';
 
 function Item({ item }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
-	let [showPreviewNavigator, setShowPreviewNavigator] = useState(false);
-	let [previewNumber, setPreviewNumber] = useState(
-		item.previews && item.previews.length > 0 ? Math.floor(item.previews.length / 2) : 0
+	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
+	let [coverNumber, setCoverNumber] = useState(
+		item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0
 	);
 
 	const getCover = () => {
-		if (item.previews && item.previews.length > 0) {
-			return Client.buildStorageUrl(item.previews[previewNumber].url);
+		if (item.covers && item.covers.length > 0) {
+			return Client.buildStorageUrl(item.covers[coverNumber].url);
 		} else {
 			return 'empty';
 		}
@@ -26,20 +26,20 @@ function Item({ item }) {
 			return;
 		}
 
-		if (!item.previews) {
+		if (!item.covers) {
 			return;
 		}
 
 		let bounds = e.currentTarget.getBoundingClientRect();
 		let x = e.clientX - bounds.left;
-		setShowPreviewNavigator(true);
-		setPreviewNumber(Math.floor(x / (bounds.width / item.previews.length)));
+		setShowCoverNavigator(true);
+		setCoverNumber(Math.floor(x / (bounds.width / item.covers.length)));
 	};
 
 	const mouseLeave = (e) => {
-		setPreviewNumber(item.previews && item.previews.length > 0 ? Math.floor(item.previews.length / 2) : 0);
+		setCoverNumber(item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0);
 		setMouseEnterMillis(0);
-		setShowPreviewNavigator(false);
+		setShowCoverNavigator(false);
 	};
 
 	const mouseEnter = (e) => {
@@ -55,15 +55,15 @@ function Item({ item }) {
 			onMouseEnter={(e) => mouseEnter(e)}
 		>
 			<img className={styles.image} src={getCover()} alt="" />
-			{item.previews && showPreviewNavigator ? (
-				<div className={styles.preview_navigator}>
-					{item.previews.map((preview, index) => {
+			{item.covers && item.covers.length > 1 && showCoverNavigator ? (
+				<div className={styles.cover_navigator}>
+					{item.covers.map((cover, index) => {
 						return (
-							<ItemPreviewIndicator
-								key={preview.id}
+							<ItemCoverIndicator
+								key={cover.id}
 								item={item}
-								preview={preview}
-								isHighlighted={previewNumber == index}
+								cover={cover}
+								isHighlighted={coverNumber == index}
 							/>
 						);
 					})}

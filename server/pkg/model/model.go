@@ -8,18 +8,18 @@ type Tag struct {
 	ParentID *uint64 `json:"parentId,omitempty"`
 	Active   *bool   `json:"active,omitempty"`
 	Selected *bool   `json:"selected,omitempty"`
-	Image    string  `json:"imageUrl,emitempty"`
+	Image    string  `json:"imageUrl,omitempty"`
 }
 
 type Item struct {
-	Id       uint64    `json:"id,omitempty"`
-	Title    string    `json:"title,omitempty" gorm:"uniqueIndex"`
-	Url      string    `json:"url,omitempty"`
-	Previews []Preview `json:"previews,omitempty"`
-	Tags     []*Tag    `json:"tags,omitempty" gorm:"many2many:tag_items;"`
+	Id     uint64  `json:"id,omitempty"`
+	Title  string  `json:"title,omitempty" gorm:"uniqueIndex"`
+	Url    string  `json:"url,omitempty"`
+	Covers []Cover `json:"covers,omitempty"`
+	Tags   []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 }
 
-type Preview struct {
+type Cover struct {
 	Id     uint64 `json:"id,omitempty"`
 	Url    string `json:"url,omitempty"`
 	ItemId uint64 `json:"itemId,omitempty"`

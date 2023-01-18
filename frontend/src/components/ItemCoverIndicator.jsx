@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import styles from './ItemPreviewIndicator.module.css';
+import styles from './ItemCoverIndicator.module.css';
 
-function ItemPreviewIndicator({ item, preview, isHighlighted }) {
+function ItemCoverIndicator({ item, cover, isHighlighted }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 
 	const clicked = (e) => {
@@ -11,8 +11,8 @@ function ItemPreviewIndicator({ item, preview, isHighlighted }) {
 
 	return (
 		<span
-			className={styles.preview_indicator + ' ' + (isHighlighted ? styles.selected : styles.unselected)}
-			key={preview.id}
+			className={styles.cover_indicator + ' ' + (isHighlighted ? styles.selected : styles.unselected)}
+			key={cover.id}
 			onMouseEnter={() => setOptionsHidden(false && isHighlighted)}
 			onMouseLeave={() => setOptionsHidden(true && isHighlighted)}
 			style={isHighlighted ? { width: '200%' } : {}}
@@ -21,4 +21,4 @@ function ItemPreviewIndicator({ item, preview, isHighlighted }) {
 	);
 }
 
-export default ItemPreviewIndicator;
+export default ItemCoverIndicator;

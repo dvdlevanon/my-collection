@@ -19,7 +19,7 @@ type Gallery struct {
 	*db.Database
 	storage       *storage.Storage
 	rootDirectory string
-	previewsCount int
+	coversCount   int
 }
 
 func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Gallery {
@@ -27,7 +27,7 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 		Database:      db,
 		storage:       storage,
 		rootDirectory: rootDirectory,
-		previewsCount: 20,
+		coversCount:   1,
 	}
 }
 
@@ -55,7 +55,7 @@ func (g *Gallery) GetItemAbsolutePath(url string) string {
 	return filepath.Join(g.rootDirectory, url)
 }
 
-func (g *Gallery) RefreshItemsPreview() error {
+func (g *Gallery) RefreshItemsCovers() error {
 	items, err := g.GetAllItems()
 
 	if err != nil {
@@ -63,50 +63,50 @@ func (g *Gallery) RefreshItemsPreview() error {
 	}
 
 	startMillis := time.Now().UnixMilli()
-	logger.Infof("Start refreshing preview of %d items", len(*items))
+	logger.Infof("Start refreshing covers of %d items", len(*items))
 	errorsCounter := 0
 
 	for _, item := range *items {
-		if len(item.Previews) == g.previewsCount {
+		if len(item.Covers) == g.coversCount {
 			continue
 		}
 
-		item.Previews = make([]model.Preview, 0)
+		item.Covers = make([]model.Cover, 0)
 
-		for i := 1; i <= int(g.previewsCount); i++ {
-			if err := g.refreshItemsPreview(&item, i); err != nil {
+		for i := 1; i <= int(g.coversCount); i++ {
+			if err := g.refreshItemCover(&item, i); err != nil {
 				errorsCounter++
 			}
 		}
 	}
 
-	logger.Infof("Done refreshing preview of %d items in %dms - %d errors", len(*items), time.Now().UnixMilli()-startMillis, errorsCounter)
+	logger.Infof("Done refreshing covers of %d items in %dms - %d errors", len(*items), time.Now().UnixMilli()-startMillis, errorsCounter)
 
 	return nil
 }
 
-func (g *Gallery) refreshItemsPreview(item *model.Item, previewNumber int) error {
+func (g *Gallery) refreshItemCover(item *model.Item, coverNumber int) error {
 	videoFile := g.GetItemAbsolutePath(item.Url)
-	logger.Infof("Setting preview for item %d [previewNumber: %d] [videoFile: %s]", item.Id, videoFile)
+	logger.Infof("Setting cover for item %d [coverNumber: %d] [videoFile: %s]", item.Id, videoFile)
 
 	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
 	if err != nil {
 		return err
 	}
 
-	relativeFile := fmt.Sprintf("item-previews/%d/%d.png", item.Id, previewNumber)
+	relativeFile := fmt.Sprintf("covers/%d/%d.png", item.Id, coverNumber)
 	storageFile, err := g.storage.GetFileForWriting(relativeFile)
 	if err != nil {
 		return err
 	}
 
-	screenshotSecond := (int(duration) / g.previewsCount) * previewNumber
+	screenshotSecond := (int(duration) / (g.coversCount + 1)) * coverNumber
 	if err := ffmpeg.TakeScreenshot(videoFile, screenshotSecond, storageFile); err != nil {
 		logger.Errorf("Error taking screenshot for item %d, error %v", item.Id, err)
 		return err
 	}
 
-	item.Previews = append(item.Previews, model.Preview{
+	item.Covers = append(item.Covers, model.Cover{
 		Url: relativeFile,
 	})
 

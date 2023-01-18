@@ -50,7 +50,7 @@ func (s *Server) init() {
 	s.router.GET("/tags/:tag", s.getTag)
 	s.router.GET("/tags", s.getTags)
 	s.router.GET("/items", s.getItems)
-	s.router.GET("/items/refresh-preview", s.refreshItemsPreview)
+	s.router.GET("/items/refresh-covers", s.refreshItemsCovers)
 	s.router.GET("/stream/*path", s.streamFile)
 	s.router.GET("/storage/*path", s.getStorageFile)
 	s.router.POST("/upload-file", s.uploadFile)
@@ -247,8 +247,8 @@ func (s *Server) getItems(c *gin.Context) {
 	c.JSON(http.StatusOK, items)
 }
 
-func (s *Server) refreshItemsPreview(c *gin.Context) {
-	err := s.gallery.RefreshItemsPreview()
+func (s *Server) refreshItemsCovers(c *gin.Context) {
+	err := s.gallery.RefreshItemsCovers()
 
 	if s.handleError(c, err) {
 		return

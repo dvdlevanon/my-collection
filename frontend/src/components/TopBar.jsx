@@ -5,7 +5,7 @@ import styles from './TopBar.module.css';
 
 function TopBar() {
 	const refreshClicked = (e) => {
-		Client.refreshPreview();
+		Client.refreshCovers();
 	};
 
 	return (

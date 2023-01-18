@@ -52,8 +52,8 @@ export default class Client {
 			.then((fileUrl) => successCallback(fileUrl));
 	}
 
-	static refreshPreview() {
-		fetch(`${Client.baseUrl}/items/refresh-preview`);
+	static refreshCovers() {
+		fetch(`${Client.baseUrl}/items/refresh-covers`);
 	}
 
 	static buildStorageUrl(storagePath) {

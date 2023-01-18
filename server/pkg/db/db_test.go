@@ -139,25 +139,25 @@ func TestOneToMany(t *testing.T) {
 	assert.NoError(t, db.CreateItem(item1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
-	itemFromDB.Previews = []model.Preview{
+	itemFromDB.Covers = []model.Cover{
 		{
-			Url: "preview1",
+			Url: "cover1",
 		},
 		{
-			Url: "preview2",
+			Url: "cover2",
 		},
 	}
 	err = db.UpdateItem(itemFromDB)
 	assert.NoError(t, err)
 	updatedFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
-	assert.Equal(t, len(itemFromDB.Previews), len(updatedFromDB.Previews))
-	assert.Equal(t, updatedFromDB.Previews[0].ItemId, uint64(1))
-	assert.Equal(t, updatedFromDB.Previews[1].ItemId, uint64(1))
-	assert.Equal(t, updatedFromDB.Previews[0].Id, uint64(1))
-	assert.Equal(t, updatedFromDB.Previews[1].Id, uint64(2))
-	assert.Equal(t, updatedFromDB.Previews[0].Url, itemFromDB.Previews[0].Url)
-	assert.Equal(t, updatedFromDB.Previews[1].Url, itemFromDB.Previews[1].Url)
+	assert.Equal(t, len(itemFromDB.Covers), len(updatedFromDB.Covers))
+	assert.Equal(t, updatedFromDB.Covers[0].ItemId, uint64(1))
+	assert.Equal(t, updatedFromDB.Covers[1].ItemId, uint64(1))
+	assert.Equal(t, updatedFromDB.Covers[0].Id, uint64(1))
+	assert.Equal(t, updatedFromDB.Covers[1].Id, uint64(2))
+	assert.Equal(t, updatedFromDB.Covers[0].Url, itemFromDB.Covers[0].Url)
+	assert.Equal(t, updatedFromDB.Covers[1].Url, itemFromDB.Covers[1].Url)
 }
 
 func TestGetMissingItem(t *testing.T) {
