@@ -19,6 +19,7 @@ type Gallery struct {
 	*db.Database
 	storage       *storage.Storage
 	rootDirectory string
+	previewsCount int
 }
 
 func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Gallery {
@@ -26,6 +27,7 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 		Database:      db,
 		storage:       storage,
 		rootDirectory: rootDirectory,
+		previewsCount: 20,
 	}
 }
 
@@ -65,12 +67,16 @@ func (g *Gallery) RefreshItemsPreview() error {
 	errorsCounter := 0
 
 	for _, item := range *items {
-		if len(item.Previews) > 0 {
+		if len(item.Previews) == g.previewsCount {
 			continue
 		}
 
-		if err := g.refreshItemsPreview(&item); err != nil {
-			errorsCounter++
+		item.Previews = make([]model.Preview, 0)
+
+		for i := 1; i <= int(g.previewsCount); i++ {
+			if err := g.refreshItemsPreview(&item, i); err != nil {
+				errorsCounter++
+			}
 		}
 	}
 
@@ -79,23 +85,29 @@ func (g *Gallery) RefreshItemsPreview() error {
 	return nil
 }
 
-func (g *Gallery) refreshItemsPreview(item *model.Item) error {
+func (g *Gallery) refreshItemsPreview(item *model.Item, previewNumber int) error {
 	videoFile := g.GetItemAbsolutePath(item.Url)
-	logger.Infof("Setting preview for item %d - file %s", item.Id, videoFile)
+	logger.Infof("Setting preview for item %d [previewNumber: %d] [videoFile: %s]", item.Id, videoFile)
 
 	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
 	if err != nil {
 		return err
 	}
 
-	outputFile := g.storage.GetFile(fmt.Sprintf("%d.png", item.Id))
-	if err := ffmpeg.TakeScreenshot(videoFile, uint64(duration/2), outputFile); err != nil {
+	relativeFile := fmt.Sprintf("item-previews/%d/%d.png", item.Id, previewNumber)
+	storageFile, err := g.storage.GetFileForWriting(relativeFile)
+	if err != nil {
+		return err
+	}
+
+	screenshotSecond := (int(duration) / g.previewsCount) * previewNumber
+	if err := ffmpeg.TakeScreenshot(videoFile, screenshotSecond, storageFile); err != nil {
 		logger.Errorf("Error taking screenshot for item %d, error %v", item.Id, err)
 		return err
 	}
 
 	item.Previews = append(item.Previews, model.Preview{
-		Url: filepath.Base(outputFile),
+		Url: relativeFile,
 	})
 
 	return g.UpdateItem(item)

@@ -4,6 +4,7 @@
 	position: relative;
 	border: 1px solid black;
 	background-color: black;
+	flex-direction: column;
 }
 
 .item:hover {
@@ -13,8 +14,8 @@
 
 .image {
 	-webkit-user-drag: none;
-	width: 350px;
-	height: 300px;
+	width: 550px;
+	height: 400px;
 	object-fit: contain;
 	cursor: pointer;
 }
@@ -26,7 +27,7 @@
 	cursor: pointer;
 	position: absolute;
 	left: 0px;
-	bottom: 0px;
+	bottom: 7px;
 	width: 100%;
 	max-width: 100%;
 	text-align: center;
@@ -34,4 +35,13 @@
 	opacity: 75%;
 	user-select: none;
 	padding: 5px;
+}
+
+.preview_navigator {
+	display: flex;
+	bottom: 0px;
+	left: 0px;
+	gap: 2px;
+	position: absolute;
+	width: 100%;
 }

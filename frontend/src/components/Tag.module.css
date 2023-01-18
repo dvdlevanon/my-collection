@@ -8,8 +8,8 @@
 	cursor: pointer;
 	font-size: 18px;
 	font-family: 'Times, Times New Roman, serif';
-	height: 300px;
-	width: 250px;
+	height: 500px;
+	width: 450px;
 	justify-content: space-between;
 	position: relative;
 }
@@ -43,4 +43,5 @@
 
 .image {
 	object-fit: contain;
+	overflow: hidden;
 }

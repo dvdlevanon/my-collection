@@ -66,7 +66,7 @@ func GetDurationInSeconds(videoFile string) (uint64, error) {
 	return uint64(durationInSeconds), nil
 }
 
-func TakeScreenshot(videoFile string, second uint64, targetFile string) error {
+func TakeScreenshot(videoFile string, second int, targetFile string) error {
 	_, err := execute("ffmpeg", "-y", "-ss", fmt.Sprintf("%d", second), "-i", videoFile, "-vframes", "1", targetFile)
 
 	if err != nil {

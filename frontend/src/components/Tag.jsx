@@ -31,7 +31,7 @@ function Tag({ tag, markActive, onTagSelected }) {
 		return styles.tag + ' ' + (tag.active && markActive ? styles.selected : styles.unselected);
 	};
 
-	const getCover = () => {
+	const getImageUrl = () => {
 		if (tag.imageUrl) {
 			return Client.buildStorageUrl(tag.imageUrl);
 		} else {
@@ -46,7 +46,7 @@ function Tag({ tag, markActive, onTagSelected }) {
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
-			<img className={styles.image} src={getCover()} alt="" />
+			<img className={styles.image} src={getImageUrl()} alt="" />
 			<Typography className={styles.title} variant="h6" textAlign={'start'}>
 				{tag.title}
 			</Typography>

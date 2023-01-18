@@ -11,13 +11,16 @@ function Tags({ tags, markActive, onTagSelected }) {
 	};
 
 	const filterTags = (tags, searchTerm) => {
-		if (!searchTerm) {
-			return tags;
+		let filteredTags = tags;
+
+		if (searchTerm) {
+			filteredTags = tags.filter((tag) => {
+				return tag.title.toLowerCase().includes(searchTerm.toLowerCase());
+			});
 		}
 
-		return tags.filter((tag) => {
-			return tag.title.toLowerCase().includes(searchTerm.toLowerCase());
-		});
+		let shuffeledTags = filteredTags.sort(() => (Math.random() > 0.5 ? 1 : -1));
+		return shuffeledTags;
 	};
 
 	return (
