@@ -42,10 +42,8 @@ function TagChooser({ tags, markActive, onTagSelected }) {
 				onSuperTagClicked={onSuperTagClicked}
 			/>
 			<div className={styles.tags_holder}>
-				{selectedSuperTag ? (
+				{selectedSuperTag && (
 					<Tags tags={getTags(selectedSuperTag)} markActive={markActive} onTagSelected={tagSelectedHandler} />
-				) : (
-					''
 				)}
 			</div>
 		</div>

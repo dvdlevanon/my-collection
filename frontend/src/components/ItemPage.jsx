@@ -41,12 +41,12 @@ function ItemPage() {
 
 	return (
 		<div className={styles.all}>
-			<Typography variant="h5">{item ? item.title : ''}</Typography>
+			<Typography variant="h5">{item && item.title}</Typography>
 			<div className={styles.top}>
-				{item ? <Player item={item} /> : ''}
-				{item ? <ItemTags item={item} onAddTag={onAddTag} onTagRemoved={onTagRemoved} /> : ''}
+				{item && <Player item={item} />}
+				{item && <ItemTags item={item} onAddTag={onAddTag} onTagRemoved={onTagRemoved} />}
 			</div>
-			{item ? (
+			{item && (
 				<AddTagDialog
 					open={addTagMode}
 					item={item}
@@ -54,8 +54,6 @@ function ItemPage() {
 					onTagAdded={onTagAdded}
 					onClose={(e) => setAddTagMode(false)}
 				/>
-			) : (
-				''
 			)}
 		</div>
 	);
