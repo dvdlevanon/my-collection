@@ -15,7 +15,6 @@ function ItemCoverIndicator({ item, cover, isHighlighted }) {
 			key={cover.id}
 			onMouseEnter={() => setOptionsHidden(false && isHighlighted)}
 			onMouseLeave={() => setOptionsHidden(true && isHighlighted)}
-			style={isHighlighted ? { width: '200%' } : {}}
 			onClick={(e) => clicked(e)}
 		></span>
 	);

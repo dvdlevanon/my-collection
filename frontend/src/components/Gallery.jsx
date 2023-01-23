@@ -4,7 +4,7 @@ import GalleryFilters from './GalleryFilters';
 import ItemsList from './Items';
 import TagChooser from './TagChooser';
 
-function Gallery() {
+function Gallery({ previewMode }) {
 	let [tags, setTags] = useState([]);
 	let [items, setItems] = useState([]);
 	let [conditionType, setConditionType] = useState('||');
@@ -88,7 +88,7 @@ function Gallery() {
 				onTagDeselected={onTagDeselected}
 				onChangeCondition={onChangeCondition}
 			/>
-			<ItemsList items={getSeletedItems(getSelectedTags())} />
+			<ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
 		</div>
 	);
 }

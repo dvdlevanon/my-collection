@@ -6,7 +6,7 @@ import styles from './Item.module.css';
 import ItemCoverIndicator from './ItemCoverIndicator';
 import Player from './Player';
 
-function Item({ item }) {
+function Item({ item, preferPreview }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
 	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
 	let [showPreview, setShowPreview] = useState(false);
@@ -23,7 +23,7 @@ function Item({ item }) {
 	};
 
 	const previewMode = () => {
-		return item.previewUrl != '';
+		return preferPreview && item.previewUrl != '';
 	};
 
 	const mouseMove = (e) => {
