@@ -1,13 +1,22 @@
 .player {
 	padding: 10px;
 	flex-grow: 1;
-	position: absolute;
 }
 
 .preview {
+	position: absolute;
 	padding: 0px;
 	width: 550px;
 	height: 400px;
 	object-fit: contain;
 	cursor: pointer;
+}
+
+video {
+	height: 100%;
+}
+
+.preview video {
+	height: 100%;
+	width: 100%;
 }

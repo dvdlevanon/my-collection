@@ -83,6 +83,14 @@ video {
 	padding: 0;
 }
 
+html,
+body,
+#root {
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+}
+
 a:link {
 	text-decoration: none;
 }
