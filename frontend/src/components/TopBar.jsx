@@ -4,17 +4,16 @@ import Client from '../network/client';
 import styles from './TopBar.module.css';
 
 function TopBar() {
-	const refreshClicked = (e) => {
-		Client.refreshCovers();
-	};
-
 	return (
 		<div className={styles.top_bar}>
 			<Link to="/">
 				<Button variant="outlined">Home</Button>
 			</Link>
-			<Button variant="outlined" onClick={(e) => refreshClicked(e)}>
-				Refresh Gallery
+			<Button variant="outlined" onClick={() => Client.refreshCovers()}>
+				Refresh Covers
+			</Button>
+			<Button variant="outlined" onClick={() => Client.refreshPreview()}>
+				Refresh Preview
 			</Button>
 		</div>
 	);

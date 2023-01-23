@@ -33,7 +33,7 @@ function Tag({ tag, markActive, onTagSelected }) {
 
 	const getImageUrl = () => {
 		if (tag.imageUrl) {
-			return Client.buildStorageUrl(tag.imageUrl);
+			return Client.buildFileUrl(tag.imageUrl);
 		} else {
 			return 'empty';
 		}

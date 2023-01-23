@@ -2,10 +2,18 @@ package storage
 
 import (
 	"os"
+	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/go-errors/errors"
+	"github.com/google/uuid"
 	"github.com/op/go-logging"
+)
+
+const (
+	TEMP_DIRECTORY     = "temp"
+	STORAGE_URL_PREFIX = ".internal-storage"
 )
 
 var logger = logging.MustGetLogger("storage")
@@ -16,6 +24,10 @@ type Storage struct {
 
 func New(rootDirectory string) (*Storage, error) {
 	if err := os.MkdirAll(rootDirectory, 0750); err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
+	if err := os.MkdirAll(path.Join(rootDirectory, TEMP_DIRECTORY), 0750); err != nil {
 		return nil, errors.Wrap(err, 0)
 	}
 
@@ -35,7 +47,15 @@ func (s *Storage) Get(name string) ([]byte, error) {
 }
 
 func (s *Storage) GetFile(name string) string {
-	return filepath.Join(s.rootDirectory, name)
+	return filepath.Join(s.rootDirectory, strings.TrimPrefix(name, STORAGE_URL_PREFIX))
+}
+
+func (s *Storage) GetStorageUrl(name string) string {
+	return filepath.Join(".internal-storage", name)
+}
+
+func (s *Storage) IsStorageUrl(name string) bool {
+	return strings.HasPrefix(name, STORAGE_URL_PREFIX)
 }
 
 func (s *Storage) GetFileForWriting(name string) (string, error) {
@@ -45,4 +65,8 @@ func (s *Storage) GetFileForWriting(name string) (string, error) {
 	}
 
 	return path, nil
+}
+
+func (s *Storage) GetTempFile() string {
+	return filepath.Join(s.rootDirectory, TEMP_DIRECTORY, uuid.New().String())
 }

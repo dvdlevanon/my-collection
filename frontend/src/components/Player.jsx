@@ -1,11 +1,19 @@
 import Client from '../network/client';
 import styles from './Player.module.css';
 
-function Player({ item }) {
+function Player({ item, isPreview }) {
 	return (
-		<div className={styles.player}>
-			<video muted controls width="100%" height="700px">
-				<source src={Client.buildStreamUrl(item.url)} />
+		<div className={styles.player + ' ' + (isPreview && styles.preview)}>
+			<video
+				playsInline
+				muted
+				autoPlay={isPreview}
+				loop={isPreview}
+				controls={!isPreview}
+				width="100%"
+				height={isPreview ? '100%' : '700px'}
+			>
+				<source src={Client.buildFileUrl(isPreview ? item.previewUrl : item.url)} />
 			</video>
 		</div>
 	);

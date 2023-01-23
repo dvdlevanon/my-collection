@@ -51,30 +51,9 @@ func (s *Server) init() {
 	s.router.GET("/tags", s.getTags)
 	s.router.GET("/items", s.getItems)
 	s.router.GET("/items/refresh-covers", s.refreshItemsCovers)
-	s.router.GET("/stream/*path", s.streamFile)
-	s.router.GET("/storage/*path", s.getStorageFile)
+	s.router.GET("/items/refresh-preview", s.refreshItemsPreview)
+	s.router.GET("/file/*path", s.getFile)
 	s.router.POST("/upload-file", s.uploadFile)
-}
-
-func (s *Server) uploadFile(c *gin.Context) {
-	form, err := c.MultipartForm()
-	if s.handleError(c, err) {
-		return
-	}
-
-	path := form.Value["path"][0]
-	file := form.File["file"][0]
-	relativeFile := filepath.Join(path, file.Filename)
-	storageFile, err := s.storage.GetFileForWriting(relativeFile)
-	if s.handleError(c, err) {
-		return
-	}
-
-	if s.handleError(c, c.SaveUploadedFile(file, storageFile)) {
-		return
-	}
-
-	c.JSON(http.StatusOK, model.FileUrl{Url: relativeFile})
 }
 
 func (s *Server) createItem(c *gin.Context) {
@@ -257,14 +236,48 @@ func (s *Server) refreshItemsCovers(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
-func (s *Server) getStorageFile(c *gin.Context) {
-	path := c.Param("path")
-	http.ServeFile(c.Writer, c.Request, s.storage.GetFile(path))
+func (s *Server) refreshItemsPreview(c *gin.Context) {
+	err := s.gallery.RefreshItemsPreview()
+
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.Status(http.StatusOK)
 }
 
-func (s *Server) streamFile(c *gin.Context) {
-	path := c.Param("path")
-	http.ServeFile(c.Writer, c.Request, s.gallery.GetItemAbsolutePath(path))
+func (s *Server) uploadFile(c *gin.Context) {
+	form, err := c.MultipartForm()
+	if s.handleError(c, err) {
+		return
+	}
+
+	path := form.Value["path"][0]
+	file := form.File["file"][0]
+	relativeFile := filepath.Join(path, file.Filename)
+	storageFile, err := s.storage.GetFileForWriting(relativeFile)
+	if s.handleError(c, err) {
+		return
+	}
+
+	if s.handleError(c, c.SaveUploadedFile(file, storageFile)) {
+		return
+	}
+
+	c.JSON(http.StatusOK, model.FileUrl{Url: s.storage.GetStorageUrl(relativeFile)})
+}
+
+func (s *Server) getFile(c *gin.Context) {
+	path := c.Param("path")[1:]
+	var file string
+	if s.storage.IsStorageUrl(path) {
+		file = s.storage.GetFile(path)
+	} else {
+		file = s.gallery.GetFile(path)
+	}
+
+	logger.Infof("Getting file %v", file)
+	http.ServeFile(c.Writer, c.Request, file)
 }
 
 func (s *Server) Run(addr string) {

@@ -56,11 +56,11 @@ export default class Client {
 		fetch(`${Client.baseUrl}/items/refresh-covers`);
 	}
 
-	static buildStorageUrl(storagePath) {
-		return `${Client.baseUrl}/storage/${encodeURIComponent(storagePath)}`;
+	static refreshPreview() {
+		fetch(`${Client.baseUrl}/items/refresh-preview`);
 	}
 
-	static buildStreamUrl(streamPath) {
-		return `${Client.baseUrl}/stream/${encodeURIComponent(streamPath)}`;
+	static buildFileUrl(storagePath) {
+		return `${Client.baseUrl}/file/${encodeURIComponent(storagePath)}`;
 	}
 }

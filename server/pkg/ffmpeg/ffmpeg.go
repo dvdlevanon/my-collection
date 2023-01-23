@@ -4,6 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
+	"os"
 	"os/exec"
 	"strconv"
 	"strings"
@@ -68,10 +70,52 @@ func GetDurationInSeconds(videoFile string) (uint64, error) {
 
 func TakeScreenshot(videoFile string, second int, targetFile string) error {
 	_, err := execute("ffmpeg", "-y", "-ss", fmt.Sprintf("%d", second), "-i", videoFile, "-vframes", "1", targetFile)
-
 	if err != nil {
 		return err
 	}
 
 	return nil
+}
+
+func ExtractPartOfVideo(videoFile string, second int, duration int, targetFile string) error {
+	_, err := execute("ffmpeg", "-ss", fmt.Sprintf("%d", second), "-i", videoFile,
+		"-t", fmt.Sprintf("%d", duration), "-c", "copy", targetFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func JoinVideoFiles(videoFiles []string, targetFile string) error {
+	tempFile, err := ioutil.TempFile("", "my-collection-join-video-files-*.txt")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tempFile.Name())
+
+	str := ""
+	for _, file := range videoFiles {
+		str += "file '" + file + "'\n"
+	}
+
+	if _, err := tempFile.Write([]byte(str)); err != nil {
+		return err
+	}
+
+	_, err = execute("ffmpeg", "-y", "-safe", "0", "-f", "concat", "-i", tempFile.Name(), targetFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func OptimizeVideoForPreview(videoFile string, tempFile string) error {
+	_, err := execute("ffmpeg", "-y", "-i", videoFile, "-b:v", "2M", tempFile)
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(tempFile, videoFile)
 }

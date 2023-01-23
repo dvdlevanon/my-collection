@@ -4,29 +4,36 @@ import { Link } from 'react-router-dom';
 import Client from '../network/client';
 import styles from './Item.module.css';
 import ItemCoverIndicator from './ItemCoverIndicator';
+import Player from './Player';
 
 function Item({ item }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
 	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
+	let [showPreview, setShowPreview] = useState(false);
 	let [coverNumber, setCoverNumber] = useState(
 		item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0
 	);
 
 	const getCover = () => {
 		if (item.covers && item.covers.length > 0) {
-			return Client.buildStorageUrl(item.covers[coverNumber].url);
+			return Client.buildFileUrl(item.covers[coverNumber].url);
 		} else {
 			return 'empty';
 		}
 	};
 
-	const mouseOver = (e) => {
-		let nowMillis = Math.floor(Date.now());
-		if (mouseEnterMillis == 0 || mouseEnterMillis > nowMillis - 250) {
+	const previewMode = () => {
+		return item.previewUrl != '';
+	};
+
+	const mouseMove = (e) => {
+		if (previewMode() || !item.covers) {
 			return;
 		}
 
-		if (!item.covers) {
+		let nowMillis = Math.floor(Date.now());
+
+		if (mouseEnterMillis == 0 || mouseEnterMillis > nowMillis - 250) {
 			return;
 		}
 
@@ -37,13 +44,21 @@ function Item({ item }) {
 	};
 
 	const mouseLeave = (e) => {
-		setCoverNumber(item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0);
-		setMouseEnterMillis(0);
-		setShowCoverNavigator(false);
+		if (previewMode()) {
+			setShowPreview(false);
+		} else {
+			setMouseEnterMillis(0);
+			setCoverNumber(item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0);
+			setShowCoverNavigator(false);
+		}
 	};
 
 	const mouseEnter = (e) => {
-		setMouseEnterMillis(Math.floor(Date.now()));
+		if (previewMode()) {
+			setShowPreview(true);
+		} else {
+			setMouseEnterMillis(Math.floor(Date.now()));
+		}
 	};
 
 	return (
@@ -51,11 +66,11 @@ function Item({ item }) {
 			className={styles.item}
 			to={'item/' + item.id}
 			onMouseLeave={(e) => mouseLeave(e)}
-			onMouseMove={(e) => mouseOver(e)}
+			onMouseMove={(e) => mouseMove(e)}
 			onMouseEnter={(e) => mouseEnter(e)}
 		>
 			<img className={styles.image} src={getCover()} alt="" />
-			{item.covers && item.covers.length > 1 && showCoverNavigator ? (
+			{showCoverNavigator && item.covers && item.covers.length > 1 && (
 				<div className={styles.cover_navigator}>
 					{item.covers.map((cover, index) => {
 						return (
@@ -68,9 +83,8 @@ function Item({ item }) {
 						);
 					})}
 				</div>
-			) : (
-				''
 			)}
+			{previewMode() && showPreview && <Player isPreview={true} item={item} />}
 			<Tooltip title={item.title} arrow followCursor>
 				<span className={styles.item_title}>{item.title}</span>
 			</Tooltip>
