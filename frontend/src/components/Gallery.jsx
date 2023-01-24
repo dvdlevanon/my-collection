@@ -8,6 +8,7 @@ function Gallery({ previewMode }) {
 	let [tags, setTags] = useState([]);
 	let [items, setItems] = useState([]);
 	let [conditionType, setConditionType] = useState('||');
+	let [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
 
 	useEffect(() => Client.getTags((tags) => setTags(tags)), []);
 	useEffect(() => Client.getItems((items) => setItems(items)), []);
@@ -80,15 +81,22 @@ function Gallery({ previewMode }) {
 
 	return (
 		<div>
-			<TagChooser tags={tags} markActive={true} onTagSelected={onTagActivated} />
-			<GalleryFilters
-				activeTags={getActiveTags()}
-				onTagDeactivated={onTagDeactivated}
-				onTagSelected={onTagSelected}
-				onTagDeselected={onTagDeselected}
-				onChangeCondition={onChangeCondition}
+			<TagChooser
+				tags={tags}
+				markActive={true}
+				onTagSelected={onTagActivated}
+				onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 			/>
-			<ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
+			{!tagsDropDownOpened && (
+				<GalleryFilters
+					activeTags={getActiveTags()}
+					onTagDeactivated={onTagDeactivated}
+					onTagSelected={onTagSelected}
+					onTagDeselected={onTagDeselected}
+					onChangeCondition={onChangeCondition}
+				/>
+			)}
+			{!tagsDropDownOpened && <ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />}
 		</div>
 	);
 }

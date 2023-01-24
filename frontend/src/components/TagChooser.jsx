@@ -3,7 +3,7 @@ import SuperTags from './SuperTags';
 import styles from './TagChooser.module.css';
 import Tags from './Tags';
 
-function TagChooser({ tags, markActive, onTagSelected }) {
+function TagChooser({ tags, markActive, onTagSelected, onDropDownToggled }) {
 	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
 
 	const getTags = (superTag) => {
@@ -23,13 +23,16 @@ function TagChooser({ tags, markActive, onTagSelected }) {
 	const onSuperTagClicked = (superTag) => {
 		if (selectedSuperTag == superTag) {
 			setSelectedSuperTag(null);
+			onDropDownToggled(false);
 		} else {
 			setSelectedSuperTag(superTag);
+			onDropDownToggled(true);
 		}
 	};
 
 	const tagSelectedHandler = (tag) => {
 		setSelectedSuperTag(null);
+		onDropDownToggled(false);
 		onTagSelected(tag);
 	};
 

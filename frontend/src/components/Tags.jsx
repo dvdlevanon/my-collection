@@ -27,6 +27,7 @@ function Tags({ tags, markActive, onTagSelected }) {
 		<div className={styles.tags_holder}>
 			<div className={styles.filters_holder}>
 				<TextField
+					className={styles.search}
 					autoFocus
 					fullWidth
 					label="Search for tags"
