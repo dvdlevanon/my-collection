@@ -69,7 +69,7 @@ function Item({ item, preferPreview }) {
 			onMouseMove={(e) => mouseMove(e)}
 			onMouseEnter={(e) => mouseEnter(e)}
 		>
-			<img className={styles.image} src={getCover()} alt="" />
+			<img className={styles.image} src={getCover()} alt={item.title} loading="lazy" />
 			{showCoverNavigator && item.covers && item.covers.length > 1 && (
 				<div className={styles.cover_navigator}>
 					{item.covers.map((cover, index) => {

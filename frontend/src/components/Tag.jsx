@@ -46,7 +46,7 @@ function Tag({ tag, markActive, onTagSelected }) {
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
-			<img className={styles.image} src={getImageUrl()} alt="" />
+			<img className={styles.image} src={getImageUrl()} alt={tag.title} loading="lazy" />
 			<Typography className={styles.title} variant="h6" textAlign={'start'}>
 				{tag.title}
 			</Typography>
