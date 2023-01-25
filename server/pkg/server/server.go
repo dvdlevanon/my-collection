@@ -41,6 +41,9 @@ func New(gallery *gallery.Gallery, storage *storage.Storage) *Server {
 func (s *Server) init() {
 	s.router.Use(cors.Default())
 	s.router.Use(httpLogger)
+	s.router.Static("/static", "static")
+	s.router.StaticFile("/", "index.html")
+	s.router.StaticFile("/my-collection.svg", "my-collection.svg")
 	s.router.POST("/items", s.createItem)
 	s.router.POST("/tags", s.createTag)
 	s.router.POST("/items/:item", s.updateItem)

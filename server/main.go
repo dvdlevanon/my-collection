@@ -46,7 +46,7 @@ func getRootDirectory() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(path, ".storage"), nil
+	return path, nil
 }
 
 func run() error {
@@ -64,6 +64,8 @@ func run() error {
 	if err != nil {
 		return err
 	}
+
+	logger.Infof("Root directory is: %s", rootdir)
 
 	db, err := db.New(rootdir, "test.sqlite")
 	if err != nil {
