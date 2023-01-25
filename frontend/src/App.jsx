@@ -1,5 +1,5 @@
 import { CssBaseline, StyledEngineProvider } from '@mui/material';
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import { RecoilRoot } from 'recoil';
 import './App.css';
@@ -14,7 +14,8 @@ function App() {
 	};
 
 	return (
-		<CssBaseline>
+		<React.Fragment>
+			<CssBaseline />
 			<StyledEngineProvider injectFirst>
 				<RecoilRoot>
 					<BrowserRouter>
@@ -26,7 +27,7 @@ function App() {
 					</BrowserRouter>
 				</RecoilRoot>
 			</StyledEngineProvider>
-		</CssBaseline>
+		</React.Fragment>
 	);
 }
 
