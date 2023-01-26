@@ -22,7 +22,7 @@ function App() {
 						<TopBar previewMode={previewMode} onPreviewModeChange={onPreviewModeChange} />
 						<Routes>
 							<Route index element={<Gallery previewMode={previewMode} />} />
-							<Route path="/item/:itemId" element={<ItemPage />} />
+							<Route path="/spa/item/:itemId" element={<ItemPage />} />
 						</Routes>
 					</BrowserRouter>
 				</RecoilRoot>

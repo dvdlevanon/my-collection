@@ -64,7 +64,7 @@ function Item({ item, preferPreview }) {
 	return (
 		<Link
 			className={styles.item}
-			to={'item/' + item.id}
+			to={'/spa/item/' + item.id}
 			onMouseLeave={(e) => mouseLeave(e)}
 			onMouseMove={(e) => mouseMove(e)}
 			onMouseEnter={(e) => mouseEnter(e)}

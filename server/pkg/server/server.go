@@ -54,6 +54,9 @@ func (s *Server) init() {
 
 	s.router.Static("/ui", "ui/")
 	s.router.StaticFile("/", "ui/index.html")
+	s.router.GET("/spa/*route", func(c *gin.Context) {
+		http.ServeFile(c.Writer, c.Request, "ui/index.html")
+	})
 }
 
 func (s *Server) Run(addr string) {
