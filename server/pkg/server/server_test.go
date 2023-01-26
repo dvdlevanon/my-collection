@@ -35,7 +35,7 @@ func TestCreateAndGetItem(t *testing.T) {
 	item := model.Item{Title: "title1", Url: "url1"}
 	payload, err := json.Marshal(item)
 	assert.NoError(t, err)
-	req := httptest.NewRequest("POST", "/items", bytes.NewReader(payload))
+	req := httptest.NewRequest("POST", "/api/items", bytes.NewReader(payload))
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -43,7 +43,7 @@ func TestCreateAndGetItem(t *testing.T) {
 	err = json.Unmarshal(resp.Body.Bytes(), &returnedId)
 	assert.NoError(t, err)
 	assert.Equal(t, returnedId.Id, uint64(1))
-	req = httptest.NewRequest("GET", fmt.Sprintf("/items/%d", returnedId.Id), nil)
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/items/%d", returnedId.Id), nil)
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -60,7 +60,7 @@ func TestCreateAndGetTag(t *testing.T) {
 	tag := model.Tag{Title: "title1"}
 	payload, err := json.Marshal(tag)
 	assert.NoError(t, err)
-	req := httptest.NewRequest("POST", "/tags", bytes.NewReader(payload))
+	req := httptest.NewRequest("POST", "/api/tags", bytes.NewReader(payload))
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -68,7 +68,7 @@ func TestCreateAndGetTag(t *testing.T) {
 	err = json.Unmarshal(resp.Body.Bytes(), &returnedId)
 	assert.NoError(t, err)
 	assert.Equal(t, returnedId.Id, uint64(1))
-	req = httptest.NewRequest("GET", fmt.Sprintf("/tags/%d", returnedId.Id), nil)
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", returnedId.Id), nil)
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -84,7 +84,7 @@ func TestUpdateItem(t *testing.T) {
 	item := model.Item{Title: "title1"}
 	payload, err := json.Marshal(item)
 	assert.NoError(t, err)
-	req := httptest.NewRequest("POST", "/items", bytes.NewReader(payload))
+	req := httptest.NewRequest("POST", "/api/items", bytes.NewReader(payload))
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -95,11 +95,11 @@ func TestUpdateItem(t *testing.T) {
 	item = model.Item{Id: returnedId.Id, Url: "update-url"}
 	payload, err = json.Marshal(item)
 	assert.NoError(t, err)
-	req = httptest.NewRequest("POST", fmt.Sprintf("/items/%d", returnedId.Id), bytes.NewReader(payload))
+	req = httptest.NewRequest("POST", fmt.Sprintf("/api/items/%d", returnedId.Id), bytes.NewReader(payload))
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
-	req = httptest.NewRequest("GET", fmt.Sprintf("/items/%d", returnedId.Id), nil)
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/items/%d", returnedId.Id), nil)
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -116,7 +116,7 @@ func TestUpdateTag(t *testing.T) {
 	tag := model.Tag{Title: "title1"}
 	payload, err := json.Marshal(tag)
 	assert.NoError(t, err)
-	req := httptest.NewRequest("POST", "/tags", bytes.NewReader(payload))
+	req := httptest.NewRequest("POST", "/api/tags", bytes.NewReader(payload))
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -127,11 +127,11 @@ func TestUpdateTag(t *testing.T) {
 	tag = model.Tag{Id: returnedId.Id, Title: "updated-title"}
 	payload, err = json.Marshal(tag)
 	assert.NoError(t, err)
-	req = httptest.NewRequest("POST", fmt.Sprintf("/tags/%d", returnedId.Id), bytes.NewReader(payload))
+	req = httptest.NewRequest("POST", fmt.Sprintf("/api/tags/%d", returnedId.Id), bytes.NewReader(payload))
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
-	req = httptest.NewRequest("GET", fmt.Sprintf("/tags/%d", returnedId.Id), nil)
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", returnedId.Id), nil)
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
@@ -144,7 +144,7 @@ func TestUpdateTag(t *testing.T) {
 
 func TestItemNotFound(t *testing.T) {
 	server := setupNewServer(t, "item-not-found-test.sqlite")
-	req := httptest.NewRequest("GET", fmt.Sprintf("/items/%d", 666), nil)
+	req := httptest.NewRequest("GET", fmt.Sprintf("/api/items/%d", 666), nil)
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusNotFound)
@@ -152,7 +152,7 @@ func TestItemNotFound(t *testing.T) {
 
 func TestTagNotFound(t *testing.T) {
 	server := setupNewServer(t, "tag-not-found-test.sqlite")
-	req := httptest.NewRequest("GET", fmt.Sprintf("/tags/%d", 666), nil)
+	req := httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", 666), nil)
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusNotFound)

@@ -1,5 +1,5 @@
 export default class Client {
-	static baseUrl = 'http://localhost:8080';
+	static baseUrl = 'http://localhost:8080/api';
 
 	static getTags(successCallback) {
 		fetch(`${Client.baseUrl}/tags`)
