@@ -1,6 +1,4 @@
 .active_tags {
-	opacity: 0.95;
-	top: 0px;
 	display: flex;
 	flex-direction: row;
 	padding: 10px;

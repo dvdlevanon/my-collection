@@ -1,3 +1,4 @@
+import { Divider } from '@mui/material';
 import { useEffect, useState } from 'react';
 import Client from '../network/client';
 import GalleryFilters from './GalleryFilters';
@@ -87,6 +88,7 @@ function Gallery({ previewMode }) {
 				onTagSelected={onTagActivated}
 				onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 			/>
+			<Divider sx={{ borderBottomWidth: 2 }} />
 			{!tagsDropDownOpened && (
 				<GalleryFilters
 					activeTags={getActiveTags()}

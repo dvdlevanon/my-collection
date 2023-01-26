@@ -1,4 +1,4 @@
-import { Tooltip } from '@mui/material';
+import { Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Client from '../network/client';
@@ -84,9 +84,11 @@ function Item({ item, preferPreview }) {
 					})}
 				</div>
 			)}
-			{previewMode() && showPreview && <Player isPreview={true} item={item} />}
+			{previewMode() && showPreview && <Player className={styles.image} isPreview={true} item={item} />}
 			<Tooltip title={item.title} arrow followCursor>
-				<span className={styles.item_title}>{item.title}</span>
+				<Typography color="primary" className={styles.item_title}>
+					{item.title}
+				</Typography>
 			</Tooltip>
 		</Link>
 	);

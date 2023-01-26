@@ -8,7 +8,7 @@ function GalleryFilters({ activeTags, onTagDeactivated, onTagSelected, onTagDese
 	};
 
 	return (
-		<div className={styles.side_panel}>
+		<div className={styles.gallery_filters}>
 			{activeTags.length > 0 && (
 				<ActiveTags
 					activeTags={activeTags}

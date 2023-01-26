@@ -1,7 +1,6 @@
-import { Button, Checkbox, FormControlLabel } from '@mui/material';
-import { Link } from 'react-router-dom';
+import { AppBar, Button, Checkbox, FormControlLabel, Link, Toolbar, Typography } from '@mui/material';
+import { Link as RouterLink } from 'react-router-dom';
 import Client from '../network/client';
-import styles from './TopBar.module.css';
 
 function TopBar({ previewMode, onPreviewModeChange }) {
 	const previewsChange = (e) => {
@@ -9,21 +8,23 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 	};
 
 	return (
-		<div className={styles.top_bar}>
-			<Link to="/">
-				<Button variant="outlined">Home</Button>
-			</Link>
-			<Button variant="outlined" onClick={() => Client.refreshCovers()}>
-				Refresh Covers
-			</Button>
-			<Button variant="outlined" onClick={() => Client.refreshPreview()}>
-				Refresh Preview
-			</Button>
-			<FormControlLabel
-				label="Use Previews"
-				control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}
-			/>
-		</div>
+		<AppBar position="static">
+			<Toolbar>
+				<Link sx={{ flexGrow: 1 }} component={RouterLink} to="/">
+					<Typography variant="h5">My Collection</Typography>
+				</Link>
+				<Button variant="outlined" onClick={() => Client.refreshCovers()}>
+					Refresh Covers
+				</Button>
+				<Button variant="outlined" onClick={() => Client.refreshPreview()}>
+					Refresh Preview
+				</Button>
+				<FormControlLabel
+					label="Use Previews"
+					control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}
+				/>
+			</Toolbar>
+		</AppBar>
 	);
 }
 

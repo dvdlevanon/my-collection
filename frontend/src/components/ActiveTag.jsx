@@ -1,6 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { IconButton } from '@mui/material';
-import styles from './ActiveTag.module.css';
+import { Box, IconButton, Typography } from '@mui/material';
 
 function ActiveTag({ tag, onTagDeactivated, onTagSelected, onTagDeselected }) {
 	const onTagClicked = (e) => {
@@ -17,15 +16,27 @@ function ActiveTag({ tag, onTagDeactivated, onTagSelected, onTagDeselected }) {
 	};
 
 	return (
-		<div
-			className={styles.tag + ' ' + (tag.selected ? styles.selected : styles.unselected)}
+		<Box
+			sx={{
+				backgroundColor: tag.selected && 'primary.main',
+				'&:hover': {
+					backgroundColor: 'primary.main',
+					opacity: [0.9, 0.8, 0.7],
+				},
+				cursor: 'pointer',
+				borderRadius: '7px',
+				padding: '0px 5px 0px 0px',
+				display: 'flex',
+				flexDirection: 'row',
+				alignItems: 'center',
+			}}
 			onClick={(e) => onTagClicked(e)}
 		>
 			<IconButton onClick={(e) => onCloseClicked(e)}>
 				<CloseIcon />
 			</IconButton>
-			{tag.title}
-		</div>
+			<Typography variant="button">{tag.title}</Typography>
+		</Box>
 	);
 }
 

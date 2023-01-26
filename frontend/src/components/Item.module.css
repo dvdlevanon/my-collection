@@ -1,21 +1,12 @@
 .item {
-	padding: 3px;
 	display: flex;
 	position: relative;
-	border: 1px solid black;
-	background-color: black;
 	flex-direction: column;
 }
 
-.item:hover {
-	border: 1px solid #555555;
-	background-color: #222222;
-}
-
 .image {
-	-webkit-user-drag: none;
 	width: 550px;
-	height: 400px;
+	height: 300px;
 	object-fit: contain;
 	cursor: pointer;
 }
@@ -25,15 +16,9 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	cursor: pointer;
-	position: absolute;
-	left: 0px;
-	bottom: 7px;
-	width: 100%;
-	max-width: 100%;
+	max-width: 550px;
 	text-align: center;
-	color: white;
 	opacity: 75%;
-	user-select: none;
 	padding: 5px;
 }
 

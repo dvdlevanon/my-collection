@@ -3,7 +3,6 @@
 	flex-direction: column;
 	user-select: none;
 	padding: 3px;
-	border: 1px solid #555;
 	border-radius: 7px;
 	cursor: pointer;
 	font-size: 18px;
@@ -14,10 +13,6 @@
 	position: relative;
 }
 
-.tag:hover {
-	background-color: #555;
-}
-
 .tag_actions_button {
 	position: absolute;
 	bottom: 0px;
@@ -26,7 +21,6 @@
 }
 
 .title {
-	color: white;
 	padding: 5px;
 	text-align: center;
 }

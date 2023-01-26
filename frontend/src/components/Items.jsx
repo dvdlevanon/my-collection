@@ -1,5 +1,5 @@
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Fab, Fade, Toolbar, useScrollTrigger } from '@mui/material';
+import { Fab, Fade, useScrollTrigger } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
 import Item from './Item';
@@ -23,16 +23,12 @@ function ItemsList({ items, previewMode }) {
 
 	return (
 		<React.Fragment>
-			<Toolbar id="back-to-top-anchor" />
-			<div className={styles.items}>
+			<div id="back-to-top-anchor" />
+			<Box className={styles.items}>
 				{items.map((item) => {
-					return (
-						<div key={item.id}>
-							<Item item={item} preferPreview={previewMode} />
-						</div>
-					);
+					return <Item key={item.id} item={item} preferPreview={previewMode} />;
 				})}
-			</div>
+			</Box>
 			<Fade in={trigger}>
 				<Box onClick={handleClick} role="presentation" sx={{ position: 'fixed', bottom: 16, right: 16 }}>
 					<Fab size="small" aria-label="scroll back to top">

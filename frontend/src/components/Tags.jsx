@@ -27,10 +27,10 @@ function Tags({ tags, markActive, onTagSelected }) {
 		<div className={styles.tags_holder}>
 			<div className={styles.filters_holder}>
 				<TextField
-					className={styles.search}
+					variant="outlined"
 					autoFocus
 					fullWidth
-					label="Search for tags"
+					label="Search..."
 					type="search"
 					onChange={(e) => onSearchTermChanged(e)}
 				></TextField>

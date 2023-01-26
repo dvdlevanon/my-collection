@@ -1,6 +1,6 @@
 import ImageIcon from '@mui/icons-material/Image';
 import OptionsIcon from '@mui/icons-material/Tune';
-import { SpeedDial, SpeedDialAction, Typography } from '@mui/material';
+import { Box, SpeedDial, SpeedDialAction, Typography } from '@mui/material';
 import { useRef, useState } from 'react';
 import Client from '../network/client';
 import styles from './Tag.module.css';
@@ -40,14 +40,14 @@ function Tag({ tag, markActive, onTagSelected }) {
 	};
 
 	return (
-		<div
+		<Box
 			className={getTagClasses()}
 			onClick={() => onTagSelected(tag)}
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
 			<img className={styles.image} src={getImageUrl()} alt={tag.title} loading="lazy" />
-			<Typography className={styles.title} variant="h6" textAlign={'start'}>
+			<Typography className={styles.title} variant="caption" textAlign={'start'}>
 				{tag.title}
 			</Typography>
 			<SpeedDial
@@ -76,7 +76,7 @@ function Tag({ tag, markActive, onTagSelected }) {
 				type="file"
 				ref={fileDialog}
 			/>
-		</div>
+		</Box>
 	);
 }
 
