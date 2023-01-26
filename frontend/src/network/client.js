@@ -60,6 +60,10 @@ export default class Client {
 		fetch(`${Client.baseUrl}/items/refresh-preview`);
 	}
 
+	static getExportMetadataUrl() {
+		return `${Client.baseUrl}/export-metadata.json`;
+	}
+
 	static buildFileUrl(storagePath) {
 		return `${Client.baseUrl}/file/${encodeURIComponent(storagePath)}`;
 	}

@@ -78,8 +78,7 @@ func run() error {
 	}
 
 	gallery := gallery.New(db, storage, rootdir)
-	server.New(gallery, storage).Run(*listenAddress)
-	return nil
+	return server.New(gallery, storage).Run(*listenAddress)
 }
 
 func logError(err error) {

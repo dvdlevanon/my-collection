@@ -1,5 +1,10 @@
 package model
 
+type ItemsAndTags struct {
+	Items []Item `json:"items"`
+	Tags  []Tag  `json:"tags"`
+}
+
 type Tag struct {
 	Id       uint64  `json:"id,omitempty"`
 	Title    string  `json:"title,omitempty" gorm:"uniqueIndex"`

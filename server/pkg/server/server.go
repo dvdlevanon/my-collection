@@ -51,6 +51,7 @@ func (s *Server) init() {
 	api.GET("/items/refresh-preview", s.refreshItemsPreview)
 	api.GET("/file/*path", s.getFile)
 	api.POST("/upload-file", s.uploadFile)
+	api.GET("/export-metadata.json", s.exportMetadata)
 
 	s.router.Static("/ui", "ui/")
 	s.router.StaticFile("/", "ui/index.html")
@@ -59,9 +60,9 @@ func (s *Server) init() {
 	})
 }
 
-func (s *Server) Run(addr string) {
+func (s *Server) Run(addr string) error {
 	logger.Infof("Starting server at address %s", addr)
-	s.router.Run(addr)
+	return s.router.Run(addr)
 }
 
 func (s *Server) handleError(c *gin.Context, err error) bool {

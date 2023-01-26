@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 	"my-collection/server/pkg/model"
@@ -234,4 +235,15 @@ func (s *Server) getFile(c *gin.Context) {
 
 	logger.Infof("Getting file %v", file)
 	http.ServeFile(c.Writer, c.Request, file)
+}
+
+func (s *Server) exportMetadata(c *gin.Context) {
+	jsonBytes := bytes.Buffer{}
+	if s.handleError(c, s.gallery.Export(&jsonBytes)) {
+		return
+	}
+
+	c.Header("Content-Type", "application/json")
+	c.Header("Content-Disposition", "gallery-metadata.json")
+	c.String(http.StatusOK, jsonBytes.String())
 }

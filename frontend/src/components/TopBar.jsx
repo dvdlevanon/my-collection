@@ -13,6 +13,9 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 				<Link sx={{ flexGrow: 1 }} component={RouterLink} to="/">
 					<Typography variant="h5">My Collection</Typography>
 				</Link>
+				<Link href={Client.getExportMetadataUrl()} download>
+					<Button variant="outlined">Export metadata</Button>
+				</Link>
 				<Button variant="outlined" onClick={() => Client.refreshCovers()}>
 					Refresh Covers
 				</Button>

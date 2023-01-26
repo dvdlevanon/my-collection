@@ -3,8 +3,10 @@
 }
 
 .item_tags {
+	display: flex;
+	flex-direction: column;
 	padding: 10px;
-	min-width: 200px;
+	gap: 10px;
 }
 
 .add_tag_button {

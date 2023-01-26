@@ -69,6 +69,10 @@ func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
 	err := d.create(tag)
 
 	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
+		if tag.Id != 0 {
+			return d.update(tag)
+		}
+
 		existing, err := d.GetTag("title = ?", tag.Title)
 
 		if err != nil {
@@ -90,6 +94,10 @@ func (d *Database) CreateOrUpdateItem(item *model.Item) error {
 	err := d.create(item)
 
 	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
+		if item.Id != 0 {
+			return d.update(item)
+		}
+
 		existing, err := d.GetItem("title = ?", item.Title)
 
 		if err != nil {
