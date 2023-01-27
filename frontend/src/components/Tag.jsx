@@ -5,7 +5,7 @@ import { useRef, useState } from 'react';
 import Client from '../network/client';
 import styles from './Tag.module.css';
 
-function Tag({ tag, markActive, onTagSelected }) {
+function Tag({ tag, size, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 	const fileDialog = useRef(null);
 
@@ -28,7 +28,11 @@ function Tag({ tag, markActive, onTagSelected }) {
 	};
 
 	const getTagClasses = () => {
-		return styles.tag + ' ' + (tag.active && markActive ? styles.selected : styles.unselected);
+		if (size != 'small') {
+			return styles.tag + ' ' + styles.big_tag;
+		} else {
+			return styles.tag;
+		}
 	};
 
 	const getImageUrl = () => {
@@ -46,27 +50,38 @@ function Tag({ tag, markActive, onTagSelected }) {
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
-			<img className={styles.image} src={getImageUrl()} alt={tag.title} loading="lazy" />
-			<Typography className={styles.title} variant="caption" textAlign={'start'}>
+			{size != 'small' && <img className={styles.image} src={getImageUrl()} alt={tag.title} loading="lazy" />}
+			<Typography
+				className={styles.title}
+				sx={{
+					'&:hover': {
+						textDecoration: 'underline',
+					},
+				}}
+				variant="caption"
+				textAlign={'start'}
+			>
 				{tag.title}
 			</Typography>
-			<SpeedDial
-				sx={{ '& .MuiFab-primary': { width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0)' } }}
-				hidden={optionsHidden}
-				className={styles.tag_actions_button}
-				ariaLabel="tag-actions"
-				icon={<OptionsIcon />}
-				onClick={(e) => e.stopPropagation()}
-			>
-				<SpeedDialAction
-					key="set-image"
-					tooltipTitle="Set tag image"
-					icon={<ImageIcon />}
-					onClick={(e) => {
-						changeTagImageClicked(e);
-					}}
-				/>
-			</SpeedDial>
+			{size != 'small' && (
+				<SpeedDial
+					sx={{ '& .MuiFab-primary': { width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0)' } }}
+					hidden={optionsHidden}
+					className={styles.tag_actions_button}
+					ariaLabel="tag-actions"
+					icon={<OptionsIcon />}
+					onClick={(e) => e.stopPropagation()}
+				>
+					<SpeedDialAction
+						key="set-image"
+						tooltipTitle="Set tag image"
+						icon={<ImageIcon />}
+						onClick={(e) => {
+							changeTagImageClicked(e);
+						}}
+					/>
+				</SpeedDial>
+			)}
 			<input
 				onClick={(e) => e.stopPropagation()}
 				onChange={(e) => imageSelected(e)}

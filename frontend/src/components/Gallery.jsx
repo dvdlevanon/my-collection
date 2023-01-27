@@ -84,7 +84,7 @@ function Gallery({ previewMode }) {
 		<div>
 			<TagChooser
 				tags={tags}
-				markActive={true}
+				size="big"
 				onTagSelected={onTagActivated}
 				onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 			/>

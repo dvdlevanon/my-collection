@@ -3,7 +3,7 @@ import { useState } from 'react';
 import Tag from './Tag';
 import styles from './Tags.module.css';
 
-function Tags({ tags, markActive, onTagSelected }) {
+function Tags({ tags, size, onTagSelected }) {
 	let [searchTerm, setSearchTerm] = useState('');
 
 	const onSearchTermChanged = (e) => {
@@ -39,7 +39,7 @@ function Tags({ tags, markActive, onTagSelected }) {
 				{filterTags(tags, searchTerm).map((tag) => {
 					return (
 						<div key={tag.id}>
-							<Tag tag={tag} markActive={markActive} onTagSelected={onTagSelected} />
+							<Tag tag={tag} size={size} onTagSelected={onTagSelected} />
 						</div>
 					);
 				})}

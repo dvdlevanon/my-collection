@@ -3,7 +3,7 @@ import SuperTags from './SuperTags';
 import styles from './TagChooser.module.css';
 import Tags from './Tags';
 
-function TagChooser({ tags, markActive, onTagSelected, onDropDownToggled }) {
+function TagChooser({ tags, size, onTagSelected, onDropDownToggled }) {
 	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
 
 	const getTags = (superTag) => {
@@ -46,7 +46,7 @@ function TagChooser({ tags, markActive, onTagSelected, onDropDownToggled }) {
 			/>
 			<div className={styles.tags_holder}>
 				{selectedSuperTag && (
-					<Tags tags={getTags(selectedSuperTag)} markActive={markActive} onTagSelected={tagSelectedHandler} />
+					<Tags tags={getTags(selectedSuperTag)} size={size} onTagSelected={tagSelectedHandler} />
 				)}
 			</div>
 		</div>
