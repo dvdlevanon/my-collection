@@ -56,3 +56,29 @@ func (g *Gallery) GetFile(url string) string {
 		return filepath.Join(g.rootDirectory, url)
 	}
 }
+
+func (g *Gallery) GetTagAvailableAnnotations(tagId uint64) ([]model.TagAnnotation, error) {
+	tag, err := g.GetTag(tagId)
+	if err != nil {
+		return nil, err
+	}
+
+	availableAnnotations := make(map[uint64]model.TagAnnotation)
+	for _, child := range tag.Children {
+		annotations, err := g.GetTagAnnotations(child.Id)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, annotation := range annotations {
+			availableAnnotations[annotation.Id] = annotation
+		}
+	}
+
+	result := make([]model.TagAnnotation, 0, len(availableAnnotations))
+	for _, v := range availableAnnotations {
+		result = append(result, v)
+	}
+
+	return result, nil
+}

@@ -38,6 +38,10 @@ func New(rootDirectory string, filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
+	if err = db.AutoMigrate(&model.TagAnnotation{}); err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
 	logger.Infof("DB initialized with db file: %s", actualpath)
 
 	return &Database{
@@ -54,7 +58,8 @@ func (d *Database) create(value interface{}) error {
 }
 
 func (d *Database) update(value interface{}) error {
-	if err := d.db.Updates(value).Error; err != nil {
+	// if err := d.db.Updates(value).Error; err != nil {
+	if err := d.db.Session(&gorm.Session{FullSaveAssociations: true}).Updates(value).Error; err != nil {
 		return errors.Wrap(err, 0)
 	}
 
@@ -131,6 +136,12 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 	return tag, err
 }
 
+func (d *Database) GetTagAnnotation(conds ...interface{}) (*model.TagAnnotation, error) {
+	tagAnnotation := &model.TagAnnotation{}
+	err := d.db.Model(tagAnnotation).First(tagAnnotation, conds...).Error
+	return tagAnnotation, err
+}
+
 func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 	tagsPreloading := func(db *gorm.DB) *gorm.DB {
 		if includeTagIdsOnly {
@@ -183,4 +194,15 @@ func (d *Database) GetAllItems() (*[]model.Item, error) {
 
 func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {
 	return d.db.Model(&model.Item{Id: itemId}).Association("Tags").Delete(model.Tag{Id: tagId})
+}
+
+func (d *Database) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error) {
+	var annotations []model.TagAnnotation
+	err := d.db.Model(&model.Tag{Id: tagId}).Association("Annotations").Find(&annotations)
+
+	if err != nil {
+		err = errors.Wrap(err, 0)
+	}
+
+	return annotations, err
 }

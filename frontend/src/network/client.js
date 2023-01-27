@@ -26,6 +26,12 @@ export default class Client {
 			.then((item) => successCallback(item));
 	}
 
+	static getAvailableAnnotations(tagId, successCallback) {
+		fetch(`${Client.baseUrl}/tags/${tagId}/available-annotations`)
+			.then((response) => response.json())
+			.then((annotations) => successCallback(annotations));
+	}
+
 	static saveItem(item, successCallback) {
 		fetch(`${Client.baseUrl}/items/${item.id}`, {
 			method: 'POST',

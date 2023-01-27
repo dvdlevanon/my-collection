@@ -16,20 +16,9 @@
 	width: 350px;
 }
 
-.tag_actions_button {
-	position: absolute;
-	bottom: 0px;
-	right: 0px;
-	padding: 5px;
-}
-
 .title {
 	padding: 5px;
 	text-align: center;
-}
-
-.choose_file_dialog {
-	display: none;
 }
 
 .image {

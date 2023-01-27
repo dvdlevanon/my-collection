@@ -1,0 +1,10 @@
+.tag_actions_button {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	padding: 5px;
+}
+
+.choose_file_dialog {
+	display: none;
+}
