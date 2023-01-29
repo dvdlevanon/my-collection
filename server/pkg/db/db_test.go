@@ -1,12 +1,14 @@
 package db
 
 import (
+	"errors"
 	"fmt"
 	"my-collection/server/pkg/model"
 	"os"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"gorm.io/gorm"
 )
 
 func setupNewDb(t *testing.T, filename string) (*Database, error) {
@@ -196,4 +198,108 @@ func TestRemoveTag(t *testing.T) {
 	tagFromDB, err := db.GetTag(1)
 	assert.NoError(t, err)
 	assert.Equal(t, tagFromDB.Title, tag.Title)
+}
+
+func TestTagAnnotations(t *testing.T) {
+	db, err := setupNewDb(t, "tag-annotations-test.sqlite")
+	assert.NoError(t, err)
+
+	child1 := model.Tag{
+		Title: "child1",
+	}
+
+	child2 := model.Tag{
+		Title: "child2",
+	}
+
+	assert.NoError(t, db.CreateTag(&child1))
+	assert.NoError(t, db.CreateTag(&child2))
+
+	root := model.Tag{
+		Title:    "root",
+		Children: []*model.Tag{&child1, &child2},
+	}
+
+	assert.NoError(t, db.CreateTagAnnotation(&model.TagAnnotation{Title: "annotation1"}))
+	annotation1, err := db.GetTagAnnotation(1)
+	assert.NoError(t, err)
+	assert.NoError(t, db.CreateTagAnnotation(&model.TagAnnotation{Title: "annotation2"}))
+	annotation2, err := db.GetTagAnnotation(2)
+	assert.NoError(t, err)
+	assert.NoError(t, db.CreateTagAnnotation(&model.TagAnnotation{Title: "annotation3"}))
+	annotation3, err := db.GetTagAnnotation(3)
+	assert.NoError(t, err)
+
+	assert.NoError(t, db.CreateTag(&root))
+	child1.Annotations = append(child1.Annotations, annotation1, annotation2)
+	assert.NoError(t, db.CreateOrUpdateTag(&child1))
+	child2.Annotations = append(child2.Annotations, annotation1, annotation3)
+	assert.NoError(t, db.CreateOrUpdateTag(&child2))
+
+	rootFromDB, err := db.GetTag(root.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, root.Title, rootFromDB.Title)
+	assert.Equal(t, 0, len(rootFromDB.Annotations))
+	child1FromDB, err := db.GetTag(child1.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, child1.Title, child1FromDB.Title)
+	assert.Equal(t, 2, len(child1FromDB.Annotations))
+	assert.Empty(t, child1FromDB.Annotations[0].Title)
+	assert.Empty(t, child1FromDB.Annotations[1].Title)
+	child2FromDB, err := db.GetTag(child2.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, child2.Title, child2FromDB.Title)
+	assert.Equal(t, 2, len(child2FromDB.Annotations))
+	assert.Empty(t, child2FromDB.Annotations[0].Title)
+	assert.Empty(t, child2FromDB.Annotations[1].Title)
+
+	assert.Equal(t, annotation1.Id, child1.Annotations[0].Id)
+	assert.Equal(t, annotation2.Id, child1.Annotations[1].Id)
+	assert.Equal(t, annotation1.Id, child2.Annotations[0].Id)
+	assert.Equal(t, annotation3.Id, child2.Annotations[1].Id)
+}
+
+func TestGetTagAnnotation(t *testing.T) {
+	db, err := setupNewDb(t, "tag-get-tag-annotation.sqlite")
+	assert.NoError(t, err)
+	assert.NoError(t, db.CreateTagAnnotation(&model.TagAnnotation{Title: "annotation"}))
+
+	annotation, err := db.GetTagAnnotation(&model.TagAnnotation{Title: "annotation"})
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1), annotation.Id)
+	assert.Equal(t, "annotation", annotation.Title)
+
+	annotationUsingId, err := db.GetTagAnnotation(1)
+	assert.NoError(t, err)
+	assert.Equal(t, uint64(1), annotationUsingId.Id)
+	assert.Equal(t, "annotation", annotationUsingId.Title)
+
+	_, err = db.GetTagAnnotation(&model.TagAnnotation{Title: "not-exists"})
+	assert.Error(t, err)
+	assert.True(t, errors.Is(err, gorm.ErrRecordNotFound))
+}
+
+func TestRemoveTagAnnotation(t *testing.T) {
+	db, err := setupNewDb(t, "remove-tag-annotation.sqlite")
+	assert.NoError(t, err)
+
+	assert.NoError(t, db.CreateTag(&model.Tag{
+		Title: "tag1",
+		Annotations: []*model.TagAnnotation{
+			{
+				Title: "annotation1",
+			},
+		},
+	}))
+
+	tag, err := db.GetTag(1)
+	assert.NoError(t, err)
+	assert.Equal(t, "tag1", tag.Title)
+	assert.Equal(t, 1, len(tag.Annotations))
+	assert.Equal(t, uint64(1), tag.Annotations[0].Id)
+	assert.NoError(t, db.RemoveTagAnnotationFromTag(1, 1))
+	tagAfterRemove, err := db.GetTag(1)
+	assert.NoError(t, err)
+	assert.Equal(t, "tag1", tagAfterRemove.Title)
+	assert.Equal(t, 0, len(tagAfterRemove.Annotations))
 }

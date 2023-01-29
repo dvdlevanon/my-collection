@@ -17,22 +17,31 @@ func TestTagMarshal(t *testing.T) {
 		Id:       2,
 		Title:    "child",
 		ParentID: &parent.Id,
+		Annotations: []*TagAnnotation{
+			{
+				Id:    1,
+				Title: "annotation1",
+			},
+		},
 	}
 
 	parent.Children = append(parent.Children, &child)
 
 	bytes, err := json.Marshal(parent)
 	assert.NoError(t, err)
-	assert.Equal(t, string(bytes), `{"id":1,"title":"parent","children":[{"id":2,"title":"child","parentId":1}]}`)
+	assert.Equal(t, `{"id":1,"title":"parent","children":[{"id":2,"title":"child","parentId":1,"tags_annotations":[{"id":1,"title":"annotation1"}]}]}`, string(bytes))
 }
 
 func TestTagUnmarshal(t *testing.T) {
-	jsonTag := `{"id":1,"title":"parent","children":[{"id":2,"title":"child","parentId":1}]}`
+	jsonTag := `{"id":1,"title":"parent","children":[{"id":2,"title":"child","parentId":1,"tags_annotations":[{"id":1,"title":"annotation1"}]}]}`
 	var tag Tag
 	assert.NoError(t, json.Unmarshal([]byte(jsonTag), &tag))
-	assert.Equal(t, tag.Id, uint64(1))
-	assert.Equal(t, tag.Children[0].Id, uint64(2))
+	assert.Equal(t, uint64(1), tag.Id)
+	assert.Equal(t, uint64(2), tag.Children[0].Id)
+	assert.Equal(t, 1, len(tag.Children[0].Annotations))
+	assert.Equal(t, "annotation1", tag.Children[0].Annotations[0].Title)
 }
+
 func TestItemMarshal(t *testing.T) {
 	item := Item{
 		Id:    1,

@@ -64,7 +64,7 @@ func TestCreateAndGetTag(t *testing.T) {
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
-	returnedId := model.Item{}
+	returnedId := model.Tag{}
 	err = json.Unmarshal(resp.Body.Bytes(), &returnedId)
 	assert.NoError(t, err)
 	assert.Equal(t, returnedId.Id, uint64(1))
@@ -72,7 +72,7 @@ func TestCreateAndGetTag(t *testing.T) {
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusOK)
-	returnedTag := model.Item{}
+	returnedTag := model.Tag{}
 	err = json.Unmarshal(resp.Body.Bytes(), &returnedTag)
 	assert.NoError(t, err)
 	assert.Equal(t, returnedTag.Id, returnedId.Id)
@@ -156,4 +156,60 @@ func TestTagNotFound(t *testing.T) {
 	resp := httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
 	assert.Equal(t, resp.Code, http.StatusNotFound)
+}
+
+func TestTagAnnotations(t *testing.T) {
+	server := setupNewServer(t, "tag-annotations-test.sqlite")
+
+	tag := model.Tag{Title: "title1"}
+	payload, err := json.Marshal(tag)
+	assert.NoError(t, err)
+	req := httptest.NewRequest("POST", "/api/tags", bytes.NewReader(payload))
+	resp := httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	returnedId := model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedId)
+	assert.NoError(t, err)
+
+	annotation := model.TagAnnotation{Title: "annotation1"}
+	payload, err = json.Marshal(annotation)
+	assert.NoError(t, err)
+	req = httptest.NewRequest("POST", fmt.Sprintf("/api/tags/%d/annotations", returnedId.Id), bytes.NewReader(payload))
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", returnedId.Id), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	returnedTag := model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedTag)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(returnedTag.Annotations))
+
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d/available-annotations", returnedId.Id), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	returnedTagAnnotations := []model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedTagAnnotations)
+	assert.NoError(t, err)
+	assert.Equal(t, 1, len(returnedTagAnnotations))
+	assert.Equal(t, "annotation1", returnedTagAnnotations[0].Title)
+
+	req = httptest.NewRequest("DELETE", fmt.Sprintf("/api/tags/%d/annotations/%d", returnedId.Id, returnedTagAnnotations[0].Id), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d/available-annotations", returnedId.Id), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	returnedTagAnnotations = []model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedTagAnnotations)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(returnedTagAnnotations))
 }

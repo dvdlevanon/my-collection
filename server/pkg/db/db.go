@@ -58,8 +58,7 @@ func (d *Database) create(value interface{}) error {
 }
 
 func (d *Database) update(value interface{}) error {
-	// if err := d.db.Updates(value).Error; err != nil {
-	if err := d.db.Session(&gorm.Session{FullSaveAssociations: true}).Updates(value).Error; err != nil {
+	if err := d.db.Updates(value).Error; err != nil {
 		return errors.Wrap(err, 0)
 	}
 
@@ -68,6 +67,10 @@ func (d *Database) update(value interface{}) error {
 
 func (d *Database) CreateTag(tag *model.Tag) error {
 	return d.create(tag)
+}
+
+func (d *Database) CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error {
+	return d.create(tagAnnotation)
 }
 
 func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
@@ -131,8 +134,15 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 		return db.Select("ID")
 	}
 
-	err := d.db.Model(tag).Preload("Children").Preload("Items", itemsPreloading).First(tag, conds...).Error
+	annotationsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
 
+	err := d.db.Model(tag).
+		Preload("Children").
+		Preload("Items", itemsPreloading).
+		Preload("Annotations", annotationsPreloading).
+		First(tag, conds...).Error
 	return tag, err
 }
 
@@ -172,7 +182,15 @@ func (d *Database) GetAllTags() (*[]model.Tag, error) {
 		return db.Select("ID")
 	}
 
-	err := d.db.Model(model.Tag{}).Preload("Children").Preload("Items", itemsPreloading).Find(&tags).Error
+	annotationsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
+
+	err := d.db.Model(model.Tag{}).
+		Preload("Children").
+		Preload("Items", itemsPreloading).
+		Preload("Annotations", annotationsPreloading).
+		Find(&tags).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)
@@ -194,6 +212,10 @@ func (d *Database) GetAllItems() (*[]model.Item, error) {
 
 func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {
 	return d.db.Model(&model.Item{Id: itemId}).Association("Tags").Delete(model.Tag{Id: tagId})
+}
+
+func (d *Database) RemoveTagAnnotationFromTag(tagId uint64, annotationId uint64) error {
+	return d.db.Model(&model.Tag{Id: tagId}).Association("Annotations").Delete(model.TagAnnotation{Id: annotationId})
 }
 
 func (d *Database) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error) {

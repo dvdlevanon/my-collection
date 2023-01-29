@@ -45,7 +45,11 @@ func (s *Server) init() {
 	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/items/:item", s.getItem)
 	api.GET("/tags/:tag", s.getTag)
+
+	api.POST("/tags/:tag/annotations", s.addAnnotationToTag)
+	api.DELETE("/tags/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)
 	api.GET("/tags/:tag/available-annotations", s.getTagAvailableAnnotations)
+
 	api.GET("/tags", s.getTags)
 	api.GET("/items", s.getItems)
 	api.GET("/items/refresh-covers", s.refreshItemsCovers)

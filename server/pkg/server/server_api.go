@@ -161,20 +161,6 @@ func (s *Server) getTag(c *gin.Context) {
 	c.JSON(http.StatusOK, tag)
 }
 
-func (s *Server) getTagAvailableAnnotations(c *gin.Context) {
-	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if s.handleError(c, err) {
-		return
-	}
-
-	availableAnnotations, err := s.gallery.GetTagAvailableAnnotations(tagId)
-	if s.handleError(c, err) {
-		return
-	}
-
-	c.JSON(http.StatusOK, availableAnnotations)
-}
-
 func (s *Server) getTags(c *gin.Context) {
 	tags, err := s.gallery.GetAllTags()
 
@@ -260,4 +246,60 @@ func (s *Server) exportMetadata(c *gin.Context) {
 	c.Header("Content-Type", "application/json")
 	c.Header("Content-Disposition", "gallery-metadata.json")
 	c.String(http.StatusOK, jsonBytes.String())
+}
+
+func (s *Server) addAnnotationToTag(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	body, err := io.ReadAll(c.Request.Body)
+	if s.handleError(c, err) {
+		return
+	}
+
+	var annotation model.TagAnnotation
+	if err = json.Unmarshal(body, &annotation); err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	if s.handleError(c, s.gallery.AddAnnotationToTag(tagId, annotation)) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) removeAnnotationFromTag(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	annotationId, err := strconv.ParseUint(c.Param("annotation-id"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	if s.handleError(c, s.gallery.RemoveTagAnnotationFromTag(tagId, annotationId)) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) getTagAvailableAnnotations(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	availableAnnotations, err := s.gallery.GetTagAvailableAnnotations(tagId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, availableAnnotations)
 }
