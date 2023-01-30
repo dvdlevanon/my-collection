@@ -1,27 +1,28 @@
 import { Divider } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
 import GalleryFilters from './GalleryFilters';
 import ItemsList from './Items';
 import TagChooser from './TagChooser';
 
 function Gallery({ previewMode }) {
-	let [tags, setTags] = useState([]);
-	let [items, setItems] = useState([]);
+	const queryClient = useQueryClient();
+	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
+	const saveTag = useMutation(Client.saveTag);
 	let [conditionType, setConditionType] = useState('||');
 	let [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
 
-	useEffect(() => Client.getTags((tags) => setTags(tags)), []);
-	useEffect(() => Client.getItems((items) => setItems(items)), []);
-
 	const getSelectedTags = () => {
-		return tags.filter((tag) => {
+		return tagsQuery.data.filter((tag) => {
 			return tag.selected;
 		});
 	};
 
 	const getActiveTags = () => {
-		return tags.filter((tag) => {
+		return tagsQuery.data.filter((tag) => {
 			return tag.active;
 		});
 	};
@@ -31,7 +32,7 @@ function Gallery({ previewMode }) {
 			return [];
 		}
 
-		let result = items.filter((item) => {
+		let result = itemsQuery.data.filter((item) => {
 			let tagsWithItem = selectedTags.filter((tag) => {
 				if (!tag.items) {
 					return false;
@@ -54,26 +55,52 @@ function Gallery({ previewMode }) {
 		return result;
 	};
 
+	const changeTagState = (tag, updater) => {
+		saveTag.mutate(updater(tag), {
+			onSuccess: () => {
+				ReactQueryUtil.updateTags(queryClient, tag.id, (currentTag) => {
+					return updater(currentTag);
+				});
+			},
+		});
+	};
+
 	const onTagActivated = (tag) => {
-		tag.active = true;
-		tag.selected = true;
-		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
+		changeTagState(tag, (currentTag) => {
+			return {
+				...currentTag,
+				active: true,
+				selected: true,
+			};
+		});
 	};
 
 	const onTagDeactivated = (tag) => {
-		tag.active = false;
-		tag.selected = false;
-		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
+		changeTagState(tag, (currentTag) => {
+			return {
+				...currentTag,
+				active: false,
+				selected: false,
+			};
+		});
 	};
 
 	const onTagSelected = (tag) => {
-		tag.selected = true;
-		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
+		changeTagState(tag, (currentTag) => {
+			return {
+				...currentTag,
+				selected: true,
+			};
+		});
 	};
 
 	const onTagDeselected = (tag) => {
-		tag.selected = false;
-		Client.saveTag(tag, () => Client.getTags((tags) => setTags(tags)));
+		changeTagState(tag, (currentTag) => {
+			return {
+				...currentTag,
+				selected: false,
+			};
+		});
 	};
 
 	const onChangeCondition = (conditionType) => {
@@ -82,14 +109,16 @@ function Gallery({ previewMode }) {
 
 	return (
 		<div>
-			<TagChooser
-				tags={tags}
-				size="big"
-				onTagSelected={onTagActivated}
-				onDropDownToggled={(state) => setTagsDropDownOpened(state)}
-			/>
+			{tagsQuery.isSuccess && (
+				<TagChooser
+					tags={tagsQuery.data}
+					size="big"
+					onTagSelected={onTagActivated}
+					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
+				/>
+			)}
 			<Divider sx={{ borderBottomWidth: 2 }} />
-			{!tagsDropDownOpened && (
+			{tagsQuery.isSuccess && !tagsDropDownOpened && (
 				<GalleryFilters
 					activeTags={getActiveTags()}
 					onTagDeactivated={onTagDeactivated}
@@ -98,7 +127,9 @@ function Gallery({ previewMode }) {
 					onChangeCondition={onChangeCondition}
 				/>
 			)}
-			{!tagsDropDownOpened && <ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />}
+			{tagsQuery.isSuccess && itemsQuery.isSuccess && !tagsDropDownOpened && (
+				<ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
+			)}
 		</div>
 	);
 }

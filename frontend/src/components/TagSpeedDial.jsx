@@ -1,6 +1,5 @@
 import AddLink from '@mui/icons-material/AddLink';
 import ImageIcon from '@mui/icons-material/Image';
-import RemoveLink from '@mui/icons-material/LinkOff';
 import OptionsIcon from '@mui/icons-material/Tune';
 import { SpeedDial, SpeedDialAction } from '@mui/material';
 import React, { useRef, useState } from 'react';
@@ -70,23 +69,13 @@ function TagSpeedDial({ tag }) {
 						}}
 					/>
 					<SpeedDialAction
-						key="attach-attribute"
-						tooltipTitle="Attach attribute"
+						key="manage-annotations"
+						tooltipTitle="Manage annotations"
 						icon={<AddLink />}
 						onKeyDown={(e) => e.stopPropagation()}
 						onKeyUp={(e) => e.stopPropagation()}
 						onClick={(e) => {
 							onAttachAttributeClicked(e);
-						}}
-					/>
-					<SpeedDialAction
-						key="remove-attribute"
-						tooltipTitle="Remove attribute"
-						icon={<RemoveLink />}
-						onKeyDown={(e) => e.stopPropagation()}
-						onKeyUp={(e) => e.stopPropagation()}
-						onClick={(e) => {
-							onDettachAttributeClicked(e);
 						}}
 					/>
 				</SpeedDial>

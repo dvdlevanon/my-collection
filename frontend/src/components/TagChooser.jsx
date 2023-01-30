@@ -46,7 +46,12 @@ function TagChooser({ tags, size, onTagSelected, onDropDownToggled }) {
 			/>
 			<div className={styles.tags_holder}>
 				{selectedSuperTag && (
-					<Tags tags={getTags(selectedSuperTag)} size={size} onTagSelected={tagSelectedHandler} />
+					<Tags
+						tags={getTags(selectedSuperTag)}
+						parentId={selectedSuperTag.id}
+						size={size}
+						onTagSelected={tagSelectedHandler}
+					/>
 				)}
 			</div>
 		</div>

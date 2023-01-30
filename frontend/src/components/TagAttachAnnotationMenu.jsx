@@ -1,18 +1,20 @@
 import AddIcon from '@mui/icons-material/Add';
-import ClearIcon from '@mui/icons-material/Clear';
 import CloseIcon from '@mui/icons-material/Close';
-import { Backdrop, Divider, IconButton, Popover, TextField, Typography } from '@mui/material';
+import { Divider, IconButton, Popover, TextField, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useRef } from 'react';
+import { useMutation, useQuery, useQueryClient } from 'react-query';
 import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
+import TagAnnotation from './TagAnnotation';
 
 function TagAttachAnnotationMenu({ tag, menu, onClose }) {
-	let [availableAnnotations, setAvailableAnnotations] = useState([]);
+	const queryClient = useQueryClient();
 	const newAnnotationName = useRef(null);
-
-	useEffect(
-		() => Client.getAvailableAnnotations(tag.parentId, (annotations) => setAvailableAnnotations(annotations)),
-		[]
+	const addAnnotationToTagMutation = useMutation(Client.addAnnotationToTag);
+	const removeAnnotationFromTagMutation = useMutation(Client.removeAnnotationFromTag);
+	const availableAnnotationsQuery = useQuery(ReactQueryUtil.availableAnnotationsKey(tag.parentId), () =>
+		Client.getAvailableAnnotations(tag.parentId)
 	);
 
 	const handleClose = (e) => {
@@ -26,45 +28,80 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 			return;
 		}
 
-		if (!tag.tags_annotations) {
-			tag.tags_annotations = [];
-		}
-
-		tag.tags_annotations.push({ title: newAnnotationName.current.value });
-		Client.saveTag(tag, () => {});
-	};
-
-	const removeAnnotation = (e, annotation) => {
-		Client.removeAnnotationFromTag(tag.id, annotation.id, () => {});
-		e.stopPropagation();
+		addAnnotation(e, { title: newAnnotationName.current.value });
 	};
 
 	const addAnnotation = (e, annotation) => {
-		Client.addAnnotationToTag(tag.id, annotation, () => {});
 		e.stopPropagation();
+		addAnnotationToTagMutation.mutate(
+			{ tagId: tag.id, annotation: annotation },
+			{
+				onSuccess: (response) => {
+					response.json().then((tagAnnotation) => {
+						queryClient.refetchQueries({ queryKey: ReactQueryUtil.availableAnnotationsKey(tag.parentId) });
+						ReactQueryUtil.updateTags(queryClient, tag.id, (currentTag) => {
+							let curTagsAnnotations = currentTag.tags_annotations || [];
+							curTagsAnnotations.push(tagAnnotation);
+
+							return {
+								...currentTag,
+								tags_annotations: curTagsAnnotations,
+							};
+						});
+						newAnnotationName.current.value = '';
+					});
+				},
+			}
+		);
+	};
+
+	const removeAnnotation = (e, annotation) => {
+		e.stopPropagation();
+		removeAnnotationFromTagMutation.mutate(
+			{ tagId: tag.id, annotationId: annotation.id },
+			{
+				onSuccess: (response, params) => {
+					queryClient.refetchQueries({ queryKey: ReactQueryUtil.availableAnnotationsKey(tag.parentId) });
+					ReactQueryUtil.updateTags(queryClient, params.tagId, (currentTag) => {
+						return {
+							...currentTag,
+							tags_annotations: currentTag.tags_annotations.filter((annotation) => {
+								return annotation.id != params.annotationId;
+							}),
+						};
+					});
+				},
+			}
+		);
 	};
 
 	const getAnnotations = (belongToTag) => {
-		return availableAnnotations.filter((annotation) => {
-			if (!tag.tags_annotations) {
-				return !belongToTag;
-			}
+		if (!availableAnnotationsQuery.isSuccess) {
+			return [];
+		}
 
-			if (tag.tags_annotations.some((cur) => cur.id == annotation.id)) {
-				return belongToTag;
-			} else {
-				return !belongToTag;
-			}
-		});
+		return availableAnnotationsQuery.data
+			.filter((annotation) => {
+				if (!tag.tags_annotations) {
+					return !belongToTag;
+				}
+
+				if (tag.tags_annotations.some((cur) => cur.id == annotation.id)) {
+					return belongToTag;
+				} else {
+					return !belongToTag;
+				}
+			})
+			.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
 	};
 
 	return (
 		<Popover
-			slots={<Backdrop />}
 			open={true}
 			anchorReference="anchorPosition"
 			anchorPosition={{ top: menu.mouseY, left: menu.mouseX }}
 			BackdropProps={{
+				open: true,
 				invisible: false,
 				onClick: (e) => {
 					handleClose(e);
@@ -107,47 +144,22 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 				>
 					{getAnnotations(true).map((annotation) => {
 						return (
-							<Box
-								bgcolor="primary.dark"
-								color="primary.contrastText"
-								sx={{
-									margin: '10px',
-									padding: '0px 10px',
-									display: 'flex',
-									cursor: 'pointer',
-								}}
-								borderRadius="10px"
-								onClick={(e) => e.stopPropagation()}
+							<TagAnnotation
 								key={annotation.id}
-							>
-								<Typography sx={{ flexGrow: 1 }} variant="body1">
-									{annotation.title}
-								</Typography>
-								<IconButton onClick={(e) => removeAnnotation(e, annotation)} size="small">
-									<ClearIcon sx={{ fontSize: '15px' }} />
-								</IconButton>
-							</Box>
+								annotation={annotation}
+								selected={true}
+								onRemoveClicked={removeAnnotation}
+							/>
 						);
 					})}
 					{getAnnotations(false).map((annotation) => {
 						return (
-							<Box
-								bgcolor="gray"
-								color="primary.contrastText"
-								sx={{
-									margin: '10px',
-									padding: '0px 10px',
-									display: 'flex',
-									cursor: 'pointer',
-								}}
-								borderRadius="10px"
-								onClick={(e) => addAnnotation(e, annotation)}
+							<TagAnnotation
 								key={annotation.id}
-							>
-								<Typography sx={{ flexGrow: 1 }} variant="body1">
-									{annotation.title}
-								</Typography>
-							</Box>
+								annotation={annotation}
+								selected={false}
+								onClick={addAnnotation}
+							/>
 						);
 					})}
 				</Box>

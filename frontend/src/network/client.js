@@ -1,24 +1,24 @@
 export default class Client {
 	static baseUrl = 'http://localhost:8080/api';
 
-	static getTags(successCallback) {
-		fetch(`${Client.baseUrl}/tags`)
-			.then((response) => response.json())
-			.then((tags) => successCallback(tags));
-	}
+	static getTags = async () => {
+		return await fetch(`${Client.baseUrl}/tags`).then((response) => response.json());
+	};
 
-	static saveTag(tag, successCallback) {
-		fetch(`${Client.baseUrl}/tags/${tag.id}`, {
+	static getTag = async ({ tagId }) => {
+		return await fetch(`${Client.baseUrl}/tags/${tagId}`).then((response) => response.json());
+	};
+
+	static saveTag = async (tag, successCallback) => {
+		return await fetch(`${Client.baseUrl}/tags/${tag.id}`, {
 			method: 'POST',
 			body: JSON.stringify(tag),
-		}).then(successCallback);
-	}
+		});
+	};
 
-	static getItems(successCallback) {
-		fetch(`${Client.baseUrl}/items`)
-			.then((response) => response.json())
-			.then((items) => successCallback(items));
-	}
+	static getItems = async () => {
+		return await fetch(`${Client.baseUrl}/items`).then((response) => response.json());
+	};
 
 	static getItem(itemId, successCallback) {
 		fetch(`${Client.baseUrl}/items/${itemId}`)
@@ -26,24 +26,22 @@ export default class Client {
 			.then((item) => successCallback(item));
 	}
 
-	static addAnnotationToTag(tagId, annotation, successCallback) {
-		fetch(`${Client.baseUrl}/tags/${tagId}/annotations`, {
+	static addAnnotationToTag = async ({ tagId, annotation }) => {
+		return await fetch(`${Client.baseUrl}/tags/${tagId}/annotations`, {
 			method: 'POST',
 			body: JSON.stringify(annotation),
-		}).then(successCallback);
-	}
+		});
+	};
 
-	static removeAnnotationFromTag(tagId, annotationId, successCallback) {
-		fetch(`${Client.baseUrl}/tags/${tagId}/annotations/${annotationId}`, {
+	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
+		return await fetch(`${Client.baseUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',
-		}).then(successCallback);
-	}
+		});
+	};
 
-	static getAvailableAnnotations(tagId, successCallback) {
-		fetch(`${Client.baseUrl}/tags/${tagId}/available-annotations`)
-			.then((response) => response.json())
-			.then((annotations) => successCallback(annotations));
-	}
+	static getAvailableAnnotations = async (tagId) => {
+		return await fetch(`${Client.baseUrl}/tags/${tagId}/available-annotations`).then((response) => response.json());
+	};
 
 	static saveItem(item, successCallback) {
 		fetch(`${Client.baseUrl}/items/${item.id}`, {

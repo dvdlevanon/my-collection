@@ -265,11 +265,12 @@ func (s *Server) addAnnotationToTag(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, s.gallery.AddAnnotationToTag(tagId, annotation)) {
+	annotationId, err := s.gallery.AddAnnotationToTag(tagId, annotation)
+	if s.handleError(c, err) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, model.TagAnnotation{Id: annotationId})
 }
 
 func (s *Server) removeAnnotationFromTag(c *gin.Context) {

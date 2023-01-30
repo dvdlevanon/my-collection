@@ -36,10 +36,14 @@ func TestAvailableTagAnnoations(t *testing.T) {
 	}
 
 	assert.NoError(t, gallery.CreateTag(&root))
-	assert.NoError(t, gallery.AddAnnotationToTag(child1.Id, model.TagAnnotation{Title: "annotation1"}))
-	assert.NoError(t, gallery.AddAnnotationToTag(child1.Id, model.TagAnnotation{Title: "annotation2"}))
-	assert.NoError(t, gallery.AddAnnotationToTag(child2.Id, model.TagAnnotation{Title: "annotation1"}))
-	assert.NoError(t, gallery.AddAnnotationToTag(child2.Id, model.TagAnnotation{Title: "annotation3"}))
+	_, err := gallery.AddAnnotationToTag(child1.Id, model.TagAnnotation{Title: "annotation1"})
+	assert.NoError(t, err)
+	_, err = gallery.AddAnnotationToTag(child1.Id, model.TagAnnotation{Title: "annotation2"})
+	assert.NoError(t, err)
+	_, err = gallery.AddAnnotationToTag(child2.Id, model.TagAnnotation{Title: "annotation1"})
+	assert.NoError(t, err)
+	_, err = gallery.AddAnnotationToTag(child2.Id, model.TagAnnotation{Title: "annotation3"})
+	assert.NoError(t, err)
 
 	annotations, err := gallery.GetTagAvailableAnnotations(root.Id)
 	assert.NoError(t, err)
@@ -48,5 +52,6 @@ func TestAvailableTagAnnoations(t *testing.T) {
 	assert.True(t, annotaionExists(annotations, "annotation2"))
 	assert.True(t, annotaionExists(annotations, "annotation3"))
 
-	assert.NoError(t, gallery.AddAnnotationToTag(child2.Id, model.TagAnnotation{Title: "annotation3"}))
+	_, err = gallery.AddAnnotationToTag(child2.Id, model.TagAnnotation{Title: "annotation3"})
+	assert.NoError(t, err)
 }

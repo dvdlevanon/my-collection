@@ -178,7 +178,11 @@ func TestTagAnnotations(t *testing.T) {
 	req = httptest.NewRequest("POST", fmt.Sprintf("/api/tags/%d/annotations", returnedId.Id), bytes.NewReader(payload))
 	resp = httptest.NewRecorder()
 	server.router.ServeHTTP(resp, req)
+	returnedTagAnnotation := model.TagAnnotation{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedTagAnnotation)
+	assert.NoError(t, err)
 	assert.Equal(t, resp.Code, http.StatusOK)
+	assert.Equal(t, uint64(1), returnedTagAnnotation.Id)
 
 	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", returnedId.Id), nil)
 	resp = httptest.NewRecorder()
