@@ -26,6 +26,19 @@ export default class Client {
 			.then((item) => successCallback(item));
 	}
 
+	static addAnnotationToTag(tagId, annotation, successCallback) {
+		fetch(`${Client.baseUrl}/tags/${tagId}/annotations`, {
+			method: 'POST',
+			body: JSON.stringify(annotation),
+		}).then(successCallback);
+	}
+
+	static removeAnnotationFromTag(tagId, annotationId, successCallback) {
+		fetch(`${Client.baseUrl}/tags/${tagId}/annotations/${annotationId}`, {
+			method: 'DELETE',
+		}).then(successCallback);
+	}
+
 	static getAvailableAnnotations(tagId, successCallback) {
 		fetch(`${Client.baseUrl}/tags/${tagId}/available-annotations`)
 			.then((response) => response.json())

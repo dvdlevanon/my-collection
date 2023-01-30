@@ -24,7 +24,6 @@ function TagSpeedDial({ tag }) {
 		}
 
 		Client.uploadFile(`tags-image/${tag.id}`, fileDialog.current.files[0], (fileUrl) => {
-			console.log(fileUrl);
 			tag.imageUrl = fileUrl.url;
 			Client.saveTag(tag);
 		});
@@ -50,38 +49,48 @@ function TagSpeedDial({ tag }) {
 
 	return (
 		<React.Fragment>
-			<SpeedDial
-				sx={{ '& .MuiFab-primary': { width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0)' } }}
-				className={styles.tag_actions_button}
-				ariaLabel="tag-actions"
-				icon={<OptionsIcon />}
-				onClick={(e) => e.stopPropagation()}
-			>
-				<SpeedDialAction
-					key="set-image"
-					tooltipTitle="Set image"
-					icon={<ImageIcon />}
-					onClick={(e) => {
-						changeTagImageClicked(e);
-					}}
-				/>
-				<SpeedDialAction
-					key="attach-attribute"
-					tooltipTitle="Attach attribute"
-					icon={<AddLink />}
-					onClick={(e) => {
-						onAttachAttributeClicked(e);
-					}}
-				/>
-				<SpeedDialAction
-					key="remove-attribute"
-					tooltipTitle="Remove attribute"
-					icon={<RemoveLink />}
-					onClick={(e) => {
-						onDettachAttributeClicked(e);
-					}}
-				/>
-			</SpeedDial>
+			{attachMenuAttributes === null && (
+				<SpeedDial
+					sx={{ '& .MuiFab-primary': { width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0)' } }}
+					className={styles.tag_actions_button}
+					ariaLabel="tag-actions"
+					icon={<OptionsIcon />}
+					onClick={(e) => e.stopPropagation()}
+					onKeyDown={(e) => e.stopPropagation()}
+					onKeyUp={(e) => e.stopPropagation()}
+				>
+					<SpeedDialAction
+						key="set-image"
+						tooltipTitle="Set image"
+						icon={<ImageIcon />}
+						onKeyDown={(e) => e.stopPropagation()}
+						onKeyUp={(e) => e.stopPropagation()}
+						onClick={(e) => {
+							changeTagImageClicked(e);
+						}}
+					/>
+					<SpeedDialAction
+						key="attach-attribute"
+						tooltipTitle="Attach attribute"
+						icon={<AddLink />}
+						onKeyDown={(e) => e.stopPropagation()}
+						onKeyUp={(e) => e.stopPropagation()}
+						onClick={(e) => {
+							onAttachAttributeClicked(e);
+						}}
+					/>
+					<SpeedDialAction
+						key="remove-attribute"
+						tooltipTitle="Remove attribute"
+						icon={<RemoveLink />}
+						onKeyDown={(e) => e.stopPropagation()}
+						onKeyUp={(e) => e.stopPropagation()}
+						onClick={(e) => {
+							onDettachAttributeClicked(e);
+						}}
+					/>
+				</SpeedDial>
+			)}
 			{attachMenuAttributes !== null && (
 				<TagAttachAnnotationMenu tag={tag} menu={attachMenuAttributes} onClose={menuClosed} />
 			)}
