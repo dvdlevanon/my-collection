@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
-import AddTagDialog from './AddTagDialog';
+import AttachTagDialog from './AttachTagDialog';
 import styles from './ItemPage.module.css';
 import ItemTags from './ItemTags';
 import Player from './Player';
@@ -47,7 +47,7 @@ function ItemPage() {
 				</div>
 			)}
 			{itemQuery.isSuccess && tagsQuery.isSuccess && (
-				<AddTagDialog
+				<AttachTagDialog
 					open={addTagMode}
 					item={itemQuery.data}
 					tags={tagsQuery.data}

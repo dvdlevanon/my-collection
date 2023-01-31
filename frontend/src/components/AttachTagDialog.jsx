@@ -3,7 +3,7 @@ import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
 import TagChooser from './TagChooser';
 
-function AddTagDialog({ open, item, tags, onTagAdded, onClose }) {
+function AttachTagDialog({ open, item, tags, onTagAdded, onClose }) {
 	return (
 		<Dialog
 			open={open}
@@ -42,4 +42,4 @@ function AddTagDialog({ open, item, tags, onTagAdded, onClose }) {
 	);
 }
 
-export default AddTagDialog;
+export default AttachTagDialog;
