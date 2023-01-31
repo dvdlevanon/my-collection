@@ -13,6 +13,12 @@ const theme = createTheme({
 		primary: {
 			main: '#ff4400',
 		},
+		secondary: {
+			main: '#0D9352',
+		},
+		bright: {
+			main: '#ffddcc',
+		},
 	},
 	typography: {
 		fontSize: 16,

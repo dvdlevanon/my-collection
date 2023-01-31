@@ -18,12 +18,16 @@ type Tag struct {
 }
 
 type Item struct {
-	Id         uint64  `json:"id,omitempty"`
-	Title      string  `json:"title,omitempty" gorm:"uniqueIndex"`
-	Url        string  `json:"url,omitempty"`
-	PreviewUrl string  `json:"previewUrl,omitempty"`
-	Covers     []Cover `json:"covers,omitempty"`
-	Tags       []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
+	Id              uint64  `json:"id,omitempty"`
+	Title           string  `json:"title,omitempty" gorm:"uniqueIndex"`
+	DurationSeconds int     `json:"duration_seconds,omitempty"`
+	Width           int     `json:"width,omitempty"`
+	Height          int     `json:"height,omitempty"`
+	CodecName       string  `json:"codec,omitempty"`
+	Url             string  `json:"url,omitempty"`
+	PreviewUrl      string  `json:"previewUrl,omitempty"`
+	Covers          []Cover `json:"covers,omitempty"`
+	Tags            []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 }
 
 type Cover struct {

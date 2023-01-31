@@ -11,17 +11,6 @@
 	cursor: pointer;
 }
 
-.item_title {
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	cursor: pointer;
-	max-width: 550px;
-	text-align: center;
-	opacity: 75%;
-	padding: 5px;
-}
-
 .cover_navigator {
 	display: flex;
 	bottom: 0px;

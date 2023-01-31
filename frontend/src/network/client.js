@@ -75,6 +75,10 @@ export default class Client {
 		fetch(`${Client.baseUrl}/items/refresh-preview`);
 	}
 
+	static refreshVideoMetadata() {
+		fetch(`${Client.baseUrl}/items/refresh-video-metadata`);
+	}
+
 	static getExportMetadataUrl() {
 		return `${Client.baseUrl}/export-metadata.json`;
 	}

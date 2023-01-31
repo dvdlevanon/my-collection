@@ -59,6 +59,9 @@ func TestItemMarshal(t *testing.T) {
 				Url:    "cover2",
 			},
 		},
+		DurationSeconds: 34324,
+		Width:           1920,
+		Height:          1080,
 		Tags: []*Tag{
 			{
 				Id: 10,
@@ -74,5 +77,5 @@ func TestItemMarshal(t *testing.T) {
 
 	bytes, err := json.Marshal(item)
 	assert.NoError(t, err)
-	assert.Equal(t, string(bytes), `{"id":1,"title":"item","url":"url","covers":[{"id":20,"url":"cover1","itemId":1},{"id":21,"url":"cover2","itemId":1}],"tags":[{"id":10},{"id":11},{"id":12}]}`)
+	assert.Equal(t, string(bytes), `{"id":1,"title":"item","duration_seconds":34324,"width":1920,"height":1080,"url":"url","covers":[{"id":20,"url":"cover1","itemId":1},{"id":21,"url":"cover2","itemId":1}],"tags":[{"id":10},{"id":11},{"id":12}]}`)
 }

@@ -53,7 +53,7 @@ func TestExport(t *testing.T) {
 
 	out := strings.Builder{}
 	assert.NoError(t, gallery.Export(&out))
-	assert.Equal(t, out.String(), importExportTestJson)
+	assert.Equal(t, importExportTestJson, out.String())
 }
 
 func TestImport(t *testing.T) {

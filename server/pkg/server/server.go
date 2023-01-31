@@ -54,6 +54,7 @@ func (s *Server) init() {
 	api.GET("/items", s.getItems)
 	api.GET("/items/refresh-covers", s.refreshItemsCovers)
 	api.GET("/items/refresh-preview", s.refreshItemsPreview)
+	api.GET("/items/refresh-video-metadata", s.refreshItemsVideoMetadata)
 	api.GET("/file/*path", s.getFile)
 	api.POST("/upload-file", s.uploadFile)
 	api.GET("/export-metadata.json", s.exportMetadata)

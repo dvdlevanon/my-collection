@@ -9,7 +9,7 @@ import (
 func TestGetDuration(t *testing.T) {
 	duration, err := GetDurationInSeconds("test.mp4")
 	assert.NoError(t, err)
-	assert.Equal(t, duration, uint64(5))
+	assert.Equal(t, duration, 5)
 }
 
 func TestGetDurationOfMissingFile(t *testing.T) {

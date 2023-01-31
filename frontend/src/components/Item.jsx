@@ -1,4 +1,5 @@
 import { Tooltip, Typography } from '@mui/material';
+import { Box } from '@mui/system';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import Client from '../network/client';
@@ -15,7 +16,7 @@ function Item({ item, preferPreview }) {
 	);
 
 	const getCover = () => {
-		if (item.covers && item.covers.length > 0) {
+		if (item.covers && item.covers.length > 0 && item.covers[coverNumber]) {
 			return Client.buildFileUrl(item.covers[coverNumber].url);
 		} else {
 			return 'empty';
@@ -61,6 +62,18 @@ function Item({ item, preferPreview }) {
 		}
 	};
 
+	const getFormattedDuration = () => {
+		if (!item.duration_seconds) {
+			return '00:00';
+		}
+
+		if (item.duration_seconds < 60 * 60) {
+			return new Date(item.duration_seconds * 1000).toISOString().slice(14, 19);
+		} else {
+			return new Date(item.duration_seconds * 1000).toISOString().slice(11, 19);
+		}
+	};
+
 	return (
 		<Link
 			className={styles.item}
@@ -85,11 +98,51 @@ function Item({ item, preferPreview }) {
 				</div>
 			)}
 			{previewMode() && showPreview && <Player className={styles.image} isPreview={true} item={item} />}
-			<Tooltip title={item.title} arrow followCursor>
-				<Typography color="primary" className={styles.item_title}>
-					{item.title}
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'row',
+					gap: '10px',
+					alignItems: 'center',
+					justifyContent: 'center',
+					height: '50px',
+				}}
+			>
+				<Typography
+					variant="caption"
+					sx={{
+						padding: '0px 3px',
+						borderWidth: '1px',
+						borderColor: 'bright.main',
+						borderStyle: 'solid',
+						borderRadius: '3px',
+						color: 'bright.main',
+						verticalAlign: 'middle',
+						margin: '10px',
+					}}
+				>
+					{getFormattedDuration()}
 				</Typography>
-			</Tooltip>
+				<Tooltip title={item.title} arrow followCursor>
+					<Typography
+						variant="caption"
+						sx={{
+							whiteSpace: 'nowrap',
+							overflow: 'hidden',
+							textOverflow: 'ellipsis',
+							cursor: 'pointer',
+							maxWidth: '500px',
+							textAlign: 'center',
+							opacity: '75%',
+							padding: '5px',
+							color: 'primary.light',
+							flexGrow: 1,
+						}}
+					>
+						{item.title}
+					</Typography>
+				</Tooltip>
+			</Box>
 		</Link>
 	);
 }

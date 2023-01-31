@@ -24,6 +24,17 @@ type ffprobeFormatOutput struct {
 	Duration string `json:"duration"`
 }
 
+type ffprobeShowStreamsOutput struct {
+	Streams []FfprobeShowStreamOutput `json:"streams"`
+}
+
+type FfprobeShowStreamOutput struct {
+	CodecName string `json:"codec_name"`
+	CodecType string `json:"codec_type"`
+	Width     int    `json:"width"`
+	Height    int    `json:"height"`
+}
+
 func execute(name string, arg ...string) ([]byte, error) {
 	logger.Debugf("Running %s \"%s\"", name, strings.Join(arg, "\" \""))
 
@@ -49,7 +60,7 @@ func execute(name string, arg ...string) ([]byte, error) {
 	return stdout.Bytes(), nil
 }
 
-func GetDurationInSeconds(videoFile string) (uint64, error) {
+func GetDurationInSeconds(videoFile string) (int, error) {
 	output, err := execute("ffprobe", videoFile, "-show_format", "-v", "quiet", "-print_format", "json")
 	if err != nil {
 		return 0, err
@@ -65,7 +76,27 @@ func GetDurationInSeconds(videoFile string) (uint64, error) {
 		return 0, errors.Wrap(err, 0)
 	}
 
-	return uint64(durationInSeconds), nil
+	return int(durationInSeconds), nil
+}
+
+func GetVideoMetadata(videoFile string) (FfprobeShowStreamOutput, error) {
+	output, err := execute("ffprobe", "-show_streams", "-print_format", "json", videoFile)
+	if err != nil {
+		return FfprobeShowStreamOutput{}, err
+	}
+
+	showStreams := ffprobeShowStreamsOutput{}
+	if err = json.Unmarshal(output, &showStreams); err != nil {
+		return FfprobeShowStreamOutput{}, errors.Wrap(err, 0)
+	}
+
+	for _, stream := range showStreams.Streams {
+		if stream.CodecType == "video" {
+			return stream, nil
+		}
+	}
+
+	return FfprobeShowStreamOutput{}, errors.Errorf("Video stream not found for %s", videoFile)
 }
 
 func TakeScreenshot(videoFile string, second int, targetFile string) error {

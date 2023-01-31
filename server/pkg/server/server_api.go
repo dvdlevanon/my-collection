@@ -203,6 +203,16 @@ func (s *Server) refreshItemsPreview(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func (s *Server) refreshItemsVideoMetadata(c *gin.Context) {
+	err := s.gallery.RefreshItemsVideoMetadata()
+
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func (s *Server) uploadFile(c *gin.Context) {
 	form, err := c.MultipartForm()
 	if s.handleError(c, err) {

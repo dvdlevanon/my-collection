@@ -22,6 +22,9 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 				<Button variant="outlined" onClick={() => Client.refreshPreview()}>
 					Refresh Preview
 				</Button>
+				<Button variant="outlined" onClick={() => Client.refreshVideoMetadata()}>
+					Refresh Video Metadata
+				</Button>
 				<FormControlLabel
 					label="Use Previews"
 					control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}
