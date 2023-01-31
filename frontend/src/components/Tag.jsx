@@ -25,12 +25,16 @@ function Tag({ tag, size, onTagSelected }) {
 
 	return (
 		<Box
+			sx={{
+				width: size == 'small' ? '125px' : '350px',
+				height: size == 'small' ? '200px' : '500px',
+			}}
 			className={getTagClasses()}
 			onClick={() => onTagSelected(tag)}
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
-			{size != 'small' && <img className={styles.image} src={getImageUrl()} alt={tag.title} loading="lazy" />}
+			<img className={styles.image} src={getImageUrl()} alt={tag.title} loading="lazy" />
 			<Typography
 				className={styles.title}
 				sx={{

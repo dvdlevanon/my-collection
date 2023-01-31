@@ -1,10 +1,10 @@
+import { Box } from '@mui/material';
 import { useState } from 'react';
 import SuperTags from './SuperTags';
-import styles from './TagChooser.module.css';
 import Tags from './Tags';
 
-function TagChooser({ tags, size, onTagSelected, onDropDownToggled }) {
-	let [selectedSuperTag, setSelectedSuperTag] = useState(null);
+function TagChooser({ tags, size, onTagSelected, onDropDownToggled, initialSelectedSuperTag }) {
+	let [selectedSuperTag, setSelectedSuperTag] = useState(initialSelectedSuperTag);
 
 	const getTags = (superTag) => {
 		if (!superTag.children) {
@@ -37,14 +37,14 @@ function TagChooser({ tags, size, onTagSelected, onDropDownToggled }) {
 	};
 
 	return (
-		<div className={styles.tag_chooser}>
+		<Box>
 			<SuperTags
 				superTags={tags.filter((tag) => {
 					return !tag.parentId;
 				})}
 				onSuperTagClicked={onSuperTagClicked}
 			/>
-			<div className={styles.tags_holder}>
+			<Box sx={{ position: 'relative' }}>
 				{selectedSuperTag && (
 					<Tags
 						tags={getTags(selectedSuperTag)}
@@ -53,8 +53,8 @@ function TagChooser({ tags, size, onTagSelected, onDropDownToggled }) {
 						onTagSelected={tagSelectedHandler}
 					/>
 				)}
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 }
 

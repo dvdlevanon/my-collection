@@ -22,7 +22,7 @@ function TagAnnotation({ annotation, selected, onClick, onRemoveClicked }) {
 			key={annotation.id}
 		>
 			<Box sx={{ display: 'flex', alignItems: 'center' }}>
-				<Typography sx={{ flexGrow: 1 }} variant="body1">
+				<Typography noWrap sx={{ flexGrow: 1 }} variant="body2">
 					{annotation.title}
 				</Typography>
 			</Box>

@@ -1,11 +1,11 @@
 import { TextField } from '@mui/material';
+import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
 import Tag from './Tag';
 import TagAnnotation from './TagAnnotation';
-import styles from './Tags.module.css';
 
 function Tags({ tags, parentId, size, onTagSelected }) {
 	let [searchTerm, setSearchTerm] = useState('');
@@ -75,33 +75,61 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 	};
 
 	return (
-		<div className={styles.tags_holder}>
-			<div className={styles.filters_holder}>
+		<Box
+			sx={{
+				position: 'absolute',
+				zIndex: '100',
+				top: '0px',
+				left: '0px',
+				right: '0px',
+			}}
+		>
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'row',
+					padding: '10px',
+				}}
+			>
 				<TextField
 					variant="outlined"
 					autoFocus
-					fullWidth
 					label="Search..."
 					type="search"
-					sx={{ width: '500px' }}
+					size="small"
 					onChange={(e) => onSearchTermChanged(e)}
 				></TextField>
-				{availableAnnotationsQuery.isSuccess &&
-					availableAnnotationsQuery.data
-						.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0))
-						.map((annotation) => {
-							return (
-								<TagAnnotation
-									key={annotation.id}
-									selectedAnnotaions
-									annotation={annotation}
-									selected={isSelectedAnnotation(annotation)}
-									onClick={annotationSelected}
-								/>
-							);
-						})}
-			</div>
-			<div className={styles.tags}>
+				<Box
+					sx={{
+						display: 'flex',
+						flexDirection: 'row',
+					}}
+				>
+					{availableAnnotationsQuery.isSuccess &&
+						availableAnnotationsQuery.data
+							.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0))
+							.map((annotation) => {
+								return (
+									<TagAnnotation
+										key={annotation.id}
+										selectedAnnotaions
+										annotation={annotation}
+										selected={isSelectedAnnotation(annotation)}
+										onClick={annotationSelected}
+									/>
+								);
+							})}
+				</Box>
+			</Box>
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'row',
+					padding: '10px',
+					gap: '10px',
+					flexWrap: 'wrap',
+				}}
+			>
 				{filterTags().map((tag) => {
 					return (
 						<div key={tag.id}>
@@ -109,8 +137,8 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 						</div>
 					);
 				})}
-			</div>
-		</div>
+			</Box>
+		</Box>
 	);
 }
 
