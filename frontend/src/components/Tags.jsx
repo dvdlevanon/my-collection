@@ -10,9 +10,17 @@ import styles from './Tags.module.css';
 function Tags({ tags, parentId, size, onTagSelected }) {
 	let [searchTerm, setSearchTerm] = useState('');
 	let [selectedAnnotaions, setSelectedAnnotations] = useState([]);
-	const availableAnnotationsQuery = useQuery(ReactQueryUtil.availableAnnotationsKey(parentId), () =>
-		Client.getAvailableAnnotations(parentId)
-	);
+	const availableAnnotationsQuery = useQuery({
+		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
+		queryFn: () => Client.getAvailableAnnotations(parentId),
+		onSuccess: (availableAnnotations) => {
+			setSelectedAnnotations(
+				selectedAnnotaions.filter((selected) => {
+					return availableAnnotations.some((annotation) => selected.id == annotation.id);
+				})
+			);
+		},
+	});
 
 	const onSearchTermChanged = (e) => {
 		setSearchTerm(e.target.value);
@@ -85,6 +93,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 							return (
 								<TagAnnotation
 									key={annotation.id}
+									selectedAnnotaions
 									annotation={annotation}
 									selected={isSelectedAnnotation(annotation)}
 									onClick={annotationSelected}

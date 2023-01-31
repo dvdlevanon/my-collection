@@ -6,7 +6,7 @@ import TagChooser from './TagChooser';
 
 function AddTagDialog({ open, item, tags, onTagAdded, onClose }) {
 	return (
-		<Dialog open={open} modal={true} fullWidth={true} maxWidth={'md'}>
+		<Dialog open={open} fullWidth={true} maxWidth={'md'}>
 			<DialogTitle>
 				<Typography variant="caption">Add a tag to {item.title}</Typography>
 				<IconButton className={styles.close_button} onClick={onClose}>

@@ -1,24 +1,20 @@
 import { Typography } from '@mui/material';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
+import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
 import AddTagDialog from './AddTagDialog';
 import styles from './ItemPage.module.css';
 import ItemTags from './ItemTags';
 import Player from './Player';
 
 function ItemPage() {
+	const queryClient = useQueryClient();
 	const { itemId } = useParams();
-	let [item, setItem] = useState(null);
-	let [tags, setTags] = useState([]);
+	const itemQuery = useQuery(ReactQueryUtil.itemKey(itemId), () => Client.getItem(itemId));
+	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	let [addTagMode, setAddTagMode] = useState(false);
-
-	useEffect(() => Client.getTags((tags) => setTags(tags)), []);
-	useEffect(() => reloadItem(), []);
-
-	const reloadItem = () => {
-		Client.getItem(itemId, (item) => setItem(item));
-	};
 
 	const onAddTag = () => {
 		setAddTagMode(true);
@@ -27,30 +23,34 @@ function ItemPage() {
 	const onTagAdded = (tag) => {
 		setAddTagMode(false);
 
-		if (!item.tags) {
-			item.tags = [];
-		}
+		let tags = itemQuery.data.tags || [];
+		tags.push(tag);
 
-		item.tags.push(tag);
-		Client.saveItem(item, reloadItem);
+		Client.saveItem({ ...itemQuery.data, tags: tags }, () => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
 	};
 
 	const onTagRemoved = (tag) => {
-		Client.removeTagFromItem(item.id, tag.id, reloadItem);
+		Client.removeTagFromItem(itemQuery.data.id, tag.id, () => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
 	};
 
 	return (
 		<div className={styles.all}>
-			<Typography variant="h5">{item && item.title}</Typography>
-			<div className={styles.top}>
-				{item && <Player item={item} />}
-				{item && <ItemTags item={item} onAddTag={onAddTag} onTagRemoved={onTagRemoved} />}
-			</div>
-			{item && (
+			{itemQuery.isSuccess && <Typography variant="h5">{itemQuery.data.title}</Typography>}
+			{itemQuery.isSuccess && (
+				<div className={styles.top}>
+					<Player item={itemQuery.data} />
+					<ItemTags item={itemQuery.data} onAddTag={onAddTag} onTagRemoved={onTagRemoved} />
+				</div>
+			)}
+			{itemQuery.isSuccess && tagsQuery.isSuccess && (
 				<AddTagDialog
 					open={addTagMode}
-					item={item}
-					tags={tags}
+					item={itemQuery.data}
+					tags={tagsQuery.data}
 					onTagAdded={onTagAdded}
 					onClose={(e) => setAddTagMode(false)}
 				/>

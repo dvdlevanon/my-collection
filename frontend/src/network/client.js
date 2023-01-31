@@ -20,11 +20,9 @@ export default class Client {
 		return await fetch(`${Client.baseUrl}/items`).then((response) => response.json());
 	};
 
-	static getItem(itemId, successCallback) {
-		fetch(`${Client.baseUrl}/items/${itemId}`)
-			.then((response) => response.json())
-			.then((item) => successCallback(item));
-	}
+	static getItem = async (itemId) => {
+		return await fetch(`${Client.baseUrl}/items/${itemId}`).then((response) => response.json());
+	};
 
 	static addAnnotationToTag = async ({ tagId, annotation }) => {
 		return await fetch(`${Client.baseUrl}/tags/${tagId}/annotations`, {

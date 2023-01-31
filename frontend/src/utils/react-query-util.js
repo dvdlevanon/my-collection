@@ -6,6 +6,10 @@ export default class ReactQueryUtil {
 		return ['available-annotations', { id: tagId }];
 	};
 
+	static itemKey = (itemId) => {
+		return ['items', { id: itemId }];
+	};
+
 	static updateTags = (queryClient, tagId, updater) => {
 		queryClient.setQueryData(['tags'], (oldTags) => {
 			return oldTags.map((cur) => {
