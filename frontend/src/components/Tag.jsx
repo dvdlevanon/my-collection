@@ -9,11 +9,15 @@ function Tag({ tag, size, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 
 	const getImageUrl = () => {
-		if (tag.imageUrl) {
+		if (hasImage()) {
 			return Client.buildFileUrl(tag.imageUrl);
 		} else {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
 		}
+	};
+
+	const hasImage = () => {
+		return tag.imageUrl && tag.imageUrl != 'none';
 	};
 
 	const tagComponent = (placeHolderHeight, title, titleOpacity, includeSpeedDial, missingImagePlaceholder) => {
@@ -27,10 +31,22 @@ function Tag({ tag, size, onTagSelected }) {
 						objectFit: 'contain',
 						overflow: 'hidden',
 						height: '100%',
+						borderRadius: '5px',
+						'&:hover': {
+							filter: 'brightness(120%)',
+						},
 					}}
 				>
-					<Box component="img" src={getImageUrl()} alt={tag.title} loading="lazy" />
-					{!tag.imageUrl && (
+					<Box
+						sx={{
+							borderRadius: '5px',
+						}}
+						component="img"
+						src={getImageUrl()}
+						alt={tag.title}
+						loading="lazy"
+					/>
+					{!hasImage() && (
 						<Box
 							sx={{
 								position: 'absolute',
@@ -63,7 +79,7 @@ function Tag({ tag, size, onTagSelected }) {
 				>
 					{title}
 				</Typography>
-				{includeSpeedDial && size != 'small' && !optionsHidden && <TagSpeedDial tag={tag} />}
+				{includeSpeedDial && size != 'small' && <TagSpeedDial hidden={optionsHidden} tag={tag} />}
 			</>
 		);
 	};

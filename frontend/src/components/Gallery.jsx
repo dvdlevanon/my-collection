@@ -111,10 +111,10 @@ function Gallery({ previewMode }) {
 		<div>
 			{tagsQuery.isSuccess && (
 				<TagChooser
-					tags={tagsQuery.data}
 					size="big"
 					onTagSelected={onTagActivated}
 					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
+					initialSelectedSuperTagId={0}
 				/>
 			)}
 			<Divider sx={{ borderBottomWidth: 2 }} />

@@ -1,13 +1,16 @@
 import AddLink from '@mui/icons-material/AddLink';
+import NoImageIcon from '@mui/icons-material/HideImage';
 import ImageIcon from '@mui/icons-material/Image';
 import OptionsIcon from '@mui/icons-material/Tune';
-import { SpeedDial, SpeedDialAction } from '@mui/material';
+import { Box, SpeedDial, SpeedDialAction } from '@mui/material';
 import React, { useRef, useState } from 'react';
+import { useQueryClient } from 'react-query';
 import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
-import styles from './TagSpeedDial.module.css';
 
-function TagSpeedDial({ tag }) {
+function TagSpeedDial({ tag, hidden }) {
+	const queryClient = useQueryClient();
 	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	const fileDialog = useRef(null);
 
@@ -23,8 +26,15 @@ function TagSpeedDial({ tag }) {
 		}
 
 		Client.uploadFile(`tags-image/${tag.id}`, fileDialog.current.files[0], (fileUrl) => {
-			tag.imageUrl = fileUrl.url;
-			Client.saveTag(tag);
+			Client.saveTag({ ...tag, imageUrl: fileUrl.url }).then(() => {
+				queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
+			});
+		});
+	};
+
+	const removeTagImageClicked = (e) => {
+		Client.saveTag({ ...tag, imageUrl: 'none' }).then(() => {
+			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
 		});
 	};
 
@@ -40,18 +50,25 @@ function TagSpeedDial({ tag }) {
 		);
 	};
 
-	const onDettachAttributeClicked = (e) => {};
-
 	const menuClosed = (e) => {
 		setAttachMenuAttributes(null);
 	};
 
 	return (
 		<React.Fragment>
-			{attachMenuAttributes === null && (
+			{!hidden && attachMenuAttributes === null && (
 				<SpeedDial
-					sx={{ '& .MuiFab-primary': { width: 40, height: 40, backgroundColor: 'rgba(0,0,0,0)' } }}
-					className={styles.tag_actions_button}
+					sx={{
+						position: 'absolute',
+						bottom: '0px',
+						right: '0px',
+						padding: '5px',
+						'& .MuiFab-primary': {
+							width: 40,
+							height: 40,
+							backgroundColor: 'primary.main',
+						},
+					}}
 					ariaLabel="tag-actions"
 					icon={<OptionsIcon />}
 					onClick={(e) => e.stopPropagation()}
@@ -69,6 +86,16 @@ function TagSpeedDial({ tag }) {
 						}}
 					/>
 					<SpeedDialAction
+						key="remove-image"
+						tooltipTitle="Remove image"
+						icon={<NoImageIcon />}
+						onKeyDown={(e) => e.stopPropagation()}
+						onKeyUp={(e) => e.stopPropagation()}
+						onClick={(e) => {
+							removeTagImageClicked(e);
+						}}
+					/>
+					<SpeedDialAction
 						key="manage-annotations"
 						tooltipTitle="Manage annotations"
 						icon={<AddLink />}
@@ -80,16 +107,19 @@ function TagSpeedDial({ tag }) {
 					/>
 				</SpeedDial>
 			)}
-			{attachMenuAttributes !== null && (
+			{!hidden && attachMenuAttributes !== null && (
 				<TagAttachAnnotationMenu tag={tag} menu={attachMenuAttributes} onClose={menuClosed} />
 			)}
-			<input
+			<Box
+				component="input"
 				onClick={(e) => e.stopPropagation()}
 				onChange={(e) => imageSelected(e)}
 				accept="image/*"
-				className={styles.choose_file_dialog}
 				id="choose-file"
 				type="file"
+				sx={{
+					display: 'none',
+				}}
 				ref={fileDialog}
 			/>
 		</React.Fragment>

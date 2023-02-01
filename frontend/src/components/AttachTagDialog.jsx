@@ -1,9 +1,14 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
+import { useQuery } from 'react-query';
+import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
 import TagChooser from './TagChooser';
 
-function AttachTagDialog({ open, item, tags, onTagAdded, onClose }) {
+function AttachTagDialog({ open, item, onTagAdded, onClose }) {
+	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+
 	return (
 		<Dialog
 			onClose={(e, reason) => {
@@ -36,8 +41,7 @@ function AttachTagDialog({ open, item, tags, onTagAdded, onClose }) {
 			</DialogTitle>
 			<DialogContent>
 				<TagChooser
-					initialSelectedSuperTag={tags[0]}
-					tags={tags}
+					initialSelectedSuperTagId={1}
 					size="small"
 					onTagSelected={onTagAdded}
 					onDropDownToggled={() => {}}

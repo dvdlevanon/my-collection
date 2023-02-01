@@ -50,7 +50,6 @@ function ItemPage() {
 				<AttachTagDialog
 					open={addTagMode}
 					item={itemQuery.data}
-					tags={tagsQuery.data}
 					onTagAdded={onTagAdded}
 					onClose={(e) => setAddTagMode(false)}
 				/>

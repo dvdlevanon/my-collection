@@ -1,18 +1,27 @@
 import { Box } from '@mui/material';
 import { useState } from 'react';
+import { useQuery } from 'react-query';
+import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
 import SuperTags from './SuperTags';
 import Tags from './Tags';
 
-function TagChooser({ tags, size, onTagSelected, onDropDownToggled, initialSelectedSuperTag }) {
-	let [selectedSuperTag, setSelectedSuperTag] = useState(initialSelectedSuperTag);
+function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedSuperTagId }) {
+	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 
-	const getTags = (superTag) => {
+	let [selectedSuperTagId, setSelectedSuperTagId] = useState(initialSelectedSuperTagId);
+
+	const getChildrenTags = (selectedId) => {
+		let superTag = tagsQuery.data.find((cur) => {
+			return cur.id == selectedId;
+		});
+
 		if (!superTag.children) {
 			return [];
 		}
 
 		let children = superTag.children.map((tag) => {
-			return tags.filter((cur) => {
+			return tagsQuery.data.filter((cur) => {
 				return cur.id == tag.id;
 			})[0];
 		});
@@ -21,34 +30,36 @@ function TagChooser({ tags, size, onTagSelected, onDropDownToggled, initialSelec
 	};
 
 	const onSuperTagClicked = (superTag) => {
-		if (selectedSuperTag == superTag) {
-			setSelectedSuperTag(null);
+		if (selectedSuperTagId == superTag.id) {
+			setSelectedSuperTagId(0);
 			onDropDownToggled(false);
 		} else {
-			setSelectedSuperTag(superTag);
+			setSelectedSuperTagId(superTag.id);
 			onDropDownToggled(true);
 		}
 	};
 
 	const tagSelectedHandler = (tag) => {
-		setSelectedSuperTag(null);
+		setSelectedSuperTagId(0);
 		onDropDownToggled(false);
 		onTagSelected(tag);
 	};
 
 	return (
 		<Box>
-			<SuperTags
-				superTags={tags.filter((tag) => {
-					return !tag.parentId;
-				})}
-				onSuperTagClicked={onSuperTagClicked}
-			/>
+			{tagsQuery.isSuccess && (
+				<SuperTags
+					superTags={tagsQuery.data.filter((tag) => {
+						return !tag.parentId;
+					})}
+					onSuperTagClicked={onSuperTagClicked}
+				/>
+			)}
 			<Box sx={{ position: 'relative' }}>
-				{selectedSuperTag && (
+				{tagsQuery.isSuccess && selectedSuperTagId > 0 && (
 					<Tags
-						tags={getTags(selectedSuperTag)}
-						parentId={selectedSuperTag.id}
+						tags={getChildrenTags(selectedSuperTagId)}
+						parentId={selectedSuperTagId}
 						size={size}
 						onTagSelected={tagSelectedHandler}
 					/>
