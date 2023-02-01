@@ -1,12 +1,17 @@
 import AddIcon from '@mui/icons-material/Add';
+
 import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import Client from '../network/client';
+import RemoveTag from './RemoveTagDialog';
+import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
 
 function Tag({ tag, size, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
+	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
+	let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
 
 	const getImageUrl = () => {
 		if (hasImage()) {
@@ -18,6 +23,19 @@ function Tag({ tag, size, onTagSelected }) {
 
 	const hasImage = () => {
 		return tag.imageUrl && tag.imageUrl != 'none';
+	};
+
+	const onManageAttributesClicked = (e) => {
+		e.stopPropagation();
+		setOptionsHidden(false);
+		setAttachMenuAttributes(
+			attachMenuAttributes === null
+				? {
+						mouseX: e.clientX + 2,
+						mouseY: e.clientY - 6,
+				  }
+				: null
+		);
 	};
 
 	const tagComponent = (placeHolderHeight, title, titleOpacity, includeSpeedDial, missingImagePlaceholder) => {
@@ -79,7 +97,17 @@ function Tag({ tag, size, onTagSelected }) {
 				>
 					{title}
 				</Typography>
-				{includeSpeedDial && size != 'small' && <TagSpeedDial hidden={optionsHidden} tag={tag} />}
+				{includeSpeedDial && size != 'small' && attachMenuAttributes === null && (
+					<TagSpeedDial
+						hidden={optionsHidden}
+						tag={tag}
+						onManageAttributesClicked={onManageAttributesClicked}
+						onRemoveTagClicked={() => {
+							setOptionsHidden(false);
+							setRemoveTagDialogOpened(true);
+						}}
+					/>
+				)}
 			</>
 		);
 	};
@@ -138,6 +166,15 @@ function Tag({ tag, size, onTagSelected }) {
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
 			{tag.id > 0 ? realTagComponent() : newTagComponent()}
+
+			{attachMenuAttributes !== null && (
+				<TagAttachAnnotationMenu
+					tag={tag}
+					menu={attachMenuAttributes}
+					onClose={() => setAttachMenuAttributes(null)}
+				/>
+			)}
+			{removeTagDialogOpened && <RemoveTag tag={tag} onClose={() => setRemoveTagDialogOpened(false)} />}
 		</Box>
 	);
 }

@@ -1,17 +1,16 @@
 import AddLink from '@mui/icons-material/AddLink';
+import { default as RemoveIcon } from '@mui/icons-material/Close';
 import NoImageIcon from '@mui/icons-material/HideImage';
 import ImageIcon from '@mui/icons-material/Image';
 import OptionsIcon from '@mui/icons-material/Tune';
 import { Box, SpeedDial, SpeedDialAction } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
-import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 
-function TagSpeedDial({ tag, hidden }) {
+function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClicked }) {
 	const queryClient = useQueryClient();
-	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	const fileDialog = useRef(null);
 
 	const changeTagImageClicked = (e) => {
@@ -38,25 +37,9 @@ function TagSpeedDial({ tag, hidden }) {
 		});
 	};
 
-	const onAttachAttributeClicked = (e) => {
-		e.stopPropagation();
-		setAttachMenuAttributes(
-			attachMenuAttributes === null
-				? {
-						mouseX: e.clientX + 2,
-						mouseY: e.clientY - 6,
-				  }
-				: null
-		);
-	};
-
-	const menuClosed = (e) => {
-		setAttachMenuAttributes(null);
-	};
-
 	return (
 		<React.Fragment>
-			{!hidden && attachMenuAttributes === null && (
+			{!hidden && (
 				<SpeedDial
 					sx={{
 						position: 'absolute',
@@ -72,15 +55,11 @@ function TagSpeedDial({ tag, hidden }) {
 					ariaLabel="tag-actions"
 					icon={<OptionsIcon />}
 					onClick={(e) => e.stopPropagation()}
-					onKeyDown={(e) => e.stopPropagation()}
-					onKeyUp={(e) => e.stopPropagation()}
 				>
 					<SpeedDialAction
 						key="set-image"
 						tooltipTitle="Set image"
 						icon={<ImageIcon />}
-						onKeyDown={(e) => e.stopPropagation()}
-						onKeyUp={(e) => e.stopPropagation()}
 						onClick={(e) => {
 							changeTagImageClicked(e);
 						}}
@@ -89,8 +68,6 @@ function TagSpeedDial({ tag, hidden }) {
 						key="remove-image"
 						tooltipTitle="Remove image"
 						icon={<NoImageIcon />}
-						onKeyDown={(e) => e.stopPropagation()}
-						onKeyUp={(e) => e.stopPropagation()}
 						onClick={(e) => {
 							removeTagImageClicked(e);
 						}}
@@ -99,16 +76,20 @@ function TagSpeedDial({ tag, hidden }) {
 						key="manage-annotations"
 						tooltipTitle="Manage annotations"
 						icon={<AddLink />}
-						onKeyDown={(e) => e.stopPropagation()}
-						onKeyUp={(e) => e.stopPropagation()}
 						onClick={(e) => {
-							onAttachAttributeClicked(e);
+							onManageAttributesClicked(e);
+						}}
+					/>
+					<SpeedDialAction
+						key="remove-tag"
+						tooltipTitle="Remove tag"
+						icon={<RemoveIcon />}
+						onClick={(e) => {
+							e.stopPropagation();
+							onRemoveTagClicked();
 						}}
 					/>
 				</SpeedDial>
-			)}
-			{!hidden && attachMenuAttributes !== null && (
-				<TagAttachAnnotationMenu tag={tag} menu={attachMenuAttributes} onClose={menuClosed} />
 			)}
 			<Box
 				component="input"
