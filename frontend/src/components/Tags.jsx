@@ -1,13 +1,16 @@
-import { TextField } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { IconButton, TextField } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
+import AddTagDialog from './AddTagDialog';
 import Tag from './Tag';
 import TagAnnotation from './TagAnnotation';
 
 function Tags({ tags, parentId, size, onTagSelected }) {
+	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	let [searchTerm, setSearchTerm] = useState('');
 	let [selectedAnnotaions, setSelectedAnnotations] = useState([]);
 	const availableAnnotationsQuery = useQuery({
@@ -89,8 +92,14 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					display: 'flex',
 					flexDirection: 'row',
 					padding: '10px',
+					gap: '10px',
 				}}
 			>
+				{
+					<IconButton onClick={() => setAddTagDialogOpened(true)}>
+						<AddIcon />
+					</IconButton>
+				}
 				<TextField
 					variant="outlined"
 					autoFocus
@@ -131,13 +140,11 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				}}
 			>
 				{filterTags().map((tag) => {
-					return (
-						<div key={tag.id}>
-							<Tag tag={tag} size={size} onTagSelected={onTagSelected} />
-						</div>
-					);
+					return <Tag key={tag.id} tag={tag} size={size} onTagSelected={onTagSelected} />;
 				})}
+				<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
 			</Box>
+			{addTagDialogOpened && <AddTagDialog parentId={parentId} onClose={() => setAddTagDialogOpened(false)} />}
 		</Box>
 	);
 }

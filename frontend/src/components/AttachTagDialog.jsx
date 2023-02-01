@@ -6,6 +6,11 @@ import TagChooser from './TagChooser';
 function AttachTagDialog({ open, item, tags, onTagAdded, onClose }) {
 	return (
 		<Dialog
+			onClose={(e, reason) => {
+				if (reason == 'backdropClick' || reason == 'escapeKeyDown') {
+					onClose(e);
+				}
+			}}
 			open={open}
 			fullWidth={true}
 			maxWidth={'xl'}

@@ -1,26 +1,3 @@
-.tag {
-	display: flex;
-	flex-direction: column;
-	user-select: none;
-	padding: 3px;
-	border-radius: 7px;
-	cursor: pointer;
-	font-size: 18px;
-	font-family: 'Times, Times New Roman, serif';
-	justify-content: space-between;
-	position: relative;
-}
-
-.big_tag {
-	height: 500px;
-	width: 350px;
-}
-
-.title {
-	padding: 5px;
-	text-align: center;
-}
-
 .image {
 	object-fit: contain;
 	overflow: hidden;

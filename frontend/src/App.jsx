@@ -19,6 +19,9 @@ const theme = createTheme({
 		bright: {
 			main: '#ffddcc',
 		},
+		dark: {
+			main: '#554433',
+		},
 	},
 	typography: {
 		fontSize: 16,

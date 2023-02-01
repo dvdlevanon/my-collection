@@ -97,6 +97,11 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 
 	return (
 		<Popover
+			onClose={(e, reason) => {
+				if (reason == 'backdropClick' || reason == 'escapeKeyDown') {
+					onClose(e);
+				}
+			}}
 			open={true}
 			anchorReference="anchorPosition"
 			anchorPosition={{ top: menu.mouseY, left: menu.mouseX }}
@@ -180,6 +185,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 								addNewAnnotation(e);
 							}
 						}}
+						size="small"
 						autoFocus
 						inputRef={newAnnotationName}
 						placeholder="New Annotation Name..."

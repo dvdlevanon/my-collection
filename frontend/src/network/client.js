@@ -1,55 +1,63 @@
 export default class Client {
-	static baseUrl = 'http://localhost:8080/api';
+	static baseUrl = 'http://localhost:8080';
+	static apiUrl = `${Client.baseUrl}/api`;
 
 	static getTags = async () => {
-		return await fetch(`${Client.baseUrl}/tags`).then((response) => response.json());
+		return await fetch(`${Client.apiUrl}/tags`).then((response) => response.json());
 	};
 
 	static getTag = async ({ tagId }) => {
-		return await fetch(`${Client.baseUrl}/tags/${tagId}`).then((response) => response.json());
+		return await fetch(`${Client.apiUrl}/tags/${tagId}`).then((response) => response.json());
 	};
 
-	static saveTag = async (tag, successCallback) => {
-		return await fetch(`${Client.baseUrl}/tags/${tag.id}`, {
+	static createTag = async (tag) => {
+		return await fetch(`${Client.apiUrl}/tags`, {
+			method: 'POST',
+			body: JSON.stringify(tag),
+		});
+	};
+
+	static saveTag = async (tag) => {
+		return await fetch(`${Client.apiUrl}/tags/${tag.id}`, {
 			method: 'POST',
 			body: JSON.stringify(tag),
 		});
 	};
 
 	static getItems = async () => {
-		return await fetch(`${Client.baseUrl}/items`).then((response) => response.json());
+		return await fetch(`${Client.apiUrl}/items`).then((response) => response.json());
 	};
 
 	static getItem = async (itemId) => {
-		return await fetch(`${Client.baseUrl}/items/${itemId}`).then((response) => response.json());
+		return await fetch(`${Client.apiUrl}/items/${itemId}`).then((response) => response.json());
 	};
 
 	static addAnnotationToTag = async ({ tagId, annotation }) => {
-		return await fetch(`${Client.baseUrl}/tags/${tagId}/annotations`, {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations`, {
 			method: 'POST',
 			body: JSON.stringify(annotation),
 		});
 	};
 
 	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
-		return await fetch(`${Client.baseUrl}/tags/${tagId}/annotations/${annotationId}`, {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',
 		});
 	};
 
 	static getAvailableAnnotations = async (tagId) => {
-		return await fetch(`${Client.baseUrl}/tags/${tagId}/available-annotations`).then((response) => response.json());
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/available-annotations`).then((response) => response.json());
 	};
 
 	static saveItem(item, successCallback) {
-		fetch(`${Client.baseUrl}/items/${item.id}`, {
+		fetch(`${Client.apiUrl}/items/${item.id}`, {
 			method: 'POST',
 			body: JSON.stringify(item),
 		}).then(successCallback);
 	}
 
 	static removeTagFromItem(itemId, tagId, successCallback) {
-		fetch(`${Client.baseUrl}/items/${itemId}/remove-tag/${tagId}`, {
+		fetch(`${Client.apiUrl}/items/${itemId}/remove-tag/${tagId}`, {
 			method: 'POST',
 		}).then(successCallback);
 	}
@@ -59,7 +67,7 @@ export default class Client {
 		formData.append('path', storagePath);
 		formData.append('file', file);
 
-		fetch(`${Client.baseUrl}/upload-file`, {
+		fetch(`${Client.apiUrl}/upload-file`, {
 			method: 'POST',
 			body: formData,
 		})
@@ -68,22 +76,26 @@ export default class Client {
 	}
 
 	static refreshCovers() {
-		fetch(`${Client.baseUrl}/items/refresh-covers`);
+		fetch(`${Client.apiUrl}/items/refresh-covers`);
 	}
 
 	static refreshPreview() {
-		fetch(`${Client.baseUrl}/items/refresh-preview`);
+		fetch(`${Client.apiUrl}/items/refresh-preview`);
 	}
 
 	static refreshVideoMetadata() {
-		fetch(`${Client.baseUrl}/items/refresh-video-metadata`);
+		fetch(`${Client.apiUrl}/items/refresh-video-metadata`);
 	}
 
 	static getExportMetadataUrl() {
-		return `${Client.baseUrl}/export-metadata.json`;
+		return `${Client.apiUrl}/export-metadata.json`;
 	}
 
 	static buildFileUrl(storagePath) {
-		return `${Client.baseUrl}/file/${encodeURIComponent(storagePath)}`;
+		return `${Client.apiUrl}/file/${encodeURIComponent(storagePath)}`;
+	}
+
+	static buildInternalStoragePath(storagePath) {
+		return `.internal-storage/${storagePath}`;
 	}
 }
