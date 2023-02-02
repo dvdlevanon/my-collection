@@ -24,6 +24,12 @@ export default class Client {
 		});
 	};
 
+	static removeTag = async (tagId) => {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}`, {
+			method: 'DELETE',
+		});
+	};
+
 	static getItems = async () => {
 		return await fetch(`${Client.apiUrl}/items`).then((response) => response.json());
 	};

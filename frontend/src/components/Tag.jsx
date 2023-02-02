@@ -4,7 +4,8 @@ import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import Client from '../network/client';
-import RemoveTag from './RemoveTagDialog';
+import ManageTagImageDialog from './ManageTagImageDialog';
+import RemoveTagDialog from './RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
 
@@ -12,6 +13,7 @@ function Tag({ tag, size, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
+	let [manageTagImageOpened, setManageTagImageOpened] = useState(false);
 
 	const getImageUrl = () => {
 		if (hasImage()) {
@@ -101,11 +103,9 @@ function Tag({ tag, size, onTagSelected }) {
 					<TagSpeedDial
 						hidden={optionsHidden}
 						tag={tag}
+						onManageImageClicked={() => setManageTagImageOpened(true)}
 						onManageAttributesClicked={onManageAttributesClicked}
-						onRemoveTagClicked={() => {
-							setOptionsHidden(false);
-							setRemoveTagDialogOpened(true);
-						}}
+						onRemoveTagClicked={() => setRemoveTagDialogOpened(true)}
 					/>
 				)}
 			</>
@@ -174,7 +174,8 @@ function Tag({ tag, size, onTagSelected }) {
 					onClose={() => setAttachMenuAttributes(null)}
 				/>
 			)}
-			{removeTagDialogOpened && <RemoveTag tag={tag} onClose={() => setRemoveTagDialogOpened(false)} />}
+			{removeTagDialogOpened && <RemoveTagDialog tag={tag} onClose={() => setRemoveTagDialogOpened(false)} />}
+			{manageTagImageOpened && <ManageTagImageDialog tag={tag} onClose={() => setManageTagImageOpened(false)} />}
 		</Box>
 	);
 }

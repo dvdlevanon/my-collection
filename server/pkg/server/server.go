@@ -45,6 +45,7 @@ func (s *Server) init() {
 	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/items/:item", s.getItem)
 	api.GET("/tags/:tag", s.getTag)
+	api.DELETE("/tags/:tag", s.removeTag)
 
 	api.POST("/tags/:tag/annotations", s.addAnnotationToTag)
 	api.DELETE("/tags/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)

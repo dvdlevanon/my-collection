@@ -1,8 +1,18 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import React from 'react';
+import { useQueryClient } from 'react-query';
+import Client from '../network/client';
+import ReactQueryUtil from '../utils/react-query-util';
 
-function RemoveTag({ tag, onClose }) {
+function RemoveTagDialog({ tag, onClose }) {
+	const queryClient = useQueryClient();
+	const removeTagClicked = (e) => {
+		Client.removeTag(tag.id).then(() => {
+			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
+		});
+	};
+
 	return (
 		<Dialog
 			onClose={(e, reason) => {
@@ -36,10 +46,25 @@ function RemoveTag({ tag, onClose }) {
 				</Typography>
 			</DialogContent>
 			<DialogActions>
-				<Button>Cancel</Button>
+				<Button
+					onClick={(e) => {
+						e.stopPropagation();
+						onClose();
+					}}
+				>
+					Cancel
+				</Button>
+				<Button
+					onClick={(e) => {
+						e.stopPropagation();
+						removeTagClicked();
+					}}
+				>
+					Remove
+				</Button>
 			</DialogActions>
 		</Dialog>
 	);
 }
 
-export default RemoveTag;
+export default RemoveTagDialog;

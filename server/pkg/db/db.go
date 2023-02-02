@@ -228,3 +228,7 @@ func (d *Database) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error
 
 	return annotations, err
 }
+
+func (d *Database) RemoveTag(tagId uint64) error {
+	return d.db.Delete(model.Tag{Id: tagId}).Error
+}

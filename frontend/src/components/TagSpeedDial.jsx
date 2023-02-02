@@ -1,42 +1,11 @@
 import AddLink from '@mui/icons-material/AddLink';
 import { default as RemoveIcon } from '@mui/icons-material/Close';
-import NoImageIcon from '@mui/icons-material/HideImage';
 import ImageIcon from '@mui/icons-material/Image';
 import OptionsIcon from '@mui/icons-material/Tune';
-import { Box, SpeedDial, SpeedDialAction } from '@mui/material';
-import React, { useRef } from 'react';
-import { useQueryClient } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
+import { SpeedDial, SpeedDialAction } from '@mui/material';
+import React from 'react';
 
-function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClicked }) {
-	const queryClient = useQueryClient();
-	const fileDialog = useRef(null);
-
-	const changeTagImageClicked = (e) => {
-		e.stopPropagation();
-		fileDialog.current.value = '';
-		fileDialog.current.click();
-	};
-
-	const imageSelected = (e) => {
-		if (fileDialog.current.files.length != 1) {
-			return;
-		}
-
-		Client.uploadFile(`tags-image/${tag.id}`, fileDialog.current.files[0], (fileUrl) => {
-			Client.saveTag({ ...tag, imageUrl: fileUrl.url }).then(() => {
-				queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
-			});
-		});
-	};
-
-	const removeTagImageClicked = (e) => {
-		Client.saveTag({ ...tag, imageUrl: 'none' }).then(() => {
-			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
-		});
-	};
-
+function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClicked, onManageImageClicked }) {
 	return (
 		<React.Fragment>
 			{!hidden && (
@@ -57,21 +26,14 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 					onClick={(e) => e.stopPropagation()}
 				>
 					<SpeedDialAction
-						key="set-image"
-						tooltipTitle="Set image"
+						key="manage-image"
+						tooltipTitle="Image options"
 						icon={<ImageIcon />}
 						onClick={(e) => {
-							changeTagImageClicked(e);
+							onManageImageClicked();
 						}}
 					/>
-					<SpeedDialAction
-						key="remove-image"
-						tooltipTitle="Remove image"
-						icon={<NoImageIcon />}
-						onClick={(e) => {
-							removeTagImageClicked(e);
-						}}
-					/>
+
 					<SpeedDialAction
 						key="manage-annotations"
 						tooltipTitle="Manage annotations"
@@ -91,7 +53,7 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 					/>
 				</SpeedDial>
 			)}
-			<Box
+			{/* <Box
 				component="input"
 				onClick={(e) => e.stopPropagation()}
 				onChange={(e) => imageSelected(e)}
@@ -102,9 +64,10 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 					display: 'none',
 				}}
 				ref={fileDialog}
-			/>
+			/> */}
 		</React.Fragment>
 	);
 }
+// let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
 
 export default TagSpeedDial;

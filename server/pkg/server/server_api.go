@@ -161,6 +161,20 @@ func (s *Server) getTag(c *gin.Context) {
 	c.JSON(http.StatusOK, tag)
 }
 
+func (s *Server) removeTag(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	err = s.gallery.RemoveTag(tagId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func (s *Server) getTags(c *gin.Context) {
 	tags, err := s.gallery.GetAllTags()
 
