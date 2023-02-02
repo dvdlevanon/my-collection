@@ -135,7 +135,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 					<IconButton onClick={handleClose}>
 						<CloseIcon />
 					</IconButton>
-					<Typography variant="h6" noWrap onClick={(e) => e.stopPropagation()}>
+					<Typography variant="body1" noWrap onClick={(e) => e.stopPropagation()}>
 						{tag.title} Annotations
 					</Typography>
 				</Box>
