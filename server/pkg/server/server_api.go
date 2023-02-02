@@ -3,6 +3,7 @@ package server
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"io"
 	"my-collection/server/pkg/model"
 	"net/http"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
+	"github.com/google/uuid"
 )
 
 func (s *Server) createItem(c *gin.Context) {
@@ -235,7 +237,8 @@ func (s *Server) uploadFile(c *gin.Context) {
 
 	path := form.Value["path"][0]
 	file := form.File["file"][0]
-	relativeFile := filepath.Join(path, file.Filename)
+	fileName := fmt.Sprintf("%s-%s", file.Filename, uuid.NewString())
+	relativeFile := filepath.Join(path, fileName)
 	storageFile, err := s.storage.GetFileForWriting(relativeFile)
 	if s.handleError(c, err) {
 		return

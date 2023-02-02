@@ -60,7 +60,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 			fullWidth={true}
 			maxWidth={'xl'}
 		>
-			<DialogTitle>
+			<DialogTitle onClick={(e) => e.stopPropagation()}>
 				Set Image for {tag.title}
 				<IconButton
 					sx={{
@@ -84,6 +84,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 					gap: '5px',
 					padding: '5px',
 				}}
+				onClick={(e) => e.stopPropagation()}
 			>
 				<Box
 					sx={{
@@ -141,10 +142,15 @@ function ManageTagImageDialog({ tag, onClose }) {
 						gap: '10px',
 						padding: '10px',
 					}}
+					onClick={(e) => e.stopPropagation()}
 				>
 					<Button
+						disabled={!hasImage()}
 						variant="outlined"
 						onClick={(e) => {
+							if (!hasImage()) {
+								return;
+							}
 							removeTagImageClicked(e);
 							onClose();
 						}}

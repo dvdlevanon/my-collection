@@ -54,12 +54,15 @@ function Tag({ tag, size, onTagSelected }) {
 						borderRadius: '5px',
 						'&:hover': {
 							filter: 'brightness(120%)',
+							border: 'red 1px solid',
+							borderColor: 'primary.main',
 						},
 					}}
 				>
 					<Box
 						sx={{
 							borderRadius: '5px',
+							objectFit: 'contain',
 						}}
 						component="img"
 						src={getImageUrl()}
