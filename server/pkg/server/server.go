@@ -1,6 +1,7 @@
 package server
 
 import (
+	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/storage"
 	"net/http"
@@ -15,18 +16,20 @@ import (
 var logger = logging.MustGetLogger("server")
 
 type Server struct {
-	router  *gin.Engine
-	gallery *gallery.Gallery
-	storage *storage.Storage
+	router      *gin.Engine
+	gallery     *gallery.Gallery
+	storage     *storage.Storage
+	directories directories.Directories
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage) *Server {
+func New(gallery *gallery.Gallery, storage *storage.Storage, directories directories.Directories) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
-		router:  gin.New(),
-		gallery: gallery,
-		storage: storage,
+		router:      gin.New(),
+		gallery:     gallery,
+		storage:     storage,
+		directories: directories,
 	}
 
 	server.init()
@@ -38,21 +41,28 @@ func (s *Server) init() {
 	s.router.Use(httpLogger)
 
 	api := s.router.Group("/api")
+
+	api.GET("/items", s.getItems)
 	api.POST("/items", s.createItem)
-	api.POST("/tags", s.createTag)
 	api.POST("/items/:item", s.updateItem)
-	api.POST("/items/:item/remove-tag/:tag", s.removeTagFromItem)
-	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/items/:item", s.getItem)
+	api.POST("/items/:item/remove-tag/:tag", s.removeTagFromItem)
+
+	api.GET("/tags", s.getTags)
+	api.POST("/tags", s.createTag)
+	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/tags/:tag", s.getTag)
 	api.DELETE("/tags/:tag", s.removeTag)
+
+	api.GET("/directories", s.getDirectories)
+	api.POST("/directories", s.createOrUpdateDirectory)
+	api.GET("/directories/*directory", s.getDirectory)
+	api.DELETE("/directories/*directory", s.removeDirectory)
 
 	api.POST("/tags/:tag/annotations", s.addAnnotationToTag)
 	api.DELETE("/tags/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)
 	api.GET("/tags/:tag/available-annotations", s.getTagAvailableAnnotations)
 
-	api.GET("/tags", s.getTags)
-	api.GET("/items", s.getItems)
 	api.GET("/items/refresh-covers", s.refreshItemsCovers)
 	api.GET("/items/refresh-preview", s.refreshItemsPreview)
 	api.GET("/items/refresh-video-metadata", s.refreshItemsVideoMetadata)

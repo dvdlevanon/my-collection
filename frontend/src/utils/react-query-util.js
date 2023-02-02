@@ -1,6 +1,7 @@
 export default class ReactQueryUtil {
 	static TAGS_KEY = ['tags'];
 	static ITEMS_KEY = ['items'];
+	static DIRECTORIES_KEY = ['directories'];
 
 	static availableAnnotationsKey = (tagId) => {
 		return ['available-annotations', { id: tagId }];

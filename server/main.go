@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"my-collection/server/pkg/db"
+	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
@@ -78,7 +79,8 @@ func run() error {
 	}
 
 	gallery := gallery.New(db, storage, rootdir)
-	return server.New(gallery, storage).Run(*listenAddress)
+	directories := directories.New(gallery, storage)
+	return server.New(gallery, storage, directories).Run(*listenAddress)
 }
 
 func logError(err error) {

@@ -27,15 +27,15 @@ func TestAvailableTagAnnoations(t *testing.T) {
 		Title: "child2",
 	}
 
-	assert.NoError(t, gallery.CreateTag(&child1))
-	assert.NoError(t, gallery.CreateTag(&child2))
+	assert.NoError(t, gallery.CreateOrUpdateTag(&child1))
+	assert.NoError(t, gallery.CreateOrUpdateTag(&child2))
 
 	root := model.Tag{
 		Title:    "root",
 		Children: []*model.Tag{&child1, &child2},
 	}
 
-	assert.NoError(t, gallery.CreateTag(&root))
+	assert.NoError(t, gallery.CreateOrUpdateTag(&root))
 	_, err := gallery.AddAnnotationToTag(child1.Id, model.TagAnnotation{Title: "annotation1"})
 	assert.NoError(t, err)
 	_, err = gallery.AddAnnotationToTag(child1.Id, model.TagAnnotation{Title: "annotation2"})

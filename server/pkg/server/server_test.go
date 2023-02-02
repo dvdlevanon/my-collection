@@ -14,7 +14,13 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/utils/pointer"
 )
+
+type DirectoriesMock struct{}
+
+func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
+func (d *DirectoriesMock) DirectoryRemoved(path string)                {}
 
 func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))
@@ -27,7 +33,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
 	gallery := gallery.New(db, storage, "")
-	return New(gallery, storage)
+	return New(gallery, storage, &DirectoriesMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {
@@ -216,4 +222,41 @@ func TestTagAnnotations(t *testing.T) {
 	err = json.Unmarshal(resp.Body.Bytes(), &returnedTagAnnotations)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(returnedTagAnnotations))
+}
+
+func TestDirectories(t *testing.T) {
+	server := setupNewServer(t, "directories-test.sqlite")
+
+	directory := model.Directory{
+		Path:       "path/to/file",
+		Excluded:   pointer.Bool(false),
+		FilesCount: 10,
+		Tags: []*model.Tag{
+			{
+				Title: "tag1",
+			},
+		},
+	}
+
+	payload, err := json.Marshal(directory)
+	assert.NoError(t, err)
+	req := httptest.NewRequest("POST", "/api/directories", bytes.NewReader(payload))
+	resp := httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/directories/%s", directory.Path), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+	returnedDirectory := model.Directory{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedDirectory)
+	assert.NoError(t, err)
+
+	assert.Equal(t, directory.Path, returnedDirectory.Path)
+	assert.Equal(t, directory.FilesCount, returnedDirectory.FilesCount)
+	assert.Equal(t, *directory.Excluded, *returnedDirectory.Excluded)
+	assert.Len(t, returnedDirectory.Tags, 1)
+	assert.Empty(t, returnedDirectory.Tags[0].Title)
+	assert.Equal(t, uint64(1), returnedDirectory.Tags[0].Id)
 }

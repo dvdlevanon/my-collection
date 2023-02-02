@@ -59,7 +59,6 @@ function AddTagDialog({ parentId, onClose }) {
 			>
 				<TextField
 					autoFocus
-					focused
 					onKeyDown={(e) => {
 						if (e.key == 'Enter') {
 							addTag(e);

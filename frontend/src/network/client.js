@@ -6,6 +6,23 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/tags`).then((response) => response.json());
 	};
 
+	static getDirectories = async () => {
+		return await fetch(`${Client.apiUrl}/directories`).then((response) => response.json());
+	};
+
+	static addOrUpdateDirectory = async (directory) => {
+		return await fetch(`${Client.apiUrl}/directories`, {
+			method: 'POST',
+			body: JSON.stringify(directory),
+		});
+	};
+
+	static removeDirectory = async (directoryPath) => {
+		return await fetch(`${Client.apiUrl}/directories/${directoryPath}`, {
+			method: 'DELETE',
+		});
+	};
+
 	static getTag = async ({ tagId }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}`).then((response) => response.json());
 	};

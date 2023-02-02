@@ -32,11 +32,6 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 	}
 }
 
-func (g *Gallery) CreateItem(item *model.Item) error {
-	item.Url = g.getRelativePath(item.Url)
-	return g.Database.CreateItem(item)
-}
-
 func (g *Gallery) CreateOrUpdateItem(item *model.Item) error {
 	item.Url = g.getRelativePath(item.Url)
 	return g.Database.CreateOrUpdateItem(item)

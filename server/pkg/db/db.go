@@ -42,6 +42,10 @@ func New(rootDirectory string, filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
+	if err = db.AutoMigrate(&model.Directory{}); err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
 	logger.Infof("DB initialized with db file: %s", actualpath)
 
 	return &Database{
@@ -63,10 +67,6 @@ func (d *Database) update(value interface{}) error {
 	}
 
 	return nil
-}
-
-func (d *Database) CreateTag(tag *model.Tag) error {
-	return d.create(tag)
 }
 
 func (d *Database) CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error {
@@ -92,10 +92,6 @@ func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
 	}
 
 	return err
-}
-
-func (d *Database) CreateItem(item *model.Item) error {
-	return d.create(item)
 }
 
 func (d *Database) CreateOrUpdateItem(item *model.Item) error {
@@ -231,4 +227,50 @@ func (d *Database) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error
 
 func (d *Database) RemoveTag(tagId uint64) error {
 	return d.db.Delete(model.Tag{Id: tagId}).Error
+}
+
+func (d *Database) CreateDirectory(directory *model.Directory) error {
+	return d.create(directory)
+}
+
+func (d *Database) CreateOrUpdateDirectory(directory *model.Directory) error {
+	err := d.create(directory)
+
+	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
+		return d.update(directory)
+	}
+
+	return err
+}
+
+func (d *Database) GetDirectory(conds ...interface{}) (*model.Directory, error) {
+	directory := &model.Directory{}
+
+	tagsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
+
+	err := d.db.Model(directory).
+		Preload("Tags", tagsPreloading).
+		First(directory, conds...).Error
+	return directory, err
+}
+
+func (d *Database) GetAllDirectories() (*[]model.Directory, error) {
+	var directories []model.Directory
+
+	tagsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
+
+	err := d.db.Model(&model.Directory{}).Preload("Tags", tagsPreloading).Find(&directories).Error
+	if err != nil {
+		err = errors.Wrap(err, 0)
+	}
+
+	return &directories, err
+}
+
+func (d *Database) RemoveDirectory(path string) error {
+	return d.db.Delete(model.Directory{Path: path}).Error
 }

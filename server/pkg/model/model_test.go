@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/assert"
+	"k8s.io/utils/pointer"
 )
 
 func TestTagMarshal(t *testing.T) {
@@ -77,5 +78,19 @@ func TestItemMarshal(t *testing.T) {
 
 	bytes, err := json.Marshal(item)
 	assert.NoError(t, err)
-	assert.Equal(t, string(bytes), `{"id":1,"title":"item","duration_seconds":34324,"width":1920,"height":1080,"url":"url","covers":[{"id":20,"url":"cover1","itemId":1},{"id":21,"url":"cover2","itemId":1}],"tags":[{"id":10},{"id":11},{"id":12}]}`)
+	assert.Equal(t, `{"id":1,"title":"item","duration_seconds":34324,"width":1920,"height":1080,"url":"url","covers":[{"id":20,"url":"cover1","itemId":1},{"id":21,"url":"cover2","itemId":1}],"tags":[{"id":10},{"id":11},{"id":12}]}`, string(bytes))
+}
+
+func TestDirectoryMarshal(t *testing.T) {
+	dir := Directory{
+		Path:       "path/to/dir",
+		FilesCount: 1,
+		LastSynced: 1675352131869,
+		Excluded:   pointer.Bool(false),
+		Tags:       []*Tag{{Id: 1}, {Id: 2}},
+	}
+
+	bytes, err := json.Marshal(dir)
+	assert.NoError(t, err)
+	assert.Equal(t, `{"path":"path/to/dir","excluded":false,"tags":[{"id":1},{"id":2}],"filesCount":1,"lastSynced":1675352131869}`, string(bytes))
 }

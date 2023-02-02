@@ -9,6 +9,7 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"
+	"k8s.io/utils/pointer"
 )
 
 func setupNewDb(t *testing.T, filename string) (*Database, error) {
@@ -25,27 +26,27 @@ func TestCreate(t *testing.T) {
 	assert.NoError(t, err)
 	item1 := &model.Item{Title: "title1"}
 	assert.Equal(t, item1.Id, uint64(0))
-	assert.NoError(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	assert.Equal(t, item1.Id, uint64(1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
 	assert.Equal(t, itemFromDB.Title, item1.Title)
 	item1.Title = "update-title"
-	assert.Error(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 }
 
-func TestGetBy(t *testing.T) {
+func TestGetByTitle(t *testing.T) {
 	db, err := setupNewDb(t, "create-test-get-by.sqlite")
 	assert.NoError(t, err)
 	item1 := &model.Item{Title: "title1"}
 	assert.Equal(t, item1.Id, uint64(0))
-	assert.NoError(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	assert.Equal(t, item1.Id, uint64(1))
 	itemFromDB, err := db.GetItem("title = ?", item1.Title)
 	assert.NoError(t, err)
 	assert.Equal(t, itemFromDB.Title, item1.Title)
 	item1.Title = "updated-title"
-	assert.Error(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 }
 
 func TestCreateOrUpdate(t *testing.T) {
@@ -53,7 +54,7 @@ func TestCreateOrUpdate(t *testing.T) {
 	assert.NoError(t, err)
 	item1 := &model.Item{Title: "title1"}
 	assert.Equal(t, item1.Id, uint64(0))
-	assert.NoError(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	assert.Equal(t, item1.Id, uint64(1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
@@ -74,7 +75,7 @@ func TestUpdate(t *testing.T) {
 	db, err := setupNewDb(t, "update-test.sqlite")
 	assert.NoError(t, err)
 	item1 := &model.Item{Title: "title1"}
-	assert.NoError(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	item1.Title = "update-title"
 	assert.NoError(t, db.UpdateItem(item1))
 	itemFromDB, err := db.GetItem(1)
@@ -87,8 +88,8 @@ func TestManyToMany(t *testing.T) {
 	assert.NoError(t, err)
 	item := &model.Item{Title: "item1"}
 	tag := &model.Tag{Title: "tag1"}
-	assert.NoError(t, db.CreateItem(item))
-	assert.NoError(t, db.CreateTag(tag))
+	assert.NoError(t, db.CreateOrUpdateItem(item))
+	assert.NoError(t, db.CreateOrUpdateTag(tag))
 	item.Tags = append(item.Tags, tag)
 	tag.Items = append(tag.Items, item)
 	assert.NoError(t, db.UpdateItem(item))
@@ -113,9 +114,9 @@ func TestOneToManyParent(t *testing.T) {
 	parent := &model.Tag{Title: "parent"}
 	child1 := &model.Tag{Title: "child1"}
 	child2 := &model.Tag{Title: "child2"}
-	assert.NoError(t, db.CreateTag(parent))
-	assert.NoError(t, db.CreateTag(child1))
-	assert.NoError(t, db.CreateTag(child2))
+	assert.NoError(t, db.CreateOrUpdateTag(parent))
+	assert.NoError(t, db.CreateOrUpdateTag(child1))
+	assert.NoError(t, db.CreateOrUpdateTag(child2))
 	parent.Children = append(parent.Children, child1, child2)
 	assert.NoError(t, db.UpdateTag(parent))
 	parentFromDB, err := db.GetTag(1)
@@ -138,7 +139,7 @@ func TestOneToMany(t *testing.T) {
 	db, err := setupNewDb(t, "one-to-many-test.sqlite")
 	assert.NoError(t, err)
 	item1 := &model.Item{Title: "title1"}
-	assert.NoError(t, db.CreateItem(item1))
+	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
 	itemFromDB.Covers = []model.Cover{
@@ -181,8 +182,8 @@ func TestRemoveTag(t *testing.T) {
 	assert.NoError(t, err)
 	item := &model.Item{Title: "item1"}
 	tag := &model.Tag{Title: "tag1"}
-	assert.NoError(t, db.CreateItem(item))
-	assert.NoError(t, db.CreateTag(tag))
+	assert.NoError(t, db.CreateOrUpdateItem(item))
+	assert.NoError(t, db.CreateOrUpdateTag(tag))
 	item.Tags = append(item.Tags, tag)
 	tag.Items = append(tag.Items, item)
 	assert.NoError(t, db.UpdateItem(item))
@@ -212,8 +213,8 @@ func TestTagAnnotations(t *testing.T) {
 		Title: "child2",
 	}
 
-	assert.NoError(t, db.CreateTag(&child1))
-	assert.NoError(t, db.CreateTag(&child2))
+	assert.NoError(t, db.CreateOrUpdateTag(&child1))
+	assert.NoError(t, db.CreateOrUpdateTag(&child2))
 
 	root := model.Tag{
 		Title:    "root",
@@ -230,7 +231,7 @@ func TestTagAnnotations(t *testing.T) {
 	annotation3, err := db.GetTagAnnotation(3)
 	assert.NoError(t, err)
 
-	assert.NoError(t, db.CreateTag(&root))
+	assert.NoError(t, db.CreateOrUpdateTag(&root))
 	child1.Annotations = append(child1.Annotations, annotation1, annotation2)
 	assert.NoError(t, db.CreateOrUpdateTag(&child1))
 	child2.Annotations = append(child2.Annotations, annotation1, annotation3)
@@ -283,7 +284,7 @@ func TestRemoveTagAnnotation(t *testing.T) {
 	db, err := setupNewDb(t, "remove-tag-annotation.sqlite")
 	assert.NoError(t, err)
 
-	assert.NoError(t, db.CreateTag(&model.Tag{
+	assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{
 		Title: "tag1",
 		Annotations: []*model.TagAnnotation{
 			{
@@ -302,4 +303,70 @@ func TestRemoveTagAnnotation(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, "tag1", tagAfterRemove.Title)
 	assert.Equal(t, 0, len(tagAfterRemove.Annotations))
+}
+
+func TestDirectories(t *testing.T) {
+	db, err := setupNewDb(t, "create-directories.sqlite")
+	assert.NoError(t, err)
+
+	directory := model.Directory{
+		Path:       "path/to/file",
+		FilesCount: 3,
+		LastSynced: 1234567,
+		Tags: []*model.Tag{
+			{
+				Title: "tag1",
+			},
+			{
+				Title: "tag2",
+			},
+		},
+	}
+
+	assert.NoError(t, db.CreateOrUpdateDirectory(&directory))
+	directoryFromDB, err := db.GetDirectory("path = ?", directory.Path)
+	assert.NoError(t, err)
+	assert.Equal(t, directory.Path, directoryFromDB.Path)
+	assert.Equal(t, directory.FilesCount, directoryFromDB.FilesCount)
+	assert.Equal(t, directory.LastSynced, directoryFromDB.LastSynced)
+	assert.Nil(t, directoryFromDB.Excluded)
+	assert.NotNil(t, directoryFromDB.Tags)
+	assert.Equal(t, len(directory.Tags), len(directoryFromDB.Tags))
+	assert.Equal(t, directory.Tags[0].Id, directoryFromDB.Tags[0].Id)
+	assert.Equal(t, directory.Tags[1].Id, directoryFromDB.Tags[1].Id)
+	assert.Empty(t, directoryFromDB.Tags[0].Title)
+	assert.Empty(t, directoryFromDB.Tags[1].Title)
+
+	excludedDirectory := model.Directory{
+		Path:     "path/to/excluded",
+		Excluded: pointer.Bool(true),
+	}
+
+	duplicatedDirectory := model.Directory{
+		Path: "path/to/file",
+	}
+
+	assert.NoError(t, db.CreateOrUpdateDirectory(&excludedDirectory))
+	assert.NoError(t, db.CreateOrUpdateDirectory(&duplicatedDirectory))
+	excludedDirectoryFromDB, err := db.GetDirectory("path = ?", excludedDirectory.Path)
+	assert.NoError(t, err)
+	duplicatedDirectoryFromDB, err := db.GetDirectory("path = ?", duplicatedDirectory.Path)
+	assert.NoError(t, err)
+	assert.Equal(t, directory.Path, duplicatedDirectoryFromDB.Path)
+	assert.Equal(t, directory.FilesCount, duplicatedDirectoryFromDB.FilesCount)
+	assert.Equal(t, directory.LastSynced, duplicatedDirectoryFromDB.LastSynced)
+	assert.Nil(t, directoryFromDB.Excluded)
+	assert.NotNil(t, directoryFromDB.Tags)
+	assert.Equal(t, len(directory.Tags), len(directoryFromDB.Tags))
+	assert.Equal(t, directory.Tags[0].Id, directoryFromDB.Tags[0].Id)
+	assert.Equal(t, directory.Tags[1].Id, directoryFromDB.Tags[1].Id)
+	assert.Empty(t, directoryFromDB.Tags[0].Title)
+	assert.Empty(t, directoryFromDB.Tags[1].Title)
+	assert.Equal(t, excludedDirectory.Path, excludedDirectoryFromDB.Path)
+	assert.NotNil(t, excludedDirectoryFromDB.Excluded)
+	assert.True(t, *excludedDirectoryFromDB.Excluded)
+
+	directories, err := db.GetAllDirectories()
+	assert.NoError(t, err)
+	assert.Len(t, *directories, 2)
 }

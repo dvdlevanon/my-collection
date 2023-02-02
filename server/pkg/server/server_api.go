@@ -52,7 +52,7 @@ func (s *Server) createTag(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, model.Item{Id: tag.Id})
+	c.JSON(http.StatusOK, model.Tag{Id: tag.Id})
 }
 
 func (s *Server) updateItem(c *gin.Context) {
@@ -330,4 +330,57 @@ func (s *Server) getTagAvailableAnnotations(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, availableAnnotations)
+}
+
+func (s *Server) getDirectories(c *gin.Context) {
+	directories, err := s.gallery.GetAllDirectories()
+
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Get directories return %d directories", len(*directories))
+	c.JSON(http.StatusOK, directories)
+}
+
+func (s *Server) createOrUpdateDirectory(c *gin.Context) {
+	body, err := io.ReadAll(c.Request.Body)
+	if s.handleError(c, err) {
+		return
+	}
+
+	var directory model.Directory
+	if err = json.Unmarshal(body, &directory); err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	if err = s.gallery.CreateOrUpdateDirectory(&directory); err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	s.directories.DirectoryChanged(&directory)
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) getDirectory(c *gin.Context) {
+	directoryPath := c.Param("directory")[1:]
+	directory, err := s.gallery.GetDirectory("path = ?", directoryPath)
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, directory)
+}
+
+func (s *Server) removeDirectory(c *gin.Context) {
+	directoryPath := c.Param("directory")[1:]
+	err := s.gallery.RemoveDirectory(directoryPath)
+	if s.handleError(c, err) {
+		return
+	}
+
+	s.directories.DirectoryRemoved(directoryPath)
+	c.Status(http.StatusOK)
 }
