@@ -74,6 +74,10 @@ func (d *Database) CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error
 }
 
 func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
+	if tag.Id == 0 && tag.Title == "" {
+		return errors.Errorf("Invalid tag, missing id or title %v", tag)
+	}
+
 	err := d.create(tag)
 
 	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
@@ -81,7 +85,7 @@ func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
 			return d.update(tag)
 		}
 
-		existing, err := d.GetTag("title = ?", tag.Title)
+		existing, err := d.GetTag("title = ? and parent_id = ?", tag.Title, tag.ParentID)
 
 		if err != nil {
 			return err
@@ -95,6 +99,10 @@ func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
 }
 
 func (d *Database) CreateOrUpdateItem(item *model.Item) error {
+	if item.Id == 0 && (item.Title == "" || item.Origin == "") {
+		return errors.Errorf("Invalid item, missing id or title and origin %v", item)
+	}
+
 	err := d.create(item)
 
 	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
@@ -142,6 +150,29 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 	return tag, err
 }
 
+func (d *Database) GetTags(conds ...interface{}) (*[]model.Tag, error) {
+	var tags []model.Tag
+
+	itemsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
+
+	annotationsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
+
+	err := d.db.Model(model.Tag{}).
+		Preload("Children").
+		Preload("Items", itemsPreloading).
+		Preload("Annotations", annotationsPreloading).
+		Find(&tags, conds...).Error
+	return &tags, err
+}
+
+func (d *Database) GetAllTags() (*[]model.Tag, error) {
+	return d.GetTags()
+}
+
 func (d *Database) GetTagAnnotation(conds ...interface{}) (*model.TagAnnotation, error) {
 	tagAnnotation := &model.TagAnnotation{}
 	err := d.db.Model(tagAnnotation).First(tagAnnotation, conds...).Error
@@ -169,30 +200,6 @@ func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
 	}
 
 	return item, err
-}
-
-func (d *Database) GetAllTags() (*[]model.Tag, error) {
-	var tags []model.Tag
-
-	itemsPreloading := func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID")
-	}
-
-	annotationsPreloading := func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID")
-	}
-
-	err := d.db.Model(model.Tag{}).
-		Preload("Children").
-		Preload("Items", itemsPreloading).
-		Preload("Annotations", annotationsPreloading).
-		Find(&tags).Error
-
-	if err != nil {
-		err = errors.Wrap(err, 0)
-	}
-
-	return &tags, err
 }
 
 func (d *Database) GetAllItems() (*[]model.Item, error) {

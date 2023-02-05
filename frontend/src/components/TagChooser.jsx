@@ -1,4 +1,4 @@
-import { Box } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../network/client';
@@ -46,7 +46,7 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedSup
 	};
 
 	return (
-		<Box>
+		<Stack flexGrow={1} height="100%">
 			{tagsQuery.isSuccess && (
 				<SuperTags
 					superTags={tagsQuery.data.filter((tag) => {
@@ -55,17 +55,15 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedSup
 					onSuperTagClicked={onSuperTagClicked}
 				/>
 			)}
-			<Box sx={{ position: 'relative' }}>
-				{tagsQuery.isSuccess && selectedSuperTagId > 0 && (
-					<Tags
-						tags={getChildrenTags(selectedSuperTagId)}
-						parentId={selectedSuperTagId}
-						size={size}
-						onTagSelected={tagSelectedHandler}
-					/>
-				)}
-			</Box>
-		</Box>
+			{tagsQuery.isSuccess && selectedSuperTagId > 0 && (
+				<Tags
+					tags={getChildrenTags(selectedSuperTagId)}
+					parentId={selectedSuperTagId}
+					size={size}
+					onTagSelected={tagSelectedHandler}
+				/>
+			)}
+		</Stack>
 	);
 }
 

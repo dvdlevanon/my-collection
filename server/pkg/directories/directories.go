@@ -13,7 +13,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-const DIRECTORIES_TAG_ID = 1000000000
+const DIRECTORIES_TAG_ID = 1000000000 // tags-util.js
 
 var logger = logging.MustGetLogger("directories")
 var directoriesTag = model.Tag{

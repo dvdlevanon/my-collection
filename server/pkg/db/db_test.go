@@ -46,6 +46,9 @@ func TestItem(t *testing.T) {
 		}
 	}
 
+	assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{Title: "Tag1"}))
+	assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{Title: "Tag2"}))
+
 	for j := 0; j < 2; j++ {
 		for i := 1; i < 5; i++ {
 			expectedId := uint64((j * 4) + i)
@@ -69,6 +72,61 @@ func TestItem(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, expectedId, itemFromDb.Id)
 			assert.Equal(t, fmt.Sprintf("preview-url-%d", i), itemFromDb2.PreviewUrl)
+
+			assert.NoError(t, db.CreateOrUpdateItem(&model.Item{Id: expectedId, Tags: []*model.Tag{{Id: 1}, {Id: 2}}}))
+			// todo - add more checks
+		}
+	}
+}
+
+func TestTag(t *testing.T) {
+	db, err := setupNewDb(t, "test-tag.sqlite")
+	assert.NoError(t, err)
+
+	assert.NoError(t, db.CreateOrUpdateItem(&model.Item{Title: "Item1", Origin: "origin"}))
+	assert.NoError(t, db.CreateOrUpdateItem(&model.Item{Title: "Item2", Origin: "origin"}))
+
+	for i := 1; i < 5; i++ {
+		expectedId := uint64(i)
+		title := fmt.Sprintf("parent-%d", i)
+		emptyTag := model.Tag{}
+		assert.Error(t, db.CreateOrUpdateTag(&emptyTag))
+		parentTag := model.Tag{Title: title}
+		assert.NoError(t, db.CreateOrUpdateTag(&parentTag))
+		parentFromDb, err := db.GetTag(expectedId)
+		assert.NoError(t, err)
+		assert.Equal(t, title, parentFromDb.Title)
+		tagWithImage := model.Tag{Id: expectedId, Image: fmt.Sprintf("image-%d", i)}
+		assert.NoError(t, db.CreateOrUpdateTag(&tagWithImage))
+		updatedFromDb, err := db.GetTag(model.Tag{Id: expectedId})
+		assert.NoError(t, err)
+		assert.Equal(t, expectedId, updatedFromDb.Id)
+		assert.Equal(t, title, updatedFromDb.Title)
+		assert.Equal(t, fmt.Sprintf("image-%d", i), updatedFromDb.Image)
+		assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{Id: expectedId, Items: []*model.Item{{Id: 1}, {Id: 2}}}))
+		withItemsFromDb, err := db.GetTag("title = ?", title)
+		assert.NoError(t, err)
+		assert.Equal(t, expectedId, withItemsFromDb.Id)
+		assert.Equal(t, 2, len(withItemsFromDb.Items))
+		assert.Equal(t, uint64(1), withItemsFromDb.Items[0].Id)
+		assert.Equal(t, uint64(2), withItemsFromDb.Items[1].Id)
+	}
+
+	tags, err := db.GetTags("parent_id is NULL")
+	assert.NoError(t, err)
+	assert.Equal(t, 4, len(*tags))
+
+	for j, parent := range *tags {
+		for i := 1; i < 3; i++ {
+			expectedId := uint64(4 + ((j * 2) + i))
+			title := fmt.Sprintf("child-%d", i)
+			childTag := model.Tag{Title: title, ParentID: &parent.Id}
+			assert.NoError(t, db.CreateOrUpdateTag(&childTag))
+			childFromDb, err := db.GetTag("title = ? and parent_id = ?", title, parent.Id)
+			assert.NoError(t, err)
+			assert.Equal(t, expectedId, childFromDb.Id)
+			updateTag := model.Tag{Id: expectedId, Image: fmt.Sprintf("image-%d", i)}
+			assert.NoError(t, db.CreateOrUpdateTag(&updateTag))
 		}
 	}
 }
@@ -299,16 +357,21 @@ func TestDirectories(t *testing.T) {
 	db, err := setupNewDb(t, "create-directories.sqlite")
 	assert.NoError(t, err)
 
+	assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{Title: "tag1"}))
+	assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{Title: "tag2"}))
+
 	directory := model.Directory{
 		Path:       "path/to/file",
 		FilesCount: 3,
 		LastSynced: 1234567,
 		Tags: []*model.Tag{
 			{
-				Title: "tag1",
+				ParentID: pointer.Uint64(0),
+				Id:       2,
 			},
 			{
-				Title: "tag2",
+				ParentID: pointer.Uint64(0),
+				Id:       1,
 			},
 		},
 	}
@@ -322,8 +385,8 @@ func TestDirectories(t *testing.T) {
 	assert.Nil(t, directoryFromDB.Excluded)
 	assert.NotNil(t, directoryFromDB.Tags)
 	assert.Equal(t, len(directory.Tags), len(directoryFromDB.Tags))
-	assert.Equal(t, directory.Tags[0].Id, directoryFromDB.Tags[0].Id)
-	assert.Equal(t, directory.Tags[1].Id, directoryFromDB.Tags[1].Id)
+	assert.Equal(t, directory.Tags[0].Id, directoryFromDB.Tags[1].Id)
+	assert.Equal(t, directory.Tags[1].Id, directoryFromDB.Tags[0].Id)
 	assert.Empty(t, directoryFromDB.Tags[0].Title)
 	assert.Empty(t, directoryFromDB.Tags[1].Title)
 
@@ -348,8 +411,8 @@ func TestDirectories(t *testing.T) {
 	assert.Nil(t, directoryFromDB.Excluded)
 	assert.NotNil(t, directoryFromDB.Tags)
 	assert.Equal(t, len(directory.Tags), len(directoryFromDB.Tags))
-	assert.Equal(t, directory.Tags[0].Id, directoryFromDB.Tags[0].Id)
-	assert.Equal(t, directory.Tags[1].Id, directoryFromDB.Tags[1].Id)
+	assert.Equal(t, directory.Tags[0].Id, directoryFromDB.Tags[1].Id)
+	assert.Equal(t, directory.Tags[1].Id, directoryFromDB.Tags[0].Id)
 	assert.Empty(t, directoryFromDB.Tags[0].Title)
 	assert.Empty(t, directoryFromDB.Tags[1].Title)
 	assert.Equal(t, excludedDirectory.Path, excludedDirectoryFromDB.Path)

@@ -7,10 +7,10 @@ type ItemsAndTags struct {
 
 type Tag struct {
 	Id          uint64           `json:"id,omitempty"`
-	Title       string           `json:"title,omitempty" gorm:"uniqueIndex"`
+	Title       string           `json:"title,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
+	ParentID    *uint64          `json:"parentId,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
 	Items       []*Item          `json:"items,omitempty" gorm:"many2many:tag_items;"`
 	Children    []*Tag           `json:"children,omitempty" gorm:"foreignkey:ParentID"`
-	ParentID    *uint64          `json:"parentId,omitempty"`
 	Active      *bool            `json:"active,omitempty"`
 	Selected    *bool            `json:"selected,omitempty"`
 	Image       string           `json:"imageUrl,omitempty"`
@@ -19,8 +19,8 @@ type Tag struct {
 
 type Item struct {
 	Id              uint64  `json:"id,omitempty"`
-	Title           string  `json:"title,omitempty" gorm:"uniqueIndex:title_and_dir_idx;not null;default:null"`
-	Origin          string  `json:"origin,omitempty" gorm:"uniqueIndex:title_and_dir_idx;not null;default:null"`
+	Title           string  `json:"title,omitempty" gorm:"uniqueIndex:title_and_dir_idx"`
+	Origin          string  `json:"origin,omitempty" gorm:"uniqueIndex:title_and_dir_idx"`
 	DurationSeconds int     `json:"duration_seconds,omitempty"`
 	Width           int     `json:"width,omitempty"`
 	Height          int     `json:"height,omitempty"`

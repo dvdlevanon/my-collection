@@ -1,10 +1,12 @@
 import AddIcon from '@mui/icons-material/Add';
-import { IconButton, TextField } from '@mui/material';
+import { Button, IconButton, Link, Stack, TextField } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
+import { Link as RouterLink } from 'react-router-dom';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
+import TagsUtil from '../utils/tags-util';
 import AddTagDialog from './AddTagDialog';
 import Tag from './Tag';
 import TagAnnotation from './TagAnnotation';
@@ -78,15 +80,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 	};
 
 	return (
-		<Box
-			sx={{
-				position: 'absolute',
-				zIndex: '100',
-				top: '0px',
-				left: '0px',
-				right: '0px',
-			}}
-		>
+		<Stack width={'100%'} height={'100%'} flexGrow={1}>
 			<Box
 				sx={{
 					display: 'flex',
@@ -137,15 +131,36 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					padding: '10px',
 					gap: '10px',
 					flexWrap: 'wrap',
+					flexGrow: 1,
 				}}
 			>
 				{filterTags().map((tag) => {
 					return <Tag key={tag.id} tag={tag} size={size} onTagSelected={onTagSelected} />;
 				})}
-				<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
+				{!TagsUtil.isDirectoriesSuperTag(parentId) && (
+					<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
+				)}
+
+				{TagsUtil.isDirectoriesSuperTag(parentId) && tags.length == 0 && (
+					<Stack
+						direction="row"
+						gap="10px"
+						justifyContent="center"
+						alignItems="center"
+						sx={{
+							width: '100%',
+							height: '100%',
+						}}
+					>
+						No diretories found
+						<Link component={RouterLink} to="spa/manage-directories">
+							<Button variant="outlined">Manage Directories</Button>
+						</Link>
+					</Stack>
+				)}
 			</Box>
 			{addTagDialogOpened && <AddTagDialog parentId={parentId} onClose={() => setAddTagDialogOpened(false)} />}
-		</Box>
+		</Stack>
 	);
 }
 

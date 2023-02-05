@@ -1,4 +1,4 @@
-import { Divider } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import Client from '../network/client';
@@ -108,7 +108,7 @@ function Gallery({ previewMode }) {
 	};
 
 	return (
-		<div>
+		<Stack flexGrow={1}>
 			{tagsQuery.isSuccess && (
 				<TagChooser
 					size="big"
@@ -117,7 +117,6 @@ function Gallery({ previewMode }) {
 					initialSelectedSuperTagId={0}
 				/>
 			)}
-			<Divider sx={{ borderBottomWidth: 2 }} />
 			{tagsQuery.isSuccess && !tagsDropDownOpened && (
 				<GalleryFilters
 					activeTags={getActiveTags()}
@@ -130,7 +129,7 @@ function Gallery({ previewMode }) {
 			{tagsQuery.isSuccess && itemsQuery.isSuccess && !tagsDropDownOpened && (
 				<ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
 			)}
-		</div>
+		</Stack>
 	);
 }
 
