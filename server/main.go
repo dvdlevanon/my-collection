@@ -80,6 +80,10 @@ func run() error {
 
 	gallery := gallery.New(db, storage, rootdir)
 	directories := directories.New(gallery, storage)
+	if err = directories.Init(); err != nil {
+		return err
+	}
+
 	return server.New(gallery, storage, directories).Run(*listenAddress)
 }
 

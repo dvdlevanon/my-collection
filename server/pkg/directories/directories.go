@@ -1,10 +1,10 @@
 package directories
 
 import (
-	"io/ioutil"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
+	"os"
 	"path/filepath"
 	"strings"
 	"time"
@@ -13,14 +13,21 @@ import (
 	"k8s.io/utils/pointer"
 )
 
+const DIRECTORIES_TAG_ID = 1000000000
+
 var logger = logging.MustGetLogger("directories")
+var directoriesTag = model.Tag{
+	Id:    DIRECTORIES_TAG_ID,
+	Title: "Directories",
+}
 
 type Directories interface {
+	Init() error
 	DirectoryChanged(directory *model.Directory)
 	DirectoryRemoved(path string)
 }
 
-type DirectoriesImpl struct {
+type directoriesImpl struct {
 	gallery        *gallery.Gallery
 	storage        *storage.Storage
 	changeChannel  chan model.Directory
@@ -30,27 +37,32 @@ type DirectoriesImpl struct {
 func New(gallery *gallery.Gallery, storage *storage.Storage) Directories {
 	logger.Infof("Directories initialized")
 
-	result := &DirectoriesImpl{
+	return &directoriesImpl{
 		gallery:        gallery,
 		storage:        storage,
 		changeChannel:  make(chan model.Directory),
 		removedChannel: make(chan string),
 	}
-
-	go result.watchFilesystemChanges()
-
-	return result
 }
 
-func (d *DirectoriesImpl) DirectoryChanged(directory *model.Directory) {
+func (d *directoriesImpl) Init() error {
+	if err := d.gallery.CreateOrUpdateTag(&directoriesTag); err != nil {
+		return err
+	}
+
+	go d.watchFilesystemChanges()
+	return nil
+}
+
+func (d *directoriesImpl) DirectoryChanged(directory *model.Directory) {
 	d.changeChannel <- *directory
 }
 
-func (d *DirectoriesImpl) DirectoryRemoved(directoryPath string) {
+func (d *directoriesImpl) DirectoryRemoved(directoryPath string) {
 	d.removedChannel <- directoryPath
 }
 
-func (d *DirectoriesImpl) watchFilesystemChanges() {
+func (d *directoriesImpl) watchFilesystemChanges() {
 	for {
 		select {
 		case directory := <-d.changeChannel:
@@ -77,7 +89,7 @@ func (d *DirectoriesImpl) watchFilesystemChanges() {
 	}
 }
 
-func (d *DirectoriesImpl) directoryRemoved(directoryPath string, allDirectories []model.Directory) {
+func (d *directoriesImpl) directoryRemoved(directoryPath string, allDirectories []model.Directory) {
 	for _, dir := range allDirectories {
 		if dir.Excluded == nil || !*dir.Excluded {
 			continue
@@ -91,7 +103,7 @@ func (d *DirectoriesImpl) directoryRemoved(directoryPath string, allDirectories 
 	}
 }
 
-func (d *DirectoriesImpl) directoryChanged(directory *model.Directory, allDirectories []model.Directory) {
+func (d *directoriesImpl) directoryChanged(directory *model.Directory, allDirectories []model.Directory) {
 	millisSinceScanned := time.Now().UnixMilli() - directory.LastSynced
 
 	if millisSinceScanned < 10000 {
@@ -99,7 +111,7 @@ func (d *DirectoriesImpl) directoryChanged(directory *model.Directory, allDirect
 	}
 
 	absolutePath := d.gallery.GetFile(directory.Path)
-	files, err := ioutil.ReadDir(absolutePath)
+	files, err := os.ReadDir(absolutePath)
 	if err != nil {
 		logger.Errorf("Error getting files of %s %t", directory.Path, err)
 	}

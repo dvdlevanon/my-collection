@@ -32,24 +32,3 @@ func (g *Gallery) Export(w io.Writer) error {
 	_, err = w.Write(jsonBytes)
 	return err
 }
-
-func (g *Gallery) Import(data []byte) error {
-	itemsAndTags := model.ItemsAndTags{}
-	if err := json.Unmarshal(data, &itemsAndTags); err != nil {
-		return err
-	}
-
-	for _, item := range itemsAndTags.Items {
-		if err := g.CreateOrUpdateItem(&item); err != nil {
-			return err
-		}
-	}
-
-	for _, tag := range itemsAndTags.Tags {
-		if err := g.CreateOrUpdateTag(&tag); err != nil {
-			return err
-		}
-	}
-
-	return nil
-}

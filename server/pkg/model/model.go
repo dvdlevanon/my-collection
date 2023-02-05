@@ -19,7 +19,8 @@ type Tag struct {
 
 type Item struct {
 	Id              uint64  `json:"id,omitempty"`
-	Title           string  `json:"title,omitempty" gorm:"uniqueIndex"`
+	Title           string  `json:"title,omitempty" gorm:"uniqueIndex:title_and_dir_idx;not null;default:null"`
+	Origin          string  `json:"origin,omitempty" gorm:"uniqueIndex:title_and_dir_idx;not null;default:null"`
 	DurationSeconds int     `json:"duration_seconds,omitempty"`
 	Width           int     `json:"width,omitempty"`
 	Height          int     `json:"height,omitempty"`

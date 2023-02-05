@@ -102,7 +102,7 @@ func (d *Database) CreateOrUpdateItem(item *model.Item) error {
 			return d.update(item)
 		}
 
-		existing, err := d.GetItem("title = ?", item.Title)
+		existing, err := d.GetItem("title = ? and origin = ?", item.Title, item.Origin)
 
 		if err != nil {
 			return err
@@ -227,10 +227,6 @@ func (d *Database) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error
 
 func (d *Database) RemoveTag(tagId uint64) error {
 	return d.db.Delete(model.Tag{Id: tagId}).Error
-}
-
-func (d *Database) CreateDirectory(directory *model.Directory) error {
-	return d.create(directory)
 }
 
 func (d *Database) CreateOrUpdateDirectory(directory *model.Directory) error {

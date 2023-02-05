@@ -21,72 +21,62 @@ func setupNewDb(t *testing.T, filename string) (*Database, error) {
 	return New("", dbpath)
 }
 
-func TestCreate(t *testing.T) {
-	db, err := setupNewDb(t, "create-test.sqlite")
+func TestItem(t *testing.T) {
+	db, err := setupNewDb(t, "test-item.sqlite")
 	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1"}
-	assert.Equal(t, item1.Id, uint64(0))
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-	assert.Equal(t, item1.Id, uint64(1))
-	itemFromDB, err := db.GetItem(1)
-	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Title, item1.Title)
-	item1.Title = "update-title"
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-}
 
-func TestGetByTitle(t *testing.T) {
-	db, err := setupNewDb(t, "create-test-get-by.sqlite")
-	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1"}
-	assert.Equal(t, item1.Id, uint64(0))
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-	assert.Equal(t, item1.Id, uint64(1))
-	itemFromDB, err := db.GetItem("title = ?", item1.Title)
-	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Title, item1.Title)
-	item1.Title = "updated-title"
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-}
+	for j := 0; j < 2; j++ {
+		for i := 1; i < 5; i++ {
+			expectedId := uint64((j * 4) + i)
+			origin := fmt.Sprintf("origin-%d", j)
+			title := fmt.Sprintf("title-%d", i)
+			emptyItem := model.Item{}
+			assert.Error(t, db.CreateOrUpdateItem(&emptyItem))
+			onlyTitleItem := model.Item{Title: title}
+			assert.Error(t, db.CreateOrUpdateItem(&onlyTitleItem))
+			onlyOriginItem := model.Item{Origin: origin}
+			assert.Error(t, db.CreateOrUpdateItem(&onlyOriginItem))
+			validItem := model.Item{Title: title, Origin: origin}
+			assert.NoError(t, db.CreateOrUpdateItem(&validItem))
+			itemFromDb, err := db.GetItem(expectedId)
+			assert.NoError(t, err)
+			assert.Equal(t, expectedId, itemFromDb.Id)
+			assert.Equal(t, origin, itemFromDb.Origin)
+			assert.Equal(t, title, itemFromDb.Title)
+		}
+	}
 
-func TestCreateOrUpdate(t *testing.T) {
-	db, err := setupNewDb(t, "create-or-update-test.sqlite")
-	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1"}
-	assert.Equal(t, item1.Id, uint64(0))
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-	assert.Equal(t, item1.Id, uint64(1))
-	itemFromDB, err := db.GetItem(1)
-	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Title, item1.Title)
-	item1.Url = "updated-url"
-	item1.Id = 0
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-	item1.Id = 0
-	item1.Title = "title5"
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-	assert.Equal(t, item1.Id, uint64(2))
-	item5FromDB, err := db.GetItem(2)
-	assert.NoError(t, err)
-	assert.Equal(t, item5FromDB.Title, item1.Title)
-}
-
-func TestUpdate(t *testing.T) {
-	db, err := setupNewDb(t, "update-test.sqlite")
-	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1"}
-	assert.NoError(t, db.CreateOrUpdateItem(item1))
-	item1.Title = "update-title"
-	assert.NoError(t, db.UpdateItem(item1))
-	itemFromDB, err := db.GetItem(1)
-	assert.NoError(t, err)
-	assert.Equal(t, itemFromDB.Title, item1.Title)
+	for j := 0; j < 2; j++ {
+		for i := 1; i < 5; i++ {
+			expectedId := uint64((j * 4) + i)
+			origin := fmt.Sprintf("origin-%d", j)
+			title := fmt.Sprintf("title-%d", i)
+			onlyTitleItem := model.Item{Title: title}
+			assert.Error(t, db.CreateOrUpdateItem(&onlyTitleItem))
+			onlyOriginItem := model.Item{Origin: origin}
+			assert.Error(t, db.CreateOrUpdateItem(&onlyOriginItem))
+			validItem := model.Item{Title: title, Origin: origin, Url: fmt.Sprintf("url-%d", i)}
+			assert.NoError(t, db.CreateOrUpdateItem(&validItem))
+			itemFromDb, err := db.GetItem(model.Item{Title: title, Origin: origin})
+			assert.NoError(t, err)
+			assert.Equal(t, expectedId, itemFromDb.Id)
+			assert.Equal(t, origin, itemFromDb.Origin)
+			assert.Equal(t, title, itemFromDb.Title)
+			assert.Equal(t, fmt.Sprintf("url-%d", i), itemFromDb.Url)
+			onlyIdItem := model.Item{Id: expectedId, PreviewUrl: fmt.Sprintf("preview-url-%d", i)}
+			assert.NoError(t, db.CreateOrUpdateItem(&onlyIdItem))
+			itemFromDb2, err := db.GetItem(model.Item{Id: expectedId})
+			assert.NoError(t, err)
+			assert.Equal(t, expectedId, itemFromDb.Id)
+			assert.Equal(t, fmt.Sprintf("preview-url-%d", i), itemFromDb2.PreviewUrl)
+		}
+	}
 }
 
 func TestManyToMany(t *testing.T) {
 	db, err := setupNewDb(t, "many-to-many.sqlite")
 	assert.NoError(t, err)
-	item := &model.Item{Title: "item1"}
+	item := &model.Item{Title: "item1", Origin: "origin"}
 	tag := &model.Tag{Title: "tag1"}
 	assert.NoError(t, db.CreateOrUpdateItem(item))
 	assert.NoError(t, db.CreateOrUpdateTag(tag))
@@ -138,7 +128,7 @@ func TestOneToManyParent(t *testing.T) {
 func TestOneToMany(t *testing.T) {
 	db, err := setupNewDb(t, "one-to-many-test.sqlite")
 	assert.NoError(t, err)
-	item1 := &model.Item{Title: "title1"}
+	item1 := &model.Item{Title: "title1", Origin: "origin"}
 	assert.NoError(t, db.CreateOrUpdateItem(item1))
 	itemFromDB, err := db.GetItem(1)
 	assert.NoError(t, err)
@@ -180,7 +170,7 @@ func TestGetMissingTag(t *testing.T) {
 func TestRemoveTag(t *testing.T) {
 	db, err := setupNewDb(t, "remove-tag-test.sqlite")
 	assert.NoError(t, err)
-	item := &model.Item{Title: "item1"}
+	item := &model.Item{Title: "item1", Origin: "origin"}
 	tag := &model.Tag{Title: "tag1"}
 	assert.NoError(t, db.CreateOrUpdateItem(item))
 	assert.NoError(t, db.CreateOrUpdateTag(tag))

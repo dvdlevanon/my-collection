@@ -26,8 +26,8 @@ func setupNewGallery(t *testing.T, filename string) *Gallery {
 
 func TestNormalizeUrl(t *testing.T) {
 	gallery := setupNewGallery(t, "test-normalize-url.sqlite")
-	gallery.CreateOrUpdateItem(&model.Item{Title: "title1", Url: "/tmp/root-directory/some-path/inner-path/file.ext"})
+	assert.NoError(t, gallery.CreateOrUpdateItem(&model.Item{Title: "title1", Origin: "origin", Url: "/tmp/root-directory/some-path/inner-path/file.ext"}))
 	item, err := gallery.GetItem(1)
 	assert.NoError(t, err)
-	assert.Equal(t, item.Url, "some-path/inner-path/file.ext")
+	assert.Equal(t, "some-path/inner-path/file.ext", item.Url)
 }

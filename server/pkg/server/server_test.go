@@ -19,6 +19,7 @@ import (
 
 type DirectoriesMock struct{}
 
+func (d *DirectoriesMock) Init() error                                 { return nil }
 func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
 func (d *DirectoriesMock) DirectoryRemoved(path string)                {}
 
@@ -38,7 +39,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 
 func TestCreateAndGetItem(t *testing.T) {
 	server := setupNewServer(t, "create-item-test.sqlite")
-	item := model.Item{Title: "title1", Url: "url1"}
+	item := model.Item{Title: "title1", Url: "url1", Origin: "origin"}
 	payload, err := json.Marshal(item)
 	assert.NoError(t, err)
 	req := httptest.NewRequest("POST", "/api/items", bytes.NewReader(payload))
@@ -87,7 +88,7 @@ func TestCreateAndGetTag(t *testing.T) {
 
 func TestUpdateItem(t *testing.T) {
 	server := setupNewServer(t, "update-item-test.sqlite")
-	item := model.Item{Title: "title1"}
+	item := model.Item{Title: "title1", Origin: "origin"}
 	payload, err := json.Marshal(item)
 	assert.NoError(t, err)
 	req := httptest.NewRequest("POST", "/api/items", bytes.NewReader(payload))
