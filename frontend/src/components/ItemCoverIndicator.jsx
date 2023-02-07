@@ -1,22 +1,24 @@
+import { Box } from '@mui/material';
 import React, { useState } from 'react';
-import styles from './ItemCoverIndicator.module.css';
 
 function ItemCoverIndicator({ item, cover, isHighlighted }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 
-	const clicked = (e) => {
-		e.stopPropagation();
-		console.log('cliecked');
-	};
-
 	return (
-		<span
-			className={styles.cover_indicator + ' ' + (isHighlighted ? styles.selected : styles.unselected)}
+		<Box
+			sx={{
+				borderRadius: '3px',
+				height: '2px',
+				width: '100%',
+				backgroundColor: isHighlighted ? '#d00' : '#500',
+			}}
 			key={cover.id}
 			onMouseEnter={() => setOptionsHidden(false && isHighlighted)}
 			onMouseLeave={() => setOptionsHidden(true && isHighlighted)}
-			onClick={(e) => clicked(e)}
-		></span>
+			onClick={(e) => {
+				e.stopPropagation();
+			}}
+		></Box>
 	);
 }
 

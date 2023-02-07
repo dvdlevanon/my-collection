@@ -1,7 +1,0 @@
-.items {
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	gap: 20px;
-	padding: 20px 0px 0px 0px;
-}

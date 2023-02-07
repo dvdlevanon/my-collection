@@ -1,13 +1,20 @@
+import { Box } from '@mui/material';
 import Client from '../network/client';
-import styles from './Player.module.css';
 
 function Player({ item, isPreview }) {
 	return (
-		<div className={styles.player + ' ' + (isPreview && styles.preview)}>
-			<video playsInline muted autoPlay={isPreview} loop={isPreview} controls={!isPreview}>
-				<source src={Client.buildFileUrl(isPreview ? item.previewUrl : item.url)} />
-			</video>
-		</div>
+		<Box
+			component="video"
+			height="100%"
+			width="100%"
+			playsInline
+			muted
+			autoPlay={isPreview}
+			loop={isPreview}
+			controls={!isPreview}
+		>
+			<source src={Client.buildFileUrl(isPreview ? item.previewUrl : item.url)} />
+		</Box>
 	);
 }
 

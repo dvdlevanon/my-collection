@@ -1,9 +1,7 @@
-import { Tooltip, Typography } from '@mui/material';
-import { Box } from '@mui/system';
+import { Box, Link, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import Client from '../network/client';
-import styles from './Item.module.css';
 import ItemCoverIndicator from './ItemCoverIndicator';
 import Player from './Player';
 
@@ -76,15 +74,40 @@ function Item({ item, preferPreview }) {
 
 	return (
 		<Link
-			className={styles.item}
+			component={RouterLink}
+			sx={{
+				display: 'flex',
+				position: 'relative',
+				flexDirection: 'column',
+			}}
 			to={'/spa/item/' + item.id}
 			onMouseLeave={(e) => mouseLeave(e)}
 			onMouseMove={(e) => mouseMove(e)}
 			onMouseEnter={(e) => mouseEnter(e)}
 		>
-			<img className={styles.image} src={getCover()} alt={item.title} loading="lazy" />
+			<Box
+				component="img"
+				src={getCover()}
+				alt={item.title}
+				loading="lazy"
+				sx={{
+					width: '550px',
+					height: '300px',
+					objectFit: 'contain',
+					cursor: 'pointer',
+				}}
+			/>
 			{showCoverNavigator && item.covers && item.covers.length > 1 && (
-				<div className={styles.cover_navigator}>
+				<Stack
+					flexDirection="row"
+					sx={{
+						bottom: '0px',
+						left: '0px',
+						gap: '2px',
+						position: 'absolute',
+						width: '100%',
+					}}
+				>
 					{item.covers.map((cover, index) => {
 						return (
 							<ItemCoverIndicator
@@ -95,9 +118,31 @@ function Item({ item, preferPreview }) {
 							/>
 						);
 					})}
-				</div>
+				</Stack>
 			)}
-			{previewMode() && showPreview && <Player className={styles.image} isPreview={true} item={item} />}
+			{previewMode() && showPreview && (
+				<Box
+					flexGrow={1}
+					padding="10px"
+					sx={{
+						position: 'absolute',
+						padding: '0px',
+						width: '550px',
+						height: '300px',
+						objectFit: 'contain',
+						cursor: 'pointer',
+					}}
+				>
+					<Player
+						isPreview={true}
+						item={item}
+						sx={{
+							width: '100%',
+							height: '100%',
+						}}
+					/>
+				</Box>
+			)}
 			<Box
 				sx={{
 					display: 'flex',

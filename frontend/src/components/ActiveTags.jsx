@@ -1,10 +1,9 @@
-import { Box } from '@mui/material';
+import { Stack } from '@mui/material';
 import ActiveTag from './ActiveTag';
-import styles from './ActiveTags.module.css';
 
 function ActiveTags({ activeTags, onTagDeactivated, onTagSelected, onTagDeselected }) {
 	return (
-		<Box className={styles.active_tags}>
+		<Stack flexDirection="row" gap="10px" flexWrap>
 			{activeTags.map((tag) => {
 				return (
 					<ActiveTag
@@ -16,7 +15,7 @@ function ActiveTags({ activeTags, onTagDeactivated, onTagSelected, onTagDeselect
 					/>
 				);
 			})}
-		</Box>
+		</Stack>
 	);
 }
 

@@ -1,6 +1,5 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton } from '@mui/material';
-import styles from './ItemTag.module.css';
 
 function ItemTag({ tag, onRemoveClicked }) {
 	const removeHandler = (e) => {
@@ -11,13 +10,15 @@ function ItemTag({ tag, onRemoveClicked }) {
 	return (
 		<Box
 			sx={{
+				borderRadius: '7px',
+				cursor: 'pointer',
+				padding: '3px',
 				backgroundColor: 'primary.main',
 				'&:hover': {
 					backgroundColor: 'primary.main',
 					opacity: [0.9, 0.8, 0.7],
 				},
 			}}
-			className={styles.item_tag}
 		>
 			<IconButton onClick={(e) => removeHandler(e)}>
 				<CloseIcon />

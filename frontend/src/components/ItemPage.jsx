@@ -1,11 +1,10 @@
-import { Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
 import AttachTagDialog from './AttachTagDialog';
-import styles from './ItemPage.module.css';
 import ItemTags from './ItemTags';
 import Player from './Player';
 
@@ -38,13 +37,15 @@ function ItemPage() {
 	};
 
 	return (
-		<div className={styles.all}>
+		<Stack>
 			{itemQuery.isSuccess && <Typography variant="h5">{itemQuery.data.title}</Typography>}
 			{itemQuery.isSuccess && (
-				<div className={styles.top}>
-					<Player item={itemQuery.data} />
+				<Stack flexDirection="row">
+					<Box flexGrow={1} padding="10px" height="50%">
+						<Player item={itemQuery.data} />
+					</Box>
 					<ItemTags item={itemQuery.data} onAddTag={onAddTag} onTagRemoved={onTagRemoved} />
-				</div>
+				</Stack>
 			)}
 			{itemQuery.isSuccess && tagsQuery.isSuccess && (
 				<AttachTagDialog
@@ -54,7 +55,7 @@ function ItemPage() {
 					onClose={(e) => setAddTagMode(false)}
 				/>
 			)}
-		</div>
+		</Stack>
 	);
 }
 

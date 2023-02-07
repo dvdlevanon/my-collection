@@ -1,14 +1,28 @@
-import { Switch } from '@mui/material';
+import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import ActiveTags from './ActiveTags';
-import styles from './GalleryFilters.module.css';
 
-function GalleryFilters({ activeTags, onTagDeactivated, onTagSelected, onTagDeselected, onChangeCondition }) {
-	const onConditionChanged = (e) => {
-		onChangeCondition(e.target.checked ? '&&' : '||');
+function GalleryFilters({
+	conditionType,
+	activeTags,
+	onTagDeactivated,
+	onTagSelected,
+	onTagDeselected,
+	onChangeCondition,
+}) {
+	const onConditionChanged = (e, newValue) => {
+		onChangeCondition(newValue);
 	};
 
 	return (
-		<div className={styles.gallery_filters}>
+		<Stack flexDirection="row" gap="10px">
+			{activeTags.length > 1 && (
+				<Stack justifyContent="center" alignContent="center">
+					<ToggleButtonGroup size="small" exclusive value={conditionType} onChange={onConditionChanged}>
+						<ToggleButton value="||">OR</ToggleButton>
+						<ToggleButton value="&&">ADD</ToggleButton>
+					</ToggleButtonGroup>
+				</Stack>
+			)}
 			{activeTags.length > 0 && (
 				<ActiveTags
 					activeTags={activeTags}
@@ -17,14 +31,7 @@ function GalleryFilters({ activeTags, onTagDeactivated, onTagSelected, onTagDese
 					onTagDeselected={onTagDeselected}
 				/>
 			)}
-			{activeTags.length > 1 && (
-				<div className={styles.condition_switch}>
-					<span>||</span>
-					<Switch onChange={(e) => onConditionChanged(e)} />
-					<span>&&</span>
-				</div>
-			)}
-		</div>
+		</Stack>
 	);
 }
 

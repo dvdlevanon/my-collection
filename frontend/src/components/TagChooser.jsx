@@ -46,7 +46,7 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedSup
 	};
 
 	return (
-		<Stack flexGrow={1} height="100%">
+		<Stack height={selectedSuperTagId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && (
 				<SuperTags
 					superTags={tagsQuery.data.filter((tag) => {

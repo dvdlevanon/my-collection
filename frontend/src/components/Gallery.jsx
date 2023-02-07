@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Divider, Stack } from '@mui/material';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import Client from '../network/client';
@@ -117,18 +117,22 @@ function Gallery({ previewMode }) {
 					initialSelectedSuperTagId={0}
 				/>
 			)}
-			{tagsQuery.isSuccess && !tagsDropDownOpened && (
-				<GalleryFilters
-					activeTags={getActiveTags()}
-					onTagDeactivated={onTagDeactivated}
-					onTagSelected={onTagSelected}
-					onTagDeselected={onTagDeselected}
-					onChangeCondition={onChangeCondition}
-				/>
-			)}
-			{tagsQuery.isSuccess && itemsQuery.isSuccess && !tagsDropDownOpened && (
-				<ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
-			)}
+			<Divider />
+			<Stack padding="10px">
+				{tagsQuery.isSuccess && !tagsDropDownOpened && (
+					<GalleryFilters
+						conditionType={conditionType}
+						activeTags={getActiveTags()}
+						onTagDeactivated={onTagDeactivated}
+						onTagSelected={onTagSelected}
+						onTagDeselected={onTagDeselected}
+						onChangeCondition={onChangeCondition}
+					/>
+				)}
+				{tagsQuery.isSuccess && itemsQuery.isSuccess && !tagsDropDownOpened && (
+					<ItemsList items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
+				)}
+			</Stack>
 		</Stack>
 	);
 }
