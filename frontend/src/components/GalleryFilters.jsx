@@ -1,34 +1,32 @@
 import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import ActiveTags from './ActiveTags';
+import TagChips from './TagChips';
 
-function GalleryFilters({
-	conditionType,
-	activeTags,
-	onTagDeactivated,
-	onTagSelected,
-	onTagDeselected,
-	onChangeCondition,
-}) {
-	const onConditionChanged = (e, newValue) => {
-		onChangeCondition(newValue);
-	};
-
+function GalleryFilters({ conditionType, activeTags, onTagClick, onTagDelete, onChangeCondition }) {
 	return (
 		<Stack flexDirection="row" gap="10px">
 			{activeTags.length > 1 && (
 				<Stack justifyContent="center" alignContent="center">
-					<ToggleButtonGroup size="small" exclusive value={conditionType} onChange={onConditionChanged}>
+					<ToggleButtonGroup
+						size="small"
+						exclusive
+						value={conditionType}
+						onChange={(e, newValue) => {
+							onChangeCondition(newValue);
+						}}
+					>
 						<ToggleButton value="||">OR</ToggleButton>
 						<ToggleButton value="&&">ADD</ToggleButton>
 					</ToggleButtonGroup>
 				</Stack>
 			)}
 			{activeTags.length > 0 && (
-				<ActiveTags
-					activeTags={activeTags}
-					onTagDeactivated={onTagDeactivated}
-					onTagSelected={onTagSelected}
-					onTagDeselected={onTagDeselected}
+				<TagChips
+					tags={activeTags}
+					onClick={onTagClick}
+					onDelete={onTagDelete}
+					tagHighlightedPredicate={(tag) => {
+						return tag.selected;
+					}}
 				/>
 			)}
 		</Stack>

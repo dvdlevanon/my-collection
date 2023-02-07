@@ -1,12 +1,13 @@
-import { Box, Stack, Typography } from '@mui/material';
+import AddIcon from '@mui/icons-material/Add';
+import { Box, Chip, Container, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
 import AttachTagDialog from './AttachTagDialog';
-import ItemTags from './ItemTags';
 import Player from './Player';
+import TagChips from './TagChips';
 
 function ItemPage() {
 	const queryClient = useQueryClient();
@@ -36,26 +37,44 @@ function ItemPage() {
 		});
 	};
 
+	const onTagClicked = (tag) => {
+		console.log('send to gallery with selected filter');
+	};
+
 	return (
-		<Stack>
-			{itemQuery.isSuccess && <Typography variant="h5">{itemQuery.data.title}</Typography>}
+		<Container maxWidth="xl">
 			{itemQuery.isSuccess && (
-				<Stack flexDirection="row">
-					<Box flexGrow={1} padding="10px" height="50%">
+				<Stack flexGrow={1} flexDirection="column" padding="20px">
+					<Typography variant="h5">{itemQuery.data.title}</Typography>
+					<Box padding="10px">
 						<Player item={itemQuery.data} />
 					</Box>
-					<ItemTags item={itemQuery.data} onAddTag={onAddTag} onTagRemoved={onTagRemoved} />
+					<Stack flexDirection="row" gap="10px">
+						<TagChips
+							flexDirection="column"
+							tags={itemQuery.data.tags}
+							onDelete={onTagRemoved}
+							onClick={onTagClicked}
+							tagHighlightedPredicate={() => {
+								return true;
+							}}
+						></TagChips>
+						<Chip
+							color="secondary"
+							icon={<AddIcon />}
+							onClick={onAddTag}
+							sx={{ '& .MuiChip-label': { padding: '5px' } }}
+						/>
+					</Stack>
+					<AttachTagDialog
+						open={addTagMode}
+						item={itemQuery.data}
+						onTagAdded={onTagAdded}
+						onClose={(e) => setAddTagMode(false)}
+					/>
 				</Stack>
 			)}
-			{itemQuery.isSuccess && tagsQuery.isSuccess && (
-				<AttachTagDialog
-					open={addTagMode}
-					item={itemQuery.data}
-					onTagAdded={onTagAdded}
-					onClose={(e) => setAddTagMode(false)}
-				/>
-			)}
-		</Stack>
+		</Container>
 	);
 }
 

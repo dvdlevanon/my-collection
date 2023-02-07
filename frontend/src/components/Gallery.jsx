@@ -85,20 +85,11 @@ function Gallery({ previewMode }) {
 		});
 	};
 
-	const onTagSelected = (tag) => {
+	const onTagClick = (tag) => {
 		changeTagState(tag, (currentTag) => {
 			return {
 				...currentTag,
-				selected: true,
-			};
-		});
-	};
-
-	const onTagDeselected = (tag) => {
-		changeTagState(tag, (currentTag) => {
-			return {
-				...currentTag,
-				selected: false,
+				selected: !tag.selected,
 			};
 		});
 	};
@@ -123,9 +114,7 @@ function Gallery({ previewMode }) {
 					<GalleryFilters
 						conditionType={conditionType}
 						activeTags={getActiveTags()}
-						onTagDeactivated={onTagDeactivated}
-						onTagSelected={onTagSelected}
-						onTagDeselected={onTagDeselected}
+						onTagClick={onTagClick}
 						onChangeCondition={onChangeCondition}
 					/>
 				)}
