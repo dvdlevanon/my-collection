@@ -5,7 +5,7 @@ import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
 import GalleryFilters from './GalleryFilters';
 import ItemsList from './Items';
-import TagChooser from './TagChooser';
+import TagPicker from './TagPicker';
 
 function Gallery({ previewMode }) {
 	const queryClient = useQueryClient();
@@ -101,7 +101,7 @@ function Gallery({ previewMode }) {
 	return (
 		<Stack flexGrow={1}>
 			{tagsQuery.isSuccess && (
-				<TagChooser
+				<TagPicker
 					size="big"
 					onTagSelected={onTagActivated}
 					onDropDownToggled={(state) => setTagsDropDownOpened(state)}

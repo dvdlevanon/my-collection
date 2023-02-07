@@ -4,7 +4,7 @@ import React from 'react';
 import { useQuery } from 'react-query';
 import Client from '../network/client';
 import ReactQueryUtil from '../utils/react-query-util';
-import TagChooser from './TagChooser';
+import TagPicker from './TagPicker';
 
 function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
@@ -40,7 +40,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 				</IconButton>
 			</DialogTitle>
 			<DialogContent>
-				<TagChooser
+				<TagPicker
 					initialSelectedSuperTagId={1}
 					size="small"
 					onTagSelected={onTagAdded}
