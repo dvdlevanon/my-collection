@@ -1,8 +1,8 @@
 import { Stack } from '@mui/material';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 import SuperTags from './SuperTags';
 import Tags from './Tags';
 

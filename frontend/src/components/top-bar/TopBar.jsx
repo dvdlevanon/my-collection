@@ -1,6 +1,6 @@
 import { AppBar, Button, Checkbox, FormControlLabel, Link, Toolbar, Typography } from '@mui/material';
 import { Link as RouterLink } from 'react-router-dom';
-import Client from '../network/client';
+import Client from '../../network/client';
 
 function TopBar({ previewMode, onPreviewModeChange }) {
 	const previewsChange = (e) => {

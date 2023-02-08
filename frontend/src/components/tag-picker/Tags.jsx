@@ -4,10 +4,10 @@ import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
-import TagsUtil from '../utils/tags-util';
-import AddTagDialog from './AddTagDialog';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
+import TagsUtil from '../../utils/tags-util';
+import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
 import TagAnnotation from './TagAnnotation';
 

@@ -3,8 +3,8 @@ import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React, { useRef } from 'react';
 import { QueryClient, useQueryClient } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 
 function ManageTagImageDialog({ tag, onClose }) {
 	const queryClient = useQueryClient();

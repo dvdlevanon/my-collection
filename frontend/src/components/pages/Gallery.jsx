@@ -1,11 +1,11 @@
 import { Divider, Stack } from '@mui/material';
 import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
-import GalleryFilters from './GalleryFilters';
-import ItemsList from './Items';
-import TagPicker from './TagPicker';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
+import GalleryFilters from '../items-viewer/GalleryFilters';
+import ItemsList from '../items-viewer/ItemsList';
+import TagPicker from '../tag-picker/TagPicker';
 
 function Gallery({ previewMode }) {
 	const queryClient = useQueryClient();

@@ -3,9 +3,9 @@ import AddIcon from '@mui/icons-material/Add';
 import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import Client from '../network/client';
-import ManageTagImageDialog from './ManageTagImageDialog';
-import RemoveTagDialog from './RemoveTagDialog';
+import Client from '../../network/client';
+import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
+import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
 

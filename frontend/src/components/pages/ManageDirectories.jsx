@@ -3,9 +3,9 @@ import { Fab, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import ReactQueryUtil from '../utils/react-query-util';
-import AddDirectoryDialog from './AddDirectoryDialog';
-import DirectoriesTable from './DirectoriesTable';
+import ReactQueryUtil from '../../utils/react-query-util';
+import AddDirectoryDialog from '../dialogs/AddDirectoryDialog';
+import DirectoriesTable from '../directories-table/DirectoriesTable';
 
 function ManageDirectories() {
 	const queryClient = useQueryClient();

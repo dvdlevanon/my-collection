@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
-import Gallery from './components/Gallery';
-import ItemPage from './components/ItemPage';
-import ManageDirectories from './components/ManageDirectories';
-import TopBar from './components/TopBar';
+import Gallery from './components/pages/Gallery';
+import ItemPage from './components/pages/ItemPage';
+import ManageDirectories from './components/pages/ManageDirectories';
+import TopBar from './components/top-bar/TopBar';
+
 const theme = createTheme({
 	palette: {
 		mode: 'dark',

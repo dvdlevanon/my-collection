@@ -2,9 +2,9 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
-import TagPicker from './TagPicker';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
+import TagPicker from '../tag-picker/TagPicker';
 
 function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);

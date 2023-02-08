@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import React, { useRef } from 'react';
-import Client from '../network/client';
+import Client from '../../network/client';
 
 function AddDirectoryDialog({ onClose }) {
 	const directoryFullPath = useRef(null);

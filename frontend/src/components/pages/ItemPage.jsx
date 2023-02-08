@@ -3,11 +3,11 @@ import { Box, Chip, Container, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
-import AttachTagDialog from './AttachTagDialog';
-import Player from './Player';
-import TagChips from './TagChips';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
+import AttachTagDialog from '../dialogs/AttachTagDialog';
+import Player from '../Player';
+import TagChips from '../tags-chip/TagChips';
 
 function ItemPage() {
 	const queryClient = useQueryClient();

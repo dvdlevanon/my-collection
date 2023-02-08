@@ -3,8 +3,8 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 
 function AddTagDialog({ parentId, onClose }) {
 	const queryClient = useQueryClient();

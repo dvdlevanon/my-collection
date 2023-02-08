@@ -13,8 +13,8 @@ import {
 	Tooltip,
 } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 function DirectoriesTable() {
 	const queryClient = useQueryClient();
 	const directoriesQuery = useQuery(ReactQueryUtil.DIRECTORIES_KEY, Client.getDirectories);

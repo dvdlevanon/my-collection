@@ -4,8 +4,8 @@ import { Divider, IconButton, Popover, TextField, Typography } from '@mui/materi
 import { Box } from '@mui/system';
 import React, { useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import Client from '../network/client';
-import ReactQueryUtil from '../utils/react-query-util';
+import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 import TagAnnotation from './TagAnnotation';
 
 function TagAttachAnnotationMenu({ tag, menu, onClose }) {

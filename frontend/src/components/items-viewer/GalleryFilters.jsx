@@ -1,5 +1,5 @@
 import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
-import TagChips from './TagChips';
+import TagChips from '../tags-chip/TagChips';
 
 function GalleryFilters({ conditionType, activeTags, onTagClick, onTagDelete, onChangeCondition }) {
 	return (

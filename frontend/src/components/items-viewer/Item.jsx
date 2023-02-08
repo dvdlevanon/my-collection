@@ -1,9 +1,9 @@
 import { Box, Link, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import Client from '../network/client';
+import Client from '../../network/client';
+import Player from '../Player';
 import ItemCoverIndicator from './ItemCoverIndicator';
-import Player from './Player';
 
 function Item({ item, preferPreview }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
