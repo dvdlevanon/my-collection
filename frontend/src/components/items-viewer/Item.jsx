@@ -2,7 +2,6 @@ import { Box, Link, Stack, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../network/client';
-import Player from '../Player';
 import ItemCoverIndicator from './ItemCoverIndicator';
 
 function Item({ item, preferPreview }) {
@@ -133,14 +132,18 @@ function Item({ item, preferPreview }) {
 						cursor: 'pointer',
 					}}
 				>
-					<Player
-						isPreview={true}
-						item={item}
-						sx={{
-							width: '100%',
-							height: '100%',
-						}}
-					/>
+					<Box
+						component="video"
+						height="100%"
+						width="100%"
+						playsInline
+						muted
+						autoPlay={true}
+						loop={true}
+						controls={false}
+					>
+						<source src={Client.buildFileUrl(item.previewUrl)} />
+					</Box>
 				</Box>
 			)}
 			<Box

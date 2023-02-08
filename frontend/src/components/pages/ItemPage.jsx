@@ -6,7 +6,6 @@ import { useParams } from 'react-router-dom';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
-import Player from '../Player';
 import TagChips from '../tags-chip/TagChips';
 
 function ItemPage() {
@@ -47,7 +46,18 @@ function ItemPage() {
 				<Stack flexGrow={1} flexDirection="column" padding="20px">
 					<Typography variant="h5">{itemQuery.data.title}</Typography>
 					<Box padding="10px">
-						<Player item={itemQuery.data} />
+						<Box
+							component="video"
+							height="100%"
+							width="100%"
+							playsInline
+							muted
+							autoPlay={false}
+							loop={false}
+							controls={true}
+						>
+							<source src={Client.buildFileUrl(itemQuery.data.url)} />
+						</Box>
 					</Box>
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
