@@ -49,9 +49,10 @@ type TagAnnotation struct {
 }
 
 type Directory struct {
-	Path       string `json:"path,omitempty" gorm:"primarykey"`
-	Excluded   *bool  `json:"excluded,omitempty"`
-	Tags       []*Tag `json:"tags,omitempty" gorm:"many2many:directory_tags;"`
-	FilesCount int    `json:"filesCount,omitempty"`
-	LastSynced int64  `json:"lastSynced,omitempty"`
+	Path            string `json:"path,omitempty" gorm:"primarykey"`
+	Excluded        *bool  `json:"excluded,omitempty"`
+	ProcessingStart *int64 `json:"processingStart,omitempty"`
+	Tags            []*Tag `json:"tags,omitempty" gorm:"many2many:directory_tags;"`
+	FilesCount      *int   `json:"filesCount,omitempty"`
+	LastSynced      int64  `json:"lastSynced,omitempty"`
 }

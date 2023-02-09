@@ -110,6 +110,17 @@ func TestTag(t *testing.T) {
 		assert.Equal(t, 2, len(withItemsFromDb.Items))
 		assert.Equal(t, uint64(1), withItemsFromDb.Items[0].Id)
 		assert.Equal(t, uint64(2), withItemsFromDb.Items[1].Id)
+
+		itemIds := make([]uint64, 0)
+		for _, item := range withItemsFromDb.Items {
+			itemIds = append(itemIds, item.Id)
+		}
+
+		items, err := db.GetItems(itemIds)
+		assert.NoError(t, err)
+		assert.Equal(t, 2, len(*items))
+		assert.Equal(t, uint64(1), (*items)[0].Id)
+		assert.Equal(t, uint64(2), (*items)[1].Id)
 	}
 
 	tags, err := db.GetTags("parent_id is NULL")
@@ -362,7 +373,7 @@ func TestDirectories(t *testing.T) {
 
 	directory := model.Directory{
 		Path:       "path/to/file",
-		FilesCount: 3,
+		FilesCount: pointer.Int(3),
 		LastSynced: 1234567,
 		Tags: []*model.Tag{
 			{

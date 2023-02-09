@@ -5,6 +5,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
+	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
 	"os"
@@ -79,12 +80,16 @@ func run() error {
 	}
 
 	gallery := gallery.New(db, storage, rootdir)
-	directories := directories.New(gallery, storage)
+
+	processor := itemprocessor.New(gallery, storage)
+	go processor.Run()
+
+	directories := directories.New(gallery, storage, processor)
 	if err = directories.Init(); err != nil {
 		return err
 	}
 
-	return server.New(gallery, storage, directories).Run(*listenAddress)
+	return server.New(gallery, storage, directories, processor).Run(*listenAddress)
 }
 
 func logError(err error) {

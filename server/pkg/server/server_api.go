@@ -9,10 +9,12 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
 	"github.com/google/uuid"
+	"k8s.io/utils/pointer"
 )
 
 func (s *Server) createItem(c *gin.Context) {
@@ -200,7 +202,7 @@ func (s *Server) getItems(c *gin.Context) {
 }
 
 func (s *Server) refreshItemsCovers(c *gin.Context) {
-	err := s.gallery.RefreshItemsCovers()
+	err := s.processor.EnqueueAllItemsCovers()
 
 	if s.handleError(c, err) {
 		return
@@ -210,7 +212,7 @@ func (s *Server) refreshItemsCovers(c *gin.Context) {
 }
 
 func (s *Server) refreshItemsPreview(c *gin.Context) {
-	err := s.gallery.RefreshItemsPreview()
+	err := s.processor.EnqueueAllItemsPreview()
 
 	if s.handleError(c, err) {
 		return
@@ -220,7 +222,7 @@ func (s *Server) refreshItemsPreview(c *gin.Context) {
 }
 
 func (s *Server) refreshItemsVideoMetadata(c *gin.Context) {
-	err := s.gallery.RefreshItemsVideoMetadata()
+	err := s.processor.EnqueueAllItemsVideoMetadata()
 
 	if s.handleError(c, err) {
 		return
@@ -355,6 +357,7 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 		return
 	}
 
+	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
 	if err = s.gallery.CreateOrUpdateDirectory(&directory); err != nil {
 		s.handleError(c, err)
 		return

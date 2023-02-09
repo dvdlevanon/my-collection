@@ -16,9 +16,9 @@ type Gallery struct {
 	*db.Database
 	storage              *storage.Storage
 	rootDirectory        string
-	coversCount          int
-	previewSceneCount    int
-	previewSceneDuration int
+	CoversCount          int
+	PreviewSceneCount    int
+	PreviewSceneDuration int
 }
 
 func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Gallery {
@@ -26,23 +26,15 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 		Database:             db,
 		storage:              storage,
 		rootDirectory:        rootDirectory,
-		coversCount:          3,
-		previewSceneCount:    4,
-		previewSceneDuration: 3,
+		CoversCount:          3,
+		PreviewSceneCount:    4,
+		PreviewSceneDuration: 3,
 	}
 }
 
 func (g *Gallery) CreateOrUpdateItem(item *model.Item) error {
 	item.Url = g.getRelativePath(item.Url)
-	err := g.Database.CreateOrUpdateItem(item)
-
-	if err == nil {
-		go g.refreshItemCovers(item)
-		go g.refreshItemMetadata(item)
-		go g.refreshItemPreview(item)
-	}
-
-	return err
+	return g.Database.CreateOrUpdateItem(item)
 }
 
 func (g *Gallery) getRelativePath(url string) string {

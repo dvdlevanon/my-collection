@@ -12,9 +12,21 @@ export default class ReactQueryUtil {
 	};
 
 	static updateTags = (queryClient, tagId, updater) => {
-		queryClient.setQueryData(['tags'], (oldTags) => {
+		queryClient.setQueryData(ReactQueryUtil.TAGS_KEY, (oldTags) => {
 			return oldTags.map((cur) => {
 				if (cur.id != tagId) {
+					return cur;
+				}
+
+				return updater(cur);
+			});
+		});
+	};
+
+	static updateDirectories = (queryClient, directoryPath, updater) => {
+		queryClient.setQueryData(ReactQueryUtil.DIRECTORIES_KEY, (oldDirectories) => {
+			return oldDirectories.map((cur) => {
+				if (cur.path != directoryPath) {
 					return cur;
 				}
 

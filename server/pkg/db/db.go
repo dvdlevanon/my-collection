@@ -207,15 +207,19 @@ func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
 	return item, err
 }
 
-func (d *Database) GetAllItems() (*[]model.Item, error) {
+func (d *Database) GetItems(conds ...interface{}) (*[]model.Item, error) {
 	var items []model.Item
-	err := d.getItemModel(true).Find(&items).Error
+	err := d.getItemModel(true).Find(&items, conds...).Error
 
 	if err != nil {
 		err = errors.Wrap(err, 0)
 	}
 
 	return &items, err
+}
+
+func (d *Database) GetAllItems() (*[]model.Item, error) {
+	return d.GetItems()
 }
 
 func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {

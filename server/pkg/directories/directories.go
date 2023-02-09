@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 	"my-collection/server/pkg/gallery"
+	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
 	"os"
@@ -36,16 +37,18 @@ type Directories interface {
 type directoriesImpl struct {
 	gallery        *gallery.Gallery
 	storage        *storage.Storage
+	processor      itemprocessor.ItemProcessor
 	changeChannel  chan model.Directory
 	removedChannel chan string
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage) Directories {
+func New(gallery *gallery.Gallery, storage *storage.Storage, processor itemprocessor.ItemProcessor) Directories {
 	logger.Infof("Directories initialized")
 
 	return &directoriesImpl{
 		gallery:        gallery,
 		storage:        storage,
+		processor:      processor,
 		changeChannel:  make(chan model.Directory),
 		removedChannel: make(chan string),
 	}
@@ -90,6 +93,12 @@ func (d *directoriesImpl) watchFilesystemChanges() {
 
 			d.directoryRemoved(directoryPath, *directories)
 		case <-time.After(60 * time.Second):
+			// millisSinceScanned := time.Now().UnixMilli() - directory.LastSynced
+
+			// if millisSinceScanned < 10000 {
+			// 	return
+			// }
+
 			logger.Infof("Periodic scan")
 		}
 	}
@@ -110,19 +119,14 @@ func (d *directoriesImpl) directoryRemoved(directoryPath string, allDirectories 
 }
 
 func (d *directoriesImpl) directoryChanged(directory *model.Directory, allDirectories []model.Directory) {
-	millisSinceScanned := time.Now().UnixMilli() - directory.LastSynced
-
-	if millisSinceScanned < 10000 {
-		return
-	}
-
 	tag, err := d.handleDirectoryTag(directory)
 	if err != nil {
 		return
 	}
 
-	directory.FilesCount = d.scanDirectory(directory, tag, allDirectories)
+	directory.FilesCount = pointer.Int(d.scanDirectory(directory, tag, allDirectories))
 	directory.LastSynced = time.Now().UnixMilli()
+	directory.ProcessingStart = pointer.Int64(0)
 	if err := d.gallery.CreateOrUpdateDirectory(directory); err != nil {
 		logger.Errorf("Error updating directory %s %t", directory.Path, err)
 	}
@@ -140,9 +144,16 @@ func (d *directoriesImpl) scanDirectory(directory *model.Directory, tag *model.T
 		path := filepath.Join(path, file.Name())
 		if file.IsDir() {
 			d.addDirectoryIfMissing(path, allDirectories)
-		} else if d.isVideo(path) {
-			d.addFileIfMissing(directory, tag, path)
+		} else {
+			added, _ := d.addFileIfMissing(directory, tag, path)
 			filesCount++
+
+			if added {
+				tag, err = d.gallery.GetTag(tag.Id)
+				if err != nil {
+					logger.Errorf("Error refetching tag from DB %t", err)
+				}
+			}
 		}
 	}
 
@@ -201,11 +212,15 @@ func (d *directoriesImpl) addExcludedDirectory(path string) error {
 	return d.gallery.CreateOrUpdateDirectory(newDirectory)
 }
 
-func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) error {
+func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
 	exists, lastModified, err := d.fileExists(path, tag)
 
 	if exists || err != nil {
-		return err
+		return false, err
+	}
+
+	if !d.isVideo(path) {
+		return false, nil
 	}
 
 	title := filepath.Base(path)
@@ -223,10 +238,14 @@ func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *mode
 
 	if err := d.gallery.CreateOrUpdateItem(&item); err != nil {
 		logger.Errorf("Error creating item %v - %t", item, err)
-		return err
+		return false, err
 	}
 
-	return nil
+	d.processor.EnqueueItemVideoMetadata(item.Id)
+	d.processor.EnqueueItemCovers(item.Id)
+	d.processor.EnqueueItemPreview(item.Id)
+
+	return true, nil
 }
 
 func (d *directoriesImpl) fileExists(path string, tag *model.Tag) (bool, int64, error) {
@@ -237,7 +256,17 @@ func (d *directoriesImpl) fileExists(path string, tag *model.Tag) (bool, int64, 
 		return false, 0, err
 	}
 
+	itemIds := make([]uint64, 0)
 	for _, item := range tag.Items {
+		itemIds = append(itemIds, item.Id)
+	}
+
+	items, err := d.gallery.GetItems(itemIds)
+	if err != nil {
+		logger.Errorf("Error getting files of tag %t", err)
+	}
+
+	for _, item := range *items {
 		if item.Title == title && item.LastModified == file.ModTime().UnixMilli() {
 			return true, file.ModTime().UnixMilli(), nil
 		}

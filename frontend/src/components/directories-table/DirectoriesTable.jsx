@@ -1,7 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ErrorIcon from '@mui/icons-material/Error';
 import SyncIcon from '@mui/icons-material/Sync';
 import {
+	CircularProgress,
 	IconButton,
 	Paper,
 	Table,
@@ -17,9 +19,19 @@ import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 function DirectoriesTable() {
 	const queryClient = useQueryClient();
-	const directoriesQuery = useQuery(ReactQueryUtil.DIRECTORIES_KEY, Client.getDirectories);
+	const directoriesQuery = useQuery({
+		queryKey: ReactQueryUtil.DIRECTORIES_KEY,
+		queryFn: Client.getDirectories,
+		onSuccess: (directories) => {
+			if (directories.some((dir) => isProcessing(dir) && !isStaleProcessing(dir))) {
+				console.log('Setting timeout');
+				setTimeout(refetchDirectories, 1000);
+			}
+		},
+	});
 
 	const refetchDirectories = () => {
+		console.log('Refetching');
 		queryClient.refetchQueries({
 			queryKey: ReactQueryUtil.DIRECTORIES_KEY,
 		});
@@ -31,10 +43,23 @@ function DirectoriesTable() {
 
 	const includeDirectory = (e, directory) => {
 		Client.addOrUpdateDirectory({ ...directory, excluded: false }).then(refetchDirectories);
+		ReactQueryUtil.updateDirectories(queryClient, directory.path, (currentDirectory) => {
+			return {
+				...currentDirectory,
+				excluded: false,
+				processingStart: Date.now(),
+			};
+		});
 	};
 
 	const syncNow = (e, directory) => {
-		Client.addOrUpdateDirectory({ directory }).then(refetchDirectories);
+		Client.addOrUpdateDirectory(directory).then(refetchDirectories);
+		ReactQueryUtil.updateDirectories(queryClient, directory.path, (currentDirectory) => {
+			return {
+				...currentDirectory,
+				processingStart: Date.now(),
+			};
+		});
 	};
 
 	const msToTime = (millis) => {
@@ -49,7 +74,32 @@ function DirectoriesTable() {
 	};
 
 	const formatLastSynced = (directory) => {
+		if (!directory.lastSynced) {
+			return 'Syncing...';
+		}
+
 		return msToTime(Date.now() - directory.lastSynced) + ' Ago';
+	};
+
+	const formatFilesCount = (directory) => {
+		if (directory.filesCount == undefined) {
+			return 'N/A';
+		}
+
+		return directory.filesCount + ' files';
+	};
+
+	const isProcessing = (directory) => {
+		return directory.processingStart != undefined && directory.processingStart > 0;
+	};
+
+	const isStaleProcessing = (directory) => {
+		if (!isProcessing(directory)) {
+			return false;
+		}
+
+		let millisSinceStart = Date.now() - directory.processingStart;
+		return millisSinceStart > 1000 * 60;
 	};
 
 	return (
@@ -76,16 +126,34 @@ function DirectoriesTable() {
 									key={directory.path}
 								>
 									<TableCell>
-										{!directory.excluded && (
+										{!directory.excluded && !isProcessing(directory) && (
 											<Tooltip title="Sync Now">
 												<IconButton onClick={(e) => syncNow(e, directory)}>
 													<SyncIcon color="secondary" />
 												</IconButton>
 											</Tooltip>
 										)}
+										{!directory.excluded &&
+											isProcessing(directory) &&
+											!isStaleProcessing(directory) && (
+												<Tooltip title="Processing">
+													<IconButton>
+														<CircularProgress color="secondary" size="25px" />
+													</IconButton>
+												</Tooltip>
+											)}
+										{!directory.excluded &&
+											isProcessing(directory) &&
+											isStaleProcessing(directory) && (
+												<Tooltip title="Error processing">
+													<IconButton>
+														<ErrorIcon color="error" />
+													</IconButton>
+												</Tooltip>
+											)}
 									</TableCell>
 									<TableCell>{directory.path}</TableCell>
-									<TableCell>{!directory.excluded && directory.filesCount + ' files'}</TableCell>
+									<TableCell>{!directory.excluded && formatFilesCount(directory)}</TableCell>
 									<TableCell>
 										{!directory.excluded && directory.tags && directory.tags.join('\n')}
 									</TableCell>

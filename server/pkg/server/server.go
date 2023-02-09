@@ -3,6 +3,7 @@ package server
 import (
 	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
+	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/storage"
 	"net/http"
 
@@ -19,10 +20,12 @@ type Server struct {
 	router      *gin.Engine
 	gallery     *gallery.Gallery
 	storage     *storage.Storage
+	processor   itemprocessor.ItemProcessor
 	directories directories.Directories
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage, directories directories.Directories) *Server {
+func New(gallery *gallery.Gallery, storage *storage.Storage,
+	directories directories.Directories, processor itemprocessor.ItemProcessor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
@@ -30,6 +33,7 @@ func New(gallery *gallery.Gallery, storage *storage.Storage, directories directo
 		gallery:     gallery,
 		storage:     storage,
 		directories: directories,
+		processor:   processor,
 	}
 
 	server.init()

@@ -18,10 +18,18 @@ import (
 )
 
 type DirectoriesMock struct{}
+type ItemProcessorMock struct{}
 
 func (d *DirectoriesMock) Init() error                                 { return nil }
 func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
 func (d *DirectoriesMock) DirectoryRemoved(path string)                {}
+func (d *ItemProcessorMock) Run()                                      {}
+func (d *ItemProcessorMock) EnqueueAllItemsCovers() error              { return nil }
+func (d *ItemProcessorMock) EnqueueAllItemsPreview() error             { return nil }
+func (d *ItemProcessorMock) EnqueueAllItemsVideoMetadata() error       { return nil }
+func (d *ItemProcessorMock) EnqueueItemVideoMetadata(id uint64)        {}
+func (d *ItemProcessorMock) EnqueueItemPreview(id uint64)              {}
+func (d *ItemProcessorMock) EnqueueItemCovers(id uint64)               {}
 
 func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))
@@ -34,7 +42,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
 	gallery := gallery.New(db, storage, "")
-	return New(gallery, storage, &DirectoriesMock{})
+	return New(gallery, storage, &DirectoriesMock{}, &ItemProcessorMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {
@@ -231,7 +239,7 @@ func TestDirectories(t *testing.T) {
 	directory := model.Directory{
 		Path:       "path/to/file",
 		Excluded:   pointer.Bool(false),
-		FilesCount: 10,
+		FilesCount: pointer.Int(10),
 		Tags: []*model.Tag{
 			{
 				Title: "tag1",

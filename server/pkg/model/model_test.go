@@ -84,7 +84,7 @@ func TestItemMarshal(t *testing.T) {
 func TestDirectoryMarshal(t *testing.T) {
 	dir := Directory{
 		Path:       "path/to/dir",
-		FilesCount: 1,
+		FilesCount: pointer.Int(1),
 		LastSynced: 1675352131869,
 		Excluded:   pointer.Bool(false),
 		Tags:       []*Tag{{Id: 1}, {Id: 2}},
