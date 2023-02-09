@@ -22,16 +22,24 @@ func (g *Gallery) RefreshItemsCovers() error {
 			continue
 		}
 
-		item.Covers = make([]model.Cover, 0)
-
-		for i := 1; i <= int(g.coversCount); i++ {
-			if err := g.refreshItemCover(&item, i); err != nil {
-				errorsCounter++
-			}
+		if g.refreshItemCovers(&item) != nil {
+			errorsCounter++
 		}
 	}
 
 	logger.Infof("Done refreshing covers of %d items in %dms - %d errors", len(*items), time.Now().UnixMilli()-startMillis, errorsCounter)
+	return nil
+}
+
+func (g *Gallery) refreshItemCovers(item *model.Item) error {
+	item.Covers = make([]model.Cover, 0)
+
+	for i := 1; i <= int(g.coversCount); i++ {
+		if err := g.refreshItemCover(item, i); err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 

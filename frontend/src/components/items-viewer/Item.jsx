@@ -119,7 +119,7 @@ function Item({ item, preferPreview }) {
 					})}
 				</Stack>
 			)}
-			{previewMode() && showPreview && (
+			{previewMode() && showPreview && item.previewUrl && (
 				<Box
 					flexGrow={1}
 					padding="10px"

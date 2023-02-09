@@ -147,6 +147,11 @@ func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 		Preload("Items", itemsPreloading).
 		Preload("Annotations", annotationsPreloading).
 		First(tag, conds...).Error
+
+	if err != nil {
+		return nil, err
+	}
+
 	return tag, err
 }
 

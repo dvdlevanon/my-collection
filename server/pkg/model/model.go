@@ -27,6 +27,7 @@ type Item struct {
 	CodecName       string  `json:"codec,omitempty"`
 	Url             string  `json:"url,omitempty"`
 	PreviewUrl      string  `json:"previewUrl,omitempty"`
+	LastModified    int64   `json:"lastModified,omitempty"`
 	Covers          []Cover `json:"covers,omitempty"`
 	Tags            []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 }

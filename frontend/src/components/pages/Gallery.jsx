@@ -115,6 +115,7 @@ function Gallery({ previewMode }) {
 						conditionType={conditionType}
 						activeTags={getActiveTags()}
 						onTagClick={onTagClick}
+						onTagDelete={onTagDeactivated}
 						onChangeCondition={onChangeCondition}
 					/>
 				)}

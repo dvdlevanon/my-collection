@@ -143,7 +143,7 @@ func JoinVideoFiles(videoFiles []string, targetFile string) error {
 }
 
 func OptimizeVideoForPreview(videoFile string, tempFile string) error {
-	_, err := execute("ffmpeg", "-y", "-i", videoFile, "-b:v", "2M", tempFile)
+	_, err := execute("ffmpeg", "-y", "-i", videoFile, "-b:v", "2M", "-an", tempFile)
 	if err != nil {
 		return err
 	}

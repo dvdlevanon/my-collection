@@ -34,7 +34,15 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 
 func (g *Gallery) CreateOrUpdateItem(item *model.Item) error {
 	item.Url = g.getRelativePath(item.Url)
-	return g.Database.CreateOrUpdateItem(item)
+	err := g.Database.CreateOrUpdateItem(item)
+
+	if err == nil {
+		go g.refreshItemCovers(item)
+		go g.refreshItemMetadata(item)
+		go g.refreshItemPreview(item)
+	}
+
+	return err
 }
 
 func (g *Gallery) getRelativePath(url string) string {

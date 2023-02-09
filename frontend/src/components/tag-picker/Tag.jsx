@@ -4,6 +4,7 @@ import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import Client from '../../network/client';
+import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
@@ -16,7 +17,9 @@ function Tag({ tag, size, onTagSelected }) {
 	let [manageTagImageOpened, setManageTagImageOpened] = useState(false);
 
 	const getImageUrl = () => {
-		if (hasImage()) {
+		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/directory/directory.png'));
+		} else if (hasImage()) {
 			return Client.buildFileUrl(tag.imageUrl);
 		} else {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
@@ -152,6 +155,40 @@ function Tag({ tag, size, onTagSelected }) {
 		);
 	};
 
+	const directoryTagComponent = () => {
+		return tagComponent('50px', tag.title, 1, false, <></>);
+	};
+
+	const getTagComponent = () => {
+		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+			return directoryTagComponent();
+		} else if (tag.id > 0) {
+			return realTagComponent();
+		} else {
+			return newTagComponent();
+		}
+	};
+
+	const getWidth = () => {
+		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+			return '200px';
+		} else if (size == 'small') {
+			return '125px';
+		} else {
+			return '350px';
+		}
+	};
+
+	const getHeight = () => {
+		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+			return '200px';
+		} else if (size == 'small') {
+			return '200px';
+		} else {
+			return '500px';
+		}
+	};
+
 	return (
 		<Box
 			sx={{
@@ -161,14 +198,14 @@ function Tag({ tag, size, onTagSelected }) {
 				padding: '3px',
 				cursor: 'pointer',
 				position: 'relative',
-				width: size == 'small' ? '125px' : '350px',
-				height: size == 'small' ? '200px' : '500px',
+				width: getWidth(),
+				height: getHeight(),
 			}}
 			onClick={() => onTagSelected(tag)}
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 		>
-			{tag.id > 0 ? realTagComponent() : newTagComponent()}
+			{getTagComponent()}
 
 			{attachMenuAttributes !== null && (
 				<TagAttachAnnotationMenu

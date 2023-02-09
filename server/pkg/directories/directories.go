@@ -1,6 +1,8 @@
 package directories
 
 import (
+	"errors"
+	"math"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
@@ -9,11 +11,15 @@ import (
 	"strings"
 	"time"
 
+	"github.com/h2non/filetype"
 	"github.com/op/go-logging"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
+	"gorm.io/gorm"
 	"k8s.io/utils/pointer"
 )
 
-const DIRECTORIES_TAG_ID = 1000000000 // tags-util.js
+const DIRECTORIES_TAG_ID = uint64(1000000000) // tags-util.js
 
 var logger = logging.MustGetLogger("directories")
 var directoriesTag = model.Tag{
@@ -110,41 +116,73 @@ func (d *directoriesImpl) directoryChanged(directory *model.Directory, allDirect
 		return
 	}
 
-	absolutePath := d.gallery.GetFile(directory.Path)
-	files, err := os.ReadDir(absolutePath)
+	tag, err := d.handleDirectoryTag(directory)
 	if err != nil {
-		logger.Errorf("Error getting files of %s %t", directory.Path, err)
+		return
 	}
 
-	filesCount := 0
-
-	for _, file := range files {
-		if file.IsDir() {
-			path := filepath.Join(directory.Path, file.Name())
-			if !directoryExists(path, allDirectories) {
-				newDirectory := &model.Directory{
-					Path:     path,
-					Excluded: pointer.Bool(true),
-				}
-
-				if err := d.gallery.CreateOrUpdateDirectory(newDirectory); err != nil {
-					logger.Errorf("Error saving directory %s %t", path, err)
-					continue
-				}
-			}
-		} else {
-			filesCount++
-		}
-	}
-
-	directory.FilesCount = filesCount
+	directory.FilesCount = d.scanDirectory(directory, tag, allDirectories)
 	directory.LastSynced = time.Now().UnixMilli()
 	if err := d.gallery.CreateOrUpdateDirectory(directory); err != nil {
 		logger.Errorf("Error updating directory %s %t", directory.Path, err)
 	}
 }
 
-func directoryExists(path string, allDirectories []model.Directory) bool {
+func (d *directoriesImpl) scanDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
+	path := d.gallery.GetFile(directory.Path)
+	files, err := os.ReadDir(path)
+	if err != nil {
+		logger.Errorf("Error getting files of %s %t", path, err)
+	}
+
+	filesCount := 0
+	for _, file := range files {
+		path := filepath.Join(path, file.Name())
+		if file.IsDir() {
+			d.addDirectoryIfMissing(path, allDirectories)
+		} else if d.isVideo(path) {
+			d.addFileIfMissing(directory, tag, path)
+			filesCount++
+		}
+	}
+
+	return filesCount
+}
+
+func (d *directoriesImpl) isVideo(path string) bool {
+	file, err := os.Open(path)
+	if err != nil {
+		logger.Errorf("Error opening file for reading %s - %t", file, err)
+		return false
+	}
+
+	stat, err := file.Stat()
+	if err != nil {
+		logger.Errorf("Error getting stats of file %s - %t", path, err)
+		return false
+	}
+
+	header := make([]byte, int(math.Max(float64(stat.Size())-1, 1024)))
+	_, err = file.Read(header)
+	if err != nil {
+		logger.Errorf("Error reading from file %s - %t", path, err)
+		return false
+	}
+
+	return filetype.IsVideo(header)
+}
+
+func (d *directoriesImpl) addDirectoryIfMissing(path string, allDirectories []model.Directory) {
+	if d.directoryExists(path, allDirectories) {
+		return
+	}
+
+	if err := d.addExcludedDirectory(path); err != nil {
+		logger.Errorf("Error saving directory %s %t", path, err)
+	}
+}
+
+func (d *directoriesImpl) directoryExists(path string, allDirectories []model.Directory) bool {
 	for _, dir := range allDirectories {
 		if dir.Path == path {
 			return true
@@ -152,4 +190,87 @@ func directoryExists(path string, allDirectories []model.Directory) bool {
 	}
 
 	return false
+}
+
+func (d *directoriesImpl) addExcludedDirectory(path string) error {
+	newDirectory := &model.Directory{
+		Path:     path,
+		Excluded: pointer.Bool(true),
+	}
+
+	return d.gallery.CreateOrUpdateDirectory(newDirectory)
+}
+
+func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) error {
+	exists, lastModified, err := d.fileExists(path, tag)
+
+	if exists || err != nil {
+		return err
+	}
+
+	title := filepath.Base(path)
+	item := model.Item{
+		Title:        title,
+		Origin:       directory.Path,
+		Url:          path,
+		LastModified: lastModified,
+		Tags: []*model.Tag{
+			tag,
+		},
+	}
+
+	logger.Debugf("Adding a new file %s to %v", path, item)
+
+	if err := d.gallery.CreateOrUpdateItem(&item); err != nil {
+		logger.Errorf("Error creating item %v - %t", item, err)
+		return err
+	}
+
+	return nil
+}
+
+func (d *directoriesImpl) fileExists(path string, tag *model.Tag) (bool, int64, error) {
+	title := filepath.Base(path)
+	file, err := os.Stat(path)
+	if err != nil {
+		logger.Errorf("Error getting file stat %s - %t", file, err)
+		return false, 0, err
+	}
+
+	for _, item := range tag.Items {
+		if item.Title == title && item.LastModified == file.ModTime().UnixMilli() {
+			return true, file.ModTime().UnixMilli(), nil
+		}
+	}
+
+	return false, file.ModTime().UnixMilli(), nil
+}
+
+func (d *directoriesImpl) directoryNameToTag(path string) string {
+	caser := cases.Title(language.English)
+	return caser.String(strings.ReplaceAll(strings.ReplaceAll(filepath.Base(path), "-", " "), "_", " "))
+}
+
+func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model.Tag, error) {
+	tag := model.Tag{
+		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
+		Title:    d.directoryNameToTag(directory.Path),
+	}
+
+	existing, err := d.gallery.GetTag(tag)
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		logger.Errorf("Error handling directory tag %t", err)
+		return nil, err
+	}
+
+	if existing != nil {
+		return existing, nil
+	}
+
+	if err := d.gallery.CreateOrUpdateTag(&tag); err != nil {
+		logger.Errorf("Error creating tag %v - %t", tag, err)
+		return nil, err
+	}
+
+	return &tag, nil
 }
