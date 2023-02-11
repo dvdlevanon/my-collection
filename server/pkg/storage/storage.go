@@ -9,6 +9,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/google/uuid"
 	"github.com/op/go-logging"
+	cp "github.com/otiai10/copy"
 )
 
 const (
@@ -28,6 +29,16 @@ func New(rootDirectory string) (*Storage, error) {
 	}
 
 	if err := os.MkdirAll(path.Join(rootDirectory, TEMP_DIRECTORY), 0750); err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
+	execLocation, err := os.Executable()
+	if err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
+	storageTemplateDirectory := filepath.Join(filepath.Dir(execLocation), "storage-template")
+	if err := cp.Copy(storageTemplateDirectory, rootDirectory, cp.Options{}); err != nil {
 		return nil, errors.Wrap(err, 0)
 	}
 

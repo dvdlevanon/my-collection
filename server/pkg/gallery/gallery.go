@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/op/go-logging"
+	"k8s.io/utils/pointer"
 )
 
 var logger = logging.MustGetLogger("gallery")
@@ -37,6 +38,22 @@ func (g *Gallery) CreateOrUpdateDirectory(directory *model.Directory) error {
 	return g.Database.CreateOrUpdateDirectory(directory)
 }
 
+func (g *Gallery) ExcludeDirectory(path string) error {
+	path = g.getRelativePath(path)
+
+	directory, err := g.Database.GetDirectory(path)
+	if err != nil {
+		return err
+	}
+
+	if *directory.Excluded {
+		return nil
+	}
+
+	directory.Excluded = pointer.Bool(true)
+	return g.Database.CreateOrUpdateDirectory(directory)
+}
+
 func (g *Gallery) CreateOrUpdateItem(item *model.Item) error {
 	item.Url = g.getRelativePath(item.Url)
 	item.Origin = g.getRelativePath(item.Origin)
@@ -49,7 +66,7 @@ func (g *Gallery) getRelativePath(url string) string {
 	}
 
 	relativePath := strings.TrimPrefix(url, g.rootDirectory)
-	return "./" + strings.TrimPrefix(relativePath, string(filepath.Separator))
+	return strings.TrimPrefix(relativePath, string(filepath.Separator))
 }
 
 func (g *Gallery) GetFile(url string) string {

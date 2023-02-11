@@ -22,7 +22,7 @@ type ItemProcessorMock struct{}
 
 func (d *DirectoriesMock) Init() error                                 { return nil }
 func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
-func (d *DirectoriesMock) DirectoryRemoved(path string)                {}
+func (d *DirectoriesMock) DirectoryExcluded(path string)               {}
 func (d *ItemProcessorMock) Run()                                      {}
 func (d *ItemProcessorMock) EnqueueAllItemsCovers() error              { return nil }
 func (d *ItemProcessorMock) EnqueueAllItemsPreview() error             { return nil }

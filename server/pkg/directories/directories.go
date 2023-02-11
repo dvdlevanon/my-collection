@@ -31,26 +31,26 @@ var directoriesTag = model.Tag{
 type Directories interface {
 	Init() error
 	DirectoryChanged(directory *model.Directory)
-	DirectoryRemoved(path string)
+	DirectoryExcluded(path string)
 }
 
 type directoriesImpl struct {
-	gallery        *gallery.Gallery
-	storage        *storage.Storage
-	processor      itemprocessor.ItemProcessor
-	changeChannel  chan model.Directory
-	removedChannel chan string
+	gallery         *gallery.Gallery
+	storage         *storage.Storage
+	processor       itemprocessor.ItemProcessor
+	changeChannel   chan model.Directory
+	excludedChannel chan string
 }
 
 func New(gallery *gallery.Gallery, storage *storage.Storage, processor itemprocessor.ItemProcessor) Directories {
 	logger.Infof("Directories initialized")
 
 	return &directoriesImpl{
-		gallery:        gallery,
-		storage:        storage,
-		processor:      processor,
-		changeChannel:  make(chan model.Directory),
-		removedChannel: make(chan string),
+		gallery:         gallery,
+		storage:         storage,
+		processor:       processor,
+		changeChannel:   make(chan model.Directory),
+		excludedChannel: make(chan string),
 	}
 }
 
@@ -67,8 +67,8 @@ func (d *directoriesImpl) DirectoryChanged(directory *model.Directory) {
 	d.changeChannel <- *directory
 }
 
-func (d *directoriesImpl) DirectoryRemoved(directoryPath string) {
-	d.removedChannel <- directoryPath
+func (d *directoriesImpl) DirectoryExcluded(directoryPath string) {
+	d.excludedChannel <- directoryPath
 }
 
 func (d *directoriesImpl) watchFilesystemChanges() {
@@ -76,22 +76,10 @@ func (d *directoriesImpl) watchFilesystemChanges() {
 		select {
 		case directory := <-d.changeChannel:
 			logger.Infof("Directory changed %s", directory.Path)
-
-			directories, err := d.gallery.GetAllDirectories()
-			if err != nil {
-				logger.Errorf("Error getting all directories %t", err)
-			}
-
-			d.directoryChanged(&directory, *directories)
-		case directoryPath := <-d.removedChannel:
-			logger.Infof("Directory removed %s", directoryPath)
-
-			directories, err := d.gallery.GetAllDirectories()
-			if err != nil {
-				logger.Errorf("Error getting all directories %t", err)
-			}
-
-			d.directoryRemoved(directoryPath, *directories)
+			d.directoryChanged(&directory)
+		case directoryPath := <-d.excludedChannel:
+			logger.Infof("Directory excluded %s", directoryPath)
+			d.directoryExcluded(directoryPath)
 		case <-time.After(60 * time.Second):
 			// millisSinceScanned := time.Now().UnixMilli() - directory.LastSynced
 
@@ -104,27 +92,19 @@ func (d *directoriesImpl) watchFilesystemChanges() {
 	}
 }
 
-func (d *directoriesImpl) directoryRemoved(directoryPath string, allDirectories []model.Directory) {
-	for _, dir := range allDirectories {
-		if dir.Excluded == nil || !*dir.Excluded {
-			continue
-		}
-
-		if strings.HasPrefix(dir.Path, directoryPath) {
-			if err := d.gallery.RemoveDirectory(dir.Path); err != nil {
-				logger.Errorf("Error removing directory %s", dir.Path)
-			}
-		}
+func (d *directoriesImpl) directoryChanged(directory *model.Directory) {
+	allDirectories, err := d.gallery.GetAllDirectories()
+	if err != nil {
+		logger.Errorf("Error getting all directories %t", err)
+		return
 	}
-}
 
-func (d *directoriesImpl) directoryChanged(directory *model.Directory, allDirectories []model.Directory) {
 	tag, err := d.handleDirectoryTag(directory)
 	if err != nil {
 		return
 	}
 
-	directory.FilesCount = pointer.Int(d.syncDirectory(directory, tag, allDirectories))
+	directory.FilesCount = pointer.Int(d.syncDirectory(directory, tag, *allDirectories))
 	directory.LastSynced = time.Now().UnixMilli()
 	directory.ProcessingStart = pointer.Int64(0)
 	if err := d.gallery.CreateOrUpdateDirectory(directory); err != nil {
@@ -322,4 +302,33 @@ func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model
 	}
 
 	return &tag, nil
+}
+
+func (d *directoriesImpl) directoryExcluded(directoryPath string) {
+	d.removeExcludedSubDirectories(directoryPath)
+	d.removeBelongingItems(directoryPath)
+}
+
+func (d *directoriesImpl) removeExcludedSubDirectories(directoryPath string) {
+	allDirectories, err := d.gallery.GetAllDirectories()
+	if err != nil {
+		logger.Errorf("Error getting all directories %t", err)
+		return
+	}
+
+	for _, dir := range *allDirectories {
+		if dir.Excluded == nil || !*dir.Excluded {
+			continue
+		}
+
+		if strings.HasPrefix(dir.Path, directoryPath) {
+			if err := d.gallery.RemoveDirectory(dir.Path); err != nil {
+				logger.Errorf("Error removing directory %s", dir.Path)
+			}
+		}
+	}
+}
+
+func (d *directoriesImpl) removeBelongingItems(directoryPath string) {
+	// TODO
 }

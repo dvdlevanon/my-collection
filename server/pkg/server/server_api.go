@@ -377,13 +377,14 @@ func (s *Server) getDirectory(c *gin.Context) {
 	c.JSON(http.StatusOK, directory)
 }
 
-func (s *Server) removeDirectory(c *gin.Context) {
+func (s *Server) excludeDirectory(c *gin.Context) {
 	directoryPath := c.Param("directory")[1:]
-	err := s.gallery.RemoveDirectory(directoryPath)
+
+	err := s.gallery.ExcludeDirectory(directoryPath)
 	if s.handleError(c, err) {
 		return
 	}
 
-	s.directories.DirectoryRemoved(directoryPath)
+	s.directories.DirectoryExcluded(directoryPath)
 	c.Status(http.StatusOK)
 }

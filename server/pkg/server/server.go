@@ -61,7 +61,7 @@ func (s *Server) init() {
 	api.GET("/directories", s.getDirectories)
 	api.POST("/directories", s.createOrUpdateDirectory)
 	api.GET("/directories/*directory", s.getDirectory)
-	api.DELETE("/directories/*directory", s.removeDirectory)
+	api.DELETE("/directories/*directory", s.excludeDirectory)
 
 	api.POST("/tags/:tag/annotations", s.addAnnotationToTag)
 	api.DELETE("/tags/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)

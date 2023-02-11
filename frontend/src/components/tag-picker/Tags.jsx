@@ -63,8 +63,6 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 		let filteredTags = filterTagsByAnnotations(filterTagsBySearch(tags));
 
 		return filteredTags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
-		// let shuffeledTags = filteredTags.sort(() => (Math.random() > 0.5 ? 1 : -1));
-		// return shuffeledTags;
 	};
 
 	const isSelectedAnnotation = (annotation) => {
@@ -89,11 +87,11 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					gap: '10px',
 				}}
 			>
-				{
+				{!TagsUtil.isDirectoriesSuperTag(parentId) && (
 					<IconButton onClick={() => setAddTagDialogOpened(true)}>
 						<AddIcon />
 					</IconButton>
-				}
+				)}
 				<TextField
 					variant="outlined"
 					autoFocus
