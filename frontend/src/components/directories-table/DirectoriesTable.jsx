@@ -145,8 +145,8 @@ function DirectoriesTable() {
 										{!directory.excluded &&
 											isProcessing(directory) &&
 											isStaleProcessing(directory) && (
-												<Tooltip title="Error processing">
-													<IconButton>
+												<Tooltip title="Error processing, click to try again">
+													<IconButton onClick={(e) => syncNow(e, directory)}>
 														<ErrorIcon color="error" />
 													</IconButton>
 												</Tooltip>

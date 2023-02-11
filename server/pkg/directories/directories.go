@@ -124,7 +124,7 @@ func (d *directoriesImpl) directoryChanged(directory *model.Directory, allDirect
 		return
 	}
 
-	directory.FilesCount = pointer.Int(d.scanDirectory(directory, tag, allDirectories))
+	directory.FilesCount = pointer.Int(d.syncDirectory(directory, tag, allDirectories))
 	directory.LastSynced = time.Now().UnixMilli()
 	directory.ProcessingStart = pointer.Int64(0)
 	if err := d.gallery.CreateOrUpdateDirectory(directory); err != nil {
@@ -132,7 +132,7 @@ func (d *directoriesImpl) directoryChanged(directory *model.Directory, allDirect
 	}
 }
 
-func (d *directoriesImpl) scanDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
+func (d *directoriesImpl) syncDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
 	path := d.gallery.GetFile(directory.Path)
 	files, err := os.ReadDir(path)
 	if err != nil {
@@ -157,7 +157,32 @@ func (d *directoriesImpl) scanDirectory(directory *model.Directory, tag *model.T
 		}
 	}
 
+	items, err := d.gallery.GetItemsOfTag(tag)
+	if err != nil {
+		logger.Errorf("Error getting files of tag %t", err)
+	}
+
+	for _, item := range *items {
+		if d.fileExists(directory, item) {
+			continue
+		}
+
+		if err := d.gallery.RemoveItem(item.Id); err != nil {
+			logger.Errorf("Error removing item %d - %t", item.Id, err)
+		}
+	}
+
 	return filesCount
+}
+
+func (d *directoriesImpl) fileExists(directory *model.Directory, item model.Item) bool {
+	if item.Origin != directory.Path {
+		return true
+	}
+
+	path := d.gallery.GetFile(filepath.Join(item.Origin, item.Title))
+	_, err := os.Stat(path)
+	return err == nil
 }
 
 func (d *directoriesImpl) isVideo(path string) bool {
@@ -213,7 +238,7 @@ func (d *directoriesImpl) addExcludedDirectory(path string) error {
 }
 
 func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
-	exists, lastModified, err := d.fileExists(path, tag)
+	exists, lastModified, err := d.itemExists(path, tag)
 
 	if exists || err != nil {
 		return false, err
@@ -248,7 +273,7 @@ func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *mode
 	return true, nil
 }
 
-func (d *directoriesImpl) fileExists(path string, tag *model.Tag) (bool, int64, error) {
+func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (bool, int64, error) {
 	title := filepath.Base(path)
 	file, err := os.Stat(path)
 	if err != nil {
@@ -256,12 +281,7 @@ func (d *directoriesImpl) fileExists(path string, tag *model.Tag) (bool, int64, 
 		return false, 0, err
 	}
 
-	itemIds := make([]uint64, 0)
-	for _, item := range tag.Items {
-		itemIds = append(itemIds, item.Id)
-	}
-
-	items, err := d.gallery.GetItems(itemIds)
+	items, err := d.gallery.GetItemsOfTag(tag)
 	if err != nil {
 		logger.Errorf("Error getting files of tag %t", err)
 	}

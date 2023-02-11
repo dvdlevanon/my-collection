@@ -286,3 +286,7 @@ func (d *Database) GetAllDirectories() (*[]model.Directory, error) {
 func (d *Database) RemoveDirectory(path string) error {
 	return d.db.Delete(model.Directory{Path: path}).Error
 }
+
+func (d *Database) RemoveItem(itemId uint64) error {
+	return d.db.Delete(model.Item{Id: itemId}).Error
+}
