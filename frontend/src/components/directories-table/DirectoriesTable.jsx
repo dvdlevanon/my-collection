@@ -19,7 +19,7 @@ function DirectoriesTable() {
 				queryClient.refetchQueries({
 					queryKey: ReactQueryUtil.DIRECTORIES_KEY,
 				});
-			}, 1000);
+			}, 5000);
 		}
 	};
 
