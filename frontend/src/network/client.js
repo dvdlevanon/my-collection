@@ -17,6 +17,13 @@ export default class Client {
 		});
 	};
 
+	static setDirectoryCategories = async (directory) => {
+		return await fetch(`${Client.apiUrl}/directories/tags/${directory.path}`, {
+			method: 'POST',
+			body: JSON.stringify(directory),
+		});
+	};
+
 	static removeDirectory = async (directoryPath) => {
 		return await fetch(`${Client.apiUrl}/directories/${directoryPath}`, {
 			method: 'DELETE',

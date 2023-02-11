@@ -20,7 +20,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-const DIRECTORIES_TAG_ID = uint64(1000000000) // tags-util.js
+const DIRECTORIES_TAG_ID = uint64(1) // tags-util.js
 
 var logger = logging.MustGetLogger("directories")
 var directoriesTag = model.Tag{
@@ -93,6 +93,10 @@ func (d *directoriesImpl) watchFilesystemChanges() {
 }
 
 func (d *directoriesImpl) directoryChanged(directory *model.Directory) {
+	if (*directory).Excluded != nil && *((*directory).Excluded) {
+		return
+	}
+
 	allDirectories, err := d.gallery.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
@@ -217,6 +221,31 @@ func (d *directoriesImpl) addExcludedDirectory(path string) error {
 	return d.gallery.CreateOrUpdateDirectory(newDirectory)
 }
 
+func (d *directoriesImpl) getConcreteTagOfDirectory(directory *model.Directory, directoryTag *model.Tag) (*model.Tag, error) {
+	tag := model.Tag{
+		ParentID: &directoryTag.Id,
+		Title:    d.directoryNameToTag(directory.Path),
+	}
+
+	return d.getOrCreateTag(&tag)
+}
+
+func (d *directoriesImpl) getConcreteTagsOfDirectory(directory *model.Directory) ([]*model.Tag, error) {
+	result := make([]*model.Tag, 0)
+
+	for _, directoryTag := range directory.Tags {
+		concreteTag, err := d.getConcreteTagOfDirectory(directory, directoryTag)
+
+		if err != nil {
+			return nil, err
+		}
+
+		result = append(result, concreteTag)
+	}
+
+	return result, nil
+}
+
 func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
 	exists, lastModified, err := d.itemExists(path, tag)
 
@@ -228,15 +257,18 @@ func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *mode
 		return false, nil
 	}
 
+	concreteTags, err := d.getConcreteTagsOfDirectory(directory)
+	if err != nil {
+		return false, err
+	}
+
 	title := filepath.Base(path)
 	item := model.Item{
 		Title:        title,
 		Origin:       directory.Path,
 		Url:          path,
 		LastModified: lastModified,
-		Tags: []*model.Tag{
-			tag,
-		},
+		Tags:         append(concreteTags, tag),
 	}
 
 	logger.Debugf("Adding a new file %s to %v", path, item)
@@ -246,9 +278,11 @@ func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *mode
 		return false, err
 	}
 
-	d.processor.EnqueueItemVideoMetadata(item.Id)
-	d.processor.EnqueueItemCovers(item.Id)
-	d.processor.EnqueueItemPreview(item.Id)
+	if d.gallery.AutomaticProcessing {
+		d.processor.EnqueueItemVideoMetadata(item.Id)
+		d.processor.EnqueueItemCovers(item.Id)
+		d.processor.EnqueueItemPreview(item.Id)
+	}
 
 	return true, nil
 }
@@ -280,15 +314,10 @@ func (d *directoriesImpl) directoryNameToTag(path string) string {
 	return caser.String(strings.ReplaceAll(strings.ReplaceAll(filepath.Base(path), "-", " "), "_", " "))
 }
 
-func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model.Tag, error) {
-	tag := model.Tag{
-		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
-		Title:    d.directoryNameToTag(directory.Path),
-	}
-
+func (d *directoriesImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
 	existing, err := d.gallery.GetTag(tag)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Errorf("Error handling directory tag %t", err)
+		logger.Errorf("Error getting tag %t", err)
 		return nil, err
 	}
 
@@ -296,12 +325,21 @@ func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model
 		return existing, nil
 	}
 
-	if err := d.gallery.CreateOrUpdateTag(&tag); err != nil {
+	if err := d.gallery.CreateOrUpdateTag(tag); err != nil {
 		logger.Errorf("Error creating tag %v - %t", tag, err)
 		return nil, err
 	}
 
-	return &tag, nil
+	return tag, nil
+}
+
+func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model.Tag, error) {
+	tag := model.Tag{
+		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
+		Title:    d.directoryNameToTag(directory.Path),
+	}
+
+	return d.getOrCreateTag(&tag)
 }
 
 func (d *directoriesImpl) directoryExcluded(directoryPath string) {

@@ -367,6 +367,27 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func (s *Server) SetDirectoryTags(c *gin.Context) {
+	body, err := io.ReadAll(c.Request.Body)
+	if s.handleError(c, err) {
+		return
+	}
+
+	var directory model.Directory
+	if err = json.Unmarshal(body, &directory); err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	if err = s.gallery.SetDirectoryTags(&directory); err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	s.directories.DirectoryChanged(&directory)
+	c.Status(http.StatusOK)
+}
+
 func (s *Server) getDirectory(c *gin.Context) {
 	directoryPath := c.Param("directory")[1:]
 	directory, err := s.gallery.GetDirectory("path = ?", directoryPath)

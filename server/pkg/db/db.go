@@ -287,6 +287,10 @@ func (d *Database) RemoveDirectory(path string) error {
 	return d.db.Delete(model.Directory{Path: path}).Error
 }
 
+func (d *Database) RemoveTagFromDirectory(direcotryPath string, tagId uint64) error {
+	return d.db.Model(model.Directory{Path: direcotryPath}).Association("Tags").Delete(model.Tag{Id: tagId})
+}
+
 func (d *Database) RemoveItem(itemId uint64) error {
 	return d.db.Delete(model.Item{Id: itemId}).Error
 }

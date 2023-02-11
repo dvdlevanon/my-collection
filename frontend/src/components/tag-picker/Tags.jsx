@@ -157,7 +157,9 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					</Stack>
 				)}
 			</Box>
-			{addTagDialogOpened && <AddTagDialog parentId={parentId} onClose={() => setAddTagDialogOpened(false)} />}
+			{addTagDialogOpened && (
+				<AddTagDialog parentId={parentId} verb="Tag" onClose={() => setAddTagDialogOpened(false)} />
+			)}
 		</Stack>
 	);
 }

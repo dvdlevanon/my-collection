@@ -6,7 +6,7 @@ import { useQueryClient } from 'react-query';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 
-function AddTagDialog({ parentId, onClose }) {
+function AddTagDialog({ parentId, verb, onClose }) {
 	const queryClient = useQueryClient();
 	const newTagName = useRef(null);
 
@@ -17,8 +17,11 @@ function AddTagDialog({ parentId, onClose }) {
 
 		let newTag = {
 			title: newTagName.current.value,
-			parentId: parentId,
 		};
+
+		if (parentId != null) {
+			newTag.parentId = parentId;
+		}
 
 		Client.createTag(newTag)
 			.then((response) => response.json())
@@ -38,7 +41,7 @@ function AddTagDialog({ parentId, onClose }) {
 			open={true}
 		>
 			<DialogTitle variant="h6">
-				Add Tag
+				Add {verb}
 				<IconButton
 					sx={{
 						position: 'absolute',
@@ -65,7 +68,7 @@ function AddTagDialog({ parentId, onClose }) {
 						}
 					}}
 					size="small"
-					placeholder="Tag Name"
+					placeholder={verb + ' Name'}
 					inputRef={newTagName}
 				></TextField>
 				<IconButton onClick={(e) => addTag(e)} sx={{ alignSelf: 'center' }}>

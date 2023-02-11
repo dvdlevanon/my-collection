@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
+import TagsUtil from '../../utils/tags-util';
 import Categories from './Categories';
 import Tags from './Tags';
 
@@ -48,12 +49,7 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCat
 	return (
 		<Stack height={selectedCategoryId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && (
-				<Categories
-					categories={tagsQuery.data.filter((tag) => {
-						return !tag.parentId;
-					})}
-					onCategoryClicked={onCategoryClicked}
-				/>
+				<Categories categories={TagsUtil.getCategories(tagsQuery.data)} onCategoryClicked={onCategoryClicked} />
 			)}
 			{tagsQuery.isSuccess && selectedCategoryId > 0 && (
 				<Tags

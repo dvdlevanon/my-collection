@@ -33,10 +33,10 @@ function DirectoriesTable() {
 				<TableHead>
 					<TableRow>
 						<TableCell style={{ width: '5%' }}></TableCell>
-						<TableCell style={{ width: '20%' }}>Path</TableCell>
-						<TableCell style={{ width: '20%' }}>Files</TableCell>
-						<TableCell style={{ width: '20%' }}>Category</TableCell>
-						<TableCell style={{ width: '20%' }}>Last Scanned</TableCell>
+						<TableCell style={{ width: '40%' }}>Path</TableCell>
+						<TableCell style={{ width: '15%' }}>Category</TableCell>
+						<TableCell style={{ width: '15%' }}>Files</TableCell>
+						<TableCell style={{ width: '15%' }}>Last Scanned</TableCell>
 						<TableCell style={{ width: '5%' }}></TableCell>
 					</TableRow>
 				</TableHead>

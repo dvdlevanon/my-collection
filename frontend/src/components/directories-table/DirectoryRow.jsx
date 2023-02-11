@@ -1,13 +1,16 @@
 import { TableCell, TableRow } from '@mui/material';
+import { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
+import AddTagDialog from '../dialogs/AddTagDialog';
 import DirectoryActionsCell from './DirectoryActionsCell';
 import DirectoryCategoriesCell from './DirectoryCategoriesCell';
 import DirectoryStatusCell from './DirectoryStatusCell';
 
 function DirectoryRow({ directory }) {
 	const queryClient = useQueryClient();
+	const [addCategoryDialogOpened, setAddCategoryDialogOpened] = useState(false);
 	const refetchDirectories = () => {
 		queryClient.refetchQueries({
 			queryKey: ReactQueryUtil.DIRECTORIES_KEY,
@@ -39,6 +42,15 @@ function DirectoryRow({ directory }) {
 		});
 	};
 
+	const setCategories = (categoryIds) => {
+		let categories = [];
+		for (let i = 0; i < categoryIds.length; i++) {
+			categories.push({ id: categoryIds[i] });
+		}
+
+		Client.setDirectoryCategories({ ...directory, tags: categories }).then(refetchDirectories);
+	};
+
 	const msToTime = (millis) => {
 		let seconds = (millis / 1000).toFixed(1);
 		let minutes = (millis / (1000 * 60)).toFixed(1);
@@ -67,29 +79,38 @@ function DirectoryRow({ directory }) {
 	};
 
 	return (
-		<TableRow
-			sx={{
-				backgroundColor: directory.excluded ? '#333' : 'main',
-			}}
-			key={directory.path}
-		>
-			<TableCell>
-				{!directory.excluded && <DirectoryStatusCell directory={directory} syncNow={syncNow} />}
-			</TableCell>
-			<TableCell>{directory.path}</TableCell>
-			<TableCell>{!directory.excluded && formatFilesCount(directory)}</TableCell>
-			<TableCell>
-				<DirectoryCategoriesCell directory={directory} />
-			</TableCell>
-			<TableCell>{!directory.excluded && formatLastSynced(directory)}</TableCell>
-			<TableCell>
-				<DirectoryActionsCell
-					directory={directory}
-					includeDirectory={includeDirectory}
-					excludeDirectory={excludeDirectory}
-				/>
-			</TableCell>
-		</TableRow>
+		<>
+			<TableRow
+				sx={{
+					backgroundColor: directory.excluded ? '#333' : 'main',
+				}}
+				key={directory.path}
+			>
+				<TableCell>
+					{!directory.excluded && <DirectoryStatusCell directory={directory} syncNow={syncNow} />}
+				</TableCell>
+				<TableCell>{directory.path}</TableCell>
+				<TableCell>
+					<DirectoryCategoriesCell
+						directory={directory}
+						setCategories={setCategories}
+						onCreateCategoryClicked={() => setAddCategoryDialogOpened(true)}
+					/>
+				</TableCell>
+				<TableCell>{!directory.excluded && formatFilesCount(directory)}</TableCell>
+				<TableCell>{!directory.excluded && formatLastSynced(directory)}</TableCell>
+				<TableCell>
+					<DirectoryActionsCell
+						directory={directory}
+						includeDirectory={includeDirectory}
+						excludeDirectory={excludeDirectory}
+					/>
+				</TableCell>
+			</TableRow>
+			{addCategoryDialogOpened && (
+				<AddTagDialog parentId={null} verb="Category" onClose={() => setAddCategoryDialogOpened(false)} />
+			)}
+		</>
 	);
 }
 
