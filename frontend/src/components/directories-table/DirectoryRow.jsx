@@ -3,6 +3,7 @@ import { useQueryClient } from 'react-query';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import DirectoryActionsCell from './DirectoryActionsCell';
+import DirectoryCategoriesCell from './DirectoryCategoriesCell';
 import DirectoryStatusCell from './DirectoryStatusCell';
 
 function DirectoryRow({ directory }) {
@@ -77,7 +78,9 @@ function DirectoryRow({ directory }) {
 			</TableCell>
 			<TableCell>{directory.path}</TableCell>
 			<TableCell>{!directory.excluded && formatFilesCount(directory)}</TableCell>
-			<TableCell>{!directory.excluded && directory.tags && directory.tags.join('\n')}</TableCell>
+			<TableCell>
+				<DirectoryCategoriesCell directory={directory} />
+			</TableCell>
 			<TableCell>{!directory.excluded && formatLastSynced(directory)}</TableCell>
 			<TableCell>
 				<DirectoryActionsCell

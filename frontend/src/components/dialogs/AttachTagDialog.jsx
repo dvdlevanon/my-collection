@@ -41,7 +41,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 			</DialogTitle>
 			<DialogContent>
 				<TagPicker
-					initialSelectedSuperTagId={1}
+					initialSelectedCategoryId={1}
 					size="small"
 					onTagSelected={onTagAdded}
 					onDropDownToggled={() => {}}

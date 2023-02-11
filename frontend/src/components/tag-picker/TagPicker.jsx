@@ -3,24 +3,24 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
-import SuperTags from './SuperTags';
+import Categories from './Categories';
 import Tags from './Tags';
 
-function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedSuperTagId }) {
+function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCategoryId }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 
-	let [selectedSuperTagId, setSelectedSuperTagId] = useState(initialSelectedSuperTagId);
+	let [selectedCategoryId, setSelectedCategoryId] = useState(initialSelectedCategoryId);
 
 	const getChildrenTags = (selectedId) => {
-		let superTag = tagsQuery.data.find((cur) => {
+		let category = tagsQuery.data.find((cur) => {
 			return cur.id == selectedId;
 		});
 
-		if (!superTag.children) {
+		if (!category.children) {
 			return [];
 		}
 
-		let children = superTag.children.map((tag) => {
+		let children = category.children.map((tag) => {
 			return tagsQuery.data.filter((cur) => {
 				return cur.id == tag.id;
 			})[0];
@@ -29,36 +29,36 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedSup
 		return children;
 	};
 
-	const onSuperTagClicked = (superTag) => {
-		if (selectedSuperTagId == superTag.id) {
-			setSelectedSuperTagId(0);
+	const onCategoryClicked = (category) => {
+		if (selectedCategoryId == category.id) {
+			setSelectedCategoryId(0);
 			onDropDownToggled(false);
 		} else {
-			setSelectedSuperTagId(superTag.id);
+			setSelectedCategoryId(category.id);
 			onDropDownToggled(true);
 		}
 	};
 
 	const tagSelectedHandler = (tag) => {
-		setSelectedSuperTagId(0);
+		setSelectedCategoryId(0);
 		onDropDownToggled(false);
 		onTagSelected(tag);
 	};
 
 	return (
-		<Stack height={selectedSuperTagId > 0 ? '100%' : 'auto'}>
+		<Stack height={selectedCategoryId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && (
-				<SuperTags
-					superTags={tagsQuery.data.filter((tag) => {
+				<Categories
+					categories={tagsQuery.data.filter((tag) => {
 						return !tag.parentId;
 					})}
-					onSuperTagClicked={onSuperTagClicked}
+					onCategoryClicked={onCategoryClicked}
 				/>
 			)}
-			{tagsQuery.isSuccess && selectedSuperTagId > 0 && (
+			{tagsQuery.isSuccess && selectedCategoryId > 0 && (
 				<Tags
-					tags={getChildrenTags(selectedSuperTagId)}
-					parentId={selectedSuperTagId}
+					tags={getChildrenTags(selectedCategoryId)}
+					parentId={selectedCategoryId}
 					size={size}
 					onTagSelected={tagSelectedHandler}
 				/>

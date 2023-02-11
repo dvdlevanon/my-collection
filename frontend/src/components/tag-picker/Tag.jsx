@@ -17,7 +17,7 @@ function Tag({ tag, size, onTagSelected }) {
 	let [manageTagImageOpened, setManageTagImageOpened] = useState(false);
 
 	const getImageUrl = () => {
-		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/directory/directory.png'));
 		} else if (hasImage()) {
 			return Client.buildFileUrl(tag.imageUrl);
@@ -160,7 +160,7 @@ function Tag({ tag, size, onTagSelected }) {
 	};
 
 	const getTagComponent = () => {
-		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return directoryTagComponent();
 		} else if (tag.id > 0) {
 			return realTagComponent();
@@ -170,7 +170,7 @@ function Tag({ tag, size, onTagSelected }) {
 	};
 
 	const getWidth = () => {
-		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return '200px';
 		} else if (size == 'small') {
 			return '125px';
@@ -180,7 +180,7 @@ function Tag({ tag, size, onTagSelected }) {
 	};
 
 	const getHeight = () => {
-		if (TagsUtil.isDirectoriesSuperTag(tag.parentId)) {
+		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return '200px';
 		} else if (size == 'small') {
 			return '200px';

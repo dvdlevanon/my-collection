@@ -105,7 +105,7 @@ function Gallery({ previewMode }) {
 					size="big"
 					onTagSelected={onTagActivated}
 					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
-					initialSelectedSuperTagId={0}
+					initialSelectedCategoryId={0}
 				/>
 			)}
 			<Divider />

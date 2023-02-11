@@ -87,7 +87,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					gap: '10px',
 				}}
 			>
-				{!TagsUtil.isDirectoriesSuperTag(parentId) && (
+				{!TagsUtil.isDirectoriesCategory(parentId) && (
 					<IconButton onClick={() => setAddTagDialogOpened(true)}>
 						<AddIcon />
 					</IconButton>
@@ -135,11 +135,11 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				{filterTags().map((tag) => {
 					return <Tag key={tag.id} tag={tag} size={size} onTagSelected={onTagSelected} />;
 				})}
-				{!TagsUtil.isDirectoriesSuperTag(parentId) && (
+				{!TagsUtil.isDirectoriesCategory(parentId) && (
 					<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
 				)}
 
-				{TagsUtil.isDirectoriesSuperTag(parentId) && tags.length == 0 && (
+				{TagsUtil.isDirectoriesCategory(parentId) && tags.length == 0 && (
 					<Stack
 						direction="row"
 						gap="10px"
