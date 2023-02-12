@@ -10,6 +10,7 @@ function DirectoryCategoriesCell({ directory, setCategories, onCreateCategoryCli
 	const createCategoryId = -2;
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const [selectedCategories, setSelectedCategories] = useState([unknownCategoryId]);
+	const [open, setOpen] = React.useState(false);
 
 	useEffect(() => {
 		if (directory.tags != null) {
@@ -50,6 +51,7 @@ function DirectoryCategoriesCell({ directory, setCategories, onCreateCategoryCli
 		if (value[value.length - 1] == unknownCategoryId) {
 			setCategories([]);
 			setSelectedCategories([unknownCategoryId]);
+			setOpen(false);
 			return;
 		}
 
@@ -59,11 +61,20 @@ function DirectoryCategoriesCell({ directory, setCategories, onCreateCategoryCli
 
 		setCategories(value);
 		setSelectedCategories(value);
+		setOpen(false);
 	};
 
 	return (
 		<FormControl fullWidth>
-			<Select onChange={onChange} size="small" multiple value={selectedCategories}>
+			<Select
+				open={open}
+				onOpen={() => setOpen(true)}
+				onClose={() => setOpen(false)}
+				onChange={onChange}
+				size="small"
+				multiple
+				value={selectedCategories}
+			>
 				{getCategories().map((category) => {
 					return (
 						<MenuItem key={category.id} value={category.id}>

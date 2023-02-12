@@ -54,6 +54,13 @@ export default class Client {
 		});
 	};
 
+	static imageDirectoryChoosen = async (tagId, directoryPath) => {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/auto-image`, {
+			method: 'POST',
+			body: JSON.stringify({ url: directoryPath }),
+		});
+	};
+
 	static getItems = async () => {
 		return await fetch(`${Client.apiUrl}/items`).then((response) => response.json());
 	};

@@ -1,13 +1,19 @@
 package gallery
 
 import (
+	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
+	"os"
 	"path/filepath"
 	"strings"
 
+	"github.com/google/uuid"
 	"github.com/op/go-logging"
+	cp "github.com/otiai10/copy"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 	"k8s.io/utils/pointer"
 )
 
@@ -21,6 +27,7 @@ type Gallery struct {
 	PreviewSceneCount    int
 	PreviewSceneDuration int
 	AutomaticProcessing  bool
+	TrustFileExtenssion  bool
 }
 
 func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Gallery {
@@ -32,6 +39,7 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 		PreviewSceneCount:    4,
 		PreviewSceneDuration: 3,
 		AutomaticProcessing:  false,
+		TrustFileExtenssion:  true,
 	}
 }
 
@@ -73,6 +81,15 @@ func (g *Gallery) getRelativePath(url string) string {
 
 	relativePath := strings.TrimPrefix(url, g.rootDirectory)
 	return strings.TrimPrefix(relativePath, string(filepath.Separator))
+}
+
+func (d *Gallery) DirectoryNameToTag(path string) string {
+	caser := cases.Title(language.English)
+	return caser.String(strings.ReplaceAll(strings.ReplaceAll(filepath.Base(path), "-", " "), "_", " "))
+}
+
+func (*Gallery) TagTitleToDirectory(title string) string {
+	return strings.ToLower(strings.ReplaceAll(title, " ", "-"))
 }
 
 func (g *Gallery) GetFile(url string) string {
@@ -127,4 +144,66 @@ func (g *Gallery) SetDirectoryTags(directory *model.Directory) error {
 	}
 
 	return g.CreateOrUpdateDirectory(directory)
+}
+
+func (g *Gallery) AutoImageChildren(tag *model.Tag, directoryPath string) error {
+	for _, childTag := range tag.Children {
+		if childTag.Image != "" && childTag.Image != "none" {
+			continue
+		}
+
+		if err := g.AutoImageTag(childTag, directoryPath); err != nil {
+			logger.Errorf("Error auto tagging %v from %s - %t", childTag, directoryPath, err)
+		}
+	}
+
+	return nil
+}
+
+func (g *Gallery) AutoImageTag(tag *model.Tag, directoryPath string) error {
+	path, err := g.findExistingImage(tag.Title, directoryPath)
+	if err != nil {
+		return err
+	}
+
+	if path == "" {
+		return nil
+	}
+
+	fileName := fmt.Sprintf("%s-%s", filepath.Base(path), uuid.NewString())
+	relativeFile := filepath.Join("tags-image", fmt.Sprint(tag.Id), fileName)
+	storageFile, err := g.storage.GetFileForWriting(relativeFile)
+	if err != nil {
+		return err
+	}
+
+	if err = cp.Copy(path, storageFile); err != nil {
+		logger.Errorf("Error coping %s to %s - %t", path, storageFile, err)
+		return nil
+	}
+
+	tag.Image = g.storage.GetStorageUrl(relativeFile)
+	return g.CreateOrUpdateTag(tag)
+}
+
+func (g *Gallery) findExistingImage(tagTitle string, directory string) (string, error) {
+	possiblePaths := []string{
+		filepath.Join(directory, tagTitle),
+		filepath.Join(directory, g.TagTitleToDirectory(tagTitle)),
+	}
+
+	possibleExtenssions := []string{"jpg", "png"}
+
+	for _, pathWithoutExt := range possiblePaths {
+		for _, ext := range possibleExtenssions {
+			path := fmt.Sprintf("%s.%s", pathWithoutExt, ext)
+			if _, err := os.Stat(path); err != nil {
+				continue
+			}
+
+			return path, nil
+		}
+	}
+
+	return "", nil
 }

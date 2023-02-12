@@ -1,5 +1,4 @@
-import AddIcon from '@mui/icons-material/Add';
-import { Button, IconButton, Link, Stack, TextField } from '@mui/material';
+import { Button, Link, Stack } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
@@ -9,27 +8,23 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
-import TagAnnotation from './TagAnnotation';
+import TagsFilter from './TagsFilter';
 
 function Tags({ tags, parentId, size, onTagSelected }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	let [searchTerm, setSearchTerm] = useState('');
-	let [selectedAnnotaions, setSelectedAnnotations] = useState([]);
+	let [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
 		queryFn: () => Client.getAvailableAnnotations(parentId),
 		onSuccess: (availableAnnotations) => {
 			setSelectedAnnotations(
-				selectedAnnotaions.filter((selected) => {
+				selectedAnnotations.filter((selected) => {
 					return availableAnnotations.some((annotation) => selected.id == annotation.id);
 				})
 			);
 		},
 	});
-
-	const onSearchTermChanged = (e) => {
-		setSearchTerm(e.target.value);
-	};
 
 	const filterTagsBySearch = (tags) => {
 		let filteredTags = tags;
@@ -45,7 +40,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 
 	const filterTagsByAnnotations = (tags) => {
 		return tags.filter((cur) => {
-			if (selectedAnnotaions.length == 0) {
+			if (selectedAnnotations.length == 0) {
 				return true;
 			}
 
@@ -54,7 +49,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 			}
 
 			return cur.tags_annotations.some((tagAnnotation) => {
-				return selectedAnnotaions.some((annotation) => annotation.id == tagAnnotation.id);
+				return selectedAnnotations.some((annotation) => annotation.id == tagAnnotation.id);
 			});
 		});
 	};
@@ -65,63 +60,16 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 		return filteredTags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
 	};
 
-	const isSelectedAnnotation = (annotation) => {
-		return selectedAnnotaions.some((cur) => annotation.id == cur.id);
-	};
-
-	const annotationSelected = (e, annotation) => {
-		if (isSelectedAnnotation(annotation)) {
-			setSelectedAnnotations(selectedAnnotaions.filter((cur) => annotation.id != cur.id));
-		} else {
-			setSelectedAnnotations([...selectedAnnotaions, annotation]);
-		}
-	};
-
 	return (
 		<Stack width={'100%'} height={'100%'} flexGrow={1}>
-			<Box
-				sx={{
-					display: 'flex',
-					flexDirection: 'row',
-					padding: '10px',
-					gap: '10px',
-				}}
-			>
-				{!TagsUtil.isDirectoriesCategory(parentId) && (
-					<IconButton onClick={() => setAddTagDialogOpened(true)}>
-						<AddIcon />
-					</IconButton>
-				)}
-				<TextField
-					variant="outlined"
-					autoFocus
-					label="Search..."
-					type="search"
-					size="small"
-					onChange={(e) => onSearchTermChanged(e)}
-				></TextField>
-				<Box
-					sx={{
-						display: 'flex',
-						flexDirection: 'row',
-					}}
-				>
-					{availableAnnotationsQuery.isSuccess &&
-						availableAnnotationsQuery.data
-							.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0))
-							.map((annotation) => {
-								return (
-									<TagAnnotation
-										key={annotation.id}
-										selectedAnnotaions
-										annotation={annotation}
-										selected={isSelectedAnnotation(annotation)}
-										onClick={annotationSelected}
-									/>
-								);
-							})}
-				</Box>
-			</Box>
+			<TagsFilter
+				parentId={parentId}
+				setSearchTerm={setSearchTerm}
+				annotations={(availableAnnotationsQuery.isSuccess && availableAnnotationsQuery.data) || []}
+				setAddTagDialogOpened={setAddTagDialogOpened}
+				selectedAnnotations={selectedAnnotations}
+				setSelectedAnnotations={setSelectedAnnotations}
+			/>
 			<Box
 				sx={{
 					display: 'flex',
@@ -138,7 +86,6 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				{!TagsUtil.isDirectoriesCategory(parentId) && (
 					<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
 				)}
-
 				{TagsUtil.isDirectoriesCategory(parentId) && tags.length == 0 && (
 					<Stack
 						direction="row"

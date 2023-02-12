@@ -14,8 +14,6 @@ import (
 
 	"github.com/h2non/filetype"
 	"github.com/op/go-logging"
-	"golang.org/x/text/cases"
-	"golang.org/x/text/language"
 	"gorm.io/gorm"
 	"k8s.io/utils/pointer"
 )
@@ -170,6 +168,15 @@ func (d *directoriesImpl) fileExists(directory *model.Directory, item model.Item
 }
 
 func (d *directoriesImpl) isVideo(path string) bool {
+	if d.gallery.TrustFileExtenssion {
+		return strings.HasSuffix(path, ".avi") ||
+			strings.HasSuffix(path, ".mkv") ||
+			strings.HasSuffix(path, ".mpg") ||
+			strings.HasSuffix(path, ".mpeg") ||
+			strings.HasSuffix(path, ".wmv") ||
+			strings.HasSuffix(path, ".mp4")
+	}
+
 	file, err := os.Open(path)
 	if err != nil {
 		logger.Errorf("Error opening file for reading %s - %t", file, err)
@@ -224,7 +231,7 @@ func (d *directoriesImpl) addExcludedDirectory(path string) error {
 func (d *directoriesImpl) getConcreteTagOfDirectory(directory *model.Directory, directoryTag *model.Tag) (*model.Tag, error) {
 	tag := model.Tag{
 		ParentID: &directoryTag.Id,
-		Title:    d.directoryNameToTag(directory.Path),
+		Title:    d.gallery.DirectoryNameToTag(directory.Path),
 	}
 
 	return d.getOrCreateTag(&tag)
@@ -309,11 +316,6 @@ func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (bool, int64, 
 	return false, file.ModTime().UnixMilli(), nil
 }
 
-func (d *directoriesImpl) directoryNameToTag(path string) string {
-	caser := cases.Title(language.English)
-	return caser.String(strings.ReplaceAll(strings.ReplaceAll(filepath.Base(path), "-", " "), "_", " "))
-}
-
 func (d *directoriesImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
 	existing, err := d.gallery.GetTag(tag)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
@@ -336,7 +338,7 @@ func (d *directoriesImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
 func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model.Tag, error) {
 	tag := model.Tag{
 		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
-		Title:    d.directoryNameToTag(directory.Path),
+		Title:    d.gallery.DirectoryNameToTag(directory.Path),
 	}
 
 	return d.getOrCreateTag(&tag)

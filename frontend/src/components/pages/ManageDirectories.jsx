@@ -3,14 +3,20 @@ import { Fab, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
+import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
-import AddDirectoryDialog from '../dialogs/AddDirectoryDialog';
+import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
 import DirectoriesTable from '../directories-table/DirectoriesTable';
 
 function ManageDirectories() {
 	const queryClient = useQueryClient();
-	let [rootDirectory, setRootDirectory] = useState('/mnt/usb1');
 	let [showAddDirectoryDialog, setShowAddDirectoryDialog] = useState(false);
+
+	const addDirectory = (directoryPath, doneCallback) => {
+		Client.addOrUpdateDirectory({ path: directoryPath }).then(() => {
+			doneCallback();
+		});
+	};
 
 	return (
 		<Box
@@ -51,7 +57,9 @@ function ManageDirectories() {
 				<AddIcon />
 			</Fab>
 			{showAddDirectoryDialog && (
-				<AddDirectoryDialog
+				<ChooseDirectoryDialog
+					title="Add Directory"
+					onChange={addDirectory}
 					onClose={() => {
 						setShowAddDirectoryDialog(false);
 						queryClient.refetchQueries({ queryKey: ReactQueryUtil.DIRECTORIES_KEY });

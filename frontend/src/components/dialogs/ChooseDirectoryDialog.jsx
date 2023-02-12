@@ -1,9 +1,8 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import React, { useRef } from 'react';
-import Client from '../../network/client';
 
-function AddDirectoryDialog({ onClose }) {
+function ChooseDirectoryDialog({ title, onChange, onClose }) {
 	const directoryFullPath = useRef(null);
 
 	const addDirectory = () => {
@@ -11,7 +10,7 @@ function AddDirectoryDialog({ onClose }) {
 			return;
 		}
 
-		Client.addOrUpdateDirectory({ path: directoryFullPath.current.value }).then(() => {
+		onChange(directoryFullPath.current.value, () => {
 			onClose();
 		});
 	};
@@ -28,7 +27,7 @@ function AddDirectoryDialog({ onClose }) {
 			maxWidth={'sm'}
 		>
 			<DialogTitle variant="h6">
-				Add Directory
+				{title}
 				<IconButton
 					sx={{
 						position: 'absolute',
@@ -92,4 +91,4 @@ function AddDirectoryDialog({ onClose }) {
 	);
 }
 
-export default AddDirectoryDialog;
+export default ChooseDirectoryDialog;

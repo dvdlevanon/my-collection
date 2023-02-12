@@ -165,6 +165,35 @@ func (s *Server) getTag(c *gin.Context) {
 	c.JSON(http.StatusOK, tag)
 }
 
+func (s *Server) autoImage(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	tag, err := s.gallery.GetTag(tagId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	body, err := io.ReadAll(c.Request.Body)
+	if s.handleError(c, err) {
+		return
+	}
+
+	var fileUrl model.FileUrl
+	if err = json.Unmarshal(body, &fileUrl); err != nil {
+		s.handleError(c, err)
+		return
+	}
+
+	if s.handleError(c, s.gallery.AutoImageChildren(tag, fileUrl.Url)) {
+		return
+	}
+
+	c.JSON(http.StatusOK, tag)
+}
+
 func (s *Server) removeTag(c *gin.Context) {
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if s.handleError(c, err) {

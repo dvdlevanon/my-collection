@@ -57,6 +57,7 @@ func (s *Server) init() {
 	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/tags/:tag", s.getTag)
 	api.DELETE("/tags/:tag", s.removeTag)
+	api.POST("/tags/:tag/auto-image", s.autoImage)
 
 	api.GET("/directories", s.getDirectories)
 	api.POST("/directories", s.createOrUpdateDirectory)
