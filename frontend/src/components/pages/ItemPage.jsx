@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Chip, Container, Stack, Typography } from '@mui/material';
+import { Chip, Container, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
 import TagChips from '../tags-chip/TagChips';
+import Player from './Player';
 
 function ItemPage() {
 	const queryClient = useQueryClient();
@@ -45,20 +46,7 @@ function ItemPage() {
 			{itemQuery.isSuccess && (
 				<Stack flexGrow={1} flexDirection="column" padding="20px">
 					<Typography variant="h5">{itemQuery.data.title}</Typography>
-					<Box padding="10px">
-						<Box
-							component="video"
-							height="100%"
-							width="100%"
-							playsInline
-							muted
-							autoPlay={false}
-							loop={false}
-							controls={true}
-						>
-							<source src={Client.buildFileUrl(itemQuery.data.url)} />
-						</Box>
-					</Box>
+					<Player url={itemQuery.data.url} />
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
 							flexDirection="column"

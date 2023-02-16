@@ -3,6 +3,7 @@ import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
+import seedrandom from 'seedrandom';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
@@ -12,8 +13,9 @@ import TagsFilter from './TagsFilter';
 
 function Tags({ tags, parentId, size, onTagSelected }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
-	let [searchTerm, setSearchTerm] = useState('');
-	let [selectedAnnotations, setSelectedAnnotations] = useState([]);
+	const [searchTerm, setSearchTerm] = useState('');
+	const [sortBy, setSortBy] = useState('random');
+	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
 		queryFn: () => Client.getAvailableAnnotations(parentId),
@@ -57,7 +59,24 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 	const filterTags = () => {
 		let filteredTags = filterTagsByAnnotations(filterTagsBySearch(tags));
 
-		return filteredTags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
+		if (sortBy == 'random') {
+			let epochDay = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
+			let randomTags = [];
+			let rand = seedrandom(epochDay);
+
+			for (let i = 0; i < filteredTags.length; i++) {
+				let randomIndex = Math.floor(rand() * filteredTags.length);
+				randomTags[randomIndex] = filteredTags[i];
+			}
+
+			return randomTags;
+		} else if (sortBy == 'title-asc') {
+			return filteredTags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
+		} else if (sortBy == 'title-desc') {
+			return filteredTags.sort((a, b) => (a.title > b.title ? -1 : a.title < b.title ? 1 : 0));
+		} else {
+			return filterTags;
+		}
 	};
 
 	return (

@@ -44,12 +44,12 @@ func New(db *db.Database, storage *storage.Storage, rootDirectory string) *Galle
 }
 
 func (g *Gallery) CreateOrUpdateDirectory(directory *model.Directory) error {
-	directory.Path = g.getRelativePath(directory.Path)
+	directory.Path = g.GetRelativePath(directory.Path)
 	return g.Database.CreateOrUpdateDirectory(directory)
 }
 
 func (g *Gallery) ExcludeDirectory(path string) error {
-	path = g.getRelativePath(path)
+	path = g.GetRelativePath(path)
 
 	directory, err := g.Database.GetDirectory(path)
 	if err != nil {
@@ -65,12 +65,12 @@ func (g *Gallery) ExcludeDirectory(path string) error {
 }
 
 func (g *Gallery) CreateOrUpdateItem(item *model.Item) error {
-	item.Url = g.getRelativePath(item.Url)
-	item.Origin = g.getRelativePath(item.Origin)
+	item.Url = g.GetRelativePath(item.Url)
+	item.Origin = g.GetRelativePath(item.Origin)
 	return g.Database.CreateOrUpdateItem(item)
 }
 
-func (g *Gallery) getRelativePath(url string) string {
+func (g *Gallery) GetRelativePath(url string) string {
 	if !strings.HasPrefix(url, g.rootDirectory) {
 		return url
 	}

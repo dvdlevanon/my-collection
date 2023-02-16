@@ -210,8 +210,9 @@ func (d *directoriesImpl) addDirectoryIfMissing(path string, allDirectories []mo
 }
 
 func (d *directoriesImpl) directoryExists(path string, allDirectories []model.Directory) bool {
+	relativePath := d.gallery.GetRelativePath(path)
 	for _, dir := range allDirectories {
-		if dir.Path == path {
+		if dir.Path == relativePath {
 			return true
 		}
 	}
@@ -253,20 +254,53 @@ func (d *directoriesImpl) getConcreteTagsOfDirectory(directory *model.Directory)
 	return result, nil
 }
 
-func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
-	exists, lastModified, err := d.itemExists(path, tag)
+func (d *directoriesImpl) ensureConcreteTagsOnItem(item *model.Item, concreteTags []*model.Tag) error {
+	tagsToAdd := make([]*model.Tag, 0)
+	for _, concreteTag := range concreteTags {
+		exists := false
+		for _, tag := range item.Tags {
+			if tag.Id == concreteTag.Id {
+				exists = true
+				break
+			}
+		}
 
-	if exists || err != nil {
+		if !exists {
+			tagsToAdd = append(tagsToAdd, concreteTag)
+		}
+	}
+
+	if len(tagsToAdd) == 0 {
+		return nil
+	}
+
+	item.Tags = append(item.Tags, tagsToAdd...)
+	if err := d.gallery.CreateOrUpdateItem(item); err != nil {
+		logger.Errorf("Error updating item %v - %t", item, err)
+		return err
+	}
+
+	return nil
+}
+
+func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
+	existingItem, lastModified, err := d.itemExists(path, tag)
+
+	if err != nil {
 		return false, err
 	}
 
-	if !d.isVideo(path) {
+	if existingItem == nil && !d.isVideo(path) {
 		return false, nil
 	}
 
 	concreteTags, err := d.getConcreteTagsOfDirectory(directory)
 	if err != nil {
 		return false, err
+	}
+
+	if existingItem != nil {
+		return false, d.ensureConcreteTagsOnItem(existingItem, concreteTags)
 	}
 
 	title := filepath.Base(path)
@@ -294,12 +328,12 @@ func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *mode
 	return true, nil
 }
 
-func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (bool, int64, error) {
+func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (*model.Item, int64, error) {
 	title := filepath.Base(path)
 	file, err := os.Stat(path)
 	if err != nil {
 		logger.Errorf("Error getting file stat %s - %t", file, err)
-		return false, 0, err
+		return nil, 0, err
 	}
 
 	items, err := d.gallery.GetItemsOfTag(tag)
@@ -309,11 +343,11 @@ func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (bool, int64, 
 
 	for _, item := range *items {
 		if item.Title == title && item.LastModified == file.ModTime().UnixMilli() {
-			return true, file.ModTime().UnixMilli(), nil
+			return &item, file.ModTime().UnixMilli(), nil
 		}
 	}
 
-	return false, file.ModTime().UnixMilli(), nil
+	return nil, file.ModTime().UnixMilli(), nil
 }
 
 func (d *directoriesImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {

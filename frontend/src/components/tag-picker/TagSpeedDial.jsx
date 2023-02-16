@@ -1,5 +1,6 @@
 import AddLink from '@mui/icons-material/AddLink';
 import { default as RemoveIcon } from '@mui/icons-material/Close';
+import CopyIcon from '@mui/icons-material/ContentCopy';
 import ImageIcon from '@mui/icons-material/Image';
 import OptionsIcon from '@mui/icons-material/Tune';
 import { SpeedDial, SpeedDialAction } from '@mui/material';
@@ -7,7 +8,7 @@ import React from 'react';
 
 function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClicked, onManageImageClicked }) {
 	return (
-		<React.Fragment>
+		<>
 			{!hidden && (
 				<SpeedDial
 					sx={{
@@ -25,6 +26,15 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 					icon={<OptionsIcon />}
 					onClick={(e) => e.stopPropagation()}
 				>
+					<SpeedDialAction
+						key="copy-name"
+						tooltipTitle="Copy title to clipboard"
+						icon={<CopyIcon />}
+						onClick={(e) => {
+							navigator.clipboard.writeText(tag.title);
+						}}
+					/>
+
 					<SpeedDialAction
 						key="manage-image"
 						tooltipTitle="Image options"
@@ -53,19 +63,7 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 					/>
 				</SpeedDial>
 			)}
-			{/* <Box
-				component="input"
-				onClick={(e) => e.stopPropagation()}
-				onChange={(e) => imageSelected(e)}
-				accept="image/*"
-				id="choose-file"
-				type="file"
-				sx={{
-					display: 'none',
-				}}
-				ref={fileDialog}
-			/> */}
-		</React.Fragment>
+		</>
 	);
 }
 // let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
