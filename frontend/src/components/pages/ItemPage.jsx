@@ -5,6 +5,7 @@ import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
+import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
 import TagChips from '../tags-chip/TagChips';
 import Player from './Player';
@@ -50,7 +51,7 @@ function ItemPage() {
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
 							flexDirection="column"
-							tags={itemQuery.data.tags}
+							tags={itemQuery.data.tags.filter((cur) => TagsUtil.isDirectoriesCategory(cur.parentId))}
 							onDelete={onTagRemoved}
 							onClick={onTagClicked}
 							tagHighlightedPredicate={() => {

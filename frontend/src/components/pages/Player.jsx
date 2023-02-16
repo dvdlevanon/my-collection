@@ -1,4 +1,5 @@
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
@@ -27,12 +28,17 @@ function Player({ url }) {
 	let [showVolume, setShowVolume] = useState(false);
 	let [volume, setVolume] = useState(0);
 	let [currentTime, setCurrentTime] = useState(0);
+	let [fullScreen, setFullScreen] = useState(false);
 	let [duration, setDuration] = useState(0);
-	let videoElement = useRef();
+	let [videoHeight, setVideoHeight] = useState(0);
+	let [videoWidth, setVideoWidth] = useState(0);
 	const [windowWidth, windowHeight] = useWindowSize();
+	let videoElement = useRef();
+	let playerElement = useRef();
 
 	useEffect(() => {
-		setVolume(0.3);
+		volume = parseFloat(localStorage.getItem('volume') || 0.3);
+		changeVolume(volume);
 	}, []);
 
 	const togglePlay = (e) => {
@@ -58,6 +64,7 @@ function Player({ url }) {
 	const changeVolume = (volume) => {
 		videoElement.current.volume = volume;
 		setVolume(videoElement.current.volume);
+		localStorage.setItem('volume', volume);
 	};
 
 	const changeTime = (newValue) => {
@@ -76,15 +83,37 @@ function Player({ url }) {
 		);
 	};
 
+	const enterFullScreen = () => {
+		playerElement.current.requestFullscreen();
+		setFullScreen(true);
+	};
+
+	const exitFullScreen = () => {
+		document.exitFullscreen();
+		setFullScreen(false);
+	};
+
+	const calcControlsOffset = () => {
+		if (videoHeight >= videoWidth) {
+			return videoWidth;
+		}
+
+		let componentWidth = videoElement.current.offsetWidth;
+		let componentHeight = videoElement.current.offsetHeight;
+
+		let ratio = videoWidth / videoHeight;
+		let actualWidth = componentHeight * ratio;
+		let gap = (componentWidth - actualWidth) / 2;
+		return gap;
+	};
+
 	return (
 		<Box
-			padding="10px"
-			// height={(window.innerHeight / 5) * 3}
 			height={(windowHeight / 5) * 3}
 			minHeight={600}
+			ref={playerElement}
 			sx={{
 				position: 'relative',
-				// backgroundColor: 'black',
 			}}
 			onMouseEnter={(e) => {
 				setShowControls(true);
@@ -98,15 +127,17 @@ function Player({ url }) {
 				height="100%"
 				width="100%"
 				playsInline
-				// muted
 				autoPlay={false}
 				loop={false}
-				// controls={true}
 				ref={videoElement}
 				onClick={togglePlay}
-				onDoubleClick={() => videoElement.current.requestFullscreen()}
+				onDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
 				onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
-				onLoadedMetadata={(e) => setDuration(e.target.duration)}
+				onLoadedMetadata={(e) => {
+					setDuration(e.target.duration);
+					setVideoWidth(e.target.videoWidth);
+					setVideoHeight(e.target.videoHeight);
+				}}
 			>
 				<source src={Client.buildFileUrl(url)} />
 			</Box>
@@ -114,10 +145,9 @@ function Player({ url }) {
 				<Stack
 					sx={{
 						position: 'absolute',
-						padding: '10px',
-						bottom: '10px',
-						left: '10px',
-						right: '10px',
+						bottom: -1,
+						left: calcControlsOffset(),
+						right: calcControlsOffset(),
 						flexDirection: 'column',
 						background: 'rgb(255,255,255)',
 						background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,1) 100%)',
@@ -172,9 +202,15 @@ function Player({ url }) {
 							</Box>
 						</Stack>
 						<Box display="flex" flexGrow={1} justifyContent="flex-end">
-							<IconButton onClick={() => videoElement.current.requestFullscreen()}>
-								<FullscreenIcon />
-							</IconButton>
+							{(!fullScreen && (
+								<IconButton onClick={enterFullScreen}>
+									<FullscreenIcon />
+								</IconButton>
+							)) || (
+								<IconButton onClick={exitFullScreen}>
+									<FullscreenExitIcon />
+								</IconButton>
+							)}
 						</Box>
 					</Stack>
 				</Stack>
