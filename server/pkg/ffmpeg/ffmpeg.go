@@ -99,8 +99,8 @@ func GetVideoMetadata(videoFile string) (FfprobeShowStreamOutput, error) {
 	return FfprobeShowStreamOutput{}, errors.Errorf("Video stream not found for %s", videoFile)
 }
 
-func TakeScreenshot(videoFile string, second int, targetFile string) error {
-	_, err := execute("ffmpeg", "-y", "-ss", fmt.Sprintf("%d", second), "-i", videoFile, "-vframes", "1", targetFile)
+func TakeScreenshot(videoFile string, second float64, targetFile string) error {
+	_, err := execute("ffmpeg", "-y", "-ss", fmt.Sprintf("%f", second), "-i", videoFile, "-vframes", "1", targetFile)
 	if err != nil {
 		return err
 	}

@@ -15,6 +15,7 @@ const (
 	REFRESH_COVER_TASK = iota
 	REFRESH_PREVIEW_TASK
 	REFRESH_METADATA_TASK
+	SET_MAIN_COVER
 )
 
 type ItemProcessor interface {
@@ -24,12 +25,14 @@ type ItemProcessor interface {
 	EnqueueAllItemsVideoMetadata() error
 	EnqueueItemPreview(id uint64)
 	EnqueueItemCovers(id uint64)
+	EnqueueMainCover(id uint64, second float64)
 	EnqueueItemVideoMetadata(id uint64)
 }
 
 type task struct {
-	taskType TaskType
-	id       uint64
+	taskType   TaskType
+	id         uint64
+	floatParam float64
 }
 
 type itemProcessorImpl struct {
@@ -58,6 +61,8 @@ func (p itemProcessorImpl) processTask(t *task) {
 	switch t.taskType {
 	case REFRESH_COVER_TASK:
 		p.handleError(t, p.refreshItemCovers(t.id))
+	case SET_MAIN_COVER:
+		p.handleError(t, p.setMainCover(t.id, t.floatParam))
 	case REFRESH_PREVIEW_TASK:
 		p.handleError(t, p.refreshItemPreview(t.id))
 	case REFRESH_METADATA_TASK:

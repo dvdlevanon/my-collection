@@ -1,18 +1,23 @@
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
+import ImageIcon from '@mui/icons-material/Image';
+import LeftIcon from '@mui/icons-material/NavigateBefore';
+import RightIcon from '@mui/icons-material/NavigateNext';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
+import TimingIcon from '@mui/icons-material/Schedule';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import VolumeMuteIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
-import { Box, Fade, IconButton, Slider, Stack, Typography } from '@mui/material';
+import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import Client from '../../network/client';
 
-function Player({ url }) {
+function Player({ url, setMainCover }) {
 	let [showControls, setShowControls] = useState(true);
 	let [isPlaying, setIsPlaying] = useState(false);
 	let [showVolume, setShowVolume] = useState(false);
+	let [showSchedule, setShowSchedule] = useState(false);
 	let [volume, setVolume] = useState(0);
 	let [currentTime, setCurrentTime] = useState(0);
 	let [fullScreen, setFullScreen] = useState(false);
@@ -77,6 +82,10 @@ function Player({ url }) {
 		setFullScreen(false);
 	};
 
+	const setRelativeTime = (offset) => {
+		videoElement.current.currentTime = videoElement.current.currentTime + offset;
+	};
+
 	return (
 		<Box
 			display="flex"
@@ -136,7 +145,9 @@ function Player({ url }) {
 						onChange={(e, newValue) => changeTime(newValue)}
 					/>
 					<Stack sx={{ flexDirection: 'row' }}>
-						<IconButton onClick={togglePlay}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</IconButton>
+						<Tooltip title={isPlaying ? 'Pause' : 'Play'}>
+							<IconButton onClick={togglePlay}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</IconButton>
+						</Tooltip>
 						<Stack
 							display="flex"
 							flexDirection="row"
@@ -145,15 +156,17 @@ function Player({ url }) {
 							onMouseEnter={(e) => setShowVolume(true)}
 							onMouseLeave={(e) => setShowVolume(false)}
 						>
-							<IconButton onClick={toggleMute}>
-								{volume == 0 ? (
-									<VolumeMuteIcon />
-								) : volume < 0.5 ? (
-									<VolumeDownIcon />
-								) : (
-									<VolumeUpIcon />
-								)}
-							</IconButton>
+							<Tooltip title={volume == 0 ? 'Unmute' : 'Mute'}>
+								<IconButton onClick={toggleMute}>
+									{volume == 0 ? (
+										<VolumeMuteIcon />
+									) : volume < 0.5 ? (
+										<VolumeDownIcon />
+									) : (
+										<VolumeUpIcon />
+									)}
+								</IconButton>
+							</Tooltip>
 							{showVolume && (
 								<Fade in={showVolume}>
 									<Slider
@@ -174,14 +187,71 @@ function Player({ url }) {
 							</Box>
 						</Stack>
 						<Box display="flex" flexGrow={1} justifyContent="flex-end">
+							<Stack
+								display="flex"
+								flexDirection="row"
+								alignItems="center"
+								gap="20px"
+								onMouseEnter={(e) => setShowSchedule(true)}
+								onMouseLeave={(e) => setShowSchedule(false)}
+							>
+								{showSchedule && (
+									<Fade in={showSchedule}>
+										<Stack flexDirection="row">
+											<Tooltip title="-50ms">
+												<IconButton size="small" onMouseDown={() => setRelativeTime(-0.005)}>
+													<LeftIcon sx={{ fontSize: '20px' }} />
+												</IconButton>
+											</Tooltip>
+											<Tooltip title="-250ms">
+												<IconButton size="small" onClick={() => setRelativeTime(-0.025)}>
+													<LeftIcon sx={{ fontSize: '25px' }} />
+												</IconButton>
+											</Tooltip>
+											<Tooltip title="-1000ms">
+												<IconButton size="small" onClick={() => setRelativeTime(-1.0)}>
+													<LeftIcon sx={{ fontSize: '35px' }} />
+												</IconButton>
+											</Tooltip>
+											<Tooltip title="+1000ms">
+												<IconButton size="small" onClick={() => setRelativeTime(1.0)}>
+													<RightIcon sx={{ fontSize: '35px' }} />
+												</IconButton>
+											</Tooltip>
+											<Tooltip title="+250ms">
+												<IconButton size="small" onClick={() => setRelativeTime(0.025)}>
+													<RightIcon sx={{ fontSize: '25px' }} />
+												</IconButton>
+											</Tooltip>
+											<Tooltip title="+50ms">
+												<IconButton size="small" onClick={() => setRelativeTime(0.005)}>
+													<RightIcon sx={{ fontSize: '20px' }} />
+												</IconButton>
+											</Tooltip>
+										</Stack>
+									</Fade>
+								)}
+								<Tooltip title={'Timing controls'}>
+									<IconButton>
+										<TimingIcon />
+									</IconButton>
+								</Tooltip>
+							</Stack>
+							<IconButton onClick={() => setMainCover(videoElement.current.currentTime)}>
+								<ImageIcon />
+							</IconButton>
 							{(!fullScreen && (
-								<IconButton onClick={enterFullScreen}>
-									<FullscreenIcon />
-								</IconButton>
+								<Tooltip title="Full screen">
+									<IconButton onClick={enterFullScreen}>
+										<FullscreenIcon />
+									</IconButton>
+								</Tooltip>
 							)) || (
-								<IconButton onClick={exitFullScreen}>
-									<FullscreenExitIcon />
-								</IconButton>
+								<Tooltip title="Exit full screen">
+									<IconButton onClick={exitFullScreen}>
+										<FullscreenExitIcon />
+									</IconButton>
+								</Tooltip>
 							)}
 						</Box>
 					</Stack>

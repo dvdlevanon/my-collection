@@ -20,16 +20,17 @@ import (
 type DirectoriesMock struct{}
 type ItemProcessorMock struct{}
 
-func (d *DirectoriesMock) Init() error                                 { return nil }
-func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
-func (d *DirectoriesMock) DirectoryExcluded(path string)               {}
-func (d *ItemProcessorMock) Run()                                      {}
-func (d *ItemProcessorMock) EnqueueAllItemsCovers() error              { return nil }
-func (d *ItemProcessorMock) EnqueueAllItemsPreview() error             { return nil }
-func (d *ItemProcessorMock) EnqueueAllItemsVideoMetadata() error       { return nil }
-func (d *ItemProcessorMock) EnqueueItemVideoMetadata(id uint64)        {}
-func (d *ItemProcessorMock) EnqueueItemPreview(id uint64)              {}
-func (d *ItemProcessorMock) EnqueueItemCovers(id uint64)               {}
+func (d *DirectoriesMock) Init() error                                  { return nil }
+func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory)  {}
+func (d *DirectoriesMock) DirectoryExcluded(path string)                {}
+func (d *ItemProcessorMock) Run()                                       {}
+func (d *ItemProcessorMock) EnqueueAllItemsCovers() error               { return nil }
+func (d *ItemProcessorMock) EnqueueAllItemsPreview() error              { return nil }
+func (d *ItemProcessorMock) EnqueueAllItemsVideoMetadata() error        { return nil }
+func (d *ItemProcessorMock) EnqueueItemVideoMetadata(id uint64)         {}
+func (d *ItemProcessorMock) EnqueueItemPreview(id uint64)               {}
+func (d *ItemProcessorMock) EnqueueItemCovers(id uint64)                {}
+func (d *ItemProcessorMock) EnqueueMainCover(id uint64, second float64) {}
 
 func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))

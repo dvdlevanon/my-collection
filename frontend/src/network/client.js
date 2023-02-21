@@ -76,6 +76,12 @@ export default class Client {
 		});
 	};
 
+	static setMainCover = async (itemId, second) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/main-cover?second=${second}`, {
+			method: 'POST',
+		});
+	};
+
 	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',

@@ -29,6 +29,7 @@ type Item struct {
 	PreviewUrl      string  `json:"previewUrl,omitempty"`
 	LastModified    int64   `json:"lastModified,omitempty"`
 	Covers          []Cover `json:"covers,omitempty"`
+	MainCoverUrl    *string `json:"mainCoverUrl,omitempty"`
 	Tags            []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 }
 

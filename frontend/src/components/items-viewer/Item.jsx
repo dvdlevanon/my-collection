@@ -13,7 +13,9 @@ function Item({ item, preferPreview }) {
 	);
 
 	const getCover = () => {
-		if (item.covers && item.covers.length > 0 && item.covers[coverNumber]) {
+		if (item.mainCoverUrl) {
+			return Client.buildFileUrl(item.mainCoverUrl);
+		} else if (item.covers && item.covers.length > 0 && item.covers[coverNumber]) {
 			return Client.buildFileUrl(item.covers[coverNumber].url);
 		} else {
 			return 'empty';

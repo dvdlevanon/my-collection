@@ -438,3 +438,18 @@ func (s *Server) excludeDirectory(c *gin.Context) {
 	s.directories.DirectoryExcluded(directoryPath)
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) setMainCover(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	second, err := strconv.ParseFloat(c.Query("second"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Setting main cover for item %d at %d", itemId, second)
+	s.processor.EnqueueMainCover(itemId, second)
+}

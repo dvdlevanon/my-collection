@@ -48,12 +48,18 @@ function ItemPage() {
 
 	const onTagRemoved = (tag) => {
 		Client.removeTagFromItem(itemQuery.data.id, tag.id, () => {
-			queryClient.refetchQueries({ queryKey: itemQuery.videoElequeryKey });
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
 		});
 	};
 
 	const onTagClicked = (tag) => {
 		console.log('send to gallery with selected filter');
+	};
+
+	const setMainCover = (second) => {
+		Client.setMainCover(itemQuery.data.id, second).then(() => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
 	};
 
 	const calcHeight = () => {
@@ -83,7 +89,7 @@ function ItemPage() {
 		>
 			{itemQuery.isSuccess && (
 				<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
-					<Player url={itemQuery.data.url} />
+					<Player url={itemQuery.data.url} setMainCover={setMainCover} />
 					<Typography variant="h5">{itemQuery.data.title}</Typography>
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
