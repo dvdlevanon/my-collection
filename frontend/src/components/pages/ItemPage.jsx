@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Chip, Container, Stack, Typography } from '@mui/material';
-import { useState } from 'react';
+import { Box, Chip, Stack, Typography } from '@mui/material';
+import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
 import Client from '../../network/client';
@@ -10,12 +10,26 @@ import AttachTagDialog from '../dialogs/AttachTagDialog';
 import TagChips from '../tags-chip/TagChips';
 import Player from './Player';
 
+function useWindowSize() {
+	const [size, setSize] = useState([0, 0]);
+	useLayoutEffect(() => {
+		function updateSize() {
+			setSize([window.innerWidth, window.innerHeight]);
+		}
+		window.addEventListener('resize', updateSize);
+		updateSize();
+		return () => window.removeEventListener('resize', updateSize);
+	}, []);
+	return size;
+}
+
 function ItemPage() {
 	const queryClient = useQueryClient();
 	const { itemId } = useParams();
 	const itemQuery = useQuery(ReactQueryUtil.itemKey(itemId), () => Client.getItem(itemId));
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	let [addTagMode, setAddTagMode] = useState(false);
+	let [windowWidth, windowHeight] = useWindowSize();
 
 	const onAddTag = () => {
 		setAddTagMode(true);
@@ -34,7 +48,7 @@ function ItemPage() {
 
 	const onTagRemoved = (tag) => {
 		Client.removeTagFromItem(itemQuery.data.id, tag.id, () => {
-			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+			queryClient.refetchQueries({ queryKey: itemQuery.videoElequeryKey });
 		});
 	};
 
@@ -42,12 +56,35 @@ function ItemPage() {
 		console.log('send to gallery with selected filter');
 	};
 
+	const calcHeight = () => {
+		let result = (windowHeight / 10) * 7;
+
+		if (result < 400) {
+			return 400;
+		}
+
+		return result;
+	};
+
+	const calcWidth = () => {
+		let ratio = itemQuery.data.width / itemQuery.data.height;
+		let actualWidth = calcHeight() * ratio;
+		return actualWidth;
+	};
+
 	return (
-		<Container maxWidth="xl">
+		<Box
+			sx={{
+				display: 'flex',
+				flexDirection: 'column',
+				alignItems: 'center',
+				padding: '30px 50px',
+			}}
+		>
 			{itemQuery.isSuccess && (
-				<Stack flexGrow={1} flexDirection="column" padding="20px">
-					<Typography variant="h5">{itemQuery.data.title}</Typography>
+				<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
 					<Player url={itemQuery.data.url} />
+					<Typography variant="h5">{itemQuery.data.title}</Typography>
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
 							flexDirection="column"
@@ -73,7 +110,7 @@ function ItemPage() {
 					/>
 				</Stack>
 			)}
-		</Container>
+		</Box>
 	);
 }
 

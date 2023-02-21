@@ -6,21 +6,8 @@ import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import VolumeMuteIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { Box, Fade, IconButton, Slider, Stack, Typography } from '@mui/material';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import Client from '../../network/client';
-
-function useWindowSize() {
-	const [size, setSize] = useState([0, 0]);
-	useLayoutEffect(() => {
-		function updateSize() {
-			setSize([window.innerWidth, window.innerHeight]);
-		}
-		window.addEventListener('resize', updateSize);
-		updateSize();
-		return () => window.removeEventListener('resize', updateSize);
-	}, []);
-	return size;
-}
 
 function Player({ url }) {
 	let [showControls, setShowControls] = useState(true);
@@ -30,9 +17,6 @@ function Player({ url }) {
 	let [currentTime, setCurrentTime] = useState(0);
 	let [fullScreen, setFullScreen] = useState(false);
 	let [duration, setDuration] = useState(0);
-	let [videoHeight, setVideoHeight] = useState(0);
-	let [videoWidth, setVideoWidth] = useState(0);
-	const [windowWidth, windowHeight] = useWindowSize();
 	let videoElement = useRef();
 	let playerElement = useRef();
 
@@ -93,24 +77,11 @@ function Player({ url }) {
 		setFullScreen(false);
 	};
 
-	const calcControlsOffset = () => {
-		if (videoHeight >= videoWidth) {
-			return videoWidth;
-		}
-
-		let componentWidth = videoElement.current.offsetWidth;
-		let componentHeight = videoElement.current.offsetHeight;
-
-		let ratio = videoWidth / videoHeight;
-		let actualWidth = componentHeight * ratio;
-		let gap = (componentWidth - actualWidth) / 2;
-		return gap;
-	};
-
 	return (
 		<Box
-			height={(windowHeight / 5) * 3}
-			minHeight={600}
+			display="flex"
+			height="100%"
+			width="100%"
 			ref={playerElement}
 			sx={{
 				position: 'relative',
@@ -120,6 +91,10 @@ function Player({ url }) {
 			}}
 			onMouseLeave={(e) => {
 				setShowControls(!isPlaying);
+			}}
+			tabIndex="0"
+			onKeyPress={(e) => {
+				console.log('KEY PRESS');
 			}}
 		>
 			<Box
@@ -133,11 +108,7 @@ function Player({ url }) {
 				onClick={togglePlay}
 				onDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
 				onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
-				onLoadedMetadata={(e) => {
-					setDuration(e.target.duration);
-					setVideoWidth(e.target.videoWidth);
-					setVideoHeight(e.target.videoHeight);
-				}}
+				onLoadedMetadata={(e) => setDuration(e.target.duration)}
 			>
 				<source src={Client.buildFileUrl(url)} />
 			</Box>
@@ -145,9 +116,10 @@ function Player({ url }) {
 				<Stack
 					sx={{
 						position: 'absolute',
+						padding: '10px',
 						bottom: -1,
-						left: calcControlsOffset(),
-						right: calcControlsOffset(),
+						left: 0,
+						right: 0,
 						flexDirection: 'column',
 						background: 'rgb(255,255,255)',
 						background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,1) 100%)',
