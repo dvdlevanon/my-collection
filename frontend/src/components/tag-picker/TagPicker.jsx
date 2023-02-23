@@ -7,7 +7,7 @@ import TagsUtil from '../../utils/tags-util';
 import Categories from './Categories';
 import Tags from './Tags';
 
-function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCategoryId }) {
+function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCategoryId, showDirectoriesCategory }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 
 	let [selectedCategoryId, setSelectedCategoryId] = useState(initialSelectedCategoryId);
@@ -49,7 +49,13 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCat
 	return (
 		<Stack height={selectedCategoryId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && (
-				<Categories categories={TagsUtil.getCategories(tagsQuery.data)} onCategoryClicked={onCategoryClicked} />
+				<Categories
+					categories={TagsUtil.getCategories(tagsQuery.data).filter(
+						(cur) => showDirectoriesCategory || !TagsUtil.isDirectoriesCategory(cur.id)
+					)}
+					onCategoryClicked={onCategoryClicked}
+					selectedCategoryId={selectedCategoryId}
+				/>
 			)}
 			{tagsQuery.isSuccess && selectedCategoryId > 0 && (
 				<Tags

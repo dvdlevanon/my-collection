@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import { Dialog, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
+import { Dialog, DialogContent, DialogTitle, IconButton, TextField, Tooltip } from '@mui/material';
 import React, { useRef } from 'react';
 import { useQueryClient } from 'react-query';
 import Client from '../../network/client';
@@ -71,9 +71,11 @@ function AddTagDialog({ parentId, verb, onClose }) {
 					placeholder={verb + ' Name'}
 					inputRef={newTagName}
 				></TextField>
-				<IconButton onClick={(e) => addTag(e)} sx={{ alignSelf: 'center' }}>
-					<AddIcon />
-				</IconButton>
+				<Tooltip title="Add">
+					<IconButton onClick={(e) => addTag(e)} sx={{ alignSelf: 'center' }}>
+						<AddIcon />
+					</IconButton>
+				</Tooltip>
 			</DialogContent>
 		</Dialog>
 	);

@@ -99,10 +99,11 @@ function Gallery({ previewMode }) {
 	};
 
 	return (
-		<Stack flexGrow={1}>
+		<Stack flexGrow={1} padding="10px">
 			{tagsQuery.isSuccess && (
 				<TagPicker
 					size="big"
+					showDirectoriesCategory={true}
 					onTagSelected={onTagActivated}
 					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 					initialSelectedCategoryId={0}

@@ -54,7 +54,7 @@ function TagsFilter({
 			)}
 			{!TagsUtil.isDirectoriesCategory(parentId) && (
 				<Tooltip title="Add new tag">
-					<IconButton onClick={() => setAddTagDialogOpened(true)}>
+					<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
 						<AddIcon />
 					</IconButton>
 				</Tooltip>

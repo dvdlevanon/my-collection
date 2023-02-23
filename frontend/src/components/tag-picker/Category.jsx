@@ -1,10 +1,23 @@
 import { Link } from '@mui/material';
 import { Box } from '@mui/system';
 
-function Category({ category, onClick }) {
+function Category({ isHighlighted, category, onClick }) {
 	return (
-		<Box sx={{ p: 2 }}>
-			<Link variant="h6" sx={{ cursor: 'pointer' }} onClick={(e) => onClick(category)}>
+		<Box
+			backgroundColor={isHighlighted ? 'dark.lighter' : 'auto'}
+			sx={{
+				padding: '0px 10px',
+				height: '100%',
+			}}
+		>
+			<Link
+				// color={isHighlighted ? 'primary.light' : 'primary'}
+				variant="h6"
+				onClick={(e) => onClick(category)}
+				sx={{
+					cursor: 'pointer',
+				}}
+			>
 				{category.title}
 			</Link>
 		</Box>

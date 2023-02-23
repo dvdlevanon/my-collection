@@ -13,6 +13,7 @@ const theme = createTheme({
 		mode: 'dark',
 		primary: {
 			main: '#ff4400',
+			light: '#ff8844',
 		},
 		secondary: {
 			main: '#0D9352',
@@ -21,7 +22,8 @@ const theme = createTheme({
 			main: '#ffddcc',
 		},
 		dark: {
-			main: '#554433',
+			main: '#121212',
+			lighter: '#222222',
 		},
 	},
 	typography: {

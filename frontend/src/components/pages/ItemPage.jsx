@@ -7,8 +7,8 @@ import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
+import Player from '../player/Player';
 import TagChips from '../tags-chip/TagChips';
-import Player from './Player';
 
 function useWindowSize() {
 	const [size, setSize] = useState([0, 0]);
@@ -94,7 +94,7 @@ function ItemPage() {
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
 							flexDirection="column"
-							tags={itemQuery.data.tags.filter((cur) => TagsUtil.isDirectoriesCategory(cur.parentId))}
+							tags={itemQuery.data.tags.filter((cur) => !TagsUtil.isDirectoriesCategory(cur.parentId))}
 							onDelete={onTagRemoved}
 							onClick={onTagClicked}
 							tagHighlightedPredicate={() => {

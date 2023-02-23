@@ -76,7 +76,7 @@ function Tag({ tag, size, onTagSelected }) {
 						<Box
 							sx={{
 								position: 'absolute',
-								width: size == 'small' ? '50px' : '100px',
+								width: size == 'small' ? '70px' : '100px',
 								height: placeHolderHeight,
 								left: 0,
 								right: 0,
@@ -100,12 +100,13 @@ function Tag({ tag, size, onTagSelected }) {
 							textDecoration: 'underline',
 						},
 					}}
+					noWrap
 					variant="caption"
 					textAlign={'start'}
 				>
 					{title}
 				</Typography>
-				{includeSpeedDial && size != 'small' && attachMenuAttributes === null && (
+				{includeSpeedDial && attachMenuAttributes === null && (
 					<TagSpeedDial
 						hidden={optionsHidden}
 						tag={tag}
@@ -120,14 +121,14 @@ function Tag({ tag, size, onTagSelected }) {
 
 	const realTagComponent = () => {
 		return tagComponent(
-			size == 'small' ? '50px' : '100px',
+			size == 'small' ? '70px' : '100px',
 			tag.title,
 			1,
 			true,
 			<NoImageIcon
 				color="dark"
 				sx={{
-					fontSize: size == 'small' ? '50px' : '100px',
+					fontSize: size == 'small' ? '70px' : '100px',
 				}}
 			/>
 		);
@@ -135,7 +136,7 @@ function Tag({ tag, size, onTagSelected }) {
 
 	const newTagComponent = () => {
 		return tagComponent(
-			size == 'small' ? '50px' : '130px',
+			size == 'small' ? '70px' : '130px',
 			'None',
 			0,
 			false,
@@ -143,7 +144,7 @@ function Tag({ tag, size, onTagSelected }) {
 				<AddIcon
 					color="bright"
 					sx={{
-						fontSize: size == 'small' ? '50px' : '100px',
+						fontSize: size == 'small' ? '70px' : '100px',
 					}}
 				/>
 				{size != 'small' && (
@@ -173,7 +174,7 @@ function Tag({ tag, size, onTagSelected }) {
 		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return '200px';
 		} else if (size == 'small') {
-			return '125px';
+			return '225px';
 		} else {
 			return '350px';
 		}
@@ -183,7 +184,7 @@ function Tag({ tag, size, onTagSelected }) {
 		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return '200px';
 		} else if (size == 'small') {
-			return '200px';
+			return '300px';
 		} else {
 			return '500px';
 		}

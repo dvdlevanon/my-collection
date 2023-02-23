@@ -80,7 +80,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 	};
 
 	return (
-		<Stack width={'100%'} height={'100%'} flexGrow={1}>
+		<Stack width={'100%'} height={'100%'} flexGrow={1} backgroundColor="dark.lighter">
 			<TagsFilter
 				parentId={parentId}
 				setSearchTerm={setSearchTerm}
