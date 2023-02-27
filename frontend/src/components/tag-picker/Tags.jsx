@@ -66,6 +66,10 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 
 			for (let i = 0; i < filteredTags.length; i++) {
 				let randomIndex = Math.floor(rand() * filteredTags.length);
+				while (randomTags[randomIndex]) {
+					randomIndex = Math.floor(rand() * filteredTags.length);
+				}
+
 				randomTags[randomIndex] = filteredTags[i];
 			}
 

@@ -18,7 +18,13 @@ function DirectoryRow({ directory }) {
 	};
 
 	const excludeDirectory = (e, directory) => {
-		Client.removeDirectory(directory.path).then(refetchDirectories);
+		Client.addOrUpdateDirectory({ ...directory, excluded: true }).then(refetchDirectories);
+		ReactQueryUtil.updateDirectories(queryClient, directory.path, (currentDirectory) => {
+			return {
+				...currentDirectory,
+				excluded: true,
+			};
+		});
 	};
 
 	const includeDirectory = (e, directory) => {

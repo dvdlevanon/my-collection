@@ -79,39 +79,82 @@ func (d *directoriesImpl) watchFilesystemChanges() {
 			logger.Infof("Directory excluded %s", directoryPath)
 			d.directoryExcluded(directoryPath)
 		case <-time.After(60 * time.Second):
-			// millisSinceScanned := time.Now().UnixMilli() - directory.LastSynced
-
-			// if millisSinceScanned < 10000 {
-			// 	return
-			// }
-
-			logger.Infof("Periodic scan")
+			d.periodicScan()
 		}
 	}
 }
 
-func (d *directoriesImpl) directoryChanged(directory *model.Directory) {
-	if (*directory).Excluded != nil && *((*directory).Excluded) {
-		return
-	}
-
+func (d *directoriesImpl) periodicScan() {
 	allDirectories, err := d.gallery.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
 		return
 	}
 
-	tag, err := d.handleDirectoryTag(directory)
+	for _, dir := range *allDirectories {
+		millisSinceScanned := time.Now().UnixMilli() - dir.LastSynced
+
+		if millisSinceScanned < 1000*60*5 {
+			return
+		}
+
+		d.directoryChanged(&dir)
+	}
+}
+
+func (d *directoriesImpl) directoryChanged(directory *model.Directory) {
+	allDirectories, err := d.gallery.GetAllDirectories()
 	if err != nil {
+		logger.Errorf("Error getting all directories %t", err)
 		return
 	}
 
-	directory.FilesCount = pointer.Int(d.syncDirectory(directory, tag, *allDirectories))
+	if (*directory).Excluded != nil && *((*directory).Excluded) {
+		d.handleExcludedDirectory(directory, *allDirectories)
+		return
+	}
+
+	d.handleIncludedDirectory(directory, *allDirectories)
 	directory.LastSynced = time.Now().UnixMilli()
 	directory.ProcessingStart = pointer.Int64(0)
 	if err := d.gallery.CreateOrUpdateDirectory(directory); err != nil {
 		logger.Errorf("Error updating directory %s %t", directory.Path, err)
 	}
+}
+
+func (d *directoriesImpl) handleExcludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
+	tag, err := d.gallery.GetTag(model.Tag{
+		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
+		Title:    d.gallery.DirectoryNameToTag(directory.Path),
+	})
+
+	if err != nil {
+		logger.Errorf("Unable to find directory of %s - %s", directory.Path, err)
+		return
+	}
+
+	for _, item := range tag.Items {
+		if len(item.Tags) > 1 {
+			continue
+		}
+
+		if err := d.gallery.RemoveItem(item.Id); err != nil {
+			logger.Errorf("Unable to remove item %d - %s", item.Id, err)
+		}
+	}
+
+	if err := d.gallery.RemoveTag(tag.Id); err != nil {
+		logger.Errorf("Unable to remove tag %d - %s", tag.Id, err)
+	}
+}
+
+func (d *directoriesImpl) handleIncludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
+	tag, err := d.handleDirectoryTag(directory)
+	if err != nil {
+		return
+	}
+
+	directory.FilesCount = pointer.Int(d.syncDirectory(directory, tag, allDirectories))
 }
 
 func (d *directoriesImpl) syncDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
