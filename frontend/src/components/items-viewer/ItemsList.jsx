@@ -4,7 +4,7 @@ import { Box } from '@mui/system';
 import React from 'react';
 import Item from './Item';
 
-function ItemsList({ items, previewMode }) {
+function ItemsList({ itemsSize, items, previewMode }) {
 	const trigger = useScrollTrigger({
 		disableHysteresis: true,
 		threshold: 100,
@@ -36,6 +36,8 @@ function ItemsList({ items, previewMode }) {
 							preferPreview={previewMode}
 							onConvertAudio={onConvertAudio}
 							onConvertVideo={onConvertVideo}
+							itemWidth={itemsSize.width}
+							itemHeigth={itemsSize.height}
 						/>
 					);
 				})}

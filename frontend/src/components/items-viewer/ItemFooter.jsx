@@ -19,10 +19,8 @@ function ItemFooter({ item }) {
 			sx={{
 				display: 'flex',
 				flexDirection: 'row',
-				gap: '10px',
 				alignItems: 'center',
 				justifyContent: 'center',
-				height: '50px',
 			}}
 		>
 			<Typography
@@ -35,7 +33,7 @@ function ItemFooter({ item }) {
 					borderRadius: '3px',
 					color: 'bright.main',
 					verticalAlign: 'middle',
-					margin: '10px',
+					margin: '5px',
 				}}
 			>
 				{getFormattedDuration()}
@@ -48,9 +46,7 @@ function ItemFooter({ item }) {
 						overflow: 'hidden',
 						textOverflow: 'ellipsis',
 						cursor: 'pointer',
-						maxWidth: '450px',
 						textAlign: 'center',
-						padding: '5px',
 						color: 'primary.light',
 						flexGrow: 1,
 					}}

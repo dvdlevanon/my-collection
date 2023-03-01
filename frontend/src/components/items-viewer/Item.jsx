@@ -6,7 +6,7 @@ import ItemBadges from './ItemBadges';
 import ItemCoverIndicator from './ItemCoverIndicator';
 import ItemFooter from './ItemFooter';
 
-function Item({ item, preferPreview, onConvertAudio, onConvertVideo }) {
+function Item({ item, preferPreview, itemWidth, itemHeight, onConvertAudio, onConvertVideo }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
 	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
 	let [showPreview, setShowPreview] = useState(false);
@@ -71,6 +71,8 @@ function Item({ item, preferPreview, onConvertAudio, onConvertVideo }) {
 				display: 'flex',
 				position: 'relative',
 				flexDirection: 'column',
+				width: itemWidth,
+				height: itemHeight,
 			}}
 			to={'/spa/item/' + item.id}
 			onMouseLeave={(e) => mouseLeave(e)}
@@ -84,8 +86,8 @@ function Item({ item, preferPreview, onConvertAudio, onConvertVideo }) {
 				alt={item.title}
 				loading="lazy"
 				sx={{
-					width: '550px',
-					height: '300px',
+					width: itemWidth,
+					height: itemHeight,
 					objectFit: 'contain',
 					cursor: 'pointer',
 				}}
@@ -120,8 +122,8 @@ function Item({ item, preferPreview, onConvertAudio, onConvertVideo }) {
 					sx={{
 						position: 'absolute',
 						padding: '0px',
-						width: '550px',
-						height: '300px',
+						width: itemWidth,
+						height: itemHeight,
 						objectFit: 'contain',
 						cursor: 'pointer',
 					}}
