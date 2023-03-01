@@ -20,12 +20,24 @@ function ItemsList({ items, previewMode }) {
 		}
 	};
 
+	const onConvertVideo = (item) => {};
+
+	const onConvertAudio = (item) => {};
+
 	return (
 		<React.Fragment>
 			<div id="back-to-top-anchor" />
 			<Stack flexDirection="row" flexWrap="wrap" gap="10px" padding="20px">
 				{items.map((item) => {
-					return <Item key={item.id} item={item} preferPreview={previewMode} />;
+					return (
+						<Item
+							key={item.id}
+							item={item}
+							preferPreview={previewMode}
+							onConvertAudio={onConvertAudio}
+							onConvertVideo={onConvertVideo}
+						/>
+					);
 				})}
 			</Stack>
 			<Fade in={trigger}>

@@ -1,33 +1,133 @@
-import { AppBar, Button, Checkbox, FormControlLabel, Link, Toolbar, Typography } from '@mui/material';
+import QueueIcon from '@mui/icons-material/List';
+import {
+	AppBar,
+	Badge,
+	Button,
+	Checkbox,
+	FormControlLabel,
+	IconButton,
+	Link,
+	Menu,
+	MenuItem,
+	Popover,
+	Toolbar,
+	Typography,
+} from '@mui/material';
+import { useState } from 'react';
+import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../network/client';
+import ReactQueryUtil from '../../utils/react-query-util';
+import Queue from '../queue/Queue';
 
 function TopBar({ previewMode, onPreviewModeChange }) {
+	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
+	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getQueueMetadata);
+
 	const previewsChange = (e) => {
 		onPreviewModeChange(e.target.checked);
 	};
 
+	const [queueEl, setQueueEl] = useState(null);
+
 	return (
 		<AppBar position="static">
-			<Toolbar>
+			<Toolbar
+				sx={{
+					gap: '20px',
+					alignItems: 'center',
+					alignContent: 'center',
+					verticalAlign: 'center',
+				}}
+			>
 				<Link sx={{ flexGrow: 1 }} component={RouterLink} to="/">
 					<Typography variant="h5">My Collection</Typography>
 				</Link>
+				{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size != 0 && (
+					<IconButton onClick={(e) => setQueueEl(e.currentTarget)}>
+						<Badge
+							badgeContent={(queueMetadataQuery.isSuccess && queueMetadataQuery.data.size) || null}
+							color="primary"
+						>
+							<QueueIcon />
+						</Badge>
+					</IconButton>
+				)}
+				<Popover
+					id="test"
+					anchorEl={queueEl}
+					open={Boolean(queueEl)}
+					onClose={() => setQueueEl(null)}
+					anchorOrigin={{
+						vertical: 'bottom',
+						horizontal: 'left',
+					}}
+				>
+					<Queue onClose={() => setQueueEl(null)} />
+				</Popover>
 				<Link component={RouterLink} to="spa/manage-directories">
 					<Button variant="outlined">Manage Directories</Button>
 				</Link>
 				<Link href={Client.getExportMetadataUrl()} download>
 					<Button variant="outlined">Export metadata</Button>
 				</Link>
-				<Button variant="outlined" onClick={() => Client.refreshCovers()}>
-					Refresh Covers
+				<Button variant="outlined" onClick={(e) => setRefreshAnchorEl(e.currentTarget)}>
+					Refresh
 				</Button>
-				<Button variant="outlined" onClick={() => Client.refreshPreview()}>
-					Refresh Preview
-				</Button>
-				<Button variant="outlined" onClick={() => Client.refreshVideoMetadata()}>
-					Refresh Video Metadata
-				</Button>
+				<Menu
+					anchorEl={refreshAnchorEl}
+					open={refreshAnchorEl != null}
+					onClose={() => setRefreshAnchorEl(null)}
+				>
+					<MenuItem
+						onClick={() => {
+							Client.refreshCovers(false);
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Refresh Covers
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.refreshCovers(true);
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Force Refresh Covers
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.refreshPreview(false);
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Refresh Preview
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.refreshPreview(true);
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Force Refresh Preview
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.refreshVideoMetadata(false);
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Refresh Video Metadata
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.refreshVideoMetadata(true);
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Force Refresh Video Metadata
+					</MenuItem>
+				</Menu>
 				<FormControlLabel
 					label="Use Previews"
 					control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}

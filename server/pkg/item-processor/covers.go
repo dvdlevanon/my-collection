@@ -8,14 +8,14 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-func (p itemProcessorImpl) EnqueueAllItemsCovers() error {
+func (p itemProcessorImpl) EnqueueAllItemsCovers(force bool) error {
 	items, err := p.gallery.GetAllItems()
 	if err != nil {
 		return err
 	}
 
 	for _, item := range *items {
-		if len(item.Covers) == p.gallery.CoversCount {
+		if !force && len(item.Covers) == p.gallery.CoversCount {
 			continue
 		}
 
@@ -26,21 +26,17 @@ func (p itemProcessorImpl) EnqueueAllItemsCovers() error {
 }
 
 func (p itemProcessorImpl) EnqueueMainCover(id uint64, second float64) {
-	p.queue <- task{taskType: SET_MAIN_COVER, id: id, floatParam: second}
+	p.enqueue(&model.Task{TaskType: model.SET_MAIN_COVER, IdParam: id, FloatParam: second})
 }
 
 func (p itemProcessorImpl) EnqueueItemCovers(id uint64) {
-	p.queue <- task{taskType: REFRESH_COVER_TASK, id: id}
+	p.enqueue(&model.Task{TaskType: model.REFRESH_COVER_TASK, IdParam: id})
 }
 
 func (p itemProcessorImpl) refreshItemCovers(id uint64) error {
 	item, err := p.gallery.GetItem(id)
 	if err != nil {
 		return err
-	}
-
-	if len(item.Covers) == p.gallery.CoversCount {
-		return nil
 	}
 
 	item.Covers = make([]model.Cover, 0)

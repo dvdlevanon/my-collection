@@ -99,6 +99,26 @@ func GetVideoMetadata(videoFile string) (FfprobeShowStreamOutput, error) {
 	return FfprobeShowStreamOutput{}, errors.Errorf("Video stream not found for %s", videoFile)
 }
 
+func GetAudioMetadata(videoFile string) (FfprobeShowStreamOutput, error) {
+	output, err := execute("ffprobe", "-show_streams", "-print_format", "json", videoFile)
+	if err != nil {
+		return FfprobeShowStreamOutput{}, err
+	}
+
+	showStreams := ffprobeShowStreamsOutput{}
+	if err = json.Unmarshal(output, &showStreams); err != nil {
+		return FfprobeShowStreamOutput{}, errors.Wrap(err, 0)
+	}
+
+	for _, stream := range showStreams.Streams {
+		if stream.CodecType == "audio" {
+			return stream, nil
+		}
+	}
+
+	return FfprobeShowStreamOutput{}, errors.Errorf("Audio stream not found for %s", videoFile)
+}
+
 func TakeScreenshot(videoFile string, second float64, targetFile string) error {
 	_, err := execute("ffmpeg", "-y", "-ss", fmt.Sprintf("%f", second), "-i", videoFile, "-vframes", "1", targetFile)
 	if err != nil {
@@ -110,7 +130,7 @@ func TakeScreenshot(videoFile string, second float64, targetFile string) error {
 
 func ExtractPartOfVideo(videoFile string, second int, duration int, targetFile string) error {
 	_, err := execute("ffmpeg", "-ss", fmt.Sprintf("%d", second), "-i", videoFile,
-		"-t", fmt.Sprintf("%d", duration), "-c", "copy", targetFile)
+		"-t", fmt.Sprintf("%d", duration), "-vcodec", "copy", "-acodec", "aac", "-ac", "4", targetFile)
 	if err != nil {
 		return err
 	}

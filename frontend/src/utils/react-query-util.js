@@ -1,6 +1,7 @@
 export default class ReactQueryUtil {
 	static TAGS_KEY = ['tags'];
 	static ITEMS_KEY = ['items'];
+	static QUEUE_METADATA_KEY = ['queue-metadata'];
 	static DIRECTORIES_KEY = ['directories'];
 
 	static availableAnnotationsKey = (tagId) => {
@@ -9,6 +10,10 @@ export default class ReactQueryUtil {
 
 	static itemKey = (itemId) => {
 		return ['items', { id: itemId }];
+	};
+
+	static tasksPageKey = (pageId, pageSize) => {
+		return ['tasks', { page: pageId, pageSize: pageSize }];
 	};
 
 	static updateTags = (queryClient, tagId, updater) => {

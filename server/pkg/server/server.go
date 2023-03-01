@@ -77,6 +77,11 @@ func (s *Server) init() {
 	api.POST("/upload-file", s.uploadFile)
 	api.GET("/export-metadata.json", s.exportMetadata)
 
+	api.GET("/queue/metadata", s.getQueueMetadata)
+	api.GET("/queue/tasks", s.getTasks)
+	api.POST("/queue/continue", s.queueContinue)
+	api.POST("/queue/pause", s.queuePause)
+
 	s.router.Static("/ui", "ui/")
 	s.router.StaticFile("/", "ui/index.html")
 	s.router.GET("/spa/*route", func(c *gin.Context) {

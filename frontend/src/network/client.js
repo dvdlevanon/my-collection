@@ -10,6 +10,28 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/directories`).then((response) => response.json());
 	};
 
+	static getQueueMetadata = async () => {
+		return await fetch(`${Client.apiUrl}/queue/metadata`).then((response) => response.json());
+	};
+
+	static getTasks = async (page, pageSize) => {
+		return await fetch(`${Client.apiUrl}/queue/tasks?page=${page}&pageSize=${pageSize}`).then((response) =>
+			response.json()
+		);
+	};
+
+	static continueProcessingTasks = async () => {
+		return await fetch(`${Client.apiUrl}/queue/continue`, {
+			method: 'POST',
+		});
+	};
+
+	static pauseProcessingTasks = async () => {
+		return await fetch(`${Client.apiUrl}/queue/pause`, {
+			method: 'POST',
+		});
+	};
+
 	static addOrUpdateDirectory = async (directory) => {
 		return await fetch(`${Client.apiUrl}/directories`, {
 			method: 'POST',
@@ -118,16 +140,16 @@ export default class Client {
 			.then((fileUrl) => successCallback(fileUrl));
 	}
 
-	static refreshCovers() {
-		fetch(`${Client.apiUrl}/items/refresh-covers`);
+	static refreshCovers(force) {
+		fetch(`${Client.apiUrl}/items/refresh-covers?force=${force}`);
 	}
 
-	static refreshPreview() {
-		fetch(`${Client.apiUrl}/items/refresh-preview`);
+	static refreshPreview(force) {
+		fetch(`${Client.apiUrl}/items/refresh-preview?force=${force}`);
 	}
 
-	static refreshVideoMetadata() {
-		fetch(`${Client.apiUrl}/items/refresh-video-metadata`);
+	static refreshVideoMetadata(force) {
+		fetch(`${Client.apiUrl}/items/refresh-video-metadata?force=${force}`);
 	}
 
 	static getExportMetadataUrl() {

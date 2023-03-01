@@ -231,9 +231,12 @@ func (s *Server) getItems(c *gin.Context) {
 }
 
 func (s *Server) refreshItemsCovers(c *gin.Context) {
-	err := s.processor.EnqueueAllItemsCovers()
+	force, err := strconv.ParseBool(c.Query("force"))
+	if err != nil {
+		force = false
+	}
 
-	if s.handleError(c, err) {
+	if s.handleError(c, s.processor.EnqueueAllItemsCovers(force)) {
 		return
 	}
 
@@ -241,9 +244,12 @@ func (s *Server) refreshItemsCovers(c *gin.Context) {
 }
 
 func (s *Server) refreshItemsPreview(c *gin.Context) {
-	err := s.processor.EnqueueAllItemsPreview()
+	force, err := strconv.ParseBool(c.Query("force"))
+	if err != nil {
+		force = false
+	}
 
-	if s.handleError(c, err) {
+	if s.handleError(c, s.processor.EnqueueAllItemsPreview(force)) {
 		return
 	}
 
@@ -251,9 +257,13 @@ func (s *Server) refreshItemsPreview(c *gin.Context) {
 }
 
 func (s *Server) refreshItemsVideoMetadata(c *gin.Context) {
-	err := s.processor.EnqueueAllItemsVideoMetadata()
+	forceParam := c.Query("force")
+	force, err := strconv.ParseBool(forceParam)
+	if err != nil {
+		force = false
+	}
 
-	if s.handleError(c, err) {
+	if s.handleError(c, s.processor.EnqueueAllItemsVideoMetadata(force)) {
 		return
 	}
 
@@ -452,4 +462,48 @@ func (s *Server) setMainCover(c *gin.Context) {
 
 	logger.Infof("Setting main cover for item %d at %d", itemId, second)
 	s.processor.EnqueueMainCover(itemId, second)
+}
+
+func (s *Server) getQueueMetadata(c *gin.Context) {
+	size, err := s.gallery.TasksCount()
+	if s.handleError(c, err) {
+		return
+	}
+
+	queueMetadata := model.QueueMetadata{
+		Size:   pointer.Int64(size),
+		Paused: pointer.Bool(s.processor.IsPaused()),
+	}
+
+	c.JSON(http.StatusOK, queueMetadata)
+}
+
+func (s *Server) getTasks(c *gin.Context) {
+	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
+	if s.handleError(c, err) {
+		return
+	}
+
+	pageSize, err := strconv.ParseInt(c.Query("pageSize"), 10, 32)
+	if s.handleError(c, err) {
+		return
+	}
+
+	tasks, err := s.gallery.GetTasks(int((page-1)*pageSize), int(pageSize))
+	if s.handleError(c, err) {
+		return
+	}
+
+	s.gallery.AddDescriptionToTasks(tasks)
+	c.JSON(http.StatusOK, tasks)
+}
+
+func (s *Server) queueContinue(c *gin.Context) {
+	s.processor.Continue()
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) queuePause(c *gin.Context) {
+	s.processor.Pause()
+	c.Status(http.StatusOK)
 }

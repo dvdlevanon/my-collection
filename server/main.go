@@ -81,7 +81,11 @@ func run() error {
 
 	gallery := gallery.New(db, storage, rootdir)
 
-	processor := itemprocessor.New(gallery, storage)
+	processor, err := itemprocessor.New(gallery, storage)
+	if err != nil {
+		return err
+	}
+	processor.Pause()
 	go processor.Run()
 
 	directories := directories.New(gallery, storage, processor)

@@ -46,6 +46,10 @@ func New(rootDirectory string, filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
+	if err = db.AutoMigrate(&model.Task{}); err != nil {
+		return nil, errors.Wrap(err, 0)
+	}
+
 	logger.Infof("DB initialized with db file: %s", actualpath)
 
 	return &Database{
@@ -71,6 +75,30 @@ func (d *Database) update(value interface{}) error {
 
 func (d *Database) CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error {
 	return d.create(tagAnnotation)
+}
+
+func (d *Database) CreateTask(task *model.Task) error {
+	return d.create(task)
+}
+
+func (d *Database) UpdateTask(task *model.Task) error {
+	return d.update(task)
+}
+
+func (d *Database) RemoveTask(taskId string) error {
+	return d.db.Delete(model.Task{Id: taskId}).Error
+}
+
+func (d *Database) TasksCount() (int64, error) {
+	var count int64
+	err := d.db.Model(model.Task{}).Count(&count).Error
+	return count, err
+}
+
+func (d *Database) GetTasks(offset int, limit int) (*[]model.Task, error) {
+	var tasks []model.Task
+	err := d.db.Model(model.Task{}).Offset(offset).Limit(limit).Find(&tasks).Error
+	return &tasks, err
 }
 
 func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {

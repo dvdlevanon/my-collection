@@ -24,6 +24,7 @@ const theme = createTheme({
 		dark: {
 			main: '#121212',
 			lighter: '#222222',
+			lighter2: '#272727',
 		},
 	},
 	typography: {

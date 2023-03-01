@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import Client from '../../network/client';
 import ReactQueryUtil from '../../utils/react-query-util';
+import TimeUtil from '../../utils/time-utils';
 import AddTagDialog from '../dialogs/AddTagDialog';
 import DirectoryActionsCell from './DirectoryActionsCell';
 import DirectoryCategoriesCell from './DirectoryCategoriesCell';
@@ -57,23 +58,12 @@ function DirectoryRow({ directory }) {
 		Client.setDirectoryCategories({ ...directory, tags: categories }).then(refetchDirectories);
 	};
 
-	const msToTime = (millis) => {
-		let seconds = (millis / 1000).toFixed(1);
-		let minutes = (millis / (1000 * 60)).toFixed(1);
-		let hours = (millis / (1000 * 60 * 60)).toFixed(1);
-		let days = (millis / (1000 * 60 * 60 * 24)).toFixed(1);
-		if (seconds < 60) return Math.floor(seconds) + ' Seconds';
-		else if (minutes < 60) return Math.floor(minutes) + ' Minutes';
-		else if (hours < 24) return Math.floor(hours) + ' Hours';
-		else return Math.floor(days) + ' Days';
-	};
-
 	const formatLastSynced = (directory) => {
 		if (!directory.lastSynced) {
 			return 'Syncing...';
 		}
 
-		return msToTime(Date.now() - directory.lastSynced) + ' Ago';
+		return TimeUtil.msToTime(Date.now() - directory.lastSynced) + ' Ago';
 	};
 
 	const formatFilesCount = (directory) => {

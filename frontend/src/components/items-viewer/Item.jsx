@@ -1,10 +1,12 @@
-import { Box, Link, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Link, Stack } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../network/client';
+import ItemBadges from './ItemBadges';
 import ItemCoverIndicator from './ItemCoverIndicator';
+import ItemFooter from './ItemFooter';
 
-function Item({ item, preferPreview }) {
+function Item({ item, preferPreview, onConvertAudio, onConvertVideo }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
 	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
 	let [showPreview, setShowPreview] = useState(false);
@@ -61,21 +63,10 @@ function Item({ item, preferPreview }) {
 		}
 	};
 
-	const getFormattedDuration = () => {
-		if (!item.duration_seconds) {
-			return '00:00';
-		}
-
-		if (item.duration_seconds < 60 * 60) {
-			return new Date(item.duration_seconds * 1000).toISOString().slice(14, 19);
-		} else {
-			return new Date(item.duration_seconds * 1000).toISOString().slice(11, 19);
-		}
-	};
-
 	return (
 		<Link
 			component={RouterLink}
+			backgroundColor="dark.lighter"
 			sx={{
 				display: 'flex',
 				position: 'relative',
@@ -86,6 +77,7 @@ function Item({ item, preferPreview }) {
 			onMouseMove={(e) => mouseMove(e)}
 			onMouseEnter={(e) => mouseEnter(e)}
 		>
+			<ItemBadges item={item} onConvertAudio={onConvertAudio} onConvertVideo={onConvertVideo} />
 			<Box
 				component="img"
 				src={getCover()}
@@ -148,50 +140,7 @@ function Item({ item, preferPreview }) {
 					</Box>
 				</Box>
 			)}
-			<Box
-				sx={{
-					display: 'flex',
-					flexDirection: 'row',
-					gap: '10px',
-					alignItems: 'center',
-					justifyContent: 'center',
-					height: '50px',
-				}}
-			>
-				<Typography
-					variant="caption"
-					sx={{
-						padding: '0px 3px',
-						borderWidth: '1px',
-						borderColor: 'bright.main',
-						borderStyle: 'solid',
-						borderRadius: '3px',
-						color: 'bright.main',
-						verticalAlign: 'middle',
-						margin: '10px',
-					}}
-				>
-					{getFormattedDuration()}
-				</Typography>
-				<Tooltip title={item.title} arrow followCursor>
-					<Typography
-						variant="caption"
-						sx={{
-							whiteSpace: 'nowrap',
-							overflow: 'hidden',
-							textOverflow: 'ellipsis',
-							cursor: 'pointer',
-							maxWidth: '450px',
-							textAlign: 'center',
-							padding: '5px',
-							color: 'primary.light',
-							flexGrow: 1,
-						}}
-					>
-						{item.title}
-					</Typography>
-				</Tooltip>
-			</Box>
+			<ItemFooter item={item} />
 		</Link>
 	);
 }

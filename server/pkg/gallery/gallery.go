@@ -207,3 +207,14 @@ func (g *Gallery) findExistingImage(tagTitle string, directory string) (string, 
 
 	return "", nil
 }
+
+func (g *Gallery) AddDescriptionToTasks(tasks *[]model.Task) {
+	for i, task := range *tasks {
+		item, err := g.GetItem(task.IdParam)
+		if err != nil {
+			(*tasks)[i].Description = task.TaskType.ToDescription("Unknown")
+		}
+
+		(*tasks)[i].Description = task.TaskType.ToDescription(item.Title)
+	}
+}

@@ -49,6 +49,10 @@ func New(rootDirectory string) (*Storage, error) {
 	}, nil
 }
 
+func (s *Storage) GetStorageDirectory(name string) string {
+	return s.GetFile(name)
+}
+
 func (s *Storage) Put(name string, bytes []byte) error {
 	return os.WriteFile(s.GetFile(name), bytes, 0750)
 }

@@ -2,16 +2,17 @@ package itemprocessor
 
 import (
 	"my-collection/server/pkg/ffmpeg"
+	"my-collection/server/pkg/model"
 )
 
-func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata() error {
+func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata(force bool) error {
 	items, err := p.gallery.GetAllItems()
 	if err != nil {
 		return err
 	}
 
 	for _, item := range *items {
-		if item.DurationSeconds != 0 {
+		if !force && item.DurationSeconds != 0 {
 			continue
 		}
 
@@ -22,17 +23,13 @@ func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata() error {
 }
 
 func (p itemProcessorImpl) EnqueueItemVideoMetadata(id uint64) {
-	p.queue <- task{taskType: REFRESH_METADATA_TASK, id: id}
+	p.enqueue(&model.Task{TaskType: model.REFRESH_METADATA_TASK, IdParam: id})
 }
 
 func (p itemProcessorImpl) refreshItemMetadata(id uint64) error {
 	item, err := p.gallery.GetItem(id)
 	if err != nil {
 		return err
-	}
-
-	if item.DurationSeconds != 0 {
-		return nil
 	}
 
 	videoFile := p.gallery.GetFile(item.Url)
@@ -50,9 +47,16 @@ func (p itemProcessorImpl) refreshItemMetadata(id uint64) error {
 		return err
 	}
 
+	rawAudioMetadata, err := ffmpeg.GetAudioMetadata(videoFile)
+	if err != nil {
+		logger.Errorf("Error getting audio metadata of %s", videoFile)
+		return err
+	}
+
 	item.DurationSeconds = duration
 	item.Width = rawVideoMetadata.Width
 	item.Height = rawVideoMetadata.Height
-	item.CodecName = rawVideoMetadata.CodecName
+	item.VideoCodecName = rawVideoMetadata.CodecName
+	item.AudioCodecName = rawAudioMetadata.CodecName
 	return p.gallery.UpdateItem(item)
 }

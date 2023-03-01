@@ -1,92 +1,160 @@
 package itemprocessor
 
 import (
+	"fmt"
 	"my-collection/server/pkg/gallery"
+	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
+	"os"
+	"time"
 
+	"github.com/google/uuid"
+	"github.com/joncrlsn/dque"
 	"github.com/op/go-logging"
+	"k8s.io/utils/pointer"
 )
 
 var logger = logging.MustGetLogger("item-processor")
 
-type TaskType int
-
-const (
-	REFRESH_COVER_TASK = iota
-	REFRESH_PREVIEW_TASK
-	REFRESH_METADATA_TASK
-	SET_MAIN_COVER
-)
-
 type ItemProcessor interface {
 	Run()
-	EnqueueAllItemsPreview() error
-	EnqueueAllItemsCovers() error
-	EnqueueAllItemsVideoMetadata() error
+	EnqueueAllItemsPreview(force bool) error
+	EnqueueAllItemsCovers(force bool) error
+	EnqueueAllItemsVideoMetadata(force bool) error
 	EnqueueItemPreview(id uint64)
 	EnqueueItemCovers(id uint64)
 	EnqueueMainCover(id uint64, second float64)
 	EnqueueItemVideoMetadata(id uint64)
+	IsPaused() bool
+	Pause()
+	Continue()
 }
 
-type task struct {
-	taskType   TaskType
-	id         uint64
-	floatParam float64
+func taskBuilder() interface{} {
+	return &model.Task{}
 }
 
 type itemProcessorImpl struct {
-	gallery *gallery.Gallery
-	storage *storage.Storage
-	queue   chan task
+	gallery      *gallery.Gallery
+	storage      *storage.Storage
+	dque         *dque.DQue
+	pauseChannel chan bool
+	paused       bool
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage) ItemProcessor {
+func New(gallery *gallery.Gallery, storage *storage.Storage) (ItemProcessor, error) {
 	logger.Infof("Item processor initialized")
 
+	tasksDirectory := storage.GetStorageDirectory("tasks")
+	if err := os.MkdirAll(tasksDirectory, 0750); err != nil {
+		logger.Errorf("Error creating tasks directory %s", err)
+		return nil, err
+	}
+
+	dque, err := dque.NewOrOpen("tasks", tasksDirectory, 100, taskBuilder)
+	if err != nil {
+		logger.Errorf("Error creating tasks queue %s", err)
+		return nil, err
+	}
+
 	return &itemProcessorImpl{
-		gallery: gallery,
-		storage: storage,
-		queue:   make(chan task, 100000),
+		gallery:      gallery,
+		storage:      storage,
+		dque:         dque,
+		pauseChannel: make(chan bool, 10),
+	}, nil
+}
+
+func (p *itemProcessorImpl) IsPaused() bool {
+	return p.paused
+}
+
+func (p *itemProcessorImpl) Pause() {
+	p.pauseChannel <- true
+}
+
+func (p *itemProcessorImpl) Continue() {
+	p.pauseChannel <- false
+}
+
+func (p *itemProcessorImpl) Run() {
+	for {
+		select {
+		case paused := <-p.pauseChannel:
+			logger.Infof("Queue paused changed from %t to %t", p.paused, paused)
+			p.paused = paused
+		default:
+			if !p.paused {
+				p.process()
+			} else {
+				time.Sleep(time.Second)
+			}
+		}
 	}
 }
 
-func (p itemProcessorImpl) Run() {
-	for t := range p.queue {
-		p.processTask(&t)
-	}
-}
+func (p *itemProcessorImpl) process() {
+	taskIfc, err := p.dque.Peek()
+	if err != nil {
+		if err != dque.ErrEmpty {
+			logger.Errorf("Error peeking tasks queue %s", err)
+		}
 
-func (p itemProcessorImpl) processTask(t *task) {
-	switch t.taskType {
-	case REFRESH_COVER_TASK:
-		p.handleError(t, p.refreshItemCovers(t.id))
-	case SET_MAIN_COVER:
-		p.handleError(t, p.setMainCover(t.id, t.floatParam))
-	case REFRESH_PREVIEW_TASK:
-		p.handleError(t, p.refreshItemPreview(t.id))
-	case REFRESH_METADATA_TASK:
-		p.handleError(t, p.refreshItemMetadata(t.id))
-	}
-}
-
-func (t TaskType) String() string {
-	switch t {
-	case REFRESH_COVER_TASK:
-		return "cover"
-	case REFRESH_PREVIEW_TASK:
-		return "preview"
-	case REFRESH_METADATA_TASK:
-		return "metadata"
-	default:
-		return "unknown"
-	}
-}
-
-func (p itemProcessorImpl) handleError(t *task, err error) {
-	if err == nil {
+		time.Sleep(time.Second)
 		return
 	}
 
-	logger.Errorf("Error processing task %v for id: %d - %t", t.taskType.String(), t.id, err)
+	task, ok := taskIfc.(*model.Task)
+	if !ok {
+		logger.Errorf("Unable to convert interface to task %s", task)
+		return
+	}
+
+	startMillis := time.Now().UnixMilli()
+	task.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
+	if err := p.gallery.UpdateTask(task); err != nil {
+		logger.Warningf("Unable to update task processing start time %s %s", task.Id, err)
+	}
+
+	logger.Infof("Start processing task %+v", task)
+	if err := p.processTask(task); err != nil {
+		logger.Errorf("Error processing task %+v for id: %d - %t", task.TaskType.String(), task.IdParam, err)
+	}
+
+	p.gallery.RemoveTask(task.Id)
+	if _, err = p.dque.DequeueBlock(); err != nil {
+		logger.Errorf("Error dequeuing task %s - %+v", err, task)
+	}
+
+	processingMillis := time.Now().UnixMilli() - startMillis
+	logger.Infof("Done processing task in %dms %+v", processingMillis, task)
+}
+
+func (p *itemProcessorImpl) enqueue(t *model.Task) {
+	t.Id = uuid.New().String()
+	t.EnequeueTime = pointer.Int64(time.Now().UnixMilli())
+	if err := p.dque.Enqueue(t); err != nil {
+		logger.Errorf("Error enqueuing task %s - %v", err, *t)
+		return
+	}
+
+	if err := p.gallery.CreateTask(t); err != nil {
+		logger.Errorf("Error adding task to db %s - %v", err, *t)
+		return
+	}
+}
+
+func (p *itemProcessorImpl) processTask(t *model.Task) error {
+	switch t.TaskType {
+	case model.REFRESH_COVER_TASK:
+		return p.refreshItemCovers(t.IdParam)
+	case model.SET_MAIN_COVER:
+		return p.setMainCover(t.IdParam, t.FloatParam)
+	case model.REFRESH_PREVIEW_TASK:
+		return p.refreshItemPreview(t.IdParam)
+	case model.REFRESH_METADATA_TASK:
+		return p.refreshItemMetadata(t.IdParam)
+	default:
+		return fmt.Errorf("unknown task %+v", t)
+	}
 }

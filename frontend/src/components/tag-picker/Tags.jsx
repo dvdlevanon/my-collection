@@ -100,7 +100,6 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					padding: '10px',
 					gap: '10px',
 					flexWrap: 'wrap',
-					flexGrow: 1,
 				}}
 			>
 				{filterTags().map((tag) => {

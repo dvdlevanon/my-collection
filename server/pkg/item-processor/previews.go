@@ -7,14 +7,14 @@ import (
 	"os"
 )
 
-func (p itemProcessorImpl) EnqueueAllItemsPreview() error {
+func (p itemProcessorImpl) EnqueueAllItemsPreview(force bool) error {
 	items, err := p.gallery.GetAllItems()
 	if err != nil {
 		return err
 	}
 
 	for _, item := range *items {
-		if item.PreviewUrl != "" {
+		if !force && item.PreviewUrl != "" {
 			continue
 		}
 
@@ -25,17 +25,13 @@ func (p itemProcessorImpl) EnqueueAllItemsPreview() error {
 }
 
 func (p itemProcessorImpl) EnqueueItemPreview(id uint64) {
-	p.queue <- task{taskType: REFRESH_PREVIEW_TASK, id: id}
+	p.enqueue(&model.Task{TaskType: model.REFRESH_PREVIEW_TASK, IdParam: id})
 }
 
 func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
 	item, err := p.gallery.GetItem(id)
 	if err != nil {
 		return err
-	}
-
-	if item.PreviewUrl != "" {
-		return nil
 	}
 
 	logger.Infof("Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
