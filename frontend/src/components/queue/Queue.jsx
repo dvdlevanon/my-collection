@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import React from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import Task from './Task';
 

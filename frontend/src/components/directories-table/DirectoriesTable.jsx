@@ -1,6 +1,6 @@
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
 import { useQuery, useQueryClient } from 'react-query';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import DirectoriesUtil from '../../utils/directories-util';
 import ReactQueryUtil from '../../utils/react-query-util';
 import DirectoryRow from './DirectoryRow';

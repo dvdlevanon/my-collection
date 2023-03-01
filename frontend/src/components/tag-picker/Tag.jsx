@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Typography } from '@mui/material';
 import React, { useState } from 'react';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';

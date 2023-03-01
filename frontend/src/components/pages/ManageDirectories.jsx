@@ -3,7 +3,7 @@ import { Fab, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
 import DirectoriesTable from '../directories-table/DirectoriesTable';

@@ -5,7 +5,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useRef, useState } from 'react';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
 

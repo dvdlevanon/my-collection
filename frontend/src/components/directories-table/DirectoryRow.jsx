@@ -1,7 +1,7 @@
 import { TableCell, TableRow } from '@mui/material';
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TimeUtil from '../../utils/time-utils';
 import AddTagDialog from '../dialogs/AddTagDialog';

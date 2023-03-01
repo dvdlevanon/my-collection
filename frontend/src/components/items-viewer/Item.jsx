@@ -1,7 +1,7 @@
 import { Box, Link, Stack } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ItemBadges from './ItemBadges';
 import ItemCoverIndicator from './ItemCoverIndicator';
 import ItemFooter from './ItemFooter';

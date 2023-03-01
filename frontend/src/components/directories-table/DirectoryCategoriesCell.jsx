@@ -1,7 +1,7 @@
 import { FormControl, MenuItem, Select } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 

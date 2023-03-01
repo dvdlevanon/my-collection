@@ -16,7 +16,7 @@ import {
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import Queue from '../queue/Queue';
 

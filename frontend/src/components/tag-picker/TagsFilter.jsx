@@ -2,7 +2,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ImageIcon from '@mui/icons-material/PermMedia';
 import { Box, IconButton, TextField, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
 import TagAnnotation from './TagAnnotation';

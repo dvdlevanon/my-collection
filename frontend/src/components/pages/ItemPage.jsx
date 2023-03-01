@@ -3,7 +3,7 @@ import { Box, Chip, Stack, Typography } from '@mui/material';
 import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
-import Client from '../../network/client';
+import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
