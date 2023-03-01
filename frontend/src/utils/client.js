@@ -21,6 +21,12 @@ export default class Client {
 		);
 	};
 
+	static clearFinishedTasks = async () => {
+		return await fetch(`${Client.apiUrl}/queue/clear-finished`, {
+			method: 'POST',
+		});
+	};
+
 	static continueProcessingTasks = async () => {
 		return await fetch(`${Client.apiUrl}/queue/continue`, {
 			method: 'POST',

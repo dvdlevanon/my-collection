@@ -85,6 +85,7 @@ func (s *Server) init() {
 	api.GET("/queue/tasks", s.getTasks)
 	api.POST("/queue/continue", s.queueContinue)
 	api.POST("/queue/pause", s.queuePause)
+	api.POST("/queue/clear-finished", s.clearFinishedTasks)
 
 	api.GET("/ws", s.push.websocket)
 
@@ -115,14 +116,22 @@ func (s *Server) handleError(c *gin.Context, err error) bool {
 }
 
 func (s *Server) buildQueueMetadata() (model.QueueMetadata, error) {
-	size, err := s.gallery.TasksCount()
+	size, err := s.gallery.TasksCount("")
 	if err != nil {
+		logger.Errorf("Unable to get queue size %s", err)
+		return model.QueueMetadata{}, nil
+	}
+
+	unfinishedTasks, err := s.gallery.TasksCount("processing_end is null")
+	if err != nil {
+		logger.Errorf("Unable to get unfinished tasks count %s", err)
 		return model.QueueMetadata{}, nil
 	}
 
 	queueMetadata := model.QueueMetadata{
-		Size:   pointer.Int64(size),
-		Paused: pointer.Bool(s.processor.IsPaused()),
+		Size:            pointer.Int64(size),
+		Paused:          pointer.Bool(s.processor.IsPaused()),
+		UnfinishedTasks: pointer.Int64(unfinishedTasks),
 	}
 
 	return queueMetadata, err

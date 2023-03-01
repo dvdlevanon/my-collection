@@ -11,6 +11,7 @@ import {
 	MenuItem,
 	Popover,
 	Toolbar,
+	Tooltip,
 	Typography,
 } from '@mui/material';
 import { useState } from 'react';
@@ -22,7 +23,15 @@ import Queue from '../queue/Queue';
 
 function TopBar({ previewMode, onPreviewModeChange }) {
 	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
-	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getQueueMetadata);
+	const queueMetadataQuery = useQuery({
+		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
+		queryFn: Client.getQueueMetadata,
+		onSuccess: (queueMetadata) => {
+			if (queueMetadata.size == 0) {
+				setQueueEl(null);
+			}
+		},
+	});
 
 	const previewsChange = (e) => {
 		onPreviewModeChange(e.target.checked);
@@ -43,28 +52,40 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 				<Link sx={{ flexGrow: 1 }} component={RouterLink} to="/">
 					<Typography variant="h5">My Collection</Typography>
 				</Link>
-				{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size != 0 && (
-					<IconButton onClick={(e) => setQueueEl(e.currentTarget)}>
-						<Badge
-							badgeContent={(queueMetadataQuery.isSuccess && queueMetadataQuery.data.size) || null}
-							color="primary"
-						>
-							<QueueIcon />
-						</Badge>
-					</IconButton>
+				{queueMetadataQuery.isSuccess && (
+					<Tooltip
+						title={
+							queueMetadataQuery.data.size == 0
+								? 'No tasks'
+								: queueMetadataQuery.data.unfinishedTasks + ' pending tasks'
+						}
+					>
+						<span>
+							<IconButton
+								disabled={queueMetadataQuery.data.size == 0}
+								onClick={(e) => setQueueEl(e.currentTarget)}
+							>
+								<Badge badgeContent={queueMetadataQuery.data.unfinishedTasks || null} color="primary">
+									<QueueIcon />
+								</Badge>
+							</IconButton>
+						</span>
+					</Tooltip>
 				)}
-				<Popover
-					id="test"
-					anchorEl={queueEl}
-					open={Boolean(queueEl)}
-					onClose={() => setQueueEl(null)}
-					anchorOrigin={{
-						vertical: 'bottom',
-						horizontal: 'left',
-					}}
-				>
-					<Queue onClose={() => setQueueEl(null)} />
-				</Popover>
+				{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size != 0 && Boolean(queueEl) && (
+					<Popover
+						id="test"
+						anchorEl={queueEl}
+						open={Boolean(queueEl)}
+						onClose={() => setQueueEl(null)}
+						anchorOrigin={{
+							vertical: 'bottom',
+							horizontal: 'left',
+						}}
+					>
+						<Queue onClose={() => setQueueEl(null)} />
+					</Popover>
+				)}
 				<Link component={RouterLink} to="spa/manage-directories">
 					<Button variant="outlined">Manage Directories</Button>
 				</Link>

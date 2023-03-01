@@ -85,13 +85,13 @@ func (d *Database) UpdateTask(task *model.Task) error {
 	return d.update(task)
 }
 
-func (d *Database) RemoveTask(taskId string) error {
-	return d.db.Delete(model.Task{Id: taskId}).Error
+func (d *Database) RemoveTasks(conds ...interface{}) error {
+	return d.db.Delete(model.Task{}, conds...).Error
 }
 
-func (d *Database) TasksCount() (int64, error) {
+func (d *Database) TasksCount(query interface{}, conds ...interface{}) (int64, error) {
 	var count int64
-	err := d.db.Model(model.Task{}).Count(&count).Error
+	err := d.db.Model(model.Task{}).Where(query, conds...).Count(&count).Error
 	return count, err
 }
 

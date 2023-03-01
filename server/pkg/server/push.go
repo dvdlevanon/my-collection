@@ -32,11 +32,23 @@ func newPush(processor itemprocessor.ItemProcessor, server *Server) *push {
 	return result
 }
 
+func (p *push) OnFinishedTasksCleared() {
+	p.pushQueueMetadata()
+}
+
+func (p *push) PauseToggled(paused bool) {
+	p.pushQueueMetadata()
+}
+
 func (p *push) OnTaskAdded(task *model.Task) {
-	p.OnTaskComplete(task)
+	p.pushQueueMetadata()
 }
 
 func (p *push) OnTaskComplete(task *model.Task) {
+	p.pushQueueMetadata()
+}
+
+func (p *push) pushQueueMetadata() {
 	queueMetadata, err := p.server.buildQueueMetadata()
 	if err != nil {
 		logger.Errorf("Unable to build queue metadata %s", err)
@@ -59,7 +71,6 @@ func (p *push) websocket(c *gin.Context) {
 	for {
 		select {
 		case message := <-p.messages:
-			logger.Infof("SENDING PUSH %v", message)
 			err := ws.WriteJSON(message)
 			if err != nil {
 				logger.Warningf("Error writing to websocket %s", err)

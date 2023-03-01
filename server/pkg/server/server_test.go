@@ -35,6 +35,7 @@ func (d *ItemProcessorMock) EnqueueMainCover(id uint64, second float64)         
 func (d *ItemProcessorMock) IsPaused() bool                                                { return false }
 func (d *ItemProcessorMock) Pause()                                                        {}
 func (d *ItemProcessorMock) Continue()                                                     {}
+func (d *ItemProcessorMock) ClearFinishedTasks() error                                     { return nil }
 func (d *ItemProcessorMock) SetProcessorNotifier(notifier itemprocessor.ProcessorNotifier) {}
 
 func setupNewServer(t *testing.T, filename string) *Server {

@@ -74,6 +74,7 @@ type Task struct {
 	Id              string   `json:"id,omitempty" gorm:"primarykey"`
 	EnequeueTime    *int64   `json:"enqueueTime,omitempty"`
 	ProcessingStart *int64   `json:"processingStart,omitempty"`
+	ProcessingEnd   *int64   `json:"processingEnd,omitempty"`
 	TaskType        TaskType `json:"type,omitempty"`
 	IdParam         uint64   `json:"idParam,omitempty"`
 	FloatParam      float64  `json:"floatParam,omitempty"`
@@ -107,8 +108,9 @@ func (t TaskType) String() string {
 }
 
 type QueueMetadata struct {
-	Size   *int64 `json:"size,omitempty"`
-	Paused *bool  `json:"paused,omitempty"`
+	Size            *int64 `json:"size,omitempty"`
+	Paused          *bool  `json:"paused,omitempty"`
+	UnfinishedTasks *int64 `json:"unfinishedTasks,omitempty"`
 }
 
 type PushMessageType int

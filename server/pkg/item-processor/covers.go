@@ -15,7 +15,7 @@ func (p itemProcessorImpl) EnqueueAllItemsCovers(force bool) error {
 	}
 
 	for _, item := range *items {
-		if !force && len(item.Covers) == p.gallery.CoversCount {
+		if !force && len(item.Covers) >= p.gallery.CoversCount {
 			continue
 		}
 

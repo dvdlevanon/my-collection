@@ -1,35 +1,54 @@
+import DoneIcon from '@mui/icons-material/Done';
 import PendingIcon from '@mui/icons-material/Pending';
 import { Box, CircularProgress, Tooltip, Typography } from '@mui/material';
 import { Stack } from '@mui/system';
-import React from 'react';
+import React, { useEffect, useReducer } from 'react';
 import TasksUtil from '../../utils/tasks-util';
 import TimeUtil from '../../utils/time-utils';
 
 function Task({ task }) {
+	const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
+
+	useEffect(() => {
+		setInterval(forceUpdate, 1000);
+	}, []);
+
 	return (
 		<Box>
 			{(!Boolean(task) && 'No Tasks') || (
 				<Stack flexDirection="row" gap="10px" alignItems="center">
-					{(TasksUtil.isProcessing(task) && (
+					{TasksUtil.isProcessing(task) && (
 						<Tooltip title="Processing">
 							<CircularProgress color="bright" size="25px" />
 						</Tooltip>
-					)) || (
+					)}
+					{TasksUtil.isDone(task) && (
+						<Tooltip title="Done">
+							<DoneIcon />
+						</Tooltip>
+					)}
+					{TasksUtil.isPending(task) && (
 						<Tooltip title="Pending">
 							<PendingIcon color="bright" size="25px" />
 						</Tooltip>
 					)}
 					<Stack flexDirection="column">
-						<Tooltip title={task.title}>
+						<Tooltip title={task.description}>
 							<Typography variant="caption" maxWidth={500} noWrap>
 								{task.description}
 							</Typography>
 						</Tooltip>
-						{(TasksUtil.isProcessing(task) && (
+						{TasksUtil.isProcessing(task) && (
 							<Typography variant="caption" color="secondary" sx={{ fontStyle: 'italic' }}>
 								Started {TimeUtil.msToTime(Date.now() - task.processingStart)} ago
 							</Typography>
-						)) || (
+						)}
+						{TasksUtil.isDone(task) && (
+							<Typography variant="caption" color="bright.main" sx={{ fontStyle: 'italic' }}>
+								Done in {TimeUtil.msToTime(task.processingEnd - task.processingStart)}
+							</Typography>
+						)}
+						{TasksUtil.isPending(task) && (
 							<Typography variant="caption" color="bright.main" sx={{ fontStyle: 'italic' }}>
 								Pending for {TimeUtil.msToTime(Date.now() - task.enqueueTime)}
 							</Typography>

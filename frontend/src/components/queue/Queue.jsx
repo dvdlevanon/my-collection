@@ -1,3 +1,4 @@
+import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CloseIcon from '@mui/icons-material/Close';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
@@ -11,6 +12,7 @@ import {
 	Pagination,
 	Paper,
 	Stack,
+	Tooltip,
 	Typography,
 } from '@mui/material';
 import React from 'react';
@@ -21,7 +23,17 @@ import Task from './Task';
 
 function Queue({ onClose }) {
 	const queryClient = useQueryClient();
-	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getQueueMetadata);
+	const queueMetadataQuery = useQuery({
+		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
+		queryFn: Client.getQueueMetadata,
+		onSuccess: (queueMetadata) => {
+			if (queueMetadata.size < (tasksPage + 1) * tasksPageSize) {
+				setTasksPage(0);
+			}
+
+			queryClient.refetchQueries(ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize));
+		},
+	});
 	const [tasksPage, setTasksPage] = React.useState(1);
 	const [tasksPageSize, setTasksPageSize] = React.useState(10);
 	const tasksQuery = useQuery({
@@ -29,6 +41,10 @@ function Queue({ onClose }) {
 		queryFn: () => Client.getTasks(tasksPage, tasksPageSize),
 		keepPreviousData: true,
 	});
+
+	const onClearDoneTasks = () => {
+		Client.clearFinishedTasks();
+	};
 
 	const toggleProcessing = () => {
 		if (queueMetadataQuery.data.paused) {
@@ -39,21 +55,32 @@ function Queue({ onClose }) {
 	};
 
 	return (
-		<Paper elevation={3} sx={{ padding: '10px' }}>
+		<Paper
+			elevation={3}
+			sx={{
+				padding: '10px',
+			}}
+		>
 			<Stack flexDirection="column">
 				<Stack flexDirection="row" alignItems="center">
 					{(queueMetadataQuery.isSuccess && (
 						<Typography variant="body1" sx={{ paddingRight: '40px', flexGrow: '1' }}>
-							Processing {queueMetadataQuery.data.size} tasks
+							{queueMetadataQuery.data.size} Tasks
 						</Typography>
 					)) || (
 						<Box flexGrow={1}>
 							<CircularProgress color="bright" size="25px" />
 						</Box>
 					)}
+					{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size > 0 && (
+						<Tooltip title="Clear finished tasks">
+							<IconButton onClick={onClearDoneTasks}>
+								<ClearAllIcon />
+							</IconButton>
+						</Tooltip>
+					)}
 					{queueMetadataQuery.isSuccess && (
 						<IconButton onClick={toggleProcessing}>
-							{console.log(queueMetadataQuery.data.paused)}
 							{(queueMetadataQuery.data.paused && <PlayIcon />) || <PauseIcon />}
 						</IconButton>
 					)}
@@ -62,7 +89,12 @@ function Queue({ onClose }) {
 					</IconButton>
 				</Stack>
 				<Divider />
-				<List>
+				<List
+					sx={{
+						minWidth: '570px',
+						minHeight: '630px',
+					}}
+				>
 					{(!tasksQuery.isSuccess || tasksQuery.data.length == 0) && (
 						<ListItem>
 							<Task task={null} />
@@ -78,7 +110,7 @@ function Queue({ onClose }) {
 							);
 						})}
 				</List>
-				{queueMetadataQuery.isSuccess && (
+				{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size > tasksPageSize && (
 					<Pagination
 						count={Math.ceil(queueMetadataQuery.data.size / tasksPageSize)}
 						page={tasksPage}

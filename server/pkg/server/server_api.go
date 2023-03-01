@@ -473,6 +473,10 @@ func (s *Server) getQueueMetadata(c *gin.Context) {
 	c.JSON(http.StatusOK, queueMetadata)
 }
 
+func (s *Server) clearFinishedTasks(c *gin.Context) {
+	s.handleError(c, s.processor.ClearFinishedTasks())
+}
+
 func (s *Server) getTasks(c *gin.Context) {
 	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
 	if s.handleError(c, err) {

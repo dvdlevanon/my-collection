@@ -19,6 +19,8 @@ var logger = logging.MustGetLogger("item-processor")
 type ProcessorNotifier interface {
 	OnTaskAdded(task *model.Task)
 	OnTaskComplete(task *model.Task)
+	PauseToggled(paused bool)
+	OnFinishedTasksCleared()
 }
 
 type ItemProcessor interface {
@@ -34,6 +36,7 @@ type ItemProcessor interface {
 	Pause()
 	Continue()
 	SetProcessorNotifier(notifier ProcessorNotifier)
+	ClearFinishedTasks() error
 }
 
 func taskBuilder() interface{} {
@@ -72,6 +75,19 @@ func New(gallery *gallery.Gallery, storage *storage.Storage) (ItemProcessor, err
 	}, nil
 }
 
+func (p *itemProcessorImpl) ClearFinishedTasks() error {
+	if err := p.gallery.RemoveTasks("processing_end is not null"); err != nil {
+		logger.Errorf("Unable to clear finished tasks %s", err)
+		return err
+	}
+
+	if p.notifier != nil {
+		p.notifier.OnFinishedTasksCleared()
+	}
+
+	return nil
+}
+
 func (p *itemProcessorImpl) SetProcessorNotifier(notifier ProcessorNotifier) {
 	p.notifier = notifier
 }
@@ -95,7 +111,7 @@ func (p *itemProcessorImpl) Run() {
 			logger.Infof("Queue paused changed from %t to %t", p.paused, paused)
 			p.paused = paused
 			if p.notifier != nil {
-				p.notifier.OnTaskAdded(nil)
+				p.notifier.PauseToggled(p.paused)
 			}
 		default:
 			if !p.paused {
@@ -135,7 +151,11 @@ func (p *itemProcessorImpl) process() {
 		logger.Errorf("Error processing task %+v for id: %d - %t", task.TaskType.String(), task.IdParam, err)
 	}
 
-	p.gallery.RemoveTask(task.Id)
+	task.ProcessingEnd = pointer.Int64(time.Now().UnixMilli())
+	if err := p.gallery.UpdateTask(task); err != nil {
+		logger.Warningf("Unable to update task processing end time %s %s", task.Id, err)
+	}
+
 	if _, err = p.dque.DequeueBlock(); err != nil {
 		logger.Errorf("Error dequeuing task %s - %+v", err, task)
 	}
