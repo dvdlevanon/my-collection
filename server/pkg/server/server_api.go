@@ -465,14 +465,9 @@ func (s *Server) setMainCover(c *gin.Context) {
 }
 
 func (s *Server) getQueueMetadata(c *gin.Context) {
-	size, err := s.gallery.TasksCount()
+	queueMetadata, err := s.buildQueueMetadata()
 	if s.handleError(c, err) {
 		return
-	}
-
-	queueMetadata := model.QueueMetadata{
-		Size:   pointer.Int64(size),
-		Paused: pointer.Bool(s.processor.IsPaused()),
 	}
 
 	c.JSON(http.StatusOK, queueMetadata)

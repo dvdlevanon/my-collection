@@ -1,6 +1,7 @@
 export default class Client {
-	static baseUrl = 'http://localhost:8080';
-	static apiUrl = `${Client.baseUrl}/api`;
+	static baseUrl = 'localhost:8080';
+	static apiUrl = `http://${Client.baseUrl}/api`;
+	static websocketUrl = `ws://${Client.baseUrl}/api/ws`;
 
 	static getTags = async () => {
 		return await fetch(`${Client.apiUrl}/tags`).then((response) => response.json());

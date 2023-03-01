@@ -14,28 +14,14 @@ import {
 	Typography,
 } from '@mui/material';
 import React from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import Task from './Task';
 
 function Queue({ onClose }) {
 	const queryClient = useQueryClient();
-	const continueProcessingTasks = useMutation(Client.continueProcessingTasks);
-	const pauseProcessingTasks = useMutation(Client.pauseProcessingTasks);
-	const queueMetadataQuery = useQuery({
-		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
-		queryFn: Client.getQueueMetadata,
-		onSuccess: (queueMetadata) => {
-			if (queueMetadata.size > 0 && !queueMetadata.paused) {
-				setInterval(() => {
-					queryClient.refetchQueries({ queryKey: ReactQueryUtil.QUEUE_METADATA_KEY });
-					queryClient.refetchQueries({ queryKey: ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize) });
-				}, 100);
-			}
-		},
-	});
-
+	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getQueueMetadata);
 	const [tasksPage, setTasksPage] = React.useState(1);
 	const [tasksPageSize, setTasksPageSize] = React.useState(10);
 	const tasksQuery = useQuery({
@@ -44,16 +30,12 @@ function Queue({ onClose }) {
 		keepPreviousData: true,
 	});
 
-	const continueProcessing = () => {
-		Client.continueProcessingTasks().then(() => {
-			queryClient.refetchQueries({ queryKey: ReactQueryUtil.QUEUE_METADATA_KEY });
-		});
-	};
-
-	const pauseProcessing = () => {
-		Client.pauseProcessingTasks().then(() => {
-			queryClient.refetchQueries({ queryKey: ReactQueryUtil.QUEUE_METADATA_KEY });
-		});
+	const toggleProcessing = () => {
+		if (queueMetadataQuery.data.paused) {
+			Client.continueProcessingTasks();
+		} else {
+			Client.pauseProcessingTasks();
+		}
 	};
 
 	return (
@@ -69,14 +51,10 @@ function Queue({ onClose }) {
 							<CircularProgress color="bright" size="25px" />
 						</Box>
 					)}
-					{queueMetadataQuery.isSuccess && queueMetadataQuery.data.paused && (
-						<IconButton onClick={continueProcessing}>
-							<PlayIcon />
-						</IconButton>
-					)}
-					{queueMetadataQuery.isSuccess && !queueMetadataQuery.data.paused && (
-						<IconButton onClick={pauseProcessing}>
-							<PauseIcon />
+					{queueMetadataQuery.isSuccess && (
+						<IconButton onClick={toggleProcessing}>
+							{console.log(queueMetadataQuery.data.paused)}
+							{(queueMetadataQuery.data.paused && <PlayIcon />) || <PauseIcon />}
 						</IconButton>
 					)}
 					<IconButton onClick={onClose}>

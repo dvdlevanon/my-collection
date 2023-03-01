@@ -4,6 +4,7 @@ import (
 	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
 	itemprocessor "my-collection/server/pkg/item-processor"
+	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
 	"net/http"
 
@@ -12,6 +13,7 @@ import (
 	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 	"gorm.io/gorm"
+	"k8s.io/utils/pointer"
 )
 
 var logger = logging.MustGetLogger("server")
@@ -22,6 +24,7 @@ type Server struct {
 	storage     *storage.Storage
 	processor   itemprocessor.ItemProcessor
 	directories directories.Directories
+	push        *push
 }
 
 func New(gallery *gallery.Gallery, storage *storage.Storage,
@@ -36,6 +39,7 @@ func New(gallery *gallery.Gallery, storage *storage.Storage,
 		processor:   processor,
 	}
 
+	server.push = newPush(processor, server)
 	server.init()
 	return server
 }
@@ -82,6 +86,8 @@ func (s *Server) init() {
 	api.POST("/queue/continue", s.queueContinue)
 	api.POST("/queue/pause", s.queuePause)
 
+	api.GET("/ws", s.push.websocket)
+
 	s.router.Static("/ui", "ui/")
 	s.router.StaticFile("/", "ui/index.html")
 	s.router.GET("/spa/*route", func(c *gin.Context) {
@@ -106,4 +112,18 @@ func (s *Server) handleError(c *gin.Context, err error) bool {
 
 	c.AbortWithError(httpError, err)
 	return true
+}
+
+func (s *Server) buildQueueMetadata() (model.QueueMetadata, error) {
+	size, err := s.gallery.TasksCount()
+	if err != nil {
+		return model.QueueMetadata{}, nil
+	}
+
+	queueMetadata := model.QueueMetadata{
+		Size:   pointer.Int64(size),
+		Paused: pointer.Bool(s.processor.IsPaused()),
+	}
+
+	return queueMetadata, err
 }

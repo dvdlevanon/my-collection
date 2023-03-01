@@ -16,6 +16,11 @@ import (
 
 var logger = logging.MustGetLogger("item-processor")
 
+type ProcessorNotifier interface {
+	OnTaskAdded(task *model.Task)
+	OnTaskComplete(task *model.Task)
+}
+
 type ItemProcessor interface {
 	Run()
 	EnqueueAllItemsPreview(force bool) error
@@ -28,6 +33,7 @@ type ItemProcessor interface {
 	IsPaused() bool
 	Pause()
 	Continue()
+	SetProcessorNotifier(notifier ProcessorNotifier)
 }
 
 func taskBuilder() interface{} {
@@ -40,6 +46,7 @@ type itemProcessorImpl struct {
 	dque         *dque.DQue
 	pauseChannel chan bool
 	paused       bool
+	notifier     ProcessorNotifier
 }
 
 func New(gallery *gallery.Gallery, storage *storage.Storage) (ItemProcessor, error) {
@@ -65,6 +72,10 @@ func New(gallery *gallery.Gallery, storage *storage.Storage) (ItemProcessor, err
 	}, nil
 }
 
+func (p *itemProcessorImpl) SetProcessorNotifier(notifier ProcessorNotifier) {
+	p.notifier = notifier
+}
+
 func (p *itemProcessorImpl) IsPaused() bool {
 	return p.paused
 }
@@ -83,6 +94,9 @@ func (p *itemProcessorImpl) Run() {
 		case paused := <-p.pauseChannel:
 			logger.Infof("Queue paused changed from %t to %t", p.paused, paused)
 			p.paused = paused
+			if p.notifier != nil {
+				p.notifier.OnTaskAdded(nil)
+			}
 		default:
 			if !p.paused {
 				p.process()
@@ -126,6 +140,10 @@ func (p *itemProcessorImpl) process() {
 		logger.Errorf("Error dequeuing task %s - %+v", err, task)
 	}
 
+	if p.notifier != nil {
+		p.notifier.OnTaskComplete(task)
+	}
+
 	processingMillis := time.Now().UnixMilli() - startMillis
 	logger.Infof("Done processing task in %dms %+v", processingMillis, task)
 }
@@ -141,6 +159,10 @@ func (p *itemProcessorImpl) enqueue(t *model.Task) {
 	if err := p.gallery.CreateTask(t); err != nil {
 		logger.Errorf("Error adding task to db %s - %v", err, *t)
 		return
+	}
+
+	if p.notifier != nil {
+		p.notifier.OnTaskAdded(t)
 	}
 }
 

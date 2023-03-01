@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/gallery"
+	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
 	"net/http"
@@ -20,20 +21,21 @@ import (
 type DirectoriesMock struct{}
 type ItemProcessorMock struct{}
 
-func (d *DirectoriesMock) Init() error                                     { return nil }
-func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory)     {}
-func (d *DirectoriesMock) DirectoryExcluded(path string)                   {}
-func (d *ItemProcessorMock) Run()                                          {}
-func (d *ItemProcessorMock) EnqueueAllItemsCovers(force bool) error        { return nil }
-func (d *ItemProcessorMock) EnqueueAllItemsPreview(force bool) error       { return nil }
-func (d *ItemProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error { return nil }
-func (d *ItemProcessorMock) EnqueueItemVideoMetadata(id uint64)            {}
-func (d *ItemProcessorMock) EnqueueItemPreview(id uint64)                  {}
-func (d *ItemProcessorMock) EnqueueItemCovers(id uint64)                   {}
-func (d *ItemProcessorMock) EnqueueMainCover(id uint64, second float64)    {}
-func (d *ItemProcessorMock) IsPaused() bool                                { return false }
-func (d *ItemProcessorMock) Pause()                                        {}
-func (d *ItemProcessorMock) Continue()                                     {}
+func (d *DirectoriesMock) Init() error                                                     { return nil }
+func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory)                     {}
+func (d *DirectoriesMock) DirectoryExcluded(path string)                                   {}
+func (d *ItemProcessorMock) Run()                                                          {}
+func (d *ItemProcessorMock) EnqueueAllItemsCovers(force bool) error                        { return nil }
+func (d *ItemProcessorMock) EnqueueAllItemsPreview(force bool) error                       { return nil }
+func (d *ItemProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error                 { return nil }
+func (d *ItemProcessorMock) EnqueueItemVideoMetadata(id uint64)                            {}
+func (d *ItemProcessorMock) EnqueueItemPreview(id uint64)                                  {}
+func (d *ItemProcessorMock) EnqueueItemCovers(id uint64)                                   {}
+func (d *ItemProcessorMock) EnqueueMainCover(id uint64, second float64)                    {}
+func (d *ItemProcessorMock) IsPaused() bool                                                { return false }
+func (d *ItemProcessorMock) Pause()                                                        {}
+func (d *ItemProcessorMock) Continue()                                                     {}
+func (d *ItemProcessorMock) SetProcessorNotifier(notifier itemprocessor.ProcessorNotifier) {}
 
 func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))

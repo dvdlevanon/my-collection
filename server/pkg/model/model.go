@@ -110,3 +110,15 @@ type QueueMetadata struct {
 	Size   *int64 `json:"size,omitempty"`
 	Paused *bool  `json:"paused,omitempty"`
 }
+
+type PushMessageType int
+
+const (
+	PUSH_PING = iota
+	PUSH_QUEUE_METADATA
+)
+
+type PushMessage struct {
+	MessageType PushMessageType `json:"type,omitempty"`
+	Payload     interface{}     `json:"payload,omitempty"`
+}

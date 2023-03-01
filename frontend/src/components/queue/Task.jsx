@@ -27,11 +27,11 @@ function Task({ task }) {
 						</Tooltip>
 						{(TasksUtil.isProcessing(task) && (
 							<Typography variant="caption" color="secondary" sx={{ fontStyle: 'italic' }}>
-								Started 5 minutes ago
+								Started {TimeUtil.msToTime(Date.now() - task.processingStart)} ago
 							</Typography>
 						)) || (
 							<Typography variant="caption" color="bright.main" sx={{ fontStyle: 'italic' }}>
-								Pending for {TimeUtil.msToTime(Date.now() - task.enqueueTime)} minutes
+								Pending for {TimeUtil.msToTime(Date.now() - task.enqueueTime)}
 							</Typography>
 						)}
 					</Stack>
