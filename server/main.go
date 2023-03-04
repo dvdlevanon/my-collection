@@ -5,7 +5,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
-	itemprocessor "my-collection/server/pkg/item-processor"
+	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
 	"os"
@@ -81,7 +81,7 @@ func run() error {
 
 	gallery := gallery.New(db, storage, rootdir)
 
-	processor, err := itemprocessor.New(gallery, storage)
+	processor, err := processor.New(gallery, storage)
 	if err != nil {
 		return err
 	}

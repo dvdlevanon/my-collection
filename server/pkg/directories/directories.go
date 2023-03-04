@@ -4,8 +4,8 @@ import (
 	"errors"
 	"math"
 	"my-collection/server/pkg/gallery"
-	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/model"
+	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/storage"
 	"os"
 	"path/filepath"
@@ -32,15 +32,21 @@ type Directories interface {
 	DirectoryExcluded(path string)
 }
 
+type DirectoriesMock struct{}
+
+func (d *DirectoriesMock) Init() error                                 { return nil }
+func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
+func (d *DirectoriesMock) DirectoryExcluded(path string)               {}
+
 type directoriesImpl struct {
 	gallery         *gallery.Gallery
 	storage         *storage.Storage
-	processor       itemprocessor.ItemProcessor
+	processor       processor.Processor
 	changeChannel   chan model.Directory
 	excludedChannel chan string
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage, processor itemprocessor.ItemProcessor) Directories {
+func New(gallery *gallery.Gallery, storage *storage.Storage, processor processor.Processor) Directories {
 	logger.Infof("Directories initialized")
 
 	return &directoriesImpl{

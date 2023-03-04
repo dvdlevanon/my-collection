@@ -5,9 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"my-collection/server/pkg/db"
+	"my-collection/server/pkg/directories"
 	"my-collection/server/pkg/gallery"
-	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/model"
+	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/storage"
 	"net/http"
 	"net/http/httptest"
@@ -17,26 +18,6 @@ import (
 	"github.com/stretchr/testify/assert"
 	"k8s.io/utils/pointer"
 )
-
-type DirectoriesMock struct{}
-type ItemProcessorMock struct{}
-
-func (d *DirectoriesMock) Init() error                                                     { return nil }
-func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory)                     {}
-func (d *DirectoriesMock) DirectoryExcluded(path string)                                   {}
-func (d *ItemProcessorMock) Run()                                                          {}
-func (d *ItemProcessorMock) EnqueueAllItemsCovers(force bool) error                        { return nil }
-func (d *ItemProcessorMock) EnqueueAllItemsPreview(force bool) error                       { return nil }
-func (d *ItemProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error                 { return nil }
-func (d *ItemProcessorMock) EnqueueItemVideoMetadata(id uint64)                            {}
-func (d *ItemProcessorMock) EnqueueItemPreview(id uint64)                                  {}
-func (d *ItemProcessorMock) EnqueueItemCovers(id uint64)                                   {}
-func (d *ItemProcessorMock) EnqueueMainCover(id uint64, second float64)                    {}
-func (d *ItemProcessorMock) IsPaused() bool                                                { return false }
-func (d *ItemProcessorMock) Pause()                                                        {}
-func (d *ItemProcessorMock) Continue()                                                     {}
-func (d *ItemProcessorMock) ClearFinishedTasks() error                                     { return nil }
-func (d *ItemProcessorMock) SetProcessorNotifier(notifier itemprocessor.ProcessorNotifier) {}
 
 func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))
@@ -49,7 +30,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
 	gallery := gallery.New(db, storage, "")
-	return New(gallery, storage, &DirectoriesMock{}, &ItemProcessorMock{})
+	return New(gallery, storage, &directories.DirectoriesMock{}, &processor.ProcessorMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

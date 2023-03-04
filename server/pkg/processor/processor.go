@@ -23,7 +23,7 @@ type ProcessorNotifier interface {
 	OnFinishedTasksCleared()
 }
 
-type ItemProcessor interface {
+type Processor interface {
 	Run()
 	EnqueueAllItemsPreview(force bool) error
 	EnqueueAllItemsCovers(force bool) error
@@ -39,6 +39,22 @@ type ItemProcessor interface {
 	ClearFinishedTasks() error
 }
 
+type ProcessorMock struct{}
+
+func (d *ProcessorMock) Run()                                            {}
+func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error          { return nil }
+func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error         { return nil }
+func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error   { return nil }
+func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)              {}
+func (d *ProcessorMock) EnqueueItemPreview(id uint64)                    {}
+func (d *ProcessorMock) EnqueueItemCovers(id uint64)                     {}
+func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)      {}
+func (d *ProcessorMock) IsPaused() bool                                  { return false }
+func (d *ProcessorMock) Pause()                                          {}
+func (d *ProcessorMock) Continue()                                       {}
+func (d *ProcessorMock) ClearFinishedTasks() error                       { return nil }
+func (d *ProcessorMock) SetProcessorNotifier(notifier ProcessorNotifier) {}
+
 func taskBuilder() interface{} {
 	return &model.Task{}
 }
@@ -52,7 +68,7 @@ type itemProcessorImpl struct {
 	notifier     ProcessorNotifier
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage) (ItemProcessor, error) {
+func New(gallery *gallery.Gallery, storage *storage.Storage) (Processor, error) {
 	logger.Infof("Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")

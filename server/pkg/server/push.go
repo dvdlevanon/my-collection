@@ -1,8 +1,8 @@
 package server
 
 import (
-	itemprocessor "my-collection/server/pkg/item-processor"
 	"my-collection/server/pkg/model"
+	processor "my-collection/server/pkg/processor"
 	"net/http"
 	"time"
 
@@ -16,7 +16,7 @@ type push struct {
 	upgrader websocket.Upgrader
 }
 
-func newPush(processor itemprocessor.ItemProcessor, server *Server) *push {
+func newPush(processor processor.Processor, server *Server) *push {
 	result := &push{
 		server:   server,
 		messages: make(chan model.PushMessage),
