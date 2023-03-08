@@ -23,7 +23,9 @@ function ItemBadges({ item }) {
 								e.preventDefault();
 							}}
 						>
-							<NoVideoIcon color="bright" />
+							<Avatar>
+								<NoVideoIcon color="bright" />
+							</Avatar>
 						</IconButton>
 					</Tooltip>
 				)}

@@ -9,6 +9,7 @@ import TagPicker from '../tag-picker/TagPicker';
 function Gallery({ previewMode }) {
 	const queryClient = useQueryClient();
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
 	const saveTag = useMutation(Client.saveTag);
 	let [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
 
@@ -44,7 +45,11 @@ function Gallery({ previewMode }) {
 				/>
 			)}
 			<Divider />
-			<Stack padding="10px">{!tagsDropDownOpened && <ItemsView previewMode={previewMode} />}</Stack>
+			<Stack padding="10px">
+				{!tagsDropDownOpened && (
+					<ItemsView tagsQuery={tagsQuery} itemsQuery={itemsQuery} previewMode={previewMode} />
+				)}
+			</Stack>
 		</Stack>
 	);
 }

@@ -27,7 +27,7 @@ function ItemsList({ itemsSize, items, previewMode }) {
 	return (
 		<React.Fragment>
 			<div id="back-to-top-anchor" />
-			<Stack flexDirection="row" flexWrap="wrap" gap="10px" padding="20px">
+			<Stack flexDirection="row" flexWrap="wrap" gap="20px" padding="20px">
 				{items.map((item) => {
 					return (
 						<Item
@@ -37,7 +37,7 @@ function ItemsList({ itemsSize, items, previewMode }) {
 							onConvertAudio={onConvertAudio}
 							onConvertVideo={onConvertVideo}
 							itemWidth={itemsSize.width}
-							itemHeigth={itemsSize.height}
+							itemHeight={itemsSize.height}
 						/>
 					);
 				})}

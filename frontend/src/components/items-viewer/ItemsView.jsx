@@ -1,26 +1,18 @@
 import { Stack } from '@mui/material';
 import React, { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQueryClient } from 'react-query';
+import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import GalleryFilters from './GalleryFilters';
 import ItemsList from './ItemsList';
+import ItemsViewControls from './ItemsViewControls';
 
-const itemSizes = {
-	xs: { width: 150, height: 120 },
-	s: { width: 250, height: 150 },
-	m: { width: 350, height: 200 },
-	l: { width: 450, height: 250 },
-	xl: { width: 550, height: 300 },
-};
-
-function ItemsView({ previewMode }) {
+function ItemsView({ previewMode, tagsQuery, itemsQuery }) {
 	const queryClient = useQueryClient();
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
-	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
 	const [conditionType, setConditionType] = useState('||');
-	const [itemsSize, setItemsSize] = useState(itemSizes.m);
-	const [itemsSizeName, setItemsSizeName] = useState('m');
+	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
+	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
 	const saveTag = useMutation(Client.saveTag);
 
 	const changeTagState = (tag, updater) => {
@@ -96,22 +88,33 @@ function ItemsView({ previewMode }) {
 		setConditionType(conditionType);
 	};
 
+	const onZoomChanged = (offset, aspectRatio) => {
+		let newWidth = itemsSize.width + offset;
+		setItemsSize({ width: newWidth, height: AspectRatioUtil.calcHeight(newWidth, aspectRatio) });
+	};
+
 	return (
 		<Stack padding="10px">
-			{tagsQuery.isSuccess && (
-				<GalleryFilters
-					conditionType={conditionType}
-					activeTags={getActiveTags()}
-					onTagClick={onTagClick}
-					onTagDelete={onTagDeactivated}
-					onChangeCondition={onChangeCondition}
-					itemsSizeName={itemsSizeName}
-					setItemsSizeName={(sizeName) => {
-						setItemsSizeName(sizeName);
-						setItemsSize(itemSizes[sizeName]);
+			<Stack flexDirection="row" gap="10px">
+				<ItemsViewControls
+					itemsSize={itemsSize}
+					onZoomChanged={(offest) => onZoomChanged(offest, aspectRatio)}
+					aspectRatio={aspectRatio}
+					onAspectRatioChanged={(newAspectRatio) => {
+						setAspectRatio(newAspectRatio);
+						onZoomChanged(0, newAspectRatio);
 					}}
 				/>
-			)}
+				{tagsQuery.isSuccess && (
+					<GalleryFilters
+						conditionType={conditionType}
+						activeTags={getActiveTags()}
+						onTagClick={onTagClick}
+						onTagDelete={onTagDeactivated}
+						onChangeCondition={onChangeCondition}
+					/>
+				)}
+			</Stack>
 			{tagsQuery.isSuccess && itemsQuery.isSuccess && (
 				<ItemsList itemsSize={itemsSize} items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
 			)}

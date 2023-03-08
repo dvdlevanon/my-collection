@@ -1,4 +1,4 @@
-import { Box, Link, Stack } from '@mui/material';
+import { Box, Link, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
@@ -63,87 +63,126 @@ function Item({ item, preferPreview, itemWidth, itemHeight, onConvertAudio, onCo
 		}
 	};
 
+	const getFormattedDuration = () => {
+		if (!item.duration_seconds) {
+			return '00:00';
+		}
+
+		if (item.duration_seconds < 60 * 60) {
+			return new Date(item.duration_seconds * 1000).toISOString().slice(14, 19);
+		} else {
+			return new Date(item.duration_seconds * 1000).toISOString().slice(11, 19);
+		}
+	};
+
 	return (
-		<Link
-			component={RouterLink}
-			backgroundColor="dark.lighter"
+		<Stack
 			sx={{
-				display: 'flex',
-				position: 'relative',
-				flexDirection: 'column',
-				width: itemWidth,
-				height: itemHeight,
+				maxWidth: itemWidth,
 			}}
-			to={'/spa/item/' + item.id}
-			onMouseLeave={(e) => mouseLeave(e)}
-			onMouseMove={(e) => mouseMove(e)}
-			onMouseEnter={(e) => mouseEnter(e)}
 		>
-			<ItemBadges item={item} onConvertAudio={onConvertAudio} onConvertVideo={onConvertVideo} />
-			<Box
-				component="img"
-				src={getCover()}
-				alt={item.title}
-				loading="lazy"
+			<Link
+				component={RouterLink}
 				sx={{
+					display: 'flex',
+					position: 'relative',
+					flexDirection: 'column',
 					width: itemWidth,
 					height: itemHeight,
-					objectFit: 'contain',
-					cursor: 'pointer',
 				}}
-			/>
-			{showCoverNavigator && item.covers && item.covers.length > 1 && (
-				<Stack
-					flexDirection="row"
-					sx={{
-						bottom: '0px',
-						left: '0px',
-						gap: '2px',
-						position: 'absolute',
-						width: '100%',
-					}}
-				>
-					{item.covers.map((cover, index) => {
-						return (
-							<ItemCoverIndicator
-								key={cover.id}
-								item={item}
-								cover={cover}
-								isHighlighted={coverNumber == index}
-							/>
-						);
-					})}
-				</Stack>
-			)}
-			{previewMode() && showPreview && item.previewUrl && (
-				<Box
-					flexGrow={1}
-					padding="10px"
-					sx={{
-						position: 'absolute',
-						padding: '0px',
-						width: itemWidth,
-						height: itemHeight,
-						objectFit: 'contain',
-						cursor: 'pointer',
-					}}
-				>
+				to={'/spa/item/' + item.id}
+				onMouseLeave={(e) => mouseLeave(e)}
+				onMouseMove={(e) => mouseMove(e)}
+				onMouseEnter={(e) => mouseEnter(e)}
+			>
+				<ItemBadges item={item} onConvertAudio={onConvertAudio} onConvertVideo={onConvertVideo} />
+				<Box position="relative">
 					<Box
-						component="video"
-						height="100%"
-						width="100%"
-						playsInline
-						muted
-						autoPlay={true}
-						loop={true}
-						controls={false}
+						component="img"
+						src={getCover()}
+						alt={item.title}
+						loading="lazy"
+						sx={{
+							width: itemWidth,
+							height: itemHeight,
+							objectFit: 'contain',
+							cursor: 'pointer',
+							borderRadius: '10px',
+						}}
+					/>
+					<Typography
+						variant="caption"
+						sx={{
+							position: 'absolute',
+							backgroundColor: 'black',
+							color: 'white',
+							right: '3px',
+							bottom: '10px',
+							borderRadius: '5px',
+							opacity: 0.9,
+							padding: '0px 2px',
+							zIndex: 100,
+						}}
 					>
-						<source src={Client.buildFileUrl(item.previewUrl)} />
-					</Box>
+						{getFormattedDuration()}
+					</Typography>
 				</Box>
-			)}
+				{showCoverNavigator && item.covers && item.covers.length > 1 && (
+					<Stack
+						flexDirection="row"
+						sx={{
+							bottom: '0px',
+							left: '0px',
+							gap: '2px',
+							position: 'absolute',
+							width: '100%',
+						}}
+					>
+						{item.covers.map((cover, index) => {
+							return (
+								<ItemCoverIndicator
+									key={cover.id}
+									item={item}
+									cover={cover}
+									isHighlighted={coverNumber == index}
+								/>
+							);
+						})}
+					</Stack>
+				)}
+				{previewMode() && showPreview && item.previewUrl && (
+					<Box
+						flexGrow={1}
+						padding="10px"
+						sx={{
+							position: 'absolute',
+							padding: '0px',
+							width: itemWidth,
+							height: itemHeight,
+							objectFit: 'contain',
+							cursor: 'pointer',
+						}}
+					>
+						<Box
+							component="video"
+							height="100%"
+							width="100%"
+							playsInline
+							muted
+							autoPlay={true}
+							loop={true}
+							controls={false}
+							sx={{
+								borderRadius: '10px',
+							}}
+						>
+							<source src={Client.buildFileUrl(item.previewUrl)} />
+						</Box>
+					</Box>
+				)}
+			</Link>
 			<ItemFooter item={item} />
-		</Link>
+		</Stack>
 	);
 }
 
