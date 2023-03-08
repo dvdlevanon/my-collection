@@ -18,38 +18,34 @@ func (d *Database) CreateOrUpdateDirectory(directory *model.Directory) error {
 	return err
 }
 
-func (d *Database) GetDirectory(conds ...interface{}) (*model.Directory, error) {
-	directory := &model.Directory{}
-
-	tagsPreloading := func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID")
-	}
-
-	err := d.db.Model(directory).
-		Preload("Tags", tagsPreloading).
-		First(directory, conds...).Error
-	return directory, err
-}
-
-func (d *Database) GetAllDirectories() (*[]model.Directory, error) {
-	var directories []model.Directory
-
-	tagsPreloading := func(db *gorm.DB) *gorm.DB {
-		return db.Select("ID")
-	}
-
-	err := d.db.Model(&model.Directory{}).Preload("Tags", tagsPreloading).Find(&directories).Error
-	if err != nil {
-		err = errors.Wrap(err, 0)
-	}
-
-	return &directories, err
-}
-
 func (d *Database) RemoveDirectory(path string) error {
-	return d.db.Delete(model.Directory{Path: path}).Error
+	return d.delete(model.Directory{Path: path})
 }
 
 func (d *Database) RemoveTagFromDirectory(direcotryPath string, tagId uint64) error {
-	return d.db.Model(model.Directory{Path: direcotryPath}).Association("Tags").Delete(model.Tag{Id: tagId})
+	return d.deleteAssociation(model.Directory{Path: direcotryPath}, model.Tag{Id: tagId}, "Tags")
+}
+
+func (d *Database) getDirectoryModel() *gorm.DB {
+	tagsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Select("ID")
+	}
+
+	return d.db.Model(model.Directory{}).Preload("Tags", tagsPreloading)
+}
+
+func (d *Database) GetDirectory(conds ...interface{}) (*model.Directory, error) {
+	directory := &model.Directory{}
+	err := d.handleError(d.getDirectoryModel().First(directory, conds...).Error)
+	return directory, err
+}
+
+func (d *Database) GetDirectories(conds ...interface{}) (*[]model.Directory, error) {
+	var directories []model.Directory
+	err := d.handleError(d.getDirectoryModel().Find(&directories, conds...).Error)
+	return &directories, err
+}
+
+func (d *Database) GetAllDirectories() (*[]model.Directory, error) {
+	return d.GetDirectories()
 }
