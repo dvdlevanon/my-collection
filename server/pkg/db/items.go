@@ -1,0 +1,74 @@
+package db
+
+import (
+	"my-collection/server/pkg/model"
+
+	"github.com/go-errors/errors"
+	"github.com/mattn/go-sqlite3"
+	"gorm.io/gorm"
+)
+
+func (d *Database) CreateOrUpdateItem(item *model.Item) error {
+	if item.Id == 0 && (item.Title == "" || item.Origin == "") {
+		return errors.Errorf("invalid item, missing ('id') or ('title' and 'origin') %v", item)
+	}
+
+	err := d.create(item)
+
+	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
+		if item.Id != 0 {
+			return d.update(item)
+		}
+
+		existing, err := d.GetItem("title = ? and origin = ?", item.Title, item.Origin)
+
+		if err != nil {
+			return err
+		}
+
+		item.Id = existing.Id
+		return d.update(item)
+	}
+
+	return err
+}
+
+func (d *Database) UpdateItem(item *model.Item) error {
+	return d.update(item)
+}
+
+func (d *Database) RemoveItem(itemId uint64) error {
+	return d.delete(model.Item{Id: itemId})
+}
+
+func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {
+	return d.deleteAssociation(model.Item{Id: itemId}, model.Tag{Id: tagId}, "Tags")
+}
+
+func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
+	tagsPreloading := func(db *gorm.DB) *gorm.DB {
+		if includeTagIdsOnly {
+			return db.Select("ID")
+		} else {
+			return db
+		}
+	}
+
+	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Covers")
+}
+
+func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
+	item := &model.Item{}
+	err := d.handleError(d.getItemModel(false).First(item, conds...).Error)
+	return item, err
+}
+
+func (d *Database) GetItems(conds ...interface{}) (*[]model.Item, error) {
+	var items []model.Item
+	err := d.handleError(d.getItemModel(true).Find(&items, conds...).Error)
+	return &items, err
+}
+
+func (d *Database) GetAllItems() (*[]model.Item, error) {
+	return d.GetItems()
+}
