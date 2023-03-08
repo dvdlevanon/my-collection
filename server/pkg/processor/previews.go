@@ -70,7 +70,7 @@ func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
 }
 
 func (p itemProcessorImpl) getPreviewParts(item *model.Item) ([]string, error) {
-	videoFile := p.gallery.GetFile(item.Url)
+	videoFile := p.relativasor.GetAbsoluteFile(item.Url)
 	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
 	if err != nil {
 		return nil, err

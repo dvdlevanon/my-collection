@@ -1,4 +1,4 @@
-package gallery
+package tag_annotations
 
 import (
 	"errors"
@@ -7,11 +7,12 @@ import (
 	"gorm.io/gorm"
 )
 
-func (g *Gallery) AddAnnotationToTag(tagId uint64, a model.TagAnnotation) (uint64, error) {
-	annotation, err := g.GetTagAnnotation(a)
+func AddAnnotationToTag(trw model.TagReaderWriter, tarw model.TagAnnotationReaderWriter,
+	tagId uint64, a model.TagAnnotation) (uint64, error) {
+	annotation, err := tarw.GetTagAnnotation(a)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		err = g.CreateTagAnnotation(&a)
+		err = tarw.CreateTagAnnotation(&a)
 		if err != nil {
 			return 0, err
 		}
@@ -19,17 +20,17 @@ func (g *Gallery) AddAnnotationToTag(tagId uint64, a model.TagAnnotation) (uint6
 		annotation = &a
 	}
 
-	tag, err := g.GetTag(tagId)
+	tag, err := trw.GetTag(tagId)
 	if err != nil {
 		return 0, err
 	}
 
 	tag.Annotations = append(tag.Annotations, annotation)
-	return annotation.Id, g.CreateOrUpdateTag(tag)
+	return annotation.Id, trw.CreateOrUpdateTag(tag)
 }
 
-func (g *Gallery) GetTagAvailableAnnotations(tagId uint64) ([]model.TagAnnotation, error) {
-	tag, err := g.GetTag(tagId)
+func GetTagAvailableAnnotations(tr model.TagReader, tar model.TagAnnotationReader, tagId uint64) ([]model.TagAnnotation, error) {
+	tag, err := tr.GetTag(tagId)
 	if err != nil {
 		return nil, err
 	}
@@ -39,7 +40,7 @@ func (g *Gallery) GetTagAvailableAnnotations(tagId uint64) ([]model.TagAnnotatio
 	allRelevantTags = append(allRelevantTags, tag)
 	allRelevantTags = append(allRelevantTags, tag.Children...)
 	for _, child := range allRelevantTags {
-		annotations, err := g.GetTagAnnotations(child.Id)
+		annotations, err := tar.GetTagAnnotations(child.Id)
 		if err != nil {
 			return nil, err
 		}

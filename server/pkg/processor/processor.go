@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
 	"os"
 	"time"
@@ -62,13 +63,14 @@ func taskBuilder() interface{} {
 type itemProcessorImpl struct {
 	gallery      *gallery.Gallery
 	storage      *storage.Storage
+	relativasor  *relativasor.PathRelativasor
 	dque         *dque.DQue
 	pauseChannel chan bool
 	paused       bool
 	notifier     ProcessorNotifier
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage) (Processor, error) {
+func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relativasor.PathRelativasor) (Processor, error) {
 	logger.Infof("Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")
@@ -86,6 +88,7 @@ func New(gallery *gallery.Gallery, storage *storage.Storage) (Processor, error) 
 	return &itemProcessorImpl{
 		gallery:      gallery,
 		storage:      storage,
+		relativasor:  relativasor,
 		dque:         dque,
 		pauseChannel: make(chan bool, 10),
 	}, nil

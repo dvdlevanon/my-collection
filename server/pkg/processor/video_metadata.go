@@ -32,7 +32,7 @@ func (p itemProcessorImpl) refreshItemMetadata(id uint64) error {
 		return err
 	}
 
-	videoFile := p.gallery.GetFile(item.Url)
+	videoFile := p.relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("Refreshing video metadata for item %d  [videoFile: %s]", item.Id, videoFile)
 
 	duration, err := ffmpeg.GetDurationInSeconds(videoFile)

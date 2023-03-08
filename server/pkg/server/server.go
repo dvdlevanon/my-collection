@@ -1,10 +1,11 @@
 package server
 
 import (
-	"my-collection/server/pkg/directories"
+	"my-collection/server/pkg/fswatch"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
 	"net/http"
 
@@ -22,20 +23,22 @@ type Server struct {
 	router      *gin.Engine
 	gallery     *gallery.Gallery
 	storage     *storage.Storage
+	relativasor *relativasor.PathRelativasor
 	processor   processor.Processor
-	directories directories.Directories
+	fswatch     fswatch.Fswatch
 	push        *push
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage,
-	directories directories.Directories, processor processor.Processor) *Server {
+func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relativasor.PathRelativasor,
+	fswatch fswatch.Fswatch, processor processor.Processor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
 		router:      gin.New(),
 		gallery:     gallery,
 		storage:     storage,
-		directories: directories,
+		relativasor: relativasor,
+		fswatch:     fswatch,
 		processor:   processor,
 	}
 

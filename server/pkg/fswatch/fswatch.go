@@ -1,11 +1,14 @@
-package directories
+package fswatch
 
 import (
 	"errors"
 	"math"
+	"my-collection/server/pkg/bl/directories"
+	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
 	"os"
 	"path/filepath"
@@ -20,45 +23,47 @@ import (
 
 const DIRECTORIES_TAG_ID = uint64(1) // tags-util.js
 
-var logger = logging.MustGetLogger("directories")
+var logger = logging.MustGetLogger("fswatch")
 var directoriesTag = model.Tag{
 	Id:    DIRECTORIES_TAG_ID,
 	Title: "Directories",
 }
 
-type Directories interface {
+type Fswatch interface {
 	Init() error
 	DirectoryChanged(directory *model.Directory)
 	DirectoryExcluded(path string)
 }
 
-type DirectoriesMock struct{}
+type FswatchMock struct{}
 
-func (d *DirectoriesMock) Init() error                                 { return nil }
-func (d *DirectoriesMock) DirectoryChanged(directory *model.Directory) {}
-func (d *DirectoriesMock) DirectoryExcluded(path string)               {}
+func (d *FswatchMock) Init() error                                 { return nil }
+func (d *FswatchMock) DirectoryChanged(directory *model.Directory) {}
+func (d *FswatchMock) DirectoryExcluded(path string)               {}
 
-type directoriesImpl struct {
+type fswatchImpl struct {
 	gallery         *gallery.Gallery
 	storage         *storage.Storage
+	relativasor     *relativasor.PathRelativasor
 	processor       processor.Processor
 	changeChannel   chan model.Directory
 	excludedChannel chan string
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage, processor processor.Processor) Directories {
-	logger.Infof("Directories initialized")
+func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relativasor.PathRelativasor, processor processor.Processor) Fswatch {
+	logger.Infof("FS watch initialized")
 
-	return &directoriesImpl{
+	return &fswatchImpl{
 		gallery:         gallery,
 		storage:         storage,
 		processor:       processor,
+		relativasor:     relativasor,
 		changeChannel:   make(chan model.Directory),
 		excludedChannel: make(chan string),
 	}
 }
 
-func (d *directoriesImpl) Init() error {
+func (d *fswatchImpl) Init() error {
 	if err := d.gallery.CreateOrUpdateTag(&directoriesTag); err != nil {
 		return err
 	}
@@ -67,15 +72,15 @@ func (d *directoriesImpl) Init() error {
 	return nil
 }
 
-func (d *directoriesImpl) DirectoryChanged(directory *model.Directory) {
+func (d *fswatchImpl) DirectoryChanged(directory *model.Directory) {
 	d.changeChannel <- *directory
 }
 
-func (d *directoriesImpl) DirectoryExcluded(directoryPath string) {
+func (d *fswatchImpl) DirectoryExcluded(directoryPath string) {
 	d.excludedChannel <- directoryPath
 }
 
-func (d *directoriesImpl) watchFilesystemChanges() {
+func (d *fswatchImpl) watchFilesystemChanges() {
 	for {
 		select {
 		case directory := <-d.changeChannel:
@@ -90,7 +95,7 @@ func (d *directoriesImpl) watchFilesystemChanges() {
 	}
 }
 
-func (d *directoriesImpl) periodicScan() {
+func (d *fswatchImpl) periodicScan() {
 	allDirectories, err := d.gallery.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
@@ -108,7 +113,7 @@ func (d *directoriesImpl) periodicScan() {
 	}
 }
 
-func (d *directoriesImpl) directoryChanged(directory *model.Directory) {
+func (d *fswatchImpl) directoryChanged(directory *model.Directory) {
 	allDirectories, err := d.gallery.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
@@ -128,10 +133,10 @@ func (d *directoriesImpl) directoryChanged(directory *model.Directory) {
 	}
 }
 
-func (d *directoriesImpl) handleExcludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
+func (d *fswatchImpl) handleExcludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
 	tag, err := d.gallery.GetTag(model.Tag{
 		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
-		Title:    d.gallery.DirectoryNameToTag(directory.Path),
+		Title:    directories.DirectoryNameToTag(directory.Path),
 	})
 
 	if err != nil {
@@ -154,7 +159,7 @@ func (d *directoriesImpl) handleExcludedDirectory(directory *model.Directory, al
 	}
 }
 
-func (d *directoriesImpl) handleIncludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
+func (d *fswatchImpl) handleIncludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
 	tag, err := d.handleDirectoryTag(directory)
 	if err != nil {
 		return
@@ -163,8 +168,8 @@ func (d *directoriesImpl) handleIncludedDirectory(directory *model.Directory, al
 	directory.FilesCount = pointer.Int(d.syncDirectory(directory, tag, allDirectories))
 }
 
-func (d *directoriesImpl) syncDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
-	path := d.gallery.GetFile(directory.Path)
+func (d *fswatchImpl) syncDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
+	path := d.relativasor.GetAbsoluteFile(directory.Path)
 	files, err := os.ReadDir(path)
 	if err != nil {
 		logger.Errorf("Error getting files of %s %t", path, err)
@@ -188,7 +193,7 @@ func (d *directoriesImpl) syncDirectory(directory *model.Directory, tag *model.T
 		}
 	}
 
-	items, err := d.gallery.GetItemsOfTag(tag)
+	items, err := tags.GetItems(d.gallery, tag)
 	if err != nil {
 		logger.Errorf("Error getting files of tag %t", err)
 	}
@@ -206,17 +211,17 @@ func (d *directoriesImpl) syncDirectory(directory *model.Directory, tag *model.T
 	return filesCount
 }
 
-func (d *directoriesImpl) fileExists(directory *model.Directory, item model.Item) bool {
+func (d *fswatchImpl) fileExists(directory *model.Directory, item model.Item) bool {
 	if item.Origin != directory.Path {
 		return true
 	}
 
-	path := d.gallery.GetFile(filepath.Join(item.Origin, item.Title))
+	path := d.relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
 	_, err := os.Stat(path)
 	return err == nil
 }
 
-func (d *directoriesImpl) isVideo(path string) bool {
+func (d *fswatchImpl) isVideo(path string) bool {
 	if d.gallery.TrustFileExtenssion {
 		return strings.HasSuffix(path, ".avi") ||
 			strings.HasSuffix(path, ".mkv") ||
@@ -248,7 +253,7 @@ func (d *directoriesImpl) isVideo(path string) bool {
 	return filetype.IsVideo(header)
 }
 
-func (d *directoriesImpl) addDirectoryIfMissing(path string, allDirectories []model.Directory) {
+func (d *fswatchImpl) addDirectoryIfMissing(path string, allDirectories []model.Directory) {
 	if d.directoryExists(path, allDirectories) {
 		return
 	}
@@ -258,8 +263,8 @@ func (d *directoriesImpl) addDirectoryIfMissing(path string, allDirectories []mo
 	}
 }
 
-func (d *directoriesImpl) directoryExists(path string, allDirectories []model.Directory) bool {
-	relativePath := d.gallery.GetRelativePath(path)
+func (d *fswatchImpl) directoryExists(path string, allDirectories []model.Directory) bool {
+	relativePath := d.relativasor.GetRelativePath(path)
 	for _, dir := range allDirectories {
 		if dir.Path == relativePath {
 			return true
@@ -269,7 +274,7 @@ func (d *directoriesImpl) directoryExists(path string, allDirectories []model.Di
 	return false
 }
 
-func (d *directoriesImpl) addExcludedDirectory(path string) error {
+func (d *fswatchImpl) addExcludedDirectory(path string) error {
 	newDirectory := &model.Directory{
 		Path:     path,
 		Excluded: pointer.Bool(true),
@@ -278,16 +283,16 @@ func (d *directoriesImpl) addExcludedDirectory(path string) error {
 	return d.gallery.CreateOrUpdateDirectory(newDirectory)
 }
 
-func (d *directoriesImpl) getConcreteTagOfDirectory(directory *model.Directory, directoryTag *model.Tag) (*model.Tag, error) {
+func (d *fswatchImpl) getConcreteTagOfDirectory(directory *model.Directory, directoryTag *model.Tag) (*model.Tag, error) {
 	tag := model.Tag{
 		ParentID: &directoryTag.Id,
-		Title:    d.gallery.DirectoryNameToTag(directory.Path),
+		Title:    directories.DirectoryNameToTag(directory.Path),
 	}
 
 	return d.getOrCreateTag(&tag)
 }
 
-func (d *directoriesImpl) getConcreteTagsOfDirectory(directory *model.Directory) ([]*model.Tag, error) {
+func (d *fswatchImpl) getConcreteTagsOfDirectory(directory *model.Directory) ([]*model.Tag, error) {
 	result := make([]*model.Tag, 0)
 
 	for _, directoryTag := range directory.Tags {
@@ -303,7 +308,7 @@ func (d *directoriesImpl) getConcreteTagsOfDirectory(directory *model.Directory)
 	return result, nil
 }
 
-func (d *directoriesImpl) ensureConcreteTagsOnItem(item *model.Item, concreteTags []*model.Tag) error {
+func (d *fswatchImpl) ensureConcreteTagsOnItem(item *model.Item, concreteTags []*model.Tag) error {
 	tagsToAdd := make([]*model.Tag, 0)
 	for _, concreteTag := range concreteTags {
 		exists := false
@@ -332,7 +337,7 @@ func (d *directoriesImpl) ensureConcreteTagsOnItem(item *model.Item, concreteTag
 	return nil
 }
 
-func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
+func (d *fswatchImpl) addFileIfMissing(directory *model.Directory, tag *model.Tag, path string) (bool, error) {
 	existingItem, lastModified, err := d.itemExists(path, tag)
 
 	if err != nil {
@@ -377,7 +382,7 @@ func (d *directoriesImpl) addFileIfMissing(directory *model.Directory, tag *mode
 	return true, nil
 }
 
-func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (*model.Item, int64, error) {
+func (d *fswatchImpl) itemExists(path string, tag *model.Tag) (*model.Item, int64, error) {
 	title := filepath.Base(path)
 	file, err := os.Stat(path)
 	if err != nil {
@@ -385,7 +390,7 @@ func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (*model.Item, 
 		return nil, 0, err
 	}
 
-	items, err := d.gallery.GetItemsOfTag(tag)
+	items, err := tags.GetItems(d.gallery, tag)
 	if err != nil {
 		logger.Errorf("Error getting files of tag %t", err)
 	}
@@ -399,7 +404,7 @@ func (d *directoriesImpl) itemExists(path string, tag *model.Tag) (*model.Item, 
 	return nil, file.ModTime().UnixMilli(), nil
 }
 
-func (d *directoriesImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
+func (d *fswatchImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
 	existing, err := d.gallery.GetTag(tag)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Errorf("Error getting tag %t", err)
@@ -418,21 +423,21 @@ func (d *directoriesImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
 	return tag, nil
 }
 
-func (d *directoriesImpl) handleDirectoryTag(directory *model.Directory) (*model.Tag, error) {
+func (d *fswatchImpl) handleDirectoryTag(directory *model.Directory) (*model.Tag, error) {
 	tag := model.Tag{
 		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
-		Title:    d.gallery.DirectoryNameToTag(directory.Path),
+		Title:    directories.DirectoryNameToTag(directory.Path),
 	}
 
 	return d.getOrCreateTag(&tag)
 }
 
-func (d *directoriesImpl) directoryExcluded(directoryPath string) {
+func (d *fswatchImpl) directoryExcluded(directoryPath string) {
 	d.removeExcludedSubDirectories(directoryPath)
 	d.removeBelongingItems(directoryPath)
 }
 
-func (d *directoriesImpl) removeExcludedSubDirectories(directoryPath string) {
+func (d *fswatchImpl) removeExcludedSubDirectories(directoryPath string) {
 	allDirectories, err := d.gallery.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
@@ -452,6 +457,6 @@ func (d *directoriesImpl) removeExcludedSubDirectories(directoryPath string) {
 	}
 }
 
-func (d *directoriesImpl) removeBelongingItems(directoryPath string) {
+func (d *fswatchImpl) removeBelongingItems(directoryPath string) {
 	// TODO
 }

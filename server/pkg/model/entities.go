@@ -1,7 +1,5 @@
 package model
 
-import "fmt"
-
 type ItemsAndTags struct {
 	Items []Item `json:"items"`
 	Tags  []Tag  `json:"tags"`
@@ -61,15 +59,6 @@ type Directory struct {
 	LastSynced      int64  `json:"lastSynced,omitempty"`
 }
 
-type TaskType int
-
-const (
-	REFRESH_COVER_TASK = iota
-	REFRESH_PREVIEW_TASK
-	REFRESH_METADATA_TASK
-	SET_MAIN_COVER
-)
-
 type Task struct {
 	Id              string   `json:"id,omitempty" gorm:"primarykey"`
 	EnequeueTime    *int64   `json:"enqueueTime,omitempty"`
@@ -81,44 +70,11 @@ type Task struct {
 	Description     string   `json:"description,omitempty" gorm:"-:all"`
 }
 
-func (t TaskType) ToDescription(title string) string {
-	switch t {
-	case REFRESH_COVER_TASK:
-		return fmt.Sprintf("Extracting covers for %s", title)
-	case REFRESH_PREVIEW_TASK:
-		return fmt.Sprintf("Generating preview for %s", title)
-	case REFRESH_METADATA_TASK:
-		return fmt.Sprintf("Reading metadata for %s", title)
-	default:
-		return "unknown"
-	}
-}
-
-func (t TaskType) String() string {
-	switch t {
-	case REFRESH_COVER_TASK:
-		return "cover"
-	case REFRESH_PREVIEW_TASK:
-		return "preview"
-	case REFRESH_METADATA_TASK:
-		return "metadata"
-	default:
-		return "unknown"
-	}
-}
-
 type QueueMetadata struct {
 	Size            *int64 `json:"size,omitempty"`
 	Paused          *bool  `json:"paused,omitempty"`
 	UnfinishedTasks *int64 `json:"unfinishedTasks,omitempty"`
 }
-
-type PushMessageType int
-
-const (
-	PUSH_PING = iota
-	PUSH_QUEUE_METADATA
-)
 
 type PushMessage struct {
 	MessageType PushMessageType `json:"type,omitempty"`

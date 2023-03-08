@@ -1,18 +1,22 @@
-package gallery
+package backup
 
 import (
 	"encoding/json"
 	"io"
 	"my-collection/server/pkg/model"
+
+	"github.com/op/go-logging"
 )
 
-func (g *Gallery) Export(w io.Writer) error {
-	items, err := g.GetAllItems()
+var logger = logging.MustGetLogger("backup")
+
+func Export(ir model.ItemReader, tr model.TagReader, w io.Writer) error {
+	items, err := ir.GetAllItems()
 	if err != nil {
 		return err
 	}
 
-	tags, err := g.GetAllTags()
+	tags, err := tr.GetAllTags()
 	if err != nil {
 		return err
 	}

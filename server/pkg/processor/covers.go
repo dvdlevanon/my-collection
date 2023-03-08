@@ -51,7 +51,7 @@ func (p itemProcessorImpl) refreshItemCovers(id uint64) error {
 }
 
 func (p itemProcessorImpl) refreshItemCover(item *model.Item, coverNumber int) error {
-	videoFile := p.gallery.GetFile(item.Url)
+	videoFile := p.relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("Setting cover for item %d [coverNumber: %d] [videoFile: %s]", item.Id, coverNumber, videoFile)
 
 	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
@@ -86,7 +86,7 @@ func (p itemProcessorImpl) setMainCover(id uint64, second float64) error {
 		return err
 	}
 
-	videoFile := p.gallery.GetFile(item.Url)
+	videoFile := p.relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("Setting main cover for item %d [second: %s]", item.Id, second)
 
 	relativeFile := fmt.Sprintf("main-covers/%d/main.png", item.Id)

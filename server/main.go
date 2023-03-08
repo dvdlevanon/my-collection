@@ -3,9 +3,10 @@ package main
 import (
 	"flag"
 	"my-collection/server/pkg/db"
-	"my-collection/server/pkg/directories"
+	"my-collection/server/pkg/fswatch"
 	"my-collection/server/pkg/gallery"
 	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
 	"os"
@@ -67,6 +68,8 @@ func run() error {
 		return err
 	}
 
+	relativasor := relativasor.New(rootdir)
+
 	logger.Infof("Root directory is: %s", rootdir)
 
 	db, err := db.New(rootdir, "test.sqlite")
@@ -79,21 +82,21 @@ func run() error {
 		return err
 	}
 
-	gallery := gallery.New(db, storage, rootdir)
+	gallery := gallery.New(db, storage, relativasor)
 
-	processor, err := processor.New(gallery, storage)
+	processor, err := processor.New(gallery, storage, relativasor)
 	if err != nil {
 		return err
 	}
 	processor.Pause()
 	go processor.Run()
 
-	directories := directories.New(gallery, storage, processor)
-	if err = directories.Init(); err != nil {
+	fswatch := fswatch.New(gallery, storage, relativasor, processor)
+	if err = fswatch.Init(); err != nil {
 		return err
 	}
 
-	return server.New(gallery, storage, directories, processor).Run(*listenAddress)
+	return server.New(gallery, storage, relativasor, fswatch, processor).Run(*listenAddress)
 }
 
 func logError(err error) {

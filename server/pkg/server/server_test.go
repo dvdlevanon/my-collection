@@ -5,10 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"my-collection/server/pkg/db"
-	"my-collection/server/pkg/directories"
+	"my-collection/server/pkg/fswatch"
 	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
 	"net/http"
 	"net/http/httptest"
@@ -29,8 +30,9 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, err)
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
-	gallery := gallery.New(db, storage, "")
-	return New(gallery, storage, &directories.DirectoriesMock{}, &processor.ProcessorMock{})
+	relativasor := relativasor.New("")
+	gallery := gallery.New(db, storage, relativasor)
+	return New(gallery, storage, relativasor, &fswatch.FswatchMock{}, &processor.ProcessorMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {
