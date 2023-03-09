@@ -8,7 +8,7 @@ import (
 )
 
 func (p itemProcessorImpl) EnqueueAllItemsPreview(force bool) error {
-	items, err := p.gallery.GetAllItems()
+	items, err := p.db.GetAllItems()
 	if err != nil {
 		return err
 	}
@@ -29,13 +29,13 @@ func (p itemProcessorImpl) EnqueueItemPreview(id uint64) {
 }
 
 func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
-	item, err := p.gallery.GetItem(id)
+	item, err := p.db.GetItem(id)
 	if err != nil {
 		return err
 	}
 
 	logger.Infof("Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
-		item.Id, item.Url, p.gallery.PreviewSceneCount, p.gallery.PreviewSceneDuration)
+		item.Id, item.Url, p.previewSceneCount, p.previewSceneDuration)
 
 	videoParts, err := p.getPreviewParts(item)
 	defer func() {
@@ -66,7 +66,7 @@ func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
 	}
 
 	item.PreviewUrl = p.storage.GetStorageUrl(relativeFile)
-	return p.gallery.UpdateItem(item)
+	return p.db.UpdateItem(item)
 }
 
 func (p itemProcessorImpl) getPreviewParts(item *model.Item) ([]string, error) {
@@ -77,12 +77,12 @@ func (p itemProcessorImpl) getPreviewParts(item *model.Item) ([]string, error) {
 	}
 
 	result := make([]string, 0)
-	for i := 1; i <= int(p.gallery.PreviewSceneCount); i++ {
-		startSecond := (int(duration) / (p.gallery.PreviewSceneCount + 1)) * i
+	for i := 1; i <= int(p.previewSceneCount); i++ {
+		startSecond := (int(duration) / (p.previewSceneCount + 1)) * i
 		tempFile := fmt.Sprintf("%s.mp4", p.storage.GetTempFile())
 		result = append(result, tempFile)
 
-		if err := ffmpeg.ExtractPartOfVideo(videoFile, startSecond, p.gallery.PreviewSceneDuration, tempFile); err != nil {
+		if err := ffmpeg.ExtractPartOfVideo(videoFile, startSecond, p.previewSceneDuration, tempFile); err != nil {
 			logger.Errorf("Error extracting part of video for item %d, error %v", item.Id, err)
 			return nil, err
 		}

@@ -5,7 +5,7 @@ import (
 	"math"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/tags"
-	"my-collection/server/pkg/gallery"
+	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
@@ -42,29 +42,31 @@ func (d *FswatchMock) DirectoryChanged(directory *model.Directory) {}
 func (d *FswatchMock) DirectoryExcluded(path string)               {}
 
 type fswatchImpl struct {
-	gallery         *gallery.Gallery
-	storage         *storage.Storage
-	relativasor     *relativasor.PathRelativasor
-	processor       processor.Processor
-	changeChannel   chan model.Directory
-	excludedChannel chan string
+	db                  *db.Database
+	storage             *storage.Storage
+	relativasor         *relativasor.PathRelativasor
+	processor           processor.Processor
+	changeChannel       chan model.Directory
+	excludedChannel     chan string
+	trustFileExtenssion bool
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relativasor.PathRelativasor, processor processor.Processor) Fswatch {
+func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.PathRelativasor, processor processor.Processor) Fswatch {
 	logger.Infof("FS watch initialized")
 
 	return &fswatchImpl{
-		gallery:         gallery,
-		storage:         storage,
-		processor:       processor,
-		relativasor:     relativasor,
-		changeChannel:   make(chan model.Directory),
-		excludedChannel: make(chan string),
+		db:                  db,
+		storage:             storage,
+		processor:           processor,
+		relativasor:         relativasor,
+		changeChannel:       make(chan model.Directory),
+		excludedChannel:     make(chan string),
+		trustFileExtenssion: true,
 	}
 }
 
 func (d *fswatchImpl) Init() error {
-	if err := d.gallery.CreateOrUpdateTag(&directoriesTag); err != nil {
+	if err := d.db.CreateOrUpdateTag(&directoriesTag); err != nil {
 		return err
 	}
 
@@ -96,7 +98,7 @@ func (d *fswatchImpl) watchFilesystemChanges() {
 }
 
 func (d *fswatchImpl) periodicScan() {
-	allDirectories, err := d.gallery.GetAllDirectories()
+	allDirectories, err := d.db.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
 		return
@@ -114,7 +116,7 @@ func (d *fswatchImpl) periodicScan() {
 }
 
 func (d *fswatchImpl) directoryChanged(directory *model.Directory) {
-	allDirectories, err := d.gallery.GetAllDirectories()
+	allDirectories, err := d.db.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
 		return
@@ -128,13 +130,13 @@ func (d *fswatchImpl) directoryChanged(directory *model.Directory) {
 	d.handleIncludedDirectory(directory, *allDirectories)
 	directory.LastSynced = time.Now().UnixMilli()
 	directory.ProcessingStart = pointer.Int64(0)
-	if err := d.gallery.CreateOrUpdateDirectory(directory); err != nil {
+	if err := d.db.CreateOrUpdateDirectory(directory); err != nil {
 		logger.Errorf("Error updating directory %s %t", directory.Path, err)
 	}
 }
 
 func (d *fswatchImpl) handleExcludedDirectory(directory *model.Directory, allDirectories []model.Directory) {
-	tag, err := d.gallery.GetTag(model.Tag{
+	tag, err := d.db.GetTag(model.Tag{
 		ParentID: pointer.Uint64(DIRECTORIES_TAG_ID),
 		Title:    directories.DirectoryNameToTag(directory.Path),
 	})
@@ -149,12 +151,12 @@ func (d *fswatchImpl) handleExcludedDirectory(directory *model.Directory, allDir
 			continue
 		}
 
-		if err := d.gallery.RemoveItem(item.Id); err != nil {
+		if err := d.db.RemoveItem(item.Id); err != nil {
 			logger.Errorf("Unable to remove item %d - %s", item.Id, err)
 		}
 	}
 
-	if err := d.gallery.RemoveTag(tag.Id); err != nil {
+	if err := d.db.RemoveTag(tag.Id); err != nil {
 		logger.Errorf("Unable to remove tag %d - %s", tag.Id, err)
 	}
 }
@@ -185,7 +187,7 @@ func (d *fswatchImpl) syncDirectory(directory *model.Directory, tag *model.Tag, 
 			filesCount++
 
 			if added {
-				tag, err = d.gallery.GetTag(tag.Id)
+				tag, err = d.db.GetTag(tag.Id)
 				if err != nil {
 					logger.Errorf("Error refetching tag from DB %t", err)
 				}
@@ -193,7 +195,7 @@ func (d *fswatchImpl) syncDirectory(directory *model.Directory, tag *model.Tag, 
 		}
 	}
 
-	items, err := tags.GetItems(d.gallery, tag)
+	items, err := tags.GetItems(d.db, tag)
 	if err != nil {
 		logger.Errorf("Error getting files of tag %t", err)
 	}
@@ -203,7 +205,7 @@ func (d *fswatchImpl) syncDirectory(directory *model.Directory, tag *model.Tag, 
 			continue
 		}
 
-		if err := d.gallery.RemoveItem(item.Id); err != nil {
+		if err := d.db.RemoveItem(item.Id); err != nil {
 			logger.Errorf("Error removing item %d - %t", item.Id, err)
 		}
 	}
@@ -222,7 +224,7 @@ func (d *fswatchImpl) fileExists(directory *model.Directory, item model.Item) bo
 }
 
 func (d *fswatchImpl) isVideo(path string) bool {
-	if d.gallery.TrustFileExtenssion {
+	if d.trustFileExtenssion {
 		return strings.HasSuffix(path, ".avi") ||
 			strings.HasSuffix(path, ".mkv") ||
 			strings.HasSuffix(path, ".mpg") ||
@@ -280,7 +282,7 @@ func (d *fswatchImpl) addExcludedDirectory(path string) error {
 		Excluded: pointer.Bool(true),
 	}
 
-	return d.gallery.CreateOrUpdateDirectory(newDirectory)
+	return d.db.CreateOrUpdateDirectory(newDirectory)
 }
 
 func (d *fswatchImpl) getConcreteTagOfDirectory(directory *model.Directory, directoryTag *model.Tag) (*model.Tag, error) {
@@ -329,7 +331,7 @@ func (d *fswatchImpl) ensureConcreteTagsOnItem(item *model.Item, concreteTags []
 	}
 
 	item.Tags = append(item.Tags, tagsToAdd...)
-	if err := d.gallery.CreateOrUpdateItem(item); err != nil {
+	if err := d.db.CreateOrUpdateItem(item); err != nil {
 		logger.Errorf("Error updating item %v - %t", item, err)
 		return err
 	}
@@ -368,12 +370,12 @@ func (d *fswatchImpl) addFileIfMissing(directory *model.Directory, tag *model.Ta
 
 	logger.Debugf("Adding a new file %s to %v", path, item)
 
-	if err := d.gallery.CreateOrUpdateItem(&item); err != nil {
+	if err := d.db.CreateOrUpdateItem(&item); err != nil {
 		logger.Errorf("Error creating item %v - %t", item, err)
 		return false, err
 	}
 
-	if d.gallery.AutomaticProcessing {
+	if d.processor.IsAutomaticProcessing() {
 		d.processor.EnqueueItemVideoMetadata(item.Id)
 		d.processor.EnqueueItemCovers(item.Id)
 		d.processor.EnqueueItemPreview(item.Id)
@@ -390,7 +392,7 @@ func (d *fswatchImpl) itemExists(path string, tag *model.Tag) (*model.Item, int6
 		return nil, 0, err
 	}
 
-	items, err := tags.GetItems(d.gallery, tag)
+	items, err := tags.GetItems(d.db, tag)
 	if err != nil {
 		logger.Errorf("Error getting files of tag %t", err)
 	}
@@ -405,7 +407,7 @@ func (d *fswatchImpl) itemExists(path string, tag *model.Tag) (*model.Item, int6
 }
 
 func (d *fswatchImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
-	existing, err := d.gallery.GetTag(tag)
+	existing, err := d.db.GetTag(tag)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Errorf("Error getting tag %t", err)
 		return nil, err
@@ -415,7 +417,7 @@ func (d *fswatchImpl) getOrCreateTag(tag *model.Tag) (*model.Tag, error) {
 		return existing, nil
 	}
 
-	if err := d.gallery.CreateOrUpdateTag(tag); err != nil {
+	if err := d.db.CreateOrUpdateTag(tag); err != nil {
 		logger.Errorf("Error creating tag %v - %t", tag, err)
 		return nil, err
 	}
@@ -438,7 +440,7 @@ func (d *fswatchImpl) directoryExcluded(directoryPath string) {
 }
 
 func (d *fswatchImpl) removeExcludedSubDirectories(directoryPath string) {
-	allDirectories, err := d.gallery.GetAllDirectories()
+	allDirectories, err := d.db.GetAllDirectories()
 	if err != nil {
 		logger.Errorf("Error getting all directories %t", err)
 		return
@@ -450,7 +452,7 @@ func (d *fswatchImpl) removeExcludedSubDirectories(directoryPath string) {
 		}
 
 		if strings.HasPrefix(dir.Path, directoryPath) {
-			if err := d.gallery.RemoveDirectory(dir.Path); err != nil {
+			if err := d.db.RemoveDirectory(dir.Path); err != nil {
 				logger.Errorf("Error removing directory %s", dir.Path)
 			}
 		}

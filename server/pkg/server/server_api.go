@@ -35,7 +35,7 @@ func (s *Server) createItem(c *gin.Context) {
 
 	item.Url = s.relativasor.GetRelativePath(item.Url)
 	item.Origin = s.relativasor.GetRelativePath(item.Origin)
-	if s.handleError(c, s.gallery.CreateOrUpdateItem(&item)) {
+	if s.handleError(c, s.db.CreateOrUpdateItem(&item)) {
 		return
 	}
 
@@ -53,7 +53,7 @@ func (s *Server) createTag(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, s.gallery.CreateOrUpdateTag(&tag)) {
+	if s.handleError(c, s.db.CreateOrUpdateTag(&tag)) {
 		return
 	}
 
@@ -82,7 +82,7 @@ func (s *Server) updateItem(c *gin.Context) {
 	}
 
 	item.Id = itemId
-	if s.handleError(c, s.gallery.UpdateItem(&item)) {
+	if s.handleError(c, s.db.UpdateItem(&item)) {
 		return
 	}
 
@@ -100,7 +100,7 @@ func (s *Server) removeTagFromItem(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, s.gallery.RemoveTagFromItem(itemId, tagId)) {
+	if s.handleError(c, s.db.RemoveTagFromItem(itemId, tagId)) {
 		return
 	}
 
@@ -129,7 +129,7 @@ func (s *Server) updateTag(c *gin.Context) {
 	}
 
 	tag.Id = tagId
-	if s.handleError(c, s.gallery.UpdateTag(&tag)) {
+	if s.handleError(c, s.db.UpdateTag(&tag)) {
 		return
 	}
 
@@ -142,7 +142,7 @@ func (s *Server) getItem(c *gin.Context) {
 		return
 	}
 
-	item, err := s.gallery.GetItem(itemId)
+	item, err := s.db.GetItem(itemId)
 	if s.handleError(c, err) {
 		return
 	}
@@ -156,7 +156,7 @@ func (s *Server) getTag(c *gin.Context) {
 		return
 	}
 
-	tag, err := s.gallery.GetTag(tagId)
+	tag, err := s.db.GetTag(tagId)
 	if s.handleError(c, err) {
 		return
 	}
@@ -170,7 +170,7 @@ func (s *Server) autoImage(c *gin.Context) {
 		return
 	}
 
-	tag, err := s.gallery.GetTag(tagId)
+	tag, err := s.db.GetTag(tagId)
 	if s.handleError(c, err) {
 		return
 	}
@@ -186,7 +186,7 @@ func (s *Server) autoImage(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, tags.AutoImageChildren(s.storage, s.gallery, tag, fileUrl.Url)) {
+	if s.handleError(c, tags.AutoImageChildren(s.storage, s.db, tag, fileUrl.Url)) {
 		return
 	}
 
@@ -199,7 +199,7 @@ func (s *Server) removeTag(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, s.gallery.RemoveTag(tagId)) {
+	if s.handleError(c, s.db.RemoveTag(tagId)) {
 		return
 	}
 
@@ -207,7 +207,7 @@ func (s *Server) removeTag(c *gin.Context) {
 }
 
 func (s *Server) getTags(c *gin.Context) {
-	tags, err := s.gallery.GetAllTags()
+	tags, err := s.db.GetAllTags()
 	if s.handleError(c, err) {
 		return
 	}
@@ -217,7 +217,7 @@ func (s *Server) getTags(c *gin.Context) {
 }
 
 func (s *Server) getItems(c *gin.Context) {
-	items, err := s.gallery.GetAllItems()
+	items, err := s.db.GetAllItems()
 	if s.handleError(c, err) {
 		return
 	}
@@ -303,7 +303,7 @@ func (s *Server) getFile(c *gin.Context) {
 
 func (s *Server) exportMetadata(c *gin.Context) {
 	jsonBytes := bytes.Buffer{}
-	if s.handleError(c, backup.Export(s.gallery, s.gallery, &jsonBytes)) {
+	if s.handleError(c, backup.Export(s.db, s.db, &jsonBytes)) {
 		return
 	}
 
@@ -329,7 +329,7 @@ func (s *Server) addAnnotationToTag(c *gin.Context) {
 		return
 	}
 
-	annotationId, err := tag_annotations.AddAnnotationToTag(s.gallery, s.gallery, tagId, annotation)
+	annotationId, err := tag_annotations.AddAnnotationToTag(s.db, s.db, tagId, annotation)
 	if s.handleError(c, err) {
 		return
 	}
@@ -348,7 +348,7 @@ func (s *Server) removeAnnotationFromTag(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, s.gallery.RemoveTagAnnotationFromTag(tagId, annotationId)) {
+	if s.handleError(c, s.db.RemoveTagAnnotationFromTag(tagId, annotationId)) {
 		return
 	}
 
@@ -361,7 +361,7 @@ func (s *Server) getTagAvailableAnnotations(c *gin.Context) {
 		return
 	}
 
-	availableAnnotations, err := tag_annotations.GetTagAvailableAnnotations(s.gallery, s.gallery, tagId)
+	availableAnnotations, err := tag_annotations.GetTagAvailableAnnotations(s.db, s.db, tagId)
 	if s.handleError(c, err) {
 		return
 	}
@@ -370,7 +370,7 @@ func (s *Server) getTagAvailableAnnotations(c *gin.Context) {
 }
 
 func (s *Server) getDirectories(c *gin.Context) {
-	directories, err := s.gallery.GetAllDirectories()
+	directories, err := s.db.GetAllDirectories()
 
 	if s.handleError(c, err) {
 		return
@@ -394,7 +394,7 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 
 	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
 	directory.Path = s.relativasor.GetRelativePath(directory.Path)
-	if err = s.gallery.CreateOrUpdateDirectory(&directory); err != nil {
+	if err = s.db.CreateOrUpdateDirectory(&directory); err != nil {
 		s.handleError(c, err)
 		return
 	}
@@ -415,7 +415,7 @@ func (s *Server) SetDirectoryTags(c *gin.Context) {
 		return
 	}
 
-	if err = directories.SetDirectoryTags(s.gallery, &directory); err != nil {
+	if err = directories.SetDirectoryTags(s.db, &directory); err != nil {
 		s.handleError(c, err)
 		return
 	}
@@ -426,7 +426,7 @@ func (s *Server) SetDirectoryTags(c *gin.Context) {
 
 func (s *Server) getDirectory(c *gin.Context) {
 	directoryPath := c.Param("directory")[1:]
-	directory, err := s.gallery.GetDirectory("path = ?", directoryPath)
+	directory, err := s.db.GetDirectory("path = ?", directoryPath)
 	if s.handleError(c, err) {
 		return
 	}
@@ -437,7 +437,7 @@ func (s *Server) getDirectory(c *gin.Context) {
 func (s *Server) excludeDirectory(c *gin.Context) {
 	directoryPath := c.Param("directory")[1:]
 
-	err := directories.ExcludeDirectory(*s.relativasor, s.gallery, directoryPath)
+	err := directories.ExcludeDirectory(*s.relativasor, s.db, directoryPath)
 	if s.handleError(c, err) {
 		return
 	}
@@ -485,12 +485,12 @@ func (s *Server) getTasks(c *gin.Context) {
 		return
 	}
 
-	t, err := s.gallery.GetTasks(int((page-1)*pageSize), int(pageSize))
+	t, err := s.db.GetTasks(int((page-1)*pageSize), int(pageSize))
 	if s.handleError(c, err) {
 		return
 	}
 
-	tasks.AddDescriptionToTasks(s.gallery, t)
+	tasks.AddDescriptionToTasks(s.db, t)
 	c.JSON(http.StatusOK, t)
 }
 

@@ -6,7 +6,7 @@ import (
 )
 
 func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata(force bool) error {
-	items, err := p.gallery.GetAllItems()
+	items, err := p.db.GetAllItems()
 	if err != nil {
 		return err
 	}
@@ -27,7 +27,7 @@ func (p itemProcessorImpl) EnqueueItemVideoMetadata(id uint64) {
 }
 
 func (p itemProcessorImpl) refreshItemMetadata(id uint64) error {
-	item, err := p.gallery.GetItem(id)
+	item, err := p.db.GetItem(id)
 	if err != nil {
 		return err
 	}
@@ -58,5 +58,5 @@ func (p itemProcessorImpl) refreshItemMetadata(id uint64) error {
 	item.Height = rawVideoMetadata.Height
 	item.VideoCodecName = rawVideoMetadata.CodecName
 	item.AudioCodecName = rawAudioMetadata.CodecName
-	return p.gallery.UpdateItem(item)
+	return p.db.UpdateItem(item)
 }

@@ -1,8 +1,8 @@
 package server
 
 import (
+	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fswatch"
-	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
@@ -21,7 +21,7 @@ var logger = logging.MustGetLogger("server")
 
 type Server struct {
 	router      *gin.Engine
-	gallery     *gallery.Gallery
+	db          *db.Database
 	storage     *storage.Storage
 	relativasor *relativasor.PathRelativasor
 	processor   processor.Processor
@@ -29,13 +29,13 @@ type Server struct {
 	push        *push
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relativasor.PathRelativasor,
+func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.PathRelativasor,
 	fswatch fswatch.Fswatch, processor processor.Processor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
 		router:      gin.New(),
-		gallery:     gallery,
+		db:          db,
 		storage:     storage,
 		relativasor: relativasor,
 		fswatch:     fswatch,
@@ -119,13 +119,13 @@ func (s *Server) handleError(c *gin.Context, err error) bool {
 }
 
 func (s *Server) buildQueueMetadata() (model.QueueMetadata, error) {
-	size, err := s.gallery.TasksCount("")
+	size, err := s.db.TasksCount("")
 	if err != nil {
 		logger.Errorf("Unable to get queue size %s", err)
 		return model.QueueMetadata{}, nil
 	}
 
-	unfinishedTasks, err := s.gallery.TasksCount("processing_end is null")
+	unfinishedTasks, err := s.db.TasksCount("processing_end is null")
 	if err != nil {
 		logger.Errorf("Unable to get unfinished tasks count %s", err)
 		return model.QueueMetadata{}, nil

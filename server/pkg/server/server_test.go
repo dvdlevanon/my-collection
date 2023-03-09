@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fswatch"
-	"my-collection/server/pkg/gallery"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
@@ -31,8 +30,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
 	relativasor := relativasor.New("")
-	gallery := gallery.New(db, storage, relativasor)
-	return New(gallery, storage, relativasor, &fswatch.FswatchMock{}, &processor.ProcessorMock{})
+	return New(db, storage, relativasor, &fswatch.FswatchMock{}, &processor.ProcessorMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

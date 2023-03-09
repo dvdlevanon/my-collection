@@ -4,7 +4,6 @@ import (
 	"flag"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fswatch"
-	"my-collection/server/pkg/gallery"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
@@ -82,21 +81,19 @@ func run() error {
 		return err
 	}
 
-	gallery := gallery.New(db, storage, relativasor)
-
-	processor, err := processor.New(gallery, storage, relativasor)
+	processor, err := processor.New(db, storage, relativasor)
 	if err != nil {
 		return err
 	}
 	processor.Pause()
 	go processor.Run()
 
-	fswatch := fswatch.New(gallery, storage, relativasor, processor)
+	fswatch := fswatch.New(db, storage, relativasor, processor)
 	if err = fswatch.Init(); err != nil {
 		return err
 	}
 
-	return server.New(gallery, storage, relativasor, fswatch, processor).Run(*listenAddress)
+	return server.New(db, storage, relativasor, fswatch, processor).Run(*listenAddress)
 }
 
 func logError(err error) {

@@ -2,7 +2,7 @@ package itemprocessor
 
 import (
 	"fmt"
-	"my-collection/server/pkg/gallery"
+	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
@@ -34,6 +34,7 @@ type Processor interface {
 	EnqueueMainCover(id uint64, second float64)
 	EnqueueItemVideoMetadata(id uint64)
 	IsPaused() bool
+	IsAutomaticProcessing() bool
 	Pause()
 	Continue()
 	SetProcessorNotifier(notifier ProcessorNotifier)
@@ -50,6 +51,7 @@ func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)              {}
 func (d *ProcessorMock) EnqueueItemPreview(id uint64)                    {}
 func (d *ProcessorMock) EnqueueItemCovers(id uint64)                     {}
 func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)      {}
+func (d *ProcessorMock) IsAutomaticProcessing() bool                     { return false }
 func (d *ProcessorMock) IsPaused() bool                                  { return false }
 func (d *ProcessorMock) Pause()                                          {}
 func (d *ProcessorMock) Continue()                                       {}
@@ -61,16 +63,20 @@ func taskBuilder() interface{} {
 }
 
 type itemProcessorImpl struct {
-	gallery      *gallery.Gallery
-	storage      *storage.Storage
-	relativasor  *relativasor.PathRelativasor
-	dque         *dque.DQue
-	pauseChannel chan bool
-	paused       bool
-	notifier     ProcessorNotifier
+	db                   *db.Database
+	storage              *storage.Storage
+	relativasor          *relativasor.PathRelativasor
+	dque                 *dque.DQue
+	pauseChannel         chan bool
+	paused               bool
+	notifier             ProcessorNotifier
+	coversCount          int
+	previewSceneCount    int
+	previewSceneDuration int
+	automaticProcessing  bool
 }
 
-func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relativasor.PathRelativasor) (Processor, error) {
+func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.PathRelativasor) (Processor, error) {
 	logger.Infof("Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")
@@ -86,16 +92,20 @@ func New(gallery *gallery.Gallery, storage *storage.Storage, relativasor *relati
 	}
 
 	return &itemProcessorImpl{
-		gallery:      gallery,
-		storage:      storage,
-		relativasor:  relativasor,
-		dque:         dque,
-		pauseChannel: make(chan bool, 10),
+		db:                   db,
+		storage:              storage,
+		relativasor:          relativasor,
+		dque:                 dque,
+		coversCount:          3,
+		previewSceneCount:    4,
+		previewSceneDuration: 3,
+		automaticProcessing:  false,
+		pauseChannel:         make(chan bool, 10),
 	}, nil
 }
 
 func (p *itemProcessorImpl) ClearFinishedTasks() error {
-	if err := p.gallery.RemoveTasks("processing_end is not null"); err != nil {
+	if err := p.db.RemoveTasks("processing_end is not null"); err != nil {
 		logger.Errorf("Unable to clear finished tasks %s", err)
 		return err
 	}
@@ -113,6 +123,9 @@ func (p *itemProcessorImpl) SetProcessorNotifier(notifier ProcessorNotifier) {
 
 func (p *itemProcessorImpl) IsPaused() bool {
 	return p.paused
+}
+func (p *itemProcessorImpl) IsAutomaticProcessing() bool {
+	return p.automaticProcessing
 }
 
 func (p *itemProcessorImpl) Pause() {
@@ -161,7 +174,7 @@ func (p *itemProcessorImpl) process() {
 
 	startMillis := time.Now().UnixMilli()
 	task.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
-	if err := p.gallery.UpdateTask(task); err != nil {
+	if err := p.db.UpdateTask(task); err != nil {
 		logger.Warningf("Unable to update task processing start time %s %s", task.Id, err)
 	}
 
@@ -171,7 +184,7 @@ func (p *itemProcessorImpl) process() {
 	}
 
 	task.ProcessingEnd = pointer.Int64(time.Now().UnixMilli())
-	if err := p.gallery.UpdateTask(task); err != nil {
+	if err := p.db.UpdateTask(task); err != nil {
 		logger.Warningf("Unable to update task processing end time %s %s", task.Id, err)
 	}
 
@@ -195,7 +208,7 @@ func (p *itemProcessorImpl) enqueue(t *model.Task) {
 		return
 	}
 
-	if err := p.gallery.CreateTask(t); err != nil {
+	if err := p.db.CreateTask(t); err != nil {
 		logger.Errorf("Error adding task to db %s - %v", err, *t)
 		return
 	}
