@@ -5,7 +5,6 @@ import (
 	"my-collection/server/pkg/fswatch"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
-	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
 	"net/http"
 
@@ -20,26 +19,23 @@ import (
 var logger = logging.MustGetLogger("server")
 
 type Server struct {
-	router      *gin.Engine
-	db          *db.Database
-	storage     *storage.Storage
-	relativasor *relativasor.PathRelativasor
-	processor   processor.Processor
-	fswatch     fswatch.Fswatch
-	push        *push
+	router    *gin.Engine
+	db        *db.Database
+	storage   *storage.Storage
+	processor processor.Processor
+	fswatch   fswatch.Fswatch
+	push      *push
 }
 
-func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.PathRelativasor,
-	fswatch fswatch.Fswatch, processor processor.Processor) *Server {
+func New(db *db.Database, storage *storage.Storage, fswatch fswatch.Fswatch, processor processor.Processor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
-		router:      gin.New(),
-		db:          db,
-		storage:     storage,
-		relativasor: relativasor,
-		fswatch:     fswatch,
-		processor:   processor,
+		router:    gin.New(),
+		db:        db,
+		storage:   storage,
+		fswatch:   fswatch,
+		processor: processor,
 	}
 
 	server.push = newPush(processor, server)

@@ -44,21 +44,19 @@ func (d *FswatchMock) DirectoryExcluded(path string)               {}
 type fswatchImpl struct {
 	db                  *db.Database
 	storage             *storage.Storage
-	relativasor         *relativasor.PathRelativasor
 	processor           processor.Processor
 	changeChannel       chan model.Directory
 	excludedChannel     chan string
 	trustFileExtenssion bool
 }
 
-func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.PathRelativasor, processor processor.Processor) Fswatch {
+func New(db *db.Database, storage *storage.Storage, processor processor.Processor) Fswatch {
 	logger.Infof("FS watch initialized")
 
 	return &fswatchImpl{
 		db:                  db,
 		storage:             storage,
 		processor:           processor,
-		relativasor:         relativasor,
 		changeChannel:       make(chan model.Directory),
 		excludedChannel:     make(chan string),
 		trustFileExtenssion: true,
@@ -171,7 +169,7 @@ func (d *fswatchImpl) handleIncludedDirectory(directory *model.Directory, allDir
 }
 
 func (d *fswatchImpl) syncDirectory(directory *model.Directory, tag *model.Tag, allDirectories []model.Directory) int {
-	path := d.relativasor.GetAbsoluteFile(directory.Path)
+	path := relativasor.GetAbsoluteFile(directory.Path)
 	files, err := os.ReadDir(path)
 	if err != nil {
 		logger.Errorf("Error getting files of %s %t", path, err)
@@ -218,7 +216,7 @@ func (d *fswatchImpl) fileExists(directory *model.Directory, item model.Item) bo
 		return true
 	}
 
-	path := d.relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
+	path := relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
 	_, err := os.Stat(path)
 	return err == nil
 }
@@ -266,7 +264,7 @@ func (d *fswatchImpl) addDirectoryIfMissing(path string, allDirectories []model.
 }
 
 func (d *fswatchImpl) directoryExists(path string, allDirectories []model.Directory) bool {
-	relativePath := d.relativasor.GetRelativePath(path)
+	relativePath := relativasor.GetRelativePath(path)
 	for _, dir := range allDirectories {
 		if dir.Path == relativePath {
 			return true

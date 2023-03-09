@@ -1,43 +1,24 @@
-package itemprocessor
+package processor
 
 import (
 	"fmt"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/relativasor"
 	"os"
 )
 
-func (p itemProcessorImpl) EnqueueAllItemsPreview(force bool) error {
-	items, err := p.db.GetAllItems()
-	if err != nil {
-		return err
-	}
-
-	for _, item := range *items {
-		if !force && item.PreviewUrl != "" {
-			continue
-		}
-
-		p.EnqueueItemPreview(item.Id)
-	}
-
-	return nil
-}
-
-func (p itemProcessorImpl) EnqueueItemPreview(id uint64) {
-	p.enqueue(&model.Task{TaskType: model.REFRESH_PREVIEW_TASK, IdParam: id})
-}
-
-func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
-	item, err := p.db.GetItem(id)
+func refreshItemPreview(irw model.ItemReaderWriter, uploader model.StorageUploader,
+	previewSceneCount int, previewSceneDuration int, id uint64) error {
+	item, err := irw.GetItem(id)
 	if err != nil {
 		return err
 	}
 
 	logger.Infof("Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
-		item.Id, item.Url, p.previewSceneCount, p.previewSceneDuration)
+		item.Id, item.Url, previewSceneCount, previewSceneDuration)
 
-	videoParts, err := p.getPreviewParts(item)
+	videoParts, err := getPreviewParts(uploader, item, previewSceneCount, previewSceneDuration)
 	defer func() {
 		for _, file := range videoParts {
 			os.Remove(file)
@@ -49,7 +30,7 @@ func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
 	}
 
 	relativeFile := fmt.Sprintf("previews/%d/preview.mp4", item.Id)
-	storageFile, err := p.storage.GetFileForWriting(relativeFile)
+	storageFile, err := uploader.GetFileForWriting(relativeFile)
 	if err != nil {
 		return err
 	}
@@ -59,30 +40,31 @@ func (p itemProcessorImpl) refreshItemPreview(id uint64) error {
 		return err
 	}
 
-	tempFile := fmt.Sprintf("%s.mp4", p.storage.GetTempFile())
+	tempFile := fmt.Sprintf("%s.mp4", uploader.GetTempFile())
 	if err := ffmpeg.OptimizeVideoForPreview(storageFile, tempFile); err != nil {
 		logger.Errorf("Error optimizing video file for item %d, error %v", item.Id, err)
 		return err
 	}
 
-	item.PreviewUrl = p.storage.GetStorageUrl(relativeFile)
-	return p.db.UpdateItem(item)
+	item.PreviewUrl = uploader.GetStorageUrl(relativeFile)
+	return irw.UpdateItem(item)
 }
 
-func (p itemProcessorImpl) getPreviewParts(item *model.Item) ([]string, error) {
-	videoFile := p.relativasor.GetAbsoluteFile(item.Url)
+func getPreviewParts(uploader model.StorageUploader, item *model.Item,
+	previewSceneCount int, previewSceneDuration int) ([]string, error) {
+	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
 	if err != nil {
 		return nil, err
 	}
 
 	result := make([]string, 0)
-	for i := 1; i <= int(p.previewSceneCount); i++ {
-		startSecond := (int(duration) / (p.previewSceneCount + 1)) * i
-		tempFile := fmt.Sprintf("%s.mp4", p.storage.GetTempFile())
+	for i := 1; i <= int(previewSceneCount); i++ {
+		startSecond := (int(duration) / (previewSceneCount + 1)) * i
+		tempFile := fmt.Sprintf("%s.mp4", uploader.GetTempFile())
 		result = append(result, tempFile)
 
-		if err := ffmpeg.ExtractPartOfVideo(videoFile, startSecond, p.previewSceneDuration, tempFile); err != nil {
+		if err := ffmpeg.ExtractPartOfVideo(videoFile, startSecond, previewSceneDuration, tempFile); err != nil {
 			logger.Errorf("Error extracting part of video for item %d, error %v", item.Id, err)
 			return nil, err
 		}

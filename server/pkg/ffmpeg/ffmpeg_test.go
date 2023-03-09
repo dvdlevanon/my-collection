@@ -1,13 +1,18 @@
 package ffmpeg
 
 import (
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
 )
 
+var testFiles = "../../test-files"
+var sampleMp4 = filepath.Join(testFiles, "sample.mp4")
+var sample3SecondsScreenshotPng = filepath.Join(testFiles, "sample-3-second-screenshot.png")
+
 func TestGetDuration(t *testing.T) {
-	duration, err := GetDurationInSeconds("test.mp4")
+	duration, err := GetDurationInSeconds(filepath.Join(testFiles, "sample.mp4"))
 	assert.NoError(t, err)
 	assert.Equal(t, duration, 5)
 }
@@ -18,6 +23,6 @@ func TestGetDurationOfMissingFile(t *testing.T) {
 }
 
 func TestTakeScreenshot(t *testing.T) {
-	err := TakeScreenshot("test.mp4", 3, "test-screenshot.png")
+	err := TakeScreenshot(sampleMp4, 3, sample3SecondsScreenshotPng)
 	assert.NoError(t, err)
 }

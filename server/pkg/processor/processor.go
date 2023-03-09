@@ -1,15 +1,13 @@
-package itemprocessor
+package processor
 
 import (
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
-	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
 	"os"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/joncrlsn/dque"
 	"github.com/op/go-logging"
 	"k8s.io/utils/pointer"
@@ -65,7 +63,6 @@ func taskBuilder() interface{} {
 type itemProcessorImpl struct {
 	db                   *db.Database
 	storage              *storage.Storage
-	relativasor          *relativasor.PathRelativasor
 	dque                 *dque.DQue
 	pauseChannel         chan bool
 	paused               bool
@@ -76,7 +73,7 @@ type itemProcessorImpl struct {
 	automaticProcessing  bool
 }
 
-func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.PathRelativasor) (Processor, error) {
+func New(db *db.Database, storage *storage.Storage) (Processor, error) {
 	logger.Infof("Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")
@@ -94,7 +91,6 @@ func New(db *db.Database, storage *storage.Storage, relativasor *relativasor.Pat
 	return &itemProcessorImpl{
 		db:                   db,
 		storage:              storage,
-		relativasor:          relativasor,
 		dque:                 dque,
 		coversCount:          3,
 		previewSceneCount:    4,
@@ -200,34 +196,16 @@ func (p *itemProcessorImpl) process() {
 	logger.Infof("Done processing task in %dms %+v", processingMillis, task)
 }
 
-func (p *itemProcessorImpl) enqueue(t *model.Task) {
-	t.Id = uuid.New().String()
-	t.EnequeueTime = pointer.Int64(time.Now().UnixMilli())
-	if err := p.dque.Enqueue(t); err != nil {
-		logger.Errorf("Error enqueuing task %s - %v", err, *t)
-		return
-	}
-
-	if err := p.db.CreateTask(t); err != nil {
-		logger.Errorf("Error adding task to db %s - %v", err, *t)
-		return
-	}
-
-	if p.notifier != nil {
-		p.notifier.OnTaskAdded(t)
-	}
-}
-
 func (p *itemProcessorImpl) processTask(t *model.Task) error {
 	switch t.TaskType {
 	case model.REFRESH_COVER_TASK:
-		return p.refreshItemCovers(t.IdParam)
+		return refreshItemCovers(p.db, p.storage, t.IdParam, p.coversCount)
 	case model.SET_MAIN_COVER:
-		return p.setMainCover(t.IdParam, t.FloatParam)
+		return refreshMainCover(p.db, p.storage, t.IdParam, t.FloatParam)
 	case model.REFRESH_PREVIEW_TASK:
-		return p.refreshItemPreview(t.IdParam)
+		return refreshItemPreview(p.db, p.storage, p.previewSceneCount, p.previewSceneDuration, t.IdParam)
 	case model.REFRESH_METADATA_TASK:
-		return p.refreshItemMetadata(t.IdParam)
+		return refreshItemMetadata(p.db, t.IdParam)
 	default:
 		return fmt.Errorf("unknown task %+v", t)
 	}

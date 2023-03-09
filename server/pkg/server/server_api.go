@@ -11,6 +11,7 @@ import (
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/bl/tasks"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/relativasor"
 	"net/http"
 	"path/filepath"
 	"strconv"
@@ -33,8 +34,8 @@ func (s *Server) createItem(c *gin.Context) {
 		return
 	}
 
-	item.Url = s.relativasor.GetRelativePath(item.Url)
-	item.Origin = s.relativasor.GetRelativePath(item.Origin)
+	item.Url = relativasor.GetRelativePath(item.Url)
+	item.Origin = relativasor.GetRelativePath(item.Origin)
 	if s.handleError(c, s.db.CreateOrUpdateItem(&item)) {
 		return
 	}
@@ -294,7 +295,7 @@ func (s *Server) getFile(c *gin.Context) {
 	if s.storage.IsStorageUrl(path) {
 		file = s.storage.GetFile(path)
 	} else {
-		file = s.relativasor.GetAbsoluteFile(path)
+		file = relativasor.GetAbsoluteFile(path)
 	}
 
 	logger.Infof("Getting file %v", file)
@@ -393,7 +394,7 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 	}
 
 	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
-	directory.Path = s.relativasor.GetRelativePath(directory.Path)
+	directory.Path = relativasor.GetRelativePath(directory.Path)
 	if err = s.db.CreateOrUpdateDirectory(&directory); err != nil {
 		s.handleError(c, err)
 		return
@@ -437,7 +438,7 @@ func (s *Server) getDirectory(c *gin.Context) {
 func (s *Server) excludeDirectory(c *gin.Context) {
 	directoryPath := c.Param("directory")[1:]
 
-	err := directories.ExcludeDirectory(*s.relativasor, s.db, directoryPath)
+	err := directories.ExcludeDirectory(s.db, directoryPath)
 	if s.handleError(c, err) {
 		return
 	}

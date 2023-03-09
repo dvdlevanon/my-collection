@@ -5,33 +5,29 @@ import (
 	"strings"
 )
 
-func New(rootDirectory string) *PathRelativasor {
-	return &PathRelativasor{
-		rootDirectory: rootDirectory,
-	}
+var rootDirectory string
+
+func Init(r string) {
+	rootDirectory = r
 }
 
-type PathRelativasor struct {
-	rootDirectory string
-}
-
-func (g *PathRelativasor) GetRelativePath(url string) string {
-	if !strings.HasPrefix(url, g.rootDirectory) {
+func GetRelativePath(url string) string {
+	if !strings.HasPrefix(url, rootDirectory) {
 		return url
 	}
 
-	if url == g.rootDirectory {
+	if url == rootDirectory {
 		return url
 	}
 
-	relativePath := strings.TrimPrefix(url, g.rootDirectory)
+	relativePath := strings.TrimPrefix(url, rootDirectory)
 	return strings.TrimPrefix(relativePath, string(filepath.Separator))
 }
 
-func (g *PathRelativasor) GetAbsoluteFile(url string) string {
+func GetAbsoluteFile(url string) string {
 	if strings.HasPrefix(url, string(filepath.Separator)) {
 		return url
 	} else {
-		return filepath.Join(g.rootDirectory, url)
+		return filepath.Join(rootDirectory, url)
 	}
 }

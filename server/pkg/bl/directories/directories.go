@@ -14,7 +14,7 @@ import (
 
 var logger = logging.MustGetLogger("directories")
 
-func ExcludeDirectory(relativasor relativasor.PathRelativasor, drw model.DirectoryReaderWriter, path string) error {
+func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
 	path = relativasor.GetRelativePath(path)
 
 	directory, err := drw.GetDirectory(path)

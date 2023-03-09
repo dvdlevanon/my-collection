@@ -29,8 +29,8 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	assert.NoError(t, err)
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
-	relativasor := relativasor.New("")
-	return New(db, storage, relativasor, &fswatch.FswatchMock{}, &processor.ProcessorMock{})
+	relativasor.Init("")
+	return New(db, storage, &fswatch.FswatchMock{}, &processor.ProcessorMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

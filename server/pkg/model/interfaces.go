@@ -14,8 +14,8 @@ type ItemWriter interface {
 }
 
 type ItemReaderWriter interface {
-	ItemReader
-	ItemWriter
+	GetItem(conds ...interface{}) (*Item, error)
+	UpdateItem(item *Item) error
 }
 
 type TagReader interface {
@@ -65,4 +65,10 @@ type DirectoryWriter interface {
 type DirectoryReaderWriter interface {
 	DirectoryReader
 	DirectoryWriter
+}
+
+type StorageUploader interface {
+	GetStorageUrl(name string) string
+	GetFileForWriting(name string) (string, error)
+	GetTempFile() string
 }

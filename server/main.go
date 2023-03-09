@@ -67,7 +67,7 @@ func run() error {
 		return err
 	}
 
-	relativasor := relativasor.New(rootdir)
+	relativasor.Init(rootdir)
 
 	logger.Infof("Root directory is: %s", rootdir)
 
@@ -81,19 +81,19 @@ func run() error {
 		return err
 	}
 
-	processor, err := processor.New(db, storage, relativasor)
+	processor, err := processor.New(db, storage)
 	if err != nil {
 		return err
 	}
 	processor.Pause()
 	go processor.Run()
 
-	fswatch := fswatch.New(db, storage, relativasor, processor)
+	fswatch := fswatch.New(db, storage, processor)
 	if err = fswatch.Init(); err != nil {
 		return err
 	}
 
-	return server.New(db, storage, relativasor, fswatch, processor).Run(*listenAddress)
+	return server.New(db, storage, fswatch, processor).Run(*listenAddress)
 }
 
 func logError(err error) {
