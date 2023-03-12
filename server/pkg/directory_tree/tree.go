@@ -13,15 +13,12 @@ type DirectoryNode struct {
 	Children []*DirectoryNode
 	Files    []*FileNode
 	Title    string
+	Excluded bool
 }
 
 type FileNode struct {
 	Parent *DirectoryNode
 	Title  string
-}
-
-type Tree struct {
-	Root *DirectoryNode
 }
 
 func createFileNode(parent *DirectoryNode, title string) *FileNode {
@@ -45,5 +42,13 @@ func (dn *DirectoryNode) getPath() string {
 		return dn.Title
 	} else {
 		return filepath.Join(dn.Parent.getPath(), dn.Title)
+	}
+}
+
+func (fn *FileNode) getPath() string {
+	if fn.Parent == nil {
+		return fn.Title
+	} else {
+		return filepath.Join(fn.Parent.getPath(), fn.Title)
 	}
 }

@@ -5,30 +5,36 @@ import (
 	"path/filepath"
 )
 
-func BuildFromPath(path string) (*Tree, error) {
-	root, err := buildFromDir(nil, path)
+type filesFilter func(path string) bool
+
+func BuildFromPath(path string, filter filesFilter) (*DirectoryNode, error) {
+	root, err := buildFromDir(nil, path, filter)
 	if err != nil {
 		return nil, err
 	}
-	return &Tree{Root: root}, nil
+	return root, nil
 }
 
-func buildFromDir(parent *DirectoryNode, path string) (*DirectoryNode, error) {
+func buildFromDir(parent *DirectoryNode, path string, filter filesFilter) (*DirectoryNode, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
 	}
 
 	node := createDirectoryNode(parent, filepath.Base(path))
+	if parent == nil {
+		node.Title = ""
+	}
+
 	for _, file := range files {
 		if file.IsDir() {
-			child, err := buildFromDir(node, filepath.Join(path, file.Name()))
+			child, err := buildFromDir(node, filepath.Join(path, file.Name()), filter)
 			if err != nil {
 				return nil, err
 			}
 
 			node.Children = append(node.Children, child)
-		} else {
+		} else if filter(filepath.Join(path, file.Name())) {
 			node.Files = append(node.Files, createFileNode(node, file.Name()))
 		}
 	}

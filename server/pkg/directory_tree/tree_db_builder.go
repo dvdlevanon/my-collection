@@ -1,13 +1,14 @@
 package directorytree
 
 import (
+	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"os"
 	"strings"
 )
 
-func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*Tree, error) {
+func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*DirectoryNode, error) {
 	dirs, err := dr.GetAllDirectories()
 	if err != nil {
 		return nil, err
@@ -16,13 +17,14 @@ func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*Tre
 	root := createDirectoryNode(nil, relativasor.GetAbsoluteFile(""))
 	for _, dir := range *dirs {
 		child := root.getOrCreateChild(dir.Path)
+		child.Excluded = directories.IsExcluded(&dir)
 
 		if err := child.readFilesFromDb(dig); err != nil {
 			logger.Errorf("Error reading files from db %s", err)
 		}
 	}
 
-	return &Tree{Root: root}, nil
+	return root, nil
 }
 
 func (dn *DirectoryNode) getOrCreateChild(path string) *DirectoryNode {

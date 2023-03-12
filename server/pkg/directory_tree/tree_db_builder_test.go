@@ -8,19 +8,20 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestBuildFromDb(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
+func buildTestDirectoryReader(ctrl *gomock.Controller, additionalDirs ...model.Directory) model.DirectoryReader {
 	dr := model.NewMockDirectoryReader(ctrl)
-	dr.EXPECT().GetAllDirectories().Return(&[]model.Directory{
+	dirs := append([]model.Directory{
 		{Path: "1/2/3/4"},
 		{Path: "1"},
 		{Path: "1/2/3.1"},
 		{Path: "1/2/3.2"},
 		{Path: "1/2"},
-	}, nil)
+	}, additionalDirs...)
+	dr.EXPECT().GetAllDirectories().Return(&dirs, nil)
+	return dr
+}
 
+func buildTestDirectoryItemsGetter(ctrl *gomock.Controller) model.DirectoryItemsGetter {
 	dig := model.NewMockDirectoryItemsGetter(ctrl)
 	dig.EXPECT().GetBelongingItems("1").Return([]*model.Item{}, nil)
 	dig.EXPECT().GetBelongingItems("1/2").Return([]*model.Item{
@@ -34,10 +35,17 @@ func TestBuildFromDb(t *testing.T) {
 		{Title: "file4-3"},
 	}, nil)
 
-	tree, err := BuildFromDb(dr, dig)
+	return dig
+}
+
+func TestBuildFromDb(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	root, err := BuildFromDb(buildTestDirectoryReader(ctrl), buildTestDirectoryItemsGetter(ctrl))
 	assert.NoError(t, err)
-	assert.NotNil(t, tree.Root)
-	assert.Equal(t, 3, len(tree.Root.getOrCreateChild("1/2/3/4").Files))
+	assert.NotNil(t, root)
+	assert.Equal(t, 3, len(root.getOrCreateChild("1/2/3/4").Files))
 }
 
 func TestGetOrCreateChild(t *testing.T) {
