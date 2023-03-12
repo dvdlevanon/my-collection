@@ -15,6 +15,13 @@ import (
 	"k8s.io/utils/pointer"
 )
 
+const DIRECTORIES_TAG_ID = uint64(1) // tags-util.js
+
+var DirectoriesTag = model.Tag{
+	Id:    DIRECTORIES_TAG_ID,
+	Title: "Directories",
+}
+
 var logger = logging.MustGetLogger("directories")
 var directoriesCache = cache.New(time.Second*3, time.Second)
 var directoriesCacheKey = "all-directories"

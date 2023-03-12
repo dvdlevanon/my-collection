@@ -5,39 +5,51 @@ import (
 	"os"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRefreshMainCover(t *testing.T) {
-	// happy path
-	irw := newTestSingleItemReaderWriter(&model.Item{Id: 0, Url: sampleMp4}, false, false)
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// init mocks
+	item := model.Item{Id: 0, Url: sampleMp4}
+	irw := model.NewMockItemReaderWriter(ctrl)
 	tempfile, err := os.CreateTemp("", "refresh-main-cover-*.png")
 	assert.NoError(t, err)
-	uploader := newTestStorageUploader(tempfile.Name(), "main-cover-url", "", false)
-	assert.NoError(t, refreshMainCover(&irw, &uploader, 0, 4.5))
-	assert.Equal(t, uploader.storageUrl, *irw.item.MainCoverUrl)
-	actualBytes, err := os.ReadFile(uploader.fileForWritting)
+	uploader := model.NewMockStorageUploader(ctrl)
+
+	// happy path
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
+	irw.EXPECT().UpdateItem(gomock.Any()).Return(nil)
+	uploader.EXPECT().GetFileForWriting(gomock.Any()).Return(tempfile.Name(), nil)
+	uploader.EXPECT().GetStorageUrl(gomock.Any()).Return("main-cover-url")
+	assert.NoError(t, refreshMainCover(irw, uploader, 0, 4.5))
+	assert.Equal(t, "main-cover-url", *item.MainCoverUrl)
+	actualBytes, err := os.ReadFile(tempfile.Name())
 	assert.NoError(t, err)
 	expectedBytes, err := os.ReadFile(sample4_5SecondsScreenshotPng)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedBytes, actualBytes)
 
 	// error getting/updating
-	irw.errorGet = true
-	irw.errorSet = false
-	assert.Error(t, refreshMainCover(&irw, &uploader, 0, 4.5))
-	irw.errorGet = false
-	irw.errorSet = true
-	assert.Error(t, refreshMainCover(&irw, &uploader, 0, 4.5))
-	irw.errorGet = false
-	irw.errorSet = false
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, errors.Errorf("test error"))
+	assert.Error(t, refreshMainCover(irw, uploader, 0, 4.5))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
+	irw.EXPECT().UpdateItem(gomock.Any()).Return(errors.Errorf("test error"))
+	uploader.EXPECT().GetFileForWriting(gomock.Any()).Return(tempfile.Name(), nil)
+	uploader.EXPECT().GetStorageUrl(gomock.Any()).Return("main-cover-url")
+	assert.Error(t, refreshMainCover(irw, uploader, 0, 4.5))
 
 	// error uploading
-	uploader.errorWriting = true
-	assert.Error(t, refreshMainCover(&irw, &uploader, 0, 4.5))
-	uploader.errorWriting = false
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
+	uploader.EXPECT().GetFileForWriting(gomock.Any()).Return(tempfile.Name(), errors.Errorf("test error"))
+	assert.Error(t, refreshMainCover(irw, uploader, 0, 4.5))
 
 	// bad video file
-	irw.UpdateItem(&model.Item{Id: 0, Url: "fsdafsa"})
-	assert.Error(t, refreshMainCover(&irw, &uploader, 0, 4.5))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
+	uploader.EXPECT().GetFileForWriting(gomock.Any()).Return(tempfile.Name(), errors.Errorf("test error"))
+	assert.Error(t, refreshMainCover(irw, uploader, 0, 4.5))
 }

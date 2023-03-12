@@ -8,7 +8,7 @@ import (
 
 func newDirectoryExcluder(directory *model.Directory, tr model.TagReader) (*directoryExcluder, error) {
 	title := directories.DirectoryNameToTag(directory.Path)
-	tag, err := tags.GetChildTag(tr, DIRECTORIES_TAG_ID, title)
+	tag, err := tags.GetChildTag(tr, directories.DIRECTORIES_TAG_ID, title)
 	if err != nil {
 		return nil, err
 	}

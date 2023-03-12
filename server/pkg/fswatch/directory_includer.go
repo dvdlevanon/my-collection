@@ -13,7 +13,7 @@ func newDirectoryIncluder(trustFileExtenssion bool, directory *model.Directory,
 	trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 	irw model.ItemReaderWriter, processor processor.Processor) (*directoryIncluder, error) {
 	title := directories.DirectoryNameToTag(directory.Path)
-	tag, err := tags.GetOrCreateChildTag(trw, DIRECTORIES_TAG_ID, title)
+	tag, err := tags.GetOrCreateChildTag(trw, directories.DIRECTORIES_TAG_ID, title)
 	if err != nil {
 		return nil, err
 	}

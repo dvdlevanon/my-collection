@@ -1,5 +1,7 @@
 package model
 
+//go:generate mockgen -package model -source interfaces.go -destination interfaces_mock.go
+
 type ItemReader interface {
 	GetItem(conds ...interface{}) (*Item, error)
 	GetItems(conds ...interface{}) (*[]Item, error)
@@ -71,4 +73,8 @@ type StorageUploader interface {
 	GetStorageUrl(name string) string
 	GetFileForWriting(name string) (string, error)
 	GetTempFile() string
+}
+
+type DirectoryItemsGetter interface {
+	GetBelongingItems(path string) ([]*Item, error)
 }

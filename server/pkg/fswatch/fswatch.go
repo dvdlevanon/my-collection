@@ -11,14 +11,7 @@ import (
 	"github.com/op/go-logging"
 )
 
-const DIRECTORIES_TAG_ID = uint64(1) // tags-util.js
-
 var logger = logging.MustGetLogger("fswatch")
-
-var directoriesTag = model.Tag{
-	Id:    DIRECTORIES_TAG_ID,
-	Title: "Directories",
-}
 
 type directoryProcessor interface {
 	process() error
@@ -55,7 +48,7 @@ func New(db *db.Database, storage *storage.Storage, processor processor.Processo
 }
 
 func (d *fswatchImpl) Init() error {
-	if err := d.db.CreateOrUpdateTag(&directoriesTag); err != nil {
+	if err := d.db.CreateOrUpdateTag(&directories.DirectoriesTag); err != nil {
 		return err
 	}
 

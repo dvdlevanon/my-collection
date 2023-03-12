@@ -4,35 +4,45 @@ import (
 	"my-collection/server/pkg/model"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRefreshVideoMetadata(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	// init mocks
+	item := model.Item{Id: 0, Url: sampleMp4}
+	irw := model.NewMockItemReaderWriter(ctrl)
+
 	// happy path
-	irw := newTestSingleItemReaderWriter(&model.Item{Id: 0, Url: sampleMp4}, false, false)
-	assert.NoError(t, refreshItemMetadata(&irw, 0))
-	updated, _ := irw.GetItem()
-	assert.Equal(t, 5, updated.DurationSeconds)
-	assert.Equal(t, 560, updated.Width)
-	assert.Equal(t, 320, updated.Height)
-	assert.Equal(t, "h264", updated.VideoCodecName)
-	assert.Equal(t, "aac", updated.AudioCodecName)
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
+	irw.EXPECT().UpdateItem(gomock.Any()).Return(nil)
+	assert.NoError(t, refreshItemMetadata(irw, 0))
+	assert.Equal(t, 5, item.DurationSeconds)
+	assert.Equal(t, 560, item.Width)
+	assert.Equal(t, 320, item.Height)
+	assert.Equal(t, "h264", item.VideoCodecName)
+	assert.Equal(t, "aac", item.AudioCodecName)
 
 	// invalid duration
-	irw.UpdateItem(&model.Item{Id: 0, Url: sample3SecondsScreenshotPng})
-	assert.Error(t, refreshItemMetadata(&irw, 0))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&model.Item{Url: sample3SecondsScreenshotPng}, nil)
+	assert.Error(t, refreshItemMetadata(irw, 0))
 
 	// no video
-	irw.UpdateItem(&model.Item{Id: 0, Url: sampleNoVideoMp4})
-	assert.Error(t, refreshItemMetadata(&irw, 0))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&model.Item{Url: sampleNoVideoMp4}, nil)
+	assert.Error(t, refreshItemMetadata(irw, 0))
 
 	// no audio
-	irw.UpdateItem(&model.Item{Id: 0, Url: sampleNoAudioMp4})
-	assert.Error(t, refreshItemMetadata(&irw, 0))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&model.Item{Url: sampleNoAudioMp4}, nil)
+	assert.Error(t, refreshItemMetadata(irw, 0))
 
 	// error getting/updating item
-	irwErrorGet := newTestSingleItemReaderWriter(&model.Item{Id: 0, Url: sampleMp4}, true, false)
-	irwErrorSet := newTestSingleItemReaderWriter(&model.Item{Id: 0, Url: sampleMp4}, true, false)
-	assert.Error(t, refreshItemMetadata(&irwErrorGet, 0))
-	assert.Error(t, refreshItemMetadata(&irwErrorSet, 0))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, errors.Errorf("test error"))
+	assert.Error(t, refreshItemMetadata(irw, 0))
+	irw.EXPECT().UpdateItem(gomock.Any()).Return(errors.Errorf("test error"))
+	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
+	assert.Error(t, refreshItemMetadata(irw, 0))
 }
