@@ -131,3 +131,24 @@ func TestCompareDirectoryMovedToInnerDirectory(t *testing.T) {
 	}
 	assert.True(t, found)
 }
+
+func TestCompareDirectoryMovedToOuterDirectory(t *testing.T) {
+	diff := skeleton(t, func(rootDir string) {
+		assert.NoError(t, os.Rename(filepath.Join(rootDir, "1", "2", "3", "4"), filepath.Join(rootDir, "1", "2", "4")))
+		assert.NoError(t, os.Remove(filepath.Join(rootDir, "1", "2", "3")))
+		assert.NoError(t, os.Remove(filepath.Join(rootDir, "1", "2", "3.2")))
+		assert.NoError(t, os.Remove(filepath.Join(rootDir, "1", "2", "3.1")))
+	})
+	assert.Equal(t, 7, len(diff.Changes))
+	found := false
+	for _, change := range diff.Changes {
+		if change.ChangeType != DIRECTORY_MOVED {
+			continue
+		}
+		found = true
+		assert.Equal(t, ChangeType(DIRECTORY_MOVED), change.ChangeType)
+		assert.Equal(t, "1/2/3/4", change.Path1)
+		assert.Equal(t, "1/2/4", change.Path2)
+	}
+	assert.True(t, found)
+}
