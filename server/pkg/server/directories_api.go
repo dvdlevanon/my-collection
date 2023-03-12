@@ -43,7 +43,7 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 		return
 	}
 
-	s.fswatch.DirectoryChanged(&directory)
+	s.fswatch.DirectoryChanged(directory.Path)
 	c.Status(http.StatusOK)
 }
 
@@ -59,12 +59,12 @@ func (s *Server) SetDirectoryTags(c *gin.Context) {
 		return
 	}
 
-	if err = directories.SetDirectoryTags(s.db, &directory); err != nil {
+	if err = directories.UpdateDirectoryTags(s.db, &directory); err != nil {
 		s.handleError(c, err)
 		return
 	}
 
-	s.fswatch.DirectoryChanged(&directory)
+	s.fswatch.DirectoryChanged(directory.Path)
 	c.Status(http.StatusOK)
 }
 
@@ -86,6 +86,6 @@ func (s *Server) excludeDirectory(c *gin.Context) {
 		return
 	}
 
-	s.fswatch.DirectoryExcluded(directoryPath)
+	s.fswatch.DirectoryChanged(directoryPath)
 	c.Status(http.StatusOK)
 }

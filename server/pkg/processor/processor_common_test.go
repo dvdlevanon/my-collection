@@ -28,6 +28,14 @@ type testSingleItemReaderWriter struct {
 	errorSet bool
 }
 
+func (t *testSingleItemReaderWriter) GetAllItems() (*[]model.Item, error)                 { return nil, nil }
+func (t *testSingleItemReaderWriter) CreateOrUpdateItem(item *model.Item) error           { return nil }
+func (t *testSingleItemReaderWriter) RemoveItem(itemId uint64) error                      { return nil }
+func (t *testSingleItemReaderWriter) RemoveTagFromItem(itemId uint64, tagId uint64) error { return nil }
+func (t *testSingleItemReaderWriter) GetItems(conds ...interface{}) (*[]model.Item, error) {
+	return nil, nil
+}
+
 func (t *testSingleItemReaderWriter) GetItem(conds ...interface{}) (*model.Item, error) {
 	if t.errorGet {
 		return nil, errors.Errorf("test error")

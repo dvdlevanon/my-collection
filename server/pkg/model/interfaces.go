@@ -14,8 +14,8 @@ type ItemWriter interface {
 }
 
 type ItemReaderWriter interface {
-	GetItem(conds ...interface{}) (*Item, error)
-	UpdateItem(item *Item) error
+	ItemReader
+	ItemWriter
 }
 
 type TagReader interface {
@@ -51,15 +51,15 @@ type TagAnnotationReaderWriter interface {
 }
 
 type DirectoryReader interface {
-	CreateOrUpdateDirectory(directory *Directory) error
-	RemoveDirectory(path string) error
-	RemoveTagFromDirectory(direcotryPath string, tagId uint64) error
-}
-
-type DirectoryWriter interface {
 	GetDirectory(conds ...interface{}) (*Directory, error)
 	GetDirectories(conds ...interface{}) (*[]Directory, error)
 	GetAllDirectories() (*[]Directory, error)
+}
+
+type DirectoryWriter interface {
+	CreateOrUpdateDirectory(directory *Directory) error
+	RemoveDirectory(path string) error
+	RemoveTagFromDirectory(direcotryPath string, tagId uint64) error
 }
 
 type DirectoryReaderWriter interface {
