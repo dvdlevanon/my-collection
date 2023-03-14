@@ -21,7 +21,7 @@ func buildTestDirectoryReader(ctrl *gomock.Controller, additionalDirs ...model.D
 	return dr
 }
 
-func buildTestDirectoryItemsGetter(ctrl *gomock.Controller) model.DirectoryItemsGetter {
+func buildTestDirectoryItemsGetter(ctrl *gomock.Controller) *model.MockDirectoryItemsGetter {
 	dig := model.NewMockDirectoryItemsGetter(ctrl)
 	dig.EXPECT().GetBelongingItems("1").Return(&[]model.Item{}, nil)
 	dig.EXPECT().GetBelongingItems("1/2").Return(&[]model.Item{

@@ -67,14 +67,34 @@ func handleError(err error) {
 func (d *fswatchImpl) watchFilesystemChanges() {
 	for {
 		select {
-		case path := <-d.changeChannel:
-			logger.Infof("Directory changed %s", path)
-			d.syncDirectory(path)
+		case <-d.changeChannel:
+			// d.syncDirectory(path)
+			d.sync()
 		case <-time.After(60 * time.Second):
-			d.periodicScan()
+			// d.periodicScan()
+			d.sync()
 		}
 	}
 }
+
+func (d *fswatchImpl) sync() {
+	// newFssync()
+}
+
+// stale:
+//	remove stale items
+//	remove stale dirs
+//
+// diff:
+//	for every added dir - add excluded
+//	for every removed dir - remove dir + items
+//	for every moved dir - change path + update directory tag
+// 	for every added file - add file
+//	for every removed file - remove file
+// 	for every moved file - remove from old, add to new tag + update its path
+//
+// for every included directory:
+// 	sync concrete tags
 
 func (d *fswatchImpl) periodicScan() {
 	// TODO: Get all directories path instead of full directories
