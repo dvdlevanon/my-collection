@@ -23,13 +23,13 @@ func buildTestDirectoryReader(ctrl *gomock.Controller, additionalDirs ...model.D
 
 func buildTestDirectoryItemsGetter(ctrl *gomock.Controller) model.DirectoryItemsGetter {
 	dig := model.NewMockDirectoryItemsGetter(ctrl)
-	dig.EXPECT().GetBelongingItems("1").Return([]*model.Item{}, nil)
-	dig.EXPECT().GetBelongingItems("1/2").Return([]*model.Item{
+	dig.EXPECT().GetBelongingItems("1").Return(&[]model.Item{}, nil)
+	dig.EXPECT().GetBelongingItems("1/2").Return(&[]model.Item{
 		{Title: "file2-1"},
 	}, nil)
-	dig.EXPECT().GetBelongingItems("1/2/3.1").Return([]*model.Item{}, nil)
-	dig.EXPECT().GetBelongingItems("1/2/3.2").Return([]*model.Item{}, nil)
-	dig.EXPECT().GetBelongingItems("1/2/3/4").Return([]*model.Item{
+	dig.EXPECT().GetBelongingItems("1/2/3.1").Return(&[]model.Item{}, nil)
+	dig.EXPECT().GetBelongingItems("1/2/3.2").Return(&[]model.Item{}, nil)
+	dig.EXPECT().GetBelongingItems("1/2/3/4").Return(&[]model.Item{
 		{Title: "file4-1"},
 		{Title: "file4-2"},
 		{Title: "file4-3"},

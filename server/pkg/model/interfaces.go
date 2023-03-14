@@ -76,5 +76,5 @@ type StorageUploader interface {
 }
 
 type DirectoryItemsGetter interface {
-	GetBelongingItems(path string) ([]*Item, error)
+	GetBelongingItems(path string) (*[]Item, error)
 }

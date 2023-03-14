@@ -3,7 +3,6 @@ package directorytree
 import (
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
-	"my-collection/server/pkg/relativasor"
 	"os"
 	"strings"
 )
@@ -14,7 +13,7 @@ func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*Dir
 		return nil, err
 	}
 
-	root := createDirectoryNode(nil, relativasor.GetAbsoluteFile(""))
+	root := createDirectoryNode(nil, "")
 	for _, dir := range *dirs {
 		child := root.getOrCreateChild(dir.Path)
 		child.Excluded = directories.IsExcluded(&dir)
@@ -67,7 +66,7 @@ func (dn *DirectoryNode) readFilesFromDb(dig model.DirectoryItemsGetter) error {
 		return err
 	}
 
-	for _, item := range items {
+	for _, item := range *items {
 		dn.Files = append(dn.Files, createFileNode(dn, item.Title))
 	}
 

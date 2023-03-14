@@ -13,6 +13,7 @@ var logger = logging.MustGetLogger("utils")
 
 func IsVideo(trustFileExtenssion bool, path string) bool {
 	if trustFileExtenssion {
+		path = strings.ToLower(path)
 		return strings.HasSuffix(path, ".avi") ||
 			strings.HasSuffix(path, ".mkv") ||
 			strings.HasSuffix(path, ".mpg") ||

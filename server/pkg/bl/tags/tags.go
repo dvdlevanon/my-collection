@@ -16,6 +16,11 @@ func GetItems(ir model.ItemReader, tag *model.Tag) (*[]model.Item, error) {
 		itemIds = append(itemIds, item.Id)
 	}
 
+	if len(itemIds) == 0 {
+		result := make([]model.Item, 0)
+		return &result, nil
+	}
+
 	items, err := ir.GetItems(itemIds)
 	if err != nil {
 		logger.Errorf("Error getting items of tag %t", err)

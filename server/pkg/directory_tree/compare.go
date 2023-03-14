@@ -1,87 +1,56 @@
 package directorytree
 
 import (
-	"math"
 	"path/filepath"
 )
 
-type Diff struct {
-	Changes []Change
-}
-
-type ChangeType int
-
-const (
-	DIRECTORY_ADDED = iota
-	DIRECTORY_REMOVED
-	DIRECTORY_MOVED
-	FILE_ADDED
-	FILE_REMOVED
-	FILE_MOVED
-)
-
-type Change struct {
-	Path1      string
-	Path2      string
-	ChangeType ChangeType
-}
-
 func Compare(fs *DirectoryNode, db *DirectoryNode) *Diff {
-	rawChanges := compareDirectory(fs, db)
+	rawChanges := newIndexedChanges()
+	compareDirectory(fs, db, rawChanges)
 	changes := detectMoves(rawChanges)
+	changes = append(changes, rawChanges.toChanges()...)
+	changes = removeExcluded(db, changes)
 	return &Diff{Changes: changes}
 }
 
-func compareDirectory(fs *DirectoryNode, db *DirectoryNode) []Change {
-	changes := make([]Change, 0)
-
+func compareDirectory(fs *DirectoryNode, db *DirectoryNode, changes *indexedChanges) {
 	bothDirs, fsDirsOnly, dbDirsOnly := compareSubDirectories(fs, db)
-	changes = append(changes, createDirsChanges(fsDirsOnly, dbDirsOnly)...)
+	createDirsChanges(fsDirsOnly, dbDirsOnly, changes)
 
 	fsFilesOnly, dbFilesOnly := compareFiles(fs, db)
-	changes = append(changes, createFilesChanges(fsFilesOnly, dbFilesOnly)...)
+	createFilesChanges(fsFilesOnly, dbFilesOnly, changes)
 
 	for _, dir := range bothDirs {
-		changes = append(changes, compareDirectory(dir[0], dir[1])...)
+		compareDirectory(dir[0], dir[1], changes)
 	}
 
 	for _, dir := range fsDirsOnly {
-		changes = append(changes, compareDirectory(dir, nil)...)
+		compareDirectory(dir, nil, changes)
 	}
 
 	for _, dir := range dbDirsOnly {
-		changes = append(changes, compareDirectory(nil, dir)...)
+		compareDirectory(nil, dir, changes)
 	}
-
-	return changes
 }
 
-func createDirsChanges(fsDirsOnly []*DirectoryNode, dbDirsOnly []*DirectoryNode) []Change {
-	changes := make([]Change, 0)
-
+func createDirsChanges(fsDirsOnly []*DirectoryNode, dbDirsOnly []*DirectoryNode, changes *indexedChanges) {
 	for _, dir := range fsDirsOnly {
-		changes = append(changes, Change{Path1: dir.getPath(), ChangeType: DIRECTORY_ADDED})
+		changes.dirAdded(dir.getPath())
 	}
 
 	for _, dir := range dbDirsOnly {
-		changes = append(changes, Change{Path1: dir.getPath(), ChangeType: DIRECTORY_REMOVED})
+		changes.dirRemoved(dir.getPath())
 	}
-
-	return changes
 }
 
-func createFilesChanges(fsFilesOnly []*FileNode, dbFilesOnly []*FileNode) []Change {
-	changes := make([]Change, 0)
-
+func createFilesChanges(fsFilesOnly []*FileNode, dbFilesOnly []*FileNode, changes *indexedChanges) {
 	for _, file := range fsFilesOnly {
-		changes = append(changes, Change{Path1: file.getPath(), ChangeType: FILE_ADDED})
+		changes.fileAdded(file.getPath())
 	}
 
 	for _, file := range dbFilesOnly {
-		changes = append(changes, Change{Path1: file.getPath(), ChangeType: FILE_REMOVED})
+		changes.fileRemoved(file.getPath())
 	}
-
-	return changes
 }
 
 func compareSubDirectories(fs *DirectoryNode, db *DirectoryNode) ([][]*DirectoryNode, []*DirectoryNode, []*DirectoryNode) {
@@ -157,7 +126,54 @@ outDb:
 	return fsOnly, dbOnly
 }
 
-func detectMoves(changes []Change) []Change {
+func detectMoves(rawChanges *indexedChanges) []Change {
+	changes := make([]Change, 0)
+	changed := false
+
+	for filename, l := range rawChanges.removedDirs {
+		for _, p := range l {
+			changes, changed = detectDirectoryMove(changes, rawChanges, p)
+			if changed {
+				rawChanges.removedDirs[filename] = make([]string, 0)
+			}
+		}
+	}
+
+	for filename, l := range rawChanges.removedFiles {
+		for _, p := range l {
+			changes, changed = detectFileMove(changes, rawChanges, p)
+			if changed {
+				rawChanges.removedFiles[filename] = make([]string, 0)
+			}
+		}
+	}
+
+	return changes
+}
+
+func detectDirectoryMove(changes []Change, rawChanges *indexedChanges, path string) ([]Change, bool) {
+	filename := filepath.Base(path)
+	l, ok := rawChanges.addedDirs[filename]
+	if !ok || len(l) == 0 {
+		return changes, false
+	}
+
+	rawChanges.addedDirs[filename] = make([]string, 0)
+	return append(changes, Change{Path1: path, Path2: l[0], ChangeType: DIRECTORY_MOVED}), true
+}
+
+func detectFileMove(changes []Change, rawChanges *indexedChanges, path string) ([]Change, bool) {
+	filename := filepath.Base(path)
+	l, ok := rawChanges.addedFiles[filename]
+	if !ok || len(l) == 0 {
+		return changes, false
+	}
+
+	rawChanges.addedFiles[filename] = make([]string, 0)
+	return append(changes, Change{Path1: path, Path2: l[0], ChangeType: FILE_MOVED}), true
+}
+
+func removeExcluded(db *DirectoryNode, changes []Change) []Change {
 	counter := 0
 	for {
 		if counter >= len(changes) {
@@ -165,64 +181,16 @@ func detectMoves(changes []Change) []Change {
 		}
 
 		change := changes[counter]
-		changed := false
-		switch change.ChangeType {
-		case DIRECTORY_REMOVED:
-			changed, changes = detectDirectoryMove(changes, counter)
-		case FILE_REMOVED:
-			changed, changes = detectFileMove(changes, counter)
-		}
-
-		if !changed {
+		if change.ChangeType != DIRECTORY_ADDED && change.ChangeType != FILE_ADDED {
 			counter = counter + 1
-		} else {
-			if counter > 0 {
-				counter = counter - 1
-			}
+			continue
 		}
+
+		if db.isExcluded(change.Path1) {
+			changes = append(changes[:counter], changes[counter+1:]...)
+			continue
+		}
+
+		counter = counter + 1
 	}
-}
-
-func detectDirectoryMove(changes []Change, i int) (bool, []Change) {
-	for curI, cur := range changes {
-		if cur.ChangeType != DIRECTORY_ADDED {
-			continue
-		}
-
-		if filepath.Base(changes[i].Path1) != filepath.Base(cur.Path1) {
-			continue
-		}
-
-		moveChange := Change{Path1: changes[i].Path1, Path2: changes[curI].Path1, ChangeType: DIRECTORY_MOVED}
-		first := int(math.Max(float64(i), float64(curI)))
-		second := int(math.Min(float64(i), float64(curI)))
-		changes = append(changes[:first], changes[first+1:]...)
-		changes = append(changes[:second], changes[second+1:]...)
-		changes = append(changes, moveChange)
-		return true, changes
-	}
-
-	return false, changes
-}
-
-func detectFileMove(changes []Change, i int) (bool, []Change) {
-	for curI, cur := range changes {
-		if cur.ChangeType != FILE_ADDED {
-			continue
-		}
-
-		if filepath.Base(changes[i].Path1) != filepath.Base(cur.Path1) {
-			continue
-		}
-
-		moveChange := Change{Path1: changes[i].Path1, Path2: changes[curI].Path1, ChangeType: FILE_MOVED}
-		first := int(math.Max(float64(i), float64(curI)))
-		second := int(math.Min(float64(i), float64(curI)))
-		changes = append(changes[:first], changes[first+1:]...)
-		changes = append(changes[:second], changes[second+1:]...)
-		changes = append(changes, moveChange)
-		return true, changes
-	}
-
-	return false, changes
 }

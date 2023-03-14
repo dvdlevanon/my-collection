@@ -1098,10 +1098,10 @@ func (m *MockDirectoryItemsGetter) EXPECT() *MockDirectoryItemsGetterMockRecorde
 }
 
 // GetBelongingItems mocks base method.
-func (m *MockDirectoryItemsGetter) GetBelongingItems(path string) ([]*Item, error) {
+func (m *MockDirectoryItemsGetter) GetBelongingItems(path string) (*[]Item, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "GetBelongingItems", path)
-	ret0, _ := ret[0].([]*Item)
+	ret0, _ := ret[0].(*[]Item)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
