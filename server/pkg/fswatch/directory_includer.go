@@ -18,8 +18,7 @@ func newDirectoryIncluder(trustFileExtenssion bool, directory *model.Directory,
 		return nil, err
 	}
 
-	directoryTags := directories.BuildDirectoryTags(directory, title)
-	concreteTags, err := tags.GetOrCreateTags(trw, directoryTags)
+	concreteTags, err := tags.GetOrCreateTags(trw, directories.BuildDirectoryTags(directory))
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +89,7 @@ func (d *directoryIncluder) handleChildDirectory(path string) error {
 }
 
 func (d *directoryIncluder) handleChildFile(path string) error {
-	newItem, err := items.BuildItemFromPath(path, d.directory.Path)
+	newItem, err := items.BuildItemFromPath(path)
 	if err != nil {
 		return err
 	}

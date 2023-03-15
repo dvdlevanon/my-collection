@@ -7,10 +7,10 @@ import (
 func Compare(fs *DirectoryNode, db *DirectoryNode) *Diff {
 	rawChanges := newIndexedChanges()
 	compareDirectory(fs, db, rawChanges)
-	changes := detectMoves(rawChanges)
-	changes = append(changes, rawChanges.toChanges()...)
-	changes = removeExcluded(db, changes)
-	return &Diff{Changes: changes}
+	diff := detectMoves(rawChanges)
+	rawChanges.addToDiff(diff)
+	removeExcluded(db, diff)
+	return diff
 }
 
 func compareDirectory(fs *DirectoryNode, db *DirectoryNode, changes *indexedChanges) {
@@ -126,13 +126,13 @@ outDb:
 	return fsOnly, dbOnly
 }
 
-func detectMoves(rawChanges *indexedChanges) []Change {
-	changes := make([]Change, 0)
+func detectMoves(rawChanges *indexedChanges) *Diff {
+	diff := newDiff()
 	changed := false
 
 	for filename, l := range rawChanges.removedDirs {
 		for _, p := range l {
-			changes, changed = detectDirectoryMove(changes, rawChanges, p)
+			changed = detectDirectoryMove(diff, rawChanges, p)
 			if changed {
 				rawChanges.removedDirs[filename] = make([]string, 0)
 			}
@@ -141,39 +141,46 @@ func detectMoves(rawChanges *indexedChanges) []Change {
 
 	for filename, l := range rawChanges.removedFiles {
 		for _, p := range l {
-			changes, changed = detectFileMove(changes, rawChanges, p)
+			changed = detectFileMove(diff, rawChanges, p)
 			if changed {
 				rawChanges.removedFiles[filename] = make([]string, 0)
 			}
 		}
 	}
 
-	return changes
+	return diff
 }
 
-func detectDirectoryMove(changes []Change, rawChanges *indexedChanges, path string) ([]Change, bool) {
+func detectDirectoryMove(diff *Diff, rawChanges *indexedChanges, path string) bool {
 	filename := filepath.Base(path)
 	l, ok := rawChanges.addedDirs[filename]
 	if !ok || len(l) == 0 {
-		return changes, false
+		return false
 	}
 
 	rawChanges.addedDirs[filename] = make([]string, 0)
-	return append(changes, Change{Path1: path, Path2: l[0], ChangeType: DIRECTORY_MOVED}), true
+	diff.MovedDirectories = append(diff.MovedDirectories, Change{Path1: path, Path2: l[0], ChangeType: DIRECTORY_MOVED})
+	return true
 }
 
-func detectFileMove(changes []Change, rawChanges *indexedChanges, path string) ([]Change, bool) {
+func detectFileMove(diff *Diff, rawChanges *indexedChanges, path string) bool {
 	filename := filepath.Base(path)
 	l, ok := rawChanges.addedFiles[filename]
 	if !ok || len(l) == 0 {
-		return changes, false
+		return false
 	}
 
 	rawChanges.addedFiles[filename] = make([]string, 0)
-	return append(changes, Change{Path1: path, Path2: l[0], ChangeType: FILE_MOVED}), true
+	diff.MovedFiles = append(diff.MovedFiles, Change{Path1: path, Path2: l[0], ChangeType: FILE_MOVED})
+	return true
 }
 
-func removeExcluded(db *DirectoryNode, changes []Change) []Change {
+func removeExcluded(db *DirectoryNode, diff *Diff) {
+	diff.AddedDirectories = removeExcludedFromChanges(db, diff.AddedDirectories)
+	diff.AddedFiles = removeExcludedFromChanges(db, diff.AddedFiles)
+}
+
+func removeExcludedFromChanges(db *DirectoryNode, changes []Change) []Change {
 	counter := 0
 	for {
 		if counter >= len(changes) {
@@ -181,11 +188,6 @@ func removeExcluded(db *DirectoryNode, changes []Change) []Change {
 		}
 
 		change := changes[counter]
-		if change.ChangeType != DIRECTORY_ADDED && change.ChangeType != FILE_ADDED {
-			counter = counter + 1
-			continue
-		}
-
 		if db.isExcluded(change.Path1) {
 			changes = append(changes[:counter], changes[counter+1:]...)
 			continue

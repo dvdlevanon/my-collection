@@ -141,9 +141,9 @@ func AddExcludedDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string) 
 	return AddExcludedDirectory(drw, dir)
 }
 
-func BuildDirectoryTags(directory *model.Directory, title string) []*model.Tag {
+func BuildDirectoryTags(directory *model.Directory) []*model.Tag {
 	result := make([]*model.Tag, 0)
-
+	title := DirectoryNameToTag(directory.Path)
 	for _, directoryTag := range directory.Tags {
 		result = append(result, &model.Tag{ParentID: &directoryTag.Id, Title: title})
 	}

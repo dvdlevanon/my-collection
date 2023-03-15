@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 )
 
-type filesFilter func(path string) bool
+type FilesFilter func(path string) bool
 
-func BuildFromPath(path string, filter filesFilter) (*DirectoryNode, error) {
+func BuildFromPath(path string, filter FilesFilter) (*DirectoryNode, error) {
 	root, err := buildFromDir(nil, path, filter)
 	if err != nil {
 		return nil, err
@@ -15,7 +15,7 @@ func BuildFromPath(path string, filter filesFilter) (*DirectoryNode, error) {
 	return root, nil
 }
 
-func buildFromDir(parent *DirectoryNode, path string, filter filesFilter) (*DirectoryNode, error) {
+func buildFromDir(parent *DirectoryNode, path string, filter FilesFilter) (*DirectoryNode, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err

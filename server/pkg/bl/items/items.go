@@ -21,7 +21,7 @@ func TitleFromFileName(path string) string {
 	return filepath.Base(path)
 }
 
-func BuildItemFromPath(path string, origin string) (*model.Item, error) {
+func BuildItemFromPath(path string) (*model.Item, error) {
 	title := TitleFromFileName(path)
 	file, err := os.Stat(path)
 	if err != nil {
@@ -31,7 +31,7 @@ func BuildItemFromPath(path string, origin string) (*model.Item, error) {
 
 	return &model.Item{
 		Title:        title,
-		Origin:       origin,
+		Origin:       relativasor.GetRelativePath(filepath.Dir(path)),
 		Url:          path,
 		LastModified: file.ModTime().UnixMilli(),
 	}, nil

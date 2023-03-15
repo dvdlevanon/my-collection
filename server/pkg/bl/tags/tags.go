@@ -97,3 +97,12 @@ func GetOrCreateTags(trw model.TagReaderWriter, tags []*model.Tag) ([]*model.Tag
 
 	return result, nil
 }
+
+func RemoveTagAndItsAssociations(tw model.TagWriter, tag *model.Tag) []error {
+	errors := make([]error, 0)
+	if err := tw.RemoveTag(tag.Id); err != nil {
+		errors = append(errors, err)
+	}
+
+	return errors
+}

@@ -410,6 +410,20 @@ func (mr *MockTagWriterMockRecorder) CreateOrUpdateTag(tag interface{}) *gomock.
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateTag", reflect.TypeOf((*MockTagWriter)(nil).CreateOrUpdateTag), tag)
 }
 
+// RemoveTag mocks base method.
+func (m *MockTagWriter) RemoveTag(tagId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTag", tagId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTag indicates an expected call of RemoveTag.
+func (mr *MockTagWriterMockRecorder) RemoveTag(tagId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockTagWriter)(nil).RemoveTag), tagId)
+}
+
 // UpdateTag mocks base method.
 func (m *MockTagWriter) UpdateTag(tag *Tag) error {
 	m.ctrl.T.Helper()
@@ -512,6 +526,20 @@ func (m *MockTagReaderWriter) GetTags(conds ...interface{}) (*[]Tag, error) {
 func (mr *MockTagReaderWriterMockRecorder) GetTags(conds ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockTagReaderWriter)(nil).GetTags), conds...)
+}
+
+// RemoveTag mocks base method.
+func (m *MockTagReaderWriter) RemoveTag(tagId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTag", tagId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTag indicates an expected call of RemoveTag.
+func (mr *MockTagReaderWriterMockRecorder) RemoveTag(tagId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockTagReaderWriter)(nil).RemoveTag), tagId)
 }
 
 // UpdateTag mocks base method.
@@ -1095,6 +1123,21 @@ func NewMockDirectoryItemsGetter(ctrl *gomock.Controller) *MockDirectoryItemsGet
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockDirectoryItemsGetter) EXPECT() *MockDirectoryItemsGetterMockRecorder {
 	return m.recorder
+}
+
+// GetBelongingItem mocks base method.
+func (m *MockDirectoryItemsGetter) GetBelongingItem(path, filename string) (*Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBelongingItem", path, filename)
+	ret0, _ := ret[0].(*Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBelongingItem indicates an expected call of GetBelongingItem.
+func (mr *MockDirectoryItemsGetterMockRecorder) GetBelongingItem(path, filename interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBelongingItem", reflect.TypeOf((*MockDirectoryItemsGetter)(nil).GetBelongingItem), path, filename)
 }
 
 // GetBelongingItems mocks base method.

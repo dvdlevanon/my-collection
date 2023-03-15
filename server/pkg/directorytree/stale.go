@@ -1,8 +1,8 @@
 package directorytree
 
 type Stale struct {
-	dirs  []string
-	files []string
+	Dirs  []string
+	Files []string
 }
 
 func FindStales(db *DirectoryNode) *Stale {
@@ -22,10 +22,10 @@ func findStale(node *DirectoryNode, result *Stale) {
 }
 
 func addToStale(node *DirectoryNode, result *Stale) {
-	result.dirs = append(result.dirs, node.getPath())
+	result.Dirs = append(result.Dirs, node.getPath())
 
 	for _, file := range node.Files {
-		result.files = append(result.files, file.getPath())
+		result.Files = append(result.Files, file.getPath())
 	}
 
 	for _, child := range node.Children {

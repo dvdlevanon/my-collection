@@ -29,6 +29,7 @@ type TagReader interface {
 type TagWriter interface {
 	CreateOrUpdateTag(tag *Tag) error
 	UpdateTag(tag *Tag) error
+	RemoveTag(tagId uint64) error
 }
 
 type TagReaderWriter interface {
@@ -77,4 +78,18 @@ type StorageUploader interface {
 
 type DirectoryItemsGetter interface {
 	GetBelongingItems(path string) (*[]Item, error)
+	GetBelongingItem(path string, filename string) (*Item, error)
+}
+
+type DirectoryItemsSetter interface {
+	AddBelongingItem(item *Item) error
+}
+
+type DirectoryItemsGetterSetter interface {
+	DirectoryItemsGetter
+	DirectoryItemsSetter
+}
+
+type DirectoryConcreteTagsGetter interface {
+	GetConcreteTags(path string) ([]*Tag, error)
 }

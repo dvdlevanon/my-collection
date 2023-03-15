@@ -31,3 +31,7 @@ func GetAbsoluteFile(url string) string {
 		return filepath.Join(rootDirectory, url)
 	}
 }
+
+func GetRootDirectory() string {
+	return rootDirectory
+}

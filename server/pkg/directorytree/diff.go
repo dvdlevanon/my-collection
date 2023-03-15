@@ -6,8 +6,33 @@ import (
 	"strings"
 )
 
+func newDiff() *Diff {
+	return &Diff{
+		AddedDirectories:   make([]Change, 0),
+		RemovedDirectories: make([]Change, 0),
+		AddedFiles:         make([]Change, 0),
+		RemovedFiles:       make([]Change, 0),
+		MovedDirectories:   make([]Change, 0),
+		MovedFiles:         make([]Change, 0),
+	}
+}
+
 type Diff struct {
-	Changes []Change
+	AddedDirectories   []Change
+	RemovedDirectories []Change
+	AddedFiles         []Change
+	RemovedFiles       []Change
+	MovedDirectories   []Change
+	MovedFiles         []Change
+}
+
+func (d *Diff) ChangesTotal() int {
+	return len(d.AddedDirectories) +
+		len(d.RemovedDirectories) +
+		len(d.AddedFiles) +
+		len(d.RemovedFiles) +
+		len(d.MovedDirectories) +
+		len(d.MovedFiles)
 }
 
 type ChangeType int
@@ -47,14 +72,23 @@ func (c *Change) String() string {
 }
 
 func (d *Diff) String() string {
-	result := strings.Builder{}
+	result := make([]string, 0)
+	result = append(result, d.mapToString(d.AddedDirectories)...)
+	result = append(result, d.mapToString(d.RemovedDirectories)...)
+	result = append(result, d.mapToString(d.AddedFiles)...)
+	result = append(result, d.mapToString(d.RemovedFiles)...)
+	result = append(result, d.mapToString(d.MovedDirectories)...)
+	result = append(result, d.mapToString(d.MovedFiles)...)
+	return strings.Join(result, "\n")
+}
 
-	for _, change := range d.Changes {
-		result.WriteString(change.String())
-		result.WriteByte('\n')
+func (d *Diff) mapToString(changes []Change) []string {
+	strs := make([]string, len(changes))
+	for i, v := range changes {
+		strs[i] = v.String()
 	}
 
-	return result.String()
+	return strs
 }
 
 func newIndexedChanges() *indexedChanges {
@@ -93,12 +127,11 @@ func (i *indexedChanges) fileRemoved(path string) {
 	i.removedFiles[filename] = append(i.removedFiles[filename], path)
 }
 
-func (i *indexedChanges) toChanges() []Change {
-	changes := i.mapToChanges(DIRECTORY_ADDED, i.addedDirs)
-	changes = append(changes, i.mapToChanges(DIRECTORY_REMOVED, i.removedDirs)...)
-	changes = append(changes, i.mapToChanges(FILE_ADDED, i.addedFiles)...)
-	changes = append(changes, i.mapToChanges(FILE_REMOVED, i.removedFiles)...)
-	return changes
+func (i *indexedChanges) addToDiff(diff *Diff) {
+	diff.AddedDirectories = append(diff.AddedDirectories, i.mapToChanges(DIRECTORY_ADDED, i.addedDirs)...)
+	diff.RemovedDirectories = append(diff.RemovedDirectories, i.mapToChanges(DIRECTORY_REMOVED, i.removedDirs)...)
+	diff.AddedFiles = append(diff.AddedFiles, i.mapToChanges(FILE_ADDED, i.addedFiles)...)
+	diff.RemovedFiles = append(diff.RemovedFiles, i.mapToChanges(FILE_REMOVED, i.removedFiles)...)
 }
 
 func (i *indexedChanges) mapToChanges(ct ChangeType, m map[string][]string) []Change {

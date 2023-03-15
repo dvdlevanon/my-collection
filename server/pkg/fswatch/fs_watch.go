@@ -2,10 +2,13 @@ package fswatch
 
 import (
 	"my-collection/server/pkg/bl/directories"
+	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
-	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/processor"
+	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/storage"
+	"my-collection/server/pkg/utils"
 	"time"
 
 	"github.com/op/go-logging"
@@ -77,24 +80,74 @@ func (d *fswatchImpl) watchFilesystemChanges() {
 	}
 }
 
-func (d *fswatchImpl) sync() {
-	// newFssync()
+func (d *fswatchImpl) GetBelongingItems(path string) (*[]model.Item, error) {
+	return newFsDirectory(path).getItems(d.db, d.db)
 }
 
-// stale:
-//	remove stale items
-//	remove stale dirs
-//
-// diff:
-//	for every added dir - add excluded
-//	for every removed dir - remove dir + items
-//	for every moved dir - change path + update directory tag
-// 	for every added file - add file
-//	for every removed file - remove file
-// 	for every moved file - remove from old, add to new tag + update its path
-//
-// for every included directory:
-// 	sync concrete tags
+func (d *fswatchImpl) GetBelongingItem(path string, filename string) (*model.Item, error) {
+	return newFsDirectory(path).getItem(d.db, d.db, filename)
+}
+
+func (d *fswatchImpl) AddBelongingItem(item *model.Item) error {
+	return newFsDirectory(item.Origin).addItem(d.db, d.db, item)
+}
+
+func (d *fswatchImpl) GetConcreteTags(path string) ([]*model.Tag, error) {
+	directory, err := d.db.GetDirectory(path)
+	if err != nil {
+		return nil, err
+	}
+
+	return tags.GetOrCreateTags(d.db, directories.BuildDirectoryTags(directory))
+}
+
+func (g *fswatchImpl) filesFilter(path string) bool {
+	return utils.IsVideo(g.trustFileExtenssion, path)
+}
+
+func (d *fswatchImpl) sync() {
+	fsSync, err := newFsSync(relativasor.GetRootDirectory(), d.filesFilter, d.db, d)
+	if err != nil {
+		handleError(err)
+		return
+	}
+
+	errors := make([]error, 0)
+	errors = append(errors, d.addMissingDirectoryTags()...)
+	errors = append(errors, fsSync.removeStaleItems(d, d.db)...)
+	errors = append(errors, fsSync.removeStaleDirs(d.db, d.db)...)
+	errors = append(errors, fsSync.addMissingDirs(d.db)...)
+	fsSync.addNewFiles(d.db, d, d)
+
+	for _, err := range errors {
+		handleError(err)
+	}
+
+	// fsSync.removeDeletedDirs()
+	// fsSync.removeDeletedFiles()
+	// fsSync.renameDirs()
+	// fsSync.renameFiles()
+
+	// syncConcreteTags()
+}
+
+func (d *fswatchImpl) addMissingDirectoryTags() []error {
+	errors := make([]error, 0)
+	allDirectories, err := d.db.GetAllDirectories()
+	if err != nil {
+		return append(errors, err)
+	}
+
+	for _, dir := range *allDirectories {
+		title := directories.DirectoryNameToTag(dir.Path)
+		_, err := tags.GetOrCreateChildTag(d.db, directories.DIRECTORIES_TAG_ID, title)
+		if err != nil {
+			errors = append(errors, err)
+		}
+	}
+
+	return errors
+}
 
 func (d *fswatchImpl) periodicScan() {
 	// TODO: Get all directories path instead of full directories
