@@ -1,8 +1,19 @@
 package directorytree
 
+import (
+	"fmt"
+	"strings"
+)
+
 type Stale struct {
 	Dirs  []string
 	Files []string
+}
+
+func (s *Stale) String() string {
+	dirs := fmt.Sprintf("dirs: %s", strings.Join(s.Dirs, "\n\t"))
+	files := fmt.Sprintf("files: %s", strings.Join(s.Files, "\n\t"))
+	return fmt.Sprintf("%s\n%s", dirs, files)
 }
 
 func FindStales(db *DirectoryNode) *Stale {

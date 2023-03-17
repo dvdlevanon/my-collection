@@ -34,6 +34,11 @@ type fsSync struct {
 	diff   *directorytree.Diff
 }
 
+func (f *fsSync) debugPrint() {
+	logger.Infof("Stales: \n%s", f.stales.String())
+	logger.Infof("Diff: \n%s", f.diff.String())
+}
+
 func (f *fsSync) removeStaleItems(dig model.DirectoryItemsGetter, iw model.ItemWriter) []error {
 	errors := make([]error, 0)
 	for _, file := range f.stales.Files {
@@ -118,4 +123,28 @@ func (f *fsSync) handleNewFile(digs model.DirectoryItemsGetterSetter, path strin
 
 	item.Tags = concreteTags
 	return digs.AddBelongingItem(item)
+}
+
+func (f *fsSync) removeDeletedDirs() []error {
+	errors := make([]error, 0)
+
+	return errors
+}
+
+func (f *fsSync) removeDeletedFiles() []error {
+	errors := make([]error, 0)
+
+	return errors
+}
+
+func (f *fsSync) renameDirs() []error {
+	errors := make([]error, 0)
+
+	return errors
+}
+
+func (f *fsSync) renameFiles() []error {
+	errors := make([]error, 0)
+
+	return errors
 }

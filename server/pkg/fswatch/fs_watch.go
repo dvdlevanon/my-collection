@@ -112,21 +112,21 @@ func (d *fswatchImpl) sync() {
 		return
 	}
 
+	fsSync.debugPrint()
 	errors := make([]error, 0)
 	errors = append(errors, d.addMissingDirectoryTags()...)
 	errors = append(errors, fsSync.removeStaleItems(d, d.db)...)
 	errors = append(errors, fsSync.removeStaleDirs(d.db, d.db)...)
 	errors = append(errors, fsSync.addMissingDirs(d.db)...)
+	errors = append(errors, fsSync.removeDeletedDirs()...)
+	errors = append(errors, fsSync.removeDeletedFiles()...)
+	errors = append(errors, fsSync.renameDirs()...)
+	errors = append(errors, fsSync.renameFiles()...)
 	fsSync.addNewFiles(d.db, d, d)
 
 	for _, err := range errors {
 		handleError(err)
 	}
-
-	// fsSync.removeDeletedDirs()
-	// fsSync.removeDeletedFiles()
-	// fsSync.renameDirs()
-	// fsSync.renameFiles()
 
 	// syncConcreteTags()
 }
