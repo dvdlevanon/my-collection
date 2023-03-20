@@ -135,16 +135,16 @@ func DirectoryExists(dr model.DirectoryReader, path string) (bool, error) {
 	return true, nil
 }
 
-func AddExcludedDirectory(dw model.DirectoryWriter, dir string) error {
+func AddDirectory(dw model.DirectoryWriter, dir string, excluded bool) error {
 	newDirectory := &model.Directory{
 		Path:     NormalizeDirectoryPath(dir),
-		Excluded: pointer.Bool(true),
+		Excluded: pointer.Bool(excluded),
 	}
 
 	return dw.CreateOrUpdateDirectory(newDirectory)
 }
 
-func AddExcludedDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string) error {
+func AddDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string, excluded bool) error {
 	exists, err := DirectoryExists(drw, dir)
 	if err != nil {
 		return err
@@ -154,7 +154,7 @@ func AddExcludedDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string) 
 		return nil
 	}
 
-	return AddExcludedDirectory(drw, dir)
+	return AddDirectory(drw, dir, excluded)
 }
 
 func BuildDirectoryTags(directory *model.Directory) []*model.Tag {

@@ -1,14 +1,26 @@
 package relativasor
 
 import (
+	"os"
 	"path/filepath"
 	"strings"
 )
 
 var rootDirectory string
 
-func Init(r string) {
-	rootDirectory = r
+func Init(r string) error {
+	if r != "" {
+		rootDirectory = r
+		return nil
+	}
+
+	path, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+
+	rootDirectory = path
+	return nil
 }
 
 func GetRelativePath(url string) string {

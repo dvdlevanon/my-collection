@@ -26,10 +26,10 @@ func New(rootDirectory string, filename string) (*Database, error) {
 	newLogger := gormlogger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		gormlogger.Config{
-			SlowThreshold:             time.Second,      // Slow SQL threshold
-			LogLevel:                  gormlogger.Error, // Log level
-			IgnoreRecordNotFoundError: true,             // Ignore ErrRecordNotFound error for logger
-			Colorful:                  false,            // Disable color
+			SlowThreshold:             time.Second,       // Slow SQL threshold
+			LogLevel:                  gormlogger.Silent, // Log level
+			IgnoreRecordNotFoundError: true,              // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,             // Disable color
 		},
 	)
 	db, err := gorm.Open(sqlite.Open(actualpath), &gorm.Config{

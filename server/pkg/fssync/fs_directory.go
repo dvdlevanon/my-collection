@@ -39,6 +39,18 @@ func (d *FsDirectory) getTag(tr model.TagReader) (*model.Tag, error) {
 	return tag, nil
 }
 
+func (d *FsDirectory) removeItem(tr model.TagReader, iw model.ItemWriter, item *model.Item) error {
+	tag, err := d.getTag(tr)
+	if err != nil {
+		return err
+	}
+	if tag == nil {
+		return errors.Errorf("'directory tag' not found %s", d.getTagTitle())
+	}
+
+	return iw.RemoveTagFromItem(item.Id, tag.Id)
+}
+
 func (d *FsDirectory) addItem(tr model.TagReader, iw model.ItemWriter, item *model.Item) error {
 	tag, err := d.getTag(tr)
 	if err != nil {

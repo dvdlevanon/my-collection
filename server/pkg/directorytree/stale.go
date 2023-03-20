@@ -10,6 +10,10 @@ type Stale struct {
 	Files []string
 }
 
+func (s *Stale) HasChanges() bool {
+	return len(s.Dirs) > 0 || len(s.Files) > 0
+}
+
 func (s *Stale) String() string {
 	dirs := fmt.Sprintf("dirs: %s", strings.Join(s.Dirs, "\n\t"))
 	files := fmt.Sprintf("files: %s", strings.Join(s.Files, "\n\t"))

@@ -36,6 +36,14 @@ func BuildItemFromPath(origin string, path string, flmg model.FileLastModifiedGe
 	}, nil
 }
 
+func UpdateFileLocation(iw model.ItemWriter, item *model.Item, origin string, path string) error {
+	title := TitleFromFileName(path)
+	item.Origin = origin
+	item.Title = title
+	item.Url = filepath.Join(origin, title)
+	return iw.UpdateItem(item)
+}
+
 func TagExists(tags []*model.Tag, tag *model.Tag) bool {
 	for _, t := range tags {
 		if tag.Id == t.Id {
@@ -70,8 +78,11 @@ func HasSingleTag(item *model.Item, tag *model.Tag) bool {
 	return len(item.Tags) == 1 && item.Tags[0].Id == tag.Id
 }
 
-func RemoveItemAndItsAssociations(iw model.ItemWriter, item *model.Item) {
+func RemoveItemAndItsAssociations(iw model.ItemWriter, item *model.Item) []error {
+	errors := make([]error, 0)
 	if err := iw.RemoveItem(item.Id); err != nil {
-		logger.Errorf("Unable to remove item %d - %s", item.Id, err)
+		errors = append(errors, err)
 	}
+
+	return errors
 }

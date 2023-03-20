@@ -1,50 +1,84 @@
 package main
 
-import "fmt"
+import (
+	"flag"
+	"fmt"
+	"my-collection/server/pkg/bl/directories"
+	"my-collection/server/pkg/db"
+	"my-collection/server/pkg/fssync"
+	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
+	"net/http"
+	"time"
 
-func main() {
-	fmt.Print("Done\n")
+	"github.com/op/go-logging"
+	"k8s.io/utils/pointer"
+)
+
+var logger = logging.MustGetLogger("fstester")
+
+var (
+	help          = flag.Bool("help", false, "Print help")
+	rootDirectory = flag.String("root-directory", "", "Server root directory")
+)
+
+func run() error {
+	flag.Parse()
+	if *help {
+		flag.Usage()
+		return nil
+	}
+
+	if err := utils.ConfigureLogger(); err != nil {
+		return err
+	}
+
+	if err := relativasor.Init(*rootDirectory); err != nil {
+		return err
+	}
+
+	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
+
+	db, err := db.New(relativasor.GetRootDirectory(), "fstester.sqlite")
+	if err != nil {
+		return err
+	}
+
+	fs, err := fssync.NewFsManager(db, func(path string) bool { return true }, 1*time.Second)
+	if err != nil {
+		return err
+	}
+
+	rootDir := &model.Directory{
+		Path:     relativasor.GetRootDirectory(),
+		Excluded: pointer.Bool(false),
+	}
+	if err := directories.CreateOrUpdateDirectory(db, rootDir); err != nil {
+		return err
+	}
+
+	go startControlServer(db)
+	fs.Watch()
+	return nil
 }
 
-// package main
+func startControlServer(db *db.Database) {
+	http.HandleFunc("/include", func(w http.ResponseWriter, r *http.Request) {
+		dir := r.URL.Query().Get("dir")
+		utils.LogError(directories.IncludeDirectory(db, dir))
+		fmt.Fprintf(w, "Done %s\n", dir)
+	})
 
-// import (
-// 	"fmt"
-// 	"my-collection/server/pkg/bl/directories"
-// 	"my-collection/server/pkg/db"
-// 	"my-collection/server/pkg/fssync"
-// 	"my-collection/server/pkg/model"
+	http.HandleFunc("/exclude", func(w http.ResponseWriter, r *http.Request) {
+		dir := r.URL.Query().Get("dir")
+		utils.LogError(directories.ExcludeDirectory(db, dir))
+		fmt.Fprintf(w, "Done %s\n", dir)
+	})
 
-// 	"k8s.io/utils/pointer"
-// )
+	go http.ListenAndServe(":9999", nil)
+}
 
-// func fs_tester(db *db.Database) {
-// 	fs, err := fssync.NewFsManager(db, true)
-// 	if err != nil {
-// 		logError(err)
-// 		return
-// 	}
-
-// 	err = directories.CreateOrUpdateDirectory(db, &model.Directory{
-// 		Path:     "/home/david/work/my-projects/my-collection/server",
-// 		Excluded: pointer.Bool(false),
-// 	})
-// 	if err != nil {
-// 		logError(err)
-// 		return
-// 	}
-
-// 	err = directories.IncludeDirectory(db, "output/storage-template/tags-image/none")
-// 	if err != nil {
-// 		logError(err)
-// 		return
-// 	}
-
-// 	err = fs.Sync()
-// 	if err != nil {
-// 		logError(err)
-// 		return
-// 	}
-
-// 	fmt.Printf("Done")
-// }
+func main() {
+	utils.LogError(run())
+}

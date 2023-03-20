@@ -26,6 +26,15 @@ type Diff struct {
 	MovedFiles         []Change
 }
 
+func (s *Diff) HasChanges() bool {
+	return len(s.AddedDirectories) > 0 ||
+		len(s.RemovedDirectories) > 0 ||
+		len(s.AddedFiles) > 0 ||
+		len(s.RemovedFiles) > 0 ||
+		len(s.MovedDirectories) > 0 ||
+		len(s.MovedFiles) > 0
+}
+
 func (d *Diff) ChangesTotal() int {
 	return len(d.AddedDirectories) +
 		len(d.RemovedDirectories) +
@@ -73,16 +82,16 @@ func (c *Change) String() string {
 
 func (d *Diff) String() string {
 	result := make([]string, 0)
-	result = append(result, d.mapToString(d.AddedDirectories)...)
-	result = append(result, d.mapToString(d.RemovedDirectories)...)
-	result = append(result, d.mapToString(d.AddedFiles)...)
-	result = append(result, d.mapToString(d.RemovedFiles)...)
-	result = append(result, d.mapToString(d.MovedDirectories)...)
-	result = append(result, d.mapToString(d.MovedFiles)...)
+	result = append(result, d.ChangesToString(d.AddedDirectories)...)
+	result = append(result, d.ChangesToString(d.RemovedDirectories)...)
+	result = append(result, d.ChangesToString(d.AddedFiles)...)
+	result = append(result, d.ChangesToString(d.RemovedFiles)...)
+	result = append(result, d.ChangesToString(d.MovedDirectories)...)
+	result = append(result, d.ChangesToString(d.MovedFiles)...)
 	return strings.Join(result, "\n")
 }
 
-func (d *Diff) mapToString(changes []Change) []string {
+func (d *Diff) ChangesToString(changes []Change) []string {
 	strs := make([]string, len(changes))
 	for i, v := range changes {
 		strs[i] = v.String()

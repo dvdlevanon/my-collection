@@ -9,13 +9,13 @@ import (
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
 	"my-collection/server/pkg/utils"
-	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("main")
+var logger = logging.MustGetLogger("mycollection")
 
 var (
 	help          = flag.Bool("help", false, "Print help")
@@ -23,32 +23,8 @@ var (
 	listenAddress = flag.String("address", ":8080", "Server listen address")
 )
 
-func configureLogger() error {
-	logFormat := `[%{time:2006-01-02 15:04:05.000}] %{color}%{level:-7s}%{color:reset} %{message} [%{module} - %{shortfile}]`
-	formatter, err := logging.NewStringFormatter(logFormat)
-	if err != nil {
-		return err
-	}
-
-	logging.SetBackend(logging.NewLogBackend(os.Stdout, "", 0))
-	logging.SetFormatter(formatter)
-
-	logger.Debugf("Logger initialized with format %v", logFormat)
-	return nil
-}
-
-func getRootDirectory() (string, error) {
-	if *rootDirectory != "" {
-		return *rootDirectory, nil
-	}
-
-	path, err := os.Getwd()
-
-	if err != nil {
-		return "", err
-	}
-
-	return path, nil
+func filesFilter(path string) bool {
+	return utils.IsVideo(true, path)
 }
 
 func run() error {
@@ -58,25 +34,22 @@ func run() error {
 		return nil
 	}
 
-	if err := configureLogger(); err != nil {
+	if err := utils.ConfigureLogger(); err != nil {
 		return err
 	}
 
-	rootdir, err := getRootDirectory()
+	if err := relativasor.Init(*rootDirectory); err != nil {
+		return err
+	}
+
+	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
+
+	db, err := db.New(relativasor.GetRootDirectory(), "db.sqlite")
 	if err != nil {
 		return err
 	}
 
-	relativasor.Init(rootdir)
-
-	logger.Infof("Root directory is: %s", rootdir)
-
-	db, err := db.New(rootdir, "db.sqlite")
-	if err != nil {
-		return err
-	}
-
-	storage, err := storage.New(filepath.Join(rootdir, ".storage"))
+	storage, err := storage.New(filepath.Join(relativasor.GetRootDirectory(), ".storage"))
 	if err != nil {
 		return err
 	}
@@ -88,7 +61,7 @@ func run() error {
 	processor.Pause()
 	go processor.Run()
 
-	fsManager, err := fssync.NewFsManager(db, true)
+	fsManager, err := fssync.NewFsManager(db, filesFilter, 60*time.Second)
 	if err != nil {
 		return err
 	}

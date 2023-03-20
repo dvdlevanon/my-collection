@@ -4,18 +4,20 @@ import (
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/db"
+	"my-collection/server/pkg/directorytree"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/utils"
 	"os"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 )
 
 var logger = logging.MustGetLogger("fsmanager")
 
-func NewFsManager(db *db.Database, trustFileExtenssion bool) (*FsManager, error) {
+func NewFsManager(db *db.Database, filesFilter directorytree.FilesFilter, periodicCheckDuration time.Duration) (*FsManager, error) {
 	_, err := db.GetTag(directories.DirectoriesTag)
 	if err != nil {
 		if err := db.CreateOrUpdateTag(&directories.DirectoriesTag); err != nil {
@@ -24,16 +26,18 @@ func NewFsManager(db *db.Database, trustFileExtenssion bool) (*FsManager, error)
 	}
 
 	return &FsManager{
-		trustFileExtenssion: trustFileExtenssion,
-		db:                  db,
-		changeChannel:       make(chan string),
+		filesFilter:           filesFilter,
+		periodicCheckDuration: periodicCheckDuration,
+		db:                    db,
+		changeChannel:         make(chan string),
 	}, nil
 }
 
 type FsManager struct {
-	trustFileExtenssion bool
-	db                  *db.Database
-	changeChannel       chan string
+	filesFilter           directorytree.FilesFilter
+	periodicCheckDuration time.Duration
+	db                    *db.Database
+	changeChannel         chan string
 }
 
 func (f *FsManager) Watch() {
@@ -41,14 +45,10 @@ func (f *FsManager) Watch() {
 		select {
 		case <-f.changeChannel:
 			f.Sync()
-		case <-time.After(60 * time.Second):
+		case <-time.After(f.periodicCheckDuration):
 			f.Sync()
 		}
 	}
-}
-
-func (f *FsManager) filesFilter(path string) bool {
-	return utils.IsVideo(f.trustFileExtenssion, path)
 }
 
 func (f *FsManager) DirectoryChanged(path string) {
@@ -79,8 +79,7 @@ func (f *FsManager) GetConcreteTags(path string) ([]*model.Tag, error) {
 func (f *FsManager) GetLastModified(path string) (int64, error) {
 	file, err := os.Stat(path)
 	if err != nil {
-		logger.Errorf("Error getting file stat %s - %s", path, err)
-		return 0, err
+		return 0, errors.Wrap(err, 1)
 	}
 
 	return file.ModTime().UnixMilli(), nil
@@ -95,7 +94,7 @@ func (f *FsManager) Sync() error {
 	errors := fsSync.sync(f.db, f, f, f)
 
 	for _, err := range errors {
-		logger.Errorf("Error processing %s", err)
+		utils.LogError(err)
 	}
 
 	if len(errors) > 0 {
