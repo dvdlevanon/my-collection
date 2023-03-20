@@ -93,3 +93,11 @@ type DirectoryItemsGetterSetter interface {
 type DirectoryConcreteTagsGetter interface {
 	GetConcreteTags(path string) ([]*Tag, error)
 }
+
+type FileLastModifiedGetter interface {
+	GetLastModified(f string) (int64, error)
+}
+
+type DirectoryChangedCallback interface {
+	DirectoryChanged(path string)
+}

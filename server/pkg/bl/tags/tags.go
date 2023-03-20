@@ -52,7 +52,7 @@ func GetOrCreateTag(trw model.TagReaderWriter, tag *model.Tag) (*model.Tag, erro
 		return nil, err
 	}
 
-	if existing != nil {
+	if existing != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return existing, nil
 	}
 

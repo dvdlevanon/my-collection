@@ -33,7 +33,9 @@ func findStale(node *DirectoryNode, result *Stale) {
 }
 
 func addToStale(node *DirectoryNode, result *Stale) {
-	result.Dirs = append(result.Dirs, node.getPath())
+	if node.Parent != nil && node.getRoot().isExcluded(node.Parent.getPath()) {
+		result.Dirs = append(result.Dirs, node.getPath())
+	}
 
 	for _, file := range node.Files {
 		result.Files = append(result.Files, file.getPath())

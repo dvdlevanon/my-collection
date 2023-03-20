@@ -1154,3 +1154,218 @@ func (mr *MockDirectoryItemsGetterMockRecorder) GetBelongingItems(path interface
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBelongingItems", reflect.TypeOf((*MockDirectoryItemsGetter)(nil).GetBelongingItems), path)
 }
+
+// MockDirectoryItemsSetter is a mock of DirectoryItemsSetter interface.
+type MockDirectoryItemsSetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDirectoryItemsSetterMockRecorder
+}
+
+// MockDirectoryItemsSetterMockRecorder is the mock recorder for MockDirectoryItemsSetter.
+type MockDirectoryItemsSetterMockRecorder struct {
+	mock *MockDirectoryItemsSetter
+}
+
+// NewMockDirectoryItemsSetter creates a new mock instance.
+func NewMockDirectoryItemsSetter(ctrl *gomock.Controller) *MockDirectoryItemsSetter {
+	mock := &MockDirectoryItemsSetter{ctrl: ctrl}
+	mock.recorder = &MockDirectoryItemsSetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDirectoryItemsSetter) EXPECT() *MockDirectoryItemsSetterMockRecorder {
+	return m.recorder
+}
+
+// AddBelongingItem mocks base method.
+func (m *MockDirectoryItemsSetter) AddBelongingItem(item *Item) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddBelongingItem", item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddBelongingItem indicates an expected call of AddBelongingItem.
+func (mr *MockDirectoryItemsSetterMockRecorder) AddBelongingItem(item interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBelongingItem", reflect.TypeOf((*MockDirectoryItemsSetter)(nil).AddBelongingItem), item)
+}
+
+// MockDirectoryItemsGetterSetter is a mock of DirectoryItemsGetterSetter interface.
+type MockDirectoryItemsGetterSetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDirectoryItemsGetterSetterMockRecorder
+}
+
+// MockDirectoryItemsGetterSetterMockRecorder is the mock recorder for MockDirectoryItemsGetterSetter.
+type MockDirectoryItemsGetterSetterMockRecorder struct {
+	mock *MockDirectoryItemsGetterSetter
+}
+
+// NewMockDirectoryItemsGetterSetter creates a new mock instance.
+func NewMockDirectoryItemsGetterSetter(ctrl *gomock.Controller) *MockDirectoryItemsGetterSetter {
+	mock := &MockDirectoryItemsGetterSetter{ctrl: ctrl}
+	mock.recorder = &MockDirectoryItemsGetterSetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDirectoryItemsGetterSetter) EXPECT() *MockDirectoryItemsGetterSetterMockRecorder {
+	return m.recorder
+}
+
+// AddBelongingItem mocks base method.
+func (m *MockDirectoryItemsGetterSetter) AddBelongingItem(item *Item) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "AddBelongingItem", item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// AddBelongingItem indicates an expected call of AddBelongingItem.
+func (mr *MockDirectoryItemsGetterSetterMockRecorder) AddBelongingItem(item interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddBelongingItem", reflect.TypeOf((*MockDirectoryItemsGetterSetter)(nil).AddBelongingItem), item)
+}
+
+// GetBelongingItem mocks base method.
+func (m *MockDirectoryItemsGetterSetter) GetBelongingItem(path, filename string) (*Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBelongingItem", path, filename)
+	ret0, _ := ret[0].(*Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBelongingItem indicates an expected call of GetBelongingItem.
+func (mr *MockDirectoryItemsGetterSetterMockRecorder) GetBelongingItem(path, filename interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBelongingItem", reflect.TypeOf((*MockDirectoryItemsGetterSetter)(nil).GetBelongingItem), path, filename)
+}
+
+// GetBelongingItems mocks base method.
+func (m *MockDirectoryItemsGetterSetter) GetBelongingItems(path string) (*[]Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetBelongingItems", path)
+	ret0, _ := ret[0].(*[]Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetBelongingItems indicates an expected call of GetBelongingItems.
+func (mr *MockDirectoryItemsGetterSetterMockRecorder) GetBelongingItems(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBelongingItems", reflect.TypeOf((*MockDirectoryItemsGetterSetter)(nil).GetBelongingItems), path)
+}
+
+// MockDirectoryConcreteTagsGetter is a mock of DirectoryConcreteTagsGetter interface.
+type MockDirectoryConcreteTagsGetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockDirectoryConcreteTagsGetterMockRecorder
+}
+
+// MockDirectoryConcreteTagsGetterMockRecorder is the mock recorder for MockDirectoryConcreteTagsGetter.
+type MockDirectoryConcreteTagsGetterMockRecorder struct {
+	mock *MockDirectoryConcreteTagsGetter
+}
+
+// NewMockDirectoryConcreteTagsGetter creates a new mock instance.
+func NewMockDirectoryConcreteTagsGetter(ctrl *gomock.Controller) *MockDirectoryConcreteTagsGetter {
+	mock := &MockDirectoryConcreteTagsGetter{ctrl: ctrl}
+	mock.recorder = &MockDirectoryConcreteTagsGetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDirectoryConcreteTagsGetter) EXPECT() *MockDirectoryConcreteTagsGetterMockRecorder {
+	return m.recorder
+}
+
+// GetConcreteTags mocks base method.
+func (m *MockDirectoryConcreteTagsGetter) GetConcreteTags(path string) ([]*Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetConcreteTags", path)
+	ret0, _ := ret[0].([]*Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetConcreteTags indicates an expected call of GetConcreteTags.
+func (mr *MockDirectoryConcreteTagsGetterMockRecorder) GetConcreteTags(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConcreteTags", reflect.TypeOf((*MockDirectoryConcreteTagsGetter)(nil).GetConcreteTags), path)
+}
+
+// MockFileLastModifiedGetter is a mock of FileLastModifiedGetter interface.
+type MockFileLastModifiedGetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockFileLastModifiedGetterMockRecorder
+}
+
+// MockFileLastModifiedGetterMockRecorder is the mock recorder for MockFileLastModifiedGetter.
+type MockFileLastModifiedGetterMockRecorder struct {
+	mock *MockFileLastModifiedGetter
+}
+
+// NewMockFileLastModifiedGetter creates a new mock instance.
+func NewMockFileLastModifiedGetter(ctrl *gomock.Controller) *MockFileLastModifiedGetter {
+	mock := &MockFileLastModifiedGetter{ctrl: ctrl}
+	mock.recorder = &MockFileLastModifiedGetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockFileLastModifiedGetter) EXPECT() *MockFileLastModifiedGetterMockRecorder {
+	return m.recorder
+}
+
+// GetLastModified mocks base method.
+func (m *MockFileLastModifiedGetter) GetLastModified(f string) (int64, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetLastModified", f)
+	ret0, _ := ret[0].(int64)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetLastModified indicates an expected call of GetLastModified.
+func (mr *MockFileLastModifiedGetterMockRecorder) GetLastModified(f interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastModified", reflect.TypeOf((*MockFileLastModifiedGetter)(nil).GetLastModified), f)
+}
+
+// MockDirectoryChangedCallback is a mock of DirectoryChangedCallback interface.
+type MockDirectoryChangedCallback struct {
+	ctrl     *gomock.Controller
+	recorder *MockDirectoryChangedCallbackMockRecorder
+}
+
+// MockDirectoryChangedCallbackMockRecorder is the mock recorder for MockDirectoryChangedCallback.
+type MockDirectoryChangedCallbackMockRecorder struct {
+	mock *MockDirectoryChangedCallback
+}
+
+// NewMockDirectoryChangedCallback creates a new mock instance.
+func NewMockDirectoryChangedCallback(ctrl *gomock.Controller) *MockDirectoryChangedCallback {
+	mock := &MockDirectoryChangedCallback{ctrl: ctrl}
+	mock.recorder = &MockDirectoryChangedCallbackMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDirectoryChangedCallback) EXPECT() *MockDirectoryChangedCallbackMockRecorder {
+	return m.recorder
+}
+
+// DirectoryChanged mocks base method.
+func (m *MockDirectoryChangedCallback) DirectoryChanged(path string) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "DirectoryChanged", path)
+}
+
+// DirectoryChanged indicates an expected call of DirectoryChanged.
+func (mr *MockDirectoryChangedCallbackMockRecorder) DirectoryChanged(path interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectoryChanged", reflect.TypeOf((*MockDirectoryChangedCallback)(nil).DirectoryChanged), path)
+}

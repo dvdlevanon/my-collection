@@ -12,11 +12,11 @@ func Init(r string) {
 }
 
 func GetRelativePath(url string) string {
-	if !strings.HasPrefix(url, rootDirectory) {
-		return url
+	if url == "." {
+		return ""
 	}
 
-	if url == rootDirectory {
+	if !strings.HasPrefix(url, rootDirectory) {
 		return url
 	}
 

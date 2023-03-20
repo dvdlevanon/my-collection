@@ -5,12 +5,9 @@ import (
 	"io"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
-	"my-collection/server/pkg/relativasor"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"k8s.io/utils/pointer"
 )
 
 func (s *Server) getDirectories(c *gin.Context) {
@@ -36,14 +33,12 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 		return
 	}
 
-	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
-	directory.Path = relativasor.GetRelativePath(directory.Path)
-	if err = s.db.CreateOrUpdateDirectory(&directory); err != nil {
+	if err = directories.CreateOrUpdateDirectory(s.db, &directory); err != nil {
 		s.handleError(c, err)
 		return
 	}
 
-	s.fswatch.DirectoryChanged(directory.Path)
+	s.dcc.DirectoryChanged(directory.Path)
 	c.Status(http.StatusOK)
 }
 
@@ -64,7 +59,7 @@ func (s *Server) SetDirectoryTags(c *gin.Context) {
 		return
 	}
 
-	s.fswatch.DirectoryChanged(directory.Path)
+	s.dcc.DirectoryChanged(directory.Path)
 	c.Status(http.StatusOK)
 }
 
@@ -86,6 +81,6 @@ func (s *Server) excludeDirectory(c *gin.Context) {
 		return
 	}
 
-	s.fswatch.DirectoryChanged(directoryPath)
+	s.dcc.DirectoryChanged(directoryPath)
 	c.Status(http.StatusOK)
 }

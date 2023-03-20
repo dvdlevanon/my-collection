@@ -15,7 +15,12 @@ func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*Dir
 
 	root := createDirectoryNode(nil, "")
 	for _, dir := range *dirs {
-		child := root.getOrCreateChild(dir.Path)
+		path := dir.Path
+		if path == directories.ROOT_DIRECTORY_PATH {
+			path = ""
+		}
+
+		child := root.getOrCreateChild(path)
 		child.Excluded = directories.IsExcluded(&dir)
 
 		if err := child.readFilesFromDb(dig); err != nil {

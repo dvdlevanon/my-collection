@@ -3,7 +3,7 @@ package main
 import (
 	"flag"
 	"my-collection/server/pkg/db"
-	"my-collection/server/pkg/fswatch"
+	"my-collection/server/pkg/fssync"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
@@ -88,12 +88,13 @@ func run() error {
 	processor.Pause()
 	go processor.Run()
 
-	fswatch := fswatch.New(db, storage, processor)
-	if err = fswatch.Init(); err != nil {
+	fsManager, err := fssync.NewFsManager(db, true)
+	if err != nil {
 		return err
 	}
+	go fsManager.Watch()
 
-	return server.New(db, storage, fswatch, processor).Run(*listenAddress)
+	return server.New(db, storage, fsManager, processor).Run(*listenAddress)
 }
 
 func logError(err error) {

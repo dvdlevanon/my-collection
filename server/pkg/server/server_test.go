@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"my-collection/server/pkg/db"
-	"my-collection/server/pkg/fswatch"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
@@ -15,6 +14,7 @@ import (
 	"os"
 	"testing"
 
+	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/utils/pointer"
 )
@@ -30,7 +30,14 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	storage, err := storage.New("/tmp/root-directory/.storage")
 	assert.NoError(t, err)
 	relativasor.Init("")
-	return New(db, storage, &fswatch.FswatchMock{}, &processor.ProcessorMock{})
+
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	dcc := model.NewMockDirectoryChangedCallback(ctrl)
+	dcc.EXPECT().DirectoryChanged(gomock.Any()).AnyTimes()
+
+	return New(db, storage, dcc, &processor.ProcessorMock{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

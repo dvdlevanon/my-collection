@@ -2,7 +2,6 @@ package server
 
 import (
 	"my-collection/server/pkg/db"
-	"my-collection/server/pkg/fswatch"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/storage"
@@ -23,18 +22,18 @@ type Server struct {
 	db        *db.Database
 	storage   *storage.Storage
 	processor processor.Processor
-	fswatch   fswatch.Fswatch
+	dcc       model.DirectoryChangedCallback
 	push      *push
 }
 
-func New(db *db.Database, storage *storage.Storage, fswatch fswatch.Fswatch, processor processor.Processor) *Server {
+func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback, processor processor.Processor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
 		router:    gin.New(),
 		db:        db,
 		storage:   storage,
-		fswatch:   fswatch,
+		dcc:       dcc,
 		processor: processor,
 	}
 

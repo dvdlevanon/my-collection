@@ -49,6 +49,15 @@ func (dn *DirectoryNode) getPath() string {
 	}
 }
 
+func (dn *DirectoryNode) getRoot() *DirectoryNode {
+	cur := dn
+	for cur.Parent != nil {
+		cur = cur.Parent
+	}
+
+	return cur
+}
+
 func (fn *FileNode) getPath() string {
 	if fn.Parent == nil {
 		return fn.Title
@@ -59,7 +68,7 @@ func (fn *FileNode) getPath() string {
 
 func (dn *DirectoryNode) isExcluded(path string) bool {
 	if path == "" || dn.Excluded {
-		return true
+		return dn.Excluded
 	}
 
 	parts := strings.SplitN(path, string(os.PathSeparator), 2)
@@ -73,6 +82,10 @@ func (dn *DirectoryNode) isExcluded(path string) bool {
 		if child.Title == firstDir {
 			return child.isExcluded(remainingDirs)
 		}
+	}
+
+	if len(parts) > 1 {
+		return true
 	}
 
 	return dn.Excluded

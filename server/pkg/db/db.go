@@ -1,14 +1,18 @@
 package db
 
 import (
+	"log"
 	"my-collection/server/pkg/model"
+	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	gormlogger "gorm.io/gorm/logger"
 )
 
 var logger = logging.MustGetLogger("server")
@@ -19,7 +23,18 @@ type Database struct {
 
 func New(rootDirectory string, filename string) (*Database, error) {
 	actualpath := filepath.Join(rootDirectory, filename)
-	db, err := gorm.Open(sqlite.Open(actualpath), &gorm.Config{})
+	newLogger := gormlogger.New(
+		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
+		gormlogger.Config{
+			SlowThreshold:             time.Second,      // Slow SQL threshold
+			LogLevel:                  gormlogger.Error, // Log level
+			IgnoreRecordNotFoundError: true,             // Ignore ErrRecordNotFound error for logger
+			Colorful:                  false,            // Disable color
+		},
+	)
+	db, err := gorm.Open(sqlite.Open(actualpath), &gorm.Config{
+		Logger: newLogger,
+	})
 
 	if err != nil {
 		return nil, errors.Wrap(err, 0)

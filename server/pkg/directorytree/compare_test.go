@@ -86,7 +86,7 @@ func TestCompareFileAddedToInnerDirectory(t *testing.T) {
 		_, err := os.Create(filepath.Join(rootDir, "1", "2", "completely", "new", "dir", "new-file"))
 		assert.NoError(t, err)
 	}, func(dig *model.MockDirectoryItemsGetter) {})
-	assert.Equal(t, 4, diff.ChangesTotal())
+	assert.Equal(t, 1, diff.ChangesTotal())
 }
 
 func TestCompareFileRemoved(t *testing.T) {
@@ -127,7 +127,7 @@ func TestCompareDirectoryMovedToInnerDirectory(t *testing.T) {
 		assert.NoError(t, os.Remove(filepath.Join(rootDir, "1", "2", "3.2")))
 		assert.NoError(t, os.MkdirAll(filepath.Join(rootDir, "1", "2", "completely", "new", "path", "3.2"), 0755))
 	}, func(dig *model.MockDirectoryItemsGetter) {})
-	assert.Equal(t, 4, diff.ChangesTotal())
+	assert.Equal(t, 2, diff.ChangesTotal())
 	assert.Equal(t, ChangeType(DIRECTORY_MOVED), diff.MovedDirectories[0].ChangeType)
 	assert.Equal(t, "1/2/3.2", diff.MovedDirectories[0].Path1)
 	assert.Equal(t, "1/2/completely/new/path/3.2", diff.MovedDirectories[0].Path2)
@@ -165,4 +165,16 @@ func TestCompareExcluded(t *testing.T) {
 		model.Directory{Path: "1/2/ex/5/6"})
 
 	assert.Equal(t, 0, diff.ChangesTotal())
+}
+
+func TestCompareRootNotExists(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	dr := model.NewMockDirectoryReader(ctrl)
+	dr.EXPECT().GetAllDirectories().Return(&[]model.Directory{}, nil)
+	dbRoot, err := BuildFromDb(dr, model.NewMockDirectoryItemsGetter(ctrl))
+	assert.NoError(t, err)
+	fsRoot, _ := skeleton(t, func(rootDir string) {}, func(dig *model.MockDirectoryItemsGetter) {})
+	diff := Compare(fsRoot, dbRoot)
+	assert.Equal(t, 1, diff.ChangesTotal())
 }

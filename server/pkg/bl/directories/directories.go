@@ -1,6 +1,7 @@
 package directories
 
 import (
+	"errors"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"os"
@@ -12,10 +13,12 @@ import (
 	"github.com/patrickmn/go-cache"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+	"gorm.io/gorm"
 	"k8s.io/utils/pointer"
 )
 
 const DIRECTORIES_TAG_ID = uint64(1) // tags-util.js
+const ROOT_DIRECTORY_PATH = "<root>"
 
 var DirectoriesTag = model.Tag{
 	Id:    DIRECTORIES_TAG_ID,
@@ -44,9 +47,7 @@ func GetAllDirectoriesWithCache(dr model.DirectoryReader) (*[]model.Directory, e
 }
 
 func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
-	path = relativasor.GetRelativePath(path)
-
-	directory, err := drw.GetDirectory(path)
+	directory, err := GetDirectory(drw, path)
 	if err != nil {
 		return err
 	}
@@ -56,6 +57,20 @@ func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
 	}
 
 	directory.Excluded = pointer.Bool(true)
+	return drw.CreateOrUpdateDirectory(directory)
+}
+
+func IncludeDirectory(drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(drw, path)
+	if err != nil {
+		return err
+	}
+
+	if !(*directory.Excluded) {
+		return nil
+	}
+
+	directory.Excluded = pointer.Bool(false)
 	return drw.CreateOrUpdateDirectory(directory)
 }
 
@@ -103,25 +118,26 @@ func UpdateDirectoryTags(drw model.DirectoryReaderWriter, directory *model.Direc
 	return drw.CreateOrUpdateDirectory(directory)
 }
 
+func GetDirectory(dr model.DirectoryReader, path string) (*model.Directory, error) {
+	return dr.GetDirectory("path = ?", NormalizeDirectoryPath(path))
+}
+
 func DirectoryExists(dr model.DirectoryReader, path string) (bool, error) {
-	relativePath := relativasor.GetRelativePath(path)
-	allDirectories, err := GetAllDirectoriesWithCache(dr)
+	_, err := GetDirectory(dr, path)
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return false, nil
+		}
+
 		return false, err
 	}
 
-	for _, dir := range *allDirectories {
-		if dir.Path == relativePath {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	return true, nil
 }
 
 func AddExcludedDirectory(dw model.DirectoryWriter, dir string) error {
 	newDirectory := &model.Directory{
-		Path:     dir,
+		Path:     NormalizeDirectoryPath(dir),
 		Excluded: pointer.Bool(true),
 	}
 
@@ -149,6 +165,22 @@ func BuildDirectoryTags(directory *model.Directory) []*model.Tag {
 	}
 
 	return result
+}
+
+func NormalizeDirectoryPath(path string) string {
+	normalizedPath := relativasor.GetRelativePath(path)
+
+	if normalizedPath == "" {
+		return ROOT_DIRECTORY_PATH
+	}
+
+	return normalizedPath
+}
+
+func CreateOrUpdateDirectory(dw model.DirectoryWriter, directory *model.Directory) error {
+	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
+	directory.Path = NormalizeDirectoryPath(directory.Path)
+	return dw.CreateOrUpdateDirectory(directory)
 }
 
 func StartDirectoryProcessing(dw model.DirectoryWriter, directory *model.Directory) error {

@@ -30,6 +30,6 @@ func TestStale(t *testing.T) {
 
 	stales := FindStales(dbRoot)
 	assert.NotNil(t, stales)
-	assert.Equal(t, 3, len(stales.Dirs))
+	assert.Equal(t, 2, len(stales.Dirs))
 	assert.Equal(t, 1, len(stales.Files))
 }

@@ -21,19 +21,18 @@ func TitleFromFileName(path string) string {
 	return filepath.Base(path)
 }
 
-func BuildItemFromPath(path string) (*model.Item, error) {
+func BuildItemFromPath(origin string, path string, flmg model.FileLastModifiedGetter) (*model.Item, error) {
 	title := TitleFromFileName(path)
-	file, err := os.Stat(path)
+	lastModified, err := flmg.GetLastModified(path)
 	if err != nil {
-		logger.Errorf("Error getting file stat %s - %t", file, err)
 		return nil, err
 	}
 
 	return &model.Item{
 		Title:        title,
-		Origin:       relativasor.GetRelativePath(filepath.Dir(path)),
-		Url:          path,
-		LastModified: file.ModTime().UnixMilli(),
+		Origin:       origin,
+		Url:          filepath.Join(origin, title),
+		LastModified: lastModified,
 	}, nil
 }
 

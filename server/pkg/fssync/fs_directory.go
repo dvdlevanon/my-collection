@@ -1,13 +1,13 @@
-package fswatch
+package fssync
 
 import (
-	"errors"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
 	"path/filepath"
 
+	"github.com/go-errors/errors"
 	"gorm.io/gorm"
 )
 
@@ -21,10 +21,14 @@ type FsDirectory struct {
 	path string
 }
 
-func (d *FsDirectory) getTag(tr model.TagReader) (*model.Tag, error) {
+func (d *FsDirectory) getTagTitle() string {
 	name := filepath.Base(d.path)
 	title := directories.DirectoryNameToTag(name)
-	tag, err := tags.GetChildTag(tr, directories.DIRECTORIES_TAG_ID, title)
+	return title
+}
+
+func (d *FsDirectory) getTag(tr model.TagReader) (*model.Tag, error) {
+	tag, err := tags.GetChildTag(tr, directories.DIRECTORIES_TAG_ID, d.getTagTitle())
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -39,6 +43,9 @@ func (d *FsDirectory) addItem(tr model.TagReader, iw model.ItemWriter, item *mod
 	tag, err := d.getTag(tr)
 	if err != nil {
 		return err
+	}
+	if tag == nil {
+		return errors.Errorf("'directory tag' not found %s", d.getTagTitle())
 	}
 
 	item.Tags = append(item.Tags, tag)
