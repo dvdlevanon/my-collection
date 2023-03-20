@@ -8,10 +8,10 @@ import (
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/storage"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path/filepath"
 
-	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
 )
 
@@ -71,7 +71,7 @@ func run() error {
 
 	logger.Infof("Root directory is: %s", rootdir)
 
-	db, err := db.New(rootdir, "test.sqlite")
+	db, err := db.New(rootdir, "db.sqlite")
 	if err != nil {
 		return err
 	}
@@ -97,19 +97,6 @@ func run() error {
 	return server.New(db, storage, fsManager, processor).Run(*listenAddress)
 }
 
-func logError(err error) {
-	if err == nil {
-		return
-	}
-
-	var e *errors.Error
-	if errors.As(err, &e) {
-		logger.Errorf("Error: %v", e.ErrorStack())
-	} else {
-		logger.Errorf("Error: %v", err)
-	}
-}
-
 func main() {
-	logError(run())
+	utils.LogError(run())
 }
