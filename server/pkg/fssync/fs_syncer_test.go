@@ -38,7 +38,8 @@ func TestAddMissingDirectoryTags(t *testing.T) {
 	trw.EXPECT().GetTag(gomock.Any()).Return(nil, nil)
 	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "Path", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}).Return(nil)
 	trw.EXPECT().GetTag(gomock.Any()).Return(&model.Tag{Title: "Exists", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}, nil)
-	addMissingDirectoryTags(dr, trw)
+	errs := addMissingDirectoryTags(dr, trw)
+	assert.Equal(t, 0, len(errs))
 }
 
 func TestAddMissingDirs(t *testing.T) {
@@ -60,7 +61,7 @@ func TestAddMissingDirs(t *testing.T) {
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "some/relative/path", Excluded: pointer.Bool(true)}).Return(nil)
 
-	errors := addMissingDirs(drw, []directorytree.Change{
+	errs := addMissingDirs(drw, []directorytree.Change{
 		{Path1: "path1"},
 		{Path1: "some/path - to dir"},
 		{Path1: "/absolute/exists/path3"},
@@ -69,7 +70,7 @@ func TestAddMissingDirs(t *testing.T) {
 		{Path1: ""},
 		{Path1: "/root/dir/some/relative/path"},
 	})
-	assert.Equal(t, 1, len(errors))
+	assert.Equal(t, 1, len(errs))
 }
 
 func TestAddNewFiles(t *testing.T) {
@@ -104,14 +105,14 @@ func TestAddNewFiles(t *testing.T) {
 	flmg.EXPECT().GetLastModified("/root/dir/some/file").Return(int64(9876532), nil)
 	digs.EXPECT().AddBelongingItem(&model.Item{Title: "file", Origin: "some", Url: "some/file", LastModified: 9876532, Tags: make([]*model.Tag, 0)}).Return(nil)
 
-	errors := addNewFiles(iw, digs, dctg, flmg, []directorytree.Change{
+	errs := addNewFiles(iw, digs, dctg, flmg, []directorytree.Change{
 		{Path1: "new/file"},
 		{Path1: "some/deep/deep/deep/file"},
 		{Path1: "/absolute/path"},
 		{Path1: "/root/dir/some/file"},
 	})
 
-	assert.Equal(t, 0, len(errors))
+	assert.Equal(t, 0, len(errs))
 }
 
 func TestRemoveStaleDirs(t *testing.T) {
@@ -133,12 +134,13 @@ func TestRemoveStaleDirs(t *testing.T) {
 	trw.EXPECT().RemoveTag(uint64(3)).Return(nil)
 	dw.EXPECT().RemoveDirectory(directories.ROOT_DIRECTORY_PATH).Return(nil)
 
-	removeStaleDirs(trw, dw, []string{
+	errs := removeStaleDirs(trw, dw, []string{
 		"/existing/dir",
 		"/not/exists/tag",
 		"/root/dir/relative/path",
 		"",
 	})
+	assert.Equal(t, 0, len(errs))
 }
 
 func TestRemoveStaleItems(t *testing.T) {
@@ -154,9 +156,39 @@ func TestRemoveStaleItems(t *testing.T) {
 	dig.EXPECT().GetBelongingItem("relative", "file").Return(&model.Item{Id: 2}, nil)
 	iw.EXPECT().RemoveItem(uint64(2)).Return(nil)
 
-	removeStaleItems(dig, iw, []string{
+	errs := removeStaleItems(dig, iw, []string{
 		"/some/not-exists",
 		"/some/inner/file",
 		"/root/dir/relative/file",
 	})
+	assert.Equal(t, 0, len(errs))
+}
+
+func TestRenameFiles(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+	trw := model.NewMockTagReaderWriter(ctrl)
+	irw := model.NewMockItemReaderWriter(ctrl)
+	drw := model.NewMockDirectoryReaderWriter(ctrl)
+
+	relativasor.Init("/root/dir")
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "/new", Excluded: pointer.Bool(false)}).Return(nil)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(&model.Directory{Path: "/new", Excluded: pointer.Bool(false)}, nil)
+	trw.EXPECT().GetTag(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "New", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)})
+	oldTag := &model.Tag{Id: 4321, Title: "/", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID), Items: []*model.Item{{Id: 1}}}
+	trw.EXPECT().GetTag(gomock.Any()).Return(oldTag, nil)
+	irw.EXPECT().GetItems(gomock.Any()).Return(&[]model.Item{{Id: 1, Title: "file1"}}, nil)
+	irw.EXPECT().UpdateItem(&model.Item{Id: 1, Title: "file1", Origin: "/new", Url: "/new/file1"}).Return(nil)
+	newTag := &model.Tag{Title: "New", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}
+	trw.EXPECT().GetTag(gomock.Any()).Return(newTag, nil)
+	irw.EXPECT().CreateOrUpdateItem(&model.Item{Id: 1, Title: "file1", Origin: "/new", Url: "/new/file1", Tags: []*model.Tag{newTag}})
+	trw.EXPECT().GetTag(gomock.Any()).Return(oldTag, nil)
+	irw.EXPECT().RemoveTagFromItem(uint64(1), uint64(4321)).Return(nil)
+
+	errs := renameFiles(trw, drw, irw, []directorytree.Change{
+		{Path1: "/file1", Path2: "/new/file1"},
+	})
+	assert.Equal(t, 0, len(errs))
 }

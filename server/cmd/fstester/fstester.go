@@ -23,6 +23,10 @@ var (
 	rootDirectory = flag.String("root-directory", "", "Server root directory")
 )
 
+func filesFilter(path string) bool {
+	return utils.IsVideo(true, path)
+}
+
 func run() error {
 	flag.Parse()
 	if *help {
@@ -40,12 +44,12 @@ func run() error {
 
 	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(relativasor.GetRootDirectory(), "fstester.sqlite")
+	db, err := db.New(relativasor.GetRootDirectory(), "test.sqlite")
 	if err != nil {
 		return err
 	}
 
-	fs, err := fssync.NewFsManager(db, func(path string) bool { return true }, 1*time.Second)
+	fs, err := fssync.NewFsManager(db, filesFilter, 1*time.Second)
 	if err != nil {
 		return err
 	}

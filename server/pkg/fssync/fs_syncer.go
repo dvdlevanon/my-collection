@@ -12,7 +12,6 @@ import (
 	"strings"
 
 	"github.com/go-errors/errors"
-	"k8s.io/utils/pointer"
 )
 
 func newFsSyncer(path string, db *db.Database, dig model.DirectoryItemsGetter, filter directorytree.FilesFilter) (*fsSyncer, error) {
@@ -54,21 +53,28 @@ func (f *fsSyncer) hasFsChanges() bool {
 
 func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 	dctg model.DirectoryConcreteTagsGetter, flmg model.FileLastModifiedGetter) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
+	errs = append(errs, addMissingDirectoryTags(db, db)...)
+
 	if f.hasFsChanges() {
 		f.debugPrint()
-		errors = append(errors, addMissingDirectoryTags(db, db)...)
-		errors = append(errors, removeStaleItems(digs, db, f.stales.Files)...)
-		errors = append(errors, removeStaleDirs(db, db, f.stales.Dirs)...)
-		errors = append(errors, addMissingDirs(db, f.diff.AddedDirectories)...)
-		errors = append(errors, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
-		errors = append(errors, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
-		errors = append(errors, f.renameDirs()...)
-		errors = append(errors, renameFiles(db, db, db, f.diff.MovedFiles)...)
-		errors = append(errors, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
+
+		// remove moved dirs and files from stale dirs and items
+		// tag title+parent must be unique (representing the full origin location)
+		// remove concrete tags when removing directory
+		// update directory path when renaming dirs
+
+		errs = append(errs, removeStaleItems(digs, db, f.stales.Files)...)
+		errs = append(errs, removeStaleDirs(db, db, f.stales.Dirs)...)
+		errs = append(errs, addMissingDirs(db, f.diff.AddedDirectories)...)
+		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
+		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
+		errs = append(errs, renameDirs(db, db, db, f.diff.MovedDirectories)...)
+		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
+		errs = append(errs, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
 	}
 	// syncConcreteTags()
-	return errors
+	return errs
 }
 
 func (f *fsSyncer) debugPrint() {
@@ -106,17 +112,19 @@ func (f *fsSyncer) debugPrint() {
 }
 
 func addMissingDirectoryTags(dr model.DirectoryReader, trw model.TagReaderWriter) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	allDirectories, err := dr.GetAllDirectories()
 	if err != nil {
-		return append(errors, err)
+		return append(errs, err)
 	}
 
 	for _, dir := range *allDirectories {
-		errors = append(errors, addMissingDirectoryTag(dr, trw, &dir))
+		if err := addMissingDirectoryTag(dr, trw, &dir); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
-	return errors
+	return errs
 }
 
 func addMissingDirectoryTag(dr model.DirectoryReader, trw model.TagReaderWriter, dir *model.Directory) error {
@@ -130,12 +138,12 @@ func addMissingDirectoryTag(dr model.DirectoryReader, trw model.TagReaderWriter,
 }
 
 func removeStaleItems(dig model.DirectoryItemsGetter, iw model.ItemWriter, files []string) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	for _, file := range files {
-		errors = append(errors, removeItem(dig, iw, file)...)
+		errs = append(errs, removeItem(dig, iw, file)...)
 	}
 
-	return errors
+	return errs
 }
 
 func removeItem(dig model.DirectoryItemsGetter, iw model.ItemWriter, file string) []error {
@@ -153,60 +161,60 @@ func removeItem(dig model.DirectoryItemsGetter, iw model.ItemWriter, file string
 }
 
 func removeStaleDirs(trw model.TagReaderWriter, dw model.DirectoryWriter, dirs []string) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	for _, path := range dirs {
-		errors = append(errors, removeDir(trw, dw, path)...)
+		errs = append(errs, removeDir(trw, dw, path)...)
 	}
 
-	return errors
+	return errs
 }
 
 func removeDir(trw model.TagReaderWriter, dw model.DirectoryWriter, path string) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	dir := newFsDirectory(directories.NormalizeDirectoryPath(path))
 	tag, err := dir.getTag(trw)
 	if err != nil {
-		errors = append(errors, err)
+		errs = append(errs, err)
 	} else if tag != nil {
-		errors = append(errors, tags.RemoveTagAndItsAssociations(trw, tag)...)
+		errs = append(errs, tags.RemoveTagAndItsAssociations(trw, tag)...)
 	}
 
 	if err := dw.RemoveDirectory(directories.NormalizeDirectoryPath(path)); err != nil {
-		errors = append(errors, err)
+		errs = append(errs, err)
 	}
 
-	return errors
+	return errs
 }
 
 func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []directorytree.Change) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	for _, change := range addedDirectories {
 		err := directories.AddDirectoryIfMissing(drw, change.Path1, true)
 		if err != nil {
-			errors = append(errors, err)
+			errs = append(errs, err)
 		}
 	}
 
-	return errors
+	return errs
 }
 
 func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
 	flmg model.FileLastModifiedGetter, addedFiles []directorytree.Change) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	for _, change := range addedFiles {
 		dirpath := directories.NormalizeDirectoryPath(filepath.Dir(change.Path1))
 		item, err := digs.GetBelongingItem(dirpath, filepath.Base(change.Path1))
 		if err != nil {
-			errors = append(errors, err)
+			errs = append(errs, err)
 			continue
 		}
 
 		if err := handleFile(iw, digs, dctg, flmg, item, dirpath, change.Path1); err != nil {
-			errors = append(errors, err)
+			errs = append(errs, err)
 		}
 	}
 
-	return errors
+	return errs
 }
 
 func handleFile(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
@@ -235,27 +243,87 @@ func handleNewFile(digs model.DirectoryItemsGetterSetter, flmg model.FileLastMod
 }
 
 func removeDeletedDirs(trw model.TagReaderWriter, dw model.DirectoryWriter, deletedDirs []directorytree.Change) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	for _, dir := range deletedDirs {
-		errors = append(errors, removeDir(trw, dw, dir.Path1)...)
+		errs = append(errs, removeDir(trw, dw, dir.Path1)...)
 	}
 
-	return errors
+	return errs
 }
 
 func removeDeletedFiles(dig model.DirectoryItemsGetter, iw model.ItemWriter, deletedFiles []directorytree.Change) []error {
-	errors := make([]error, 0)
+	errs := make([]error, 0)
 	for _, file := range deletedFiles {
-		errors = append(errors, removeItem(dig, iw, file.Path1)...)
+		errs = append(errs, removeItem(dig, iw, file.Path1)...)
 	}
 
-	return errors
+	return errs
 }
 
-func (f *fsSyncer) renameDirs() []error {
-	errors := make([]error, 0)
+func renameDirs(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
+	irw model.ItemReaderWriter, movedDirs []directorytree.Change) []error {
+	errs := make([]error, 0)
+	for _, dir := range movedDirs {
+		src := dir.Path1
+		dst := dir.Path2
 
-	return errors
+		if err := moveDir(trw, drw, src, dst); err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		errs = append(errs, updateItemsLocation(trw, irw, dst)...)
+	}
+
+	return errs
+}
+
+func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, path string) []error {
+	dirpath := directories.NormalizeDirectoryPath(filepath.Dir(path))
+	errs := make([]error, 0)
+	dir := newFsDirectory(dirpath)
+	belongingItems, err := dir.getItems(trw, irw)
+	if err != nil {
+		return append(errs, err)
+	}
+
+	for _, item := range *belongingItems {
+		if err := items.UpdateFileLocation(irw, &item, dirpath, path); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errs
+}
+
+func moveDir(trw model.TagReaderWriter, drw model.DirectoryReaderWriter, src string, dst string) error {
+	dstDirpath := directories.NormalizeDirectoryPath(filepath.Dir(dst))
+	dstdir, err := directories.GetDirectory(drw, dstDirpath)
+	if err != nil {
+		return err
+	}
+	if dstdir != nil {
+		return errors.Errorf("destination directory already exists %s", dst)
+	}
+
+	srcDirpath := directories.NormalizeDirectoryPath(filepath.Dir(src))
+	srcdir, err := directories.GetDirectory(drw, srcDirpath)
+	if err != nil {
+		return err
+	}
+	if srcdir == nil {
+		return errors.Errorf("source directory not exists %s", src)
+	}
+
+	if err := directories.UpdatePath(drw, srcdir, dst); err != nil {
+		return err
+	}
+
+	if directories.IsExcluded(srcdir) {
+		return nil
+	}
+
+	return nil
 }
 
 func renameFiles(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
@@ -265,7 +333,9 @@ func renameFiles(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 		src := file.Path1
 		dst := file.Path2
 
-		errs = append(errs, moveFile(trw, drw, irw, src, dst))
+		if err := moveFile(trw, drw, irw, src, dst); err != nil {
+			errs = append(errs, err)
+		}
 	}
 
 	return errs
@@ -301,22 +371,9 @@ func moveFile(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 }
 
 func validateReadyDirectory(trw model.TagReaderWriter, drw model.DirectoryReaderWriter, path string) error {
-	dirpath := directories.NormalizeDirectoryPath(filepath.Dir(path))
-
-	if err := directories.AddDirectoryIfMissing(drw, dirpath, false); err != nil {
-		return err
-	}
-
-	dir, err := directories.GetDirectory(drw, dirpath)
+	dir, err := directories.ValidateReadyDirectory(drw, filepath.Dir(path))
 	if err != nil {
 		return err
-	}
-
-	if directories.IsExcluded(dir) {
-		dir.Excluded = pointer.Bool(false)
-		if err := drw.CreateOrUpdateDirectory(dir); err != nil {
-			return err
-		}
 	}
 
 	return addMissingDirectoryTag(drw, trw, dir)

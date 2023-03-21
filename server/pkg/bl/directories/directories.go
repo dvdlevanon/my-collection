@@ -183,6 +183,10 @@ func CreateOrUpdateDirectory(dw model.DirectoryWriter, directory *model.Director
 	return dw.CreateOrUpdateDirectory(directory)
 }
 
+func UpdatePath(dw model.DirectoryWriter, directory *model.Directory, newpath string) error {
+	return nil
+}
+
 func StartDirectoryProcessing(dw model.DirectoryWriter, directory *model.Directory) error {
 	if directory.ProcessingStart != nil && *directory.ProcessingStart != 0 {
 		return nil
@@ -219,4 +223,23 @@ func IsExcluded(directory *model.Directory) bool {
 	}
 
 	return *directory.Excluded
+}
+
+func ValidateReadyDirectory(drw model.DirectoryReaderWriter, path string) (*model.Directory, error) {
+	dirpath := NormalizeDirectoryPath(path)
+	if err := AddDirectoryIfMissing(drw, dirpath, false); err != nil {
+		return nil, err
+	}
+
+	dir, err := GetDirectory(drw, dirpath)
+	if err != nil {
+		return nil, err
+	}
+
+	if IsExcluded(dir) {
+		dir.Excluded = pointer.Bool(false)
+		return dir, drw.CreateOrUpdateDirectory(dir)
+	}
+
+	return dir, nil
 }
