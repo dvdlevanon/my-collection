@@ -53,17 +53,20 @@ func (f *fsSyncer) hasFsChanges() bool {
 
 func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 	dctg model.DirectoryConcreteTagsGetter, flmg model.FileLastModifiedGetter) []error {
+
+	// TODO:
+	// > remove moved dirs and files from stale dirs and items
+	// > tag title+parent must be unique (representing the full origin location)
+	// > remove concrete tags when removing directory
+	// > update directory path when renaming dirs
+	// > remove concrete tags from items if they removed from their dir (how do we know its a concrete tag?)
+	// > redefine concrete tags - what are they? maybe auto tags, allow more flexibility with them
+
 	errs := make([]error, 0)
 	errs = append(errs, addMissingDirectoryTags(db, db)...)
 
 	if f.hasFsChanges() {
 		f.debugPrint()
-
-		// remove moved dirs and files from stale dirs and items
-		// tag title+parent must be unique (representing the full origin location)
-		// remove concrete tags when removing directory
-		// update directory path when renaming dirs
-
 		errs = append(errs, removeStaleItems(digs, db, f.stales.Files)...)
 		errs = append(errs, removeStaleDirs(db, db, f.stales.Dirs)...)
 		errs = append(errs, addMissingDirs(db, f.diff.AddedDirectories)...)
@@ -73,7 +76,9 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
 		errs = append(errs, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
 	}
-	// syncConcreteTags()
+
+	errs = append(errs, syncConcreteTags(db, db, db, dctg)...)
+
 	return errs
 }
 
@@ -377,4 +382,43 @@ func validateReadyDirectory(trw model.TagReaderWriter, drw model.DirectoryReader
 	}
 
 	return addMissingDirectoryTag(drw, trw, dir)
+}
+
+func syncConcreteTags(tr model.TagReader, irw model.ItemReaderWriter,
+	dr model.DirectoryReader, dctg model.DirectoryConcreteTagsGetter) []error {
+	errs := make([]error, 0)
+	allDirectories, err := dr.GetAllDirectories()
+	if err != nil {
+		return append(errs, err)
+	}
+
+	for _, dir := range *allDirectories {
+		concreteTags, err := dctg.GetConcreteTags(dir.Path)
+		if err != nil {
+			errs = append(errs, err)
+			continue
+		}
+
+		errs = append(errs, syncConcreteTagsForDir(tr, irw, concreteTags, &dir)...)
+	}
+
+	return errs
+}
+
+func syncConcreteTagsForDir(tr model.TagReader, irw model.ItemReaderWriter,
+	concreteTags []*model.Tag, dir *model.Directory) []error {
+	errs := make([]error, 0)
+	fsdir := newFsDirectory(dir.Path)
+	belongingItems, err := fsdir.getItems(tr, irw)
+	if err != nil {
+		return append(errs, err)
+	}
+
+	for _, item := range *belongingItems {
+		if err := items.EnsureItemHaveTags(irw, &item, concreteTags); err != nil {
+			errs = append(errs, err)
+		}
+	}
+
+	return errs
 }

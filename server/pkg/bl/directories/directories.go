@@ -178,7 +178,8 @@ func NormalizeDirectoryPath(path string) string {
 }
 
 func CreateOrUpdateDirectory(dw model.DirectoryWriter, directory *model.Directory) error {
-	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
+	directory.Excluded = pointer.Bool(false)
+	// directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
 	directory.Path = NormalizeDirectoryPath(directory.Path)
 	return dw.CreateOrUpdateDirectory(directory)
 }

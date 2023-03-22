@@ -39,7 +39,7 @@ func New(rootDirectory string) (*Storage, error) {
 
 	storageTemplateDirectory := filepath.Join(filepath.Dir(execLocation), "storage-template")
 	if err := cp.Copy(storageTemplateDirectory, rootDirectory, cp.Options{}); err != nil {
-		logger.Warningf("Error coping storage template from %s to %s", storageTemplateDirectory, rootDirectory)
+		logger.Warningf("Error copying storage template from %s to %s - %s", storageTemplateDirectory, rootDirectory, err)
 	}
 
 	logger.Infof("Srorage initialized in %s", rootDirectory)
