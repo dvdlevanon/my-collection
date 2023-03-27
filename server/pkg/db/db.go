@@ -12,6 +12,7 @@ import (
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 	gormlogger "gorm.io/gorm/logger"
 )
 
@@ -85,6 +86,10 @@ func (d *Database) deleteAssociation(value interface{}, association interface{},
 
 func (d *Database) delete(value interface{}, conds ...interface{}) error {
 	return d.handleError(d.db.Delete(value, conds...).Error)
+}
+
+func (d *Database) deleteWithAssociations(value interface{}, conds ...interface{}) error {
+	return d.handleError(d.db.Select(clause.Associations).Delete(value, conds...).Error)
 }
 
 func (d *Database) create(value interface{}) error {

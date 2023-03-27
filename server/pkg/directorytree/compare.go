@@ -120,7 +120,7 @@ outDb:
 			}
 		}
 
-		dbOnly = append(fsOnly, dbFile)
+		dbOnly = append(dbOnly, dbFile)
 	}
 
 	return fsOnly, dbOnly

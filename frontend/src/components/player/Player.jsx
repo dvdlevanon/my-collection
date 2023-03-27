@@ -13,7 +13,7 @@ function Player({ url, setMainCover }) {
 	let [showControls, setShowControls] = useState(true);
 	let [showVolume, setShowVolume] = useState(false);
 	let [showSchedule, setShowSchedule] = useState(false);
-	let [isPlaying, setIsPlaying] = useState(false);
+	let [isPlaying, setIsPlaying] = useState(true);
 	let [currentTime, setCurrentTime] = useState(0);
 	let [fullScreen, setFullScreen] = useState(false);
 	let [duration, setDuration] = useState(0);
@@ -108,7 +108,7 @@ function Player({ url, setMainCover }) {
 				height="100%"
 				width="100%"
 				playsInline
-				autoPlay={false}
+				autoPlay={true}
 				loop={false}
 				ref={videoElement}
 				onClick={togglePlay}

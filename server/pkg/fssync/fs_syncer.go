@@ -78,41 +78,40 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 	}
 
 	errs = append(errs, syncConcreteTags(db, db, db, dctg)...)
-
 	return errs
 }
 
 func (f *fsSyncer) debugPrint() {
 	if len(f.stales.Dirs) > 0 {
-		logger.Debugf("Stale directories %d - [%s]", len(f.stales.Dirs), strings.Join(f.stales.Dirs, ", "))
+		logger.Debugf("%d Stale directories - [%s]", len(f.stales.Dirs), strings.Join(f.stales.Dirs, ", "))
 	}
 
 	if len(f.stales.Files) > 0 {
-		logger.Debugf("Stale files %d - [%s]", len(f.stales.Files), strings.Join(f.stales.Files, ", "))
+		logger.Debugf("%d Stale files - [%s]", len(f.stales.Files), strings.Join(f.stales.Files, ", "))
 	}
 
 	if len(f.diff.AddedDirectories) > 0 {
-		logger.Debugf("Added directories %d - [%s]", len(f.diff.AddedDirectories), strings.Join(f.diff.ChangesToString(f.diff.AddedDirectories), ", "))
+		logger.Debugf("%d Added directories - [%s]", len(f.diff.AddedDirectories), strings.Join(f.diff.ChangesToString(f.diff.AddedDirectories), ", "))
 	}
 
 	if len(f.diff.RemovedDirectories) > 0 {
-		logger.Debugf("Removed directories %d - [%s]", len(f.diff.RemovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.RemovedDirectories), ", "))
+		logger.Debugf("%d Removed directories - [%s]", len(f.diff.RemovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.RemovedDirectories), ", "))
 	}
 
 	if len(f.diff.AddedFiles) > 0 {
-		logger.Debugf("Added files %d - [%s]", len(f.diff.AddedFiles), strings.Join(f.diff.ChangesToString(f.diff.AddedFiles), ", "))
+		logger.Debugf("%d Added files - [%s]", len(f.diff.AddedFiles), strings.Join(f.diff.ChangesToString(f.diff.AddedFiles), ", "))
 	}
 
 	if len(f.diff.RemovedFiles) > 0 {
-		logger.Debugf("Removed files %d - [%s]", len(f.diff.RemovedFiles), strings.Join(f.diff.ChangesToString(f.diff.RemovedFiles), ", "))
+		logger.Debugf("%d Removed files - [%s]", len(f.diff.RemovedFiles), strings.Join(f.diff.ChangesToString(f.diff.RemovedFiles), ", "))
 	}
 
 	if len(f.diff.MovedDirectories) > 0 {
-		logger.Debugf("Moved directories %d - [%s]", len(f.diff.MovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.MovedDirectories), ", "))
+		logger.Debugf("%d Moved directories - [%s]", len(f.diff.MovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.MovedDirectories), ", "))
 	}
 
 	if len(f.diff.MovedFiles) > 0 {
-		logger.Debugf("Moved files %d - [%s]", len(f.diff.MovedFiles), strings.Join(f.diff.ChangesToString(f.diff.MovedFiles), ", "))
+		logger.Debugf("%d Moved files - [%s]", len(f.diff.MovedFiles), strings.Join(f.diff.ChangesToString(f.diff.MovedFiles), ", "))
 	}
 }
 

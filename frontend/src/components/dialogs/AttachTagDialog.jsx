@@ -41,7 +41,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 			</DialogTitle>
 			<DialogContent>
 				<TagPicker
-					initialSelectedCategoryId={-1}
+					initialSelectedCategoryId={3}
 					showDirectoriesCategory={false}
 					size="small"
 					onTagSelected={onTagAdded}

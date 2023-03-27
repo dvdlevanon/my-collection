@@ -434,3 +434,34 @@ func TestDirectories(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, *directories, 2)
 }
+
+func TestRemoveItem(t *testing.T) {
+	db, err := setupNewDb(t, "remove-item.sqlite")
+	assert.NoError(t, err)
+	item := &model.Item{Title: "item1", Origin: "origin"}
+	tag := &model.Tag{Title: "tag1"}
+	assert.NoError(t, db.CreateOrUpdateTag(tag))
+	item.Tags = append(item.Tags, tag)
+	assert.NoError(t, db.CreateOrUpdateItem(item))
+	assert.NoError(t, db.RemoveItem(item.Id))
+	newItem := &model.Item{Title: "new-item", Origin: "origin"}
+	assert.NoError(t, db.CreateOrUpdateItem(newItem))
+	loaded, err := db.GetItem(newItem.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, 0, len(loaded.Tags))
+}
+
+// Fail because of https://github.com/go-gorm/sqlite/issues/134
+//
+// func TestReuseId(t *testing.T) {
+// 	db, err := setupNewDb(t, "test-reuse-id.sqlite")
+// 	assert.NoError(t, err)
+
+// 	firstItem := test{Somethingelse: "origin"}
+// 	assert.NoError(t, db.create(&firstItem))
+// 	assert.Equal(t, uint64(1), firstItem.Dude)
+// 	assert.NoError(t, db.delete(firstItem))
+// 	newItem := test{Somethingelse: "origin"}
+// 	assert.NoError(t, db.create(&newItem))
+// 	assert.NotEqual(t, uint64(1), newItem.Dude)
+// }

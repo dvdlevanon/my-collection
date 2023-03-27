@@ -38,7 +38,7 @@ func (d *Database) UpdateItem(item *model.Item) error {
 }
 
 func (d *Database) RemoveItem(itemId uint64) error {
-	return d.delete(model.Item{Id: itemId})
+	return d.deleteWithAssociations(model.Item{Id: itemId})
 }
 
 func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {

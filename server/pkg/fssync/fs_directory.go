@@ -5,7 +5,8 @@ import (
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
-	"path/filepath"
+	"os"
+	"strings"
 
 	"github.com/go-errors/errors"
 	"gorm.io/gorm"
@@ -22,7 +23,7 @@ type FsDirectory struct {
 }
 
 func (d *FsDirectory) getTagTitle() string {
-	name := filepath.Base(d.path)
+	name := strings.ReplaceAll(d.path, string(os.PathSeparator), "_")
 	title := directories.DirectoryNameToTag(name)
 	return title
 }

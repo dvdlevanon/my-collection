@@ -26,10 +26,16 @@ function useWindowSize() {
 function ItemPage() {
 	const queryClient = useQueryClient();
 	const { itemId } = useParams();
-	const itemQuery = useQuery(ReactQueryUtil.itemKey(itemId), () => Client.getItem(itemId));
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	let [addTagMode, setAddTagMode] = useState(false);
 	let [windowWidth, windowHeight] = useWindowSize();
+	const itemQuery = useQuery({
+		queryKey: ReactQueryUtil.itemKey(itemId),
+		queryFn: () => Client.getItem(itemId),
+		onSuccess: (item) => {
+			document.title = item.title;
+		},
+	});
 
 	const onAddTag = () => {
 		setAddTagMode(true);

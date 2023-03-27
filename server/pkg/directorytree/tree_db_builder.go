@@ -55,17 +55,6 @@ func (dn *DirectoryNode) getOrCreateChild(path string) *DirectoryNode {
 }
 
 func (dn *DirectoryNode) readFilesFromDb(dig model.DirectoryItemsGetter) error {
-	// title := directories.DirectoryNameToTag(dn.Title)
-	// tag, err := tags.GetChildTag(tr, directories.DIRECTORIES_TAG_ID, title)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// items, err := tags.GetItems(ir, tag)
-	// if err != nil {
-	// 	return err
-	// }
-
 	items, err := dig.GetBelongingItems(dn.getPath())
 	if err != nil {
 		return err

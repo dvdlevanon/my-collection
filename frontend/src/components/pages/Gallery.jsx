@@ -1,5 +1,5 @@
 import { Divider, Stack } from '@mui/material';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
@@ -13,6 +13,10 @@ function Gallery({ previewMode }) {
 	const saveTag = useMutation(Client.saveTag);
 	let [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
 
+	useEffect(() => {
+		document.title = 'My Collection';
+	}, []);
+
 	const changeTagState = (tag, updater) => {
 		saveTag.mutate(updater(tag), {
 			onSuccess: () => {
@@ -24,6 +28,7 @@ function Gallery({ previewMode }) {
 	};
 
 	const onTagActivated = (tag) => {
+		window.scrollTo(0, 0);
 		changeTagState(tag, (currentTag) => {
 			return {
 				...currentTag,
