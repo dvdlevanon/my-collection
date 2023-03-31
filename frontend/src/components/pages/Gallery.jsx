@@ -43,7 +43,7 @@ function Gallery({ previewMode }) {
 			{tagsQuery.isSuccess && (
 				<TagPicker
 					size="big"
-					showDirectoriesCategory={true}
+					showSpecialCategories={true}
 					onTagSelected={onTagActivated}
 					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 					initialSelectedCategoryId={0}

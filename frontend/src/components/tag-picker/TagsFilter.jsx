@@ -45,14 +45,14 @@ function TagsFilter({
 				gap: '10px',
 			}}
 		>
-			{!TagsUtil.isDirectoriesCategory(parentId) && (
+			{!TagsUtil.isSpecialCategory(parentId) && (
 				<Tooltip title="Set images from directory">
 					<IconButton onClick={() => setShowImagesFromDirectory(true)}>
 						<ImageIcon />
 					</IconButton>
 				</Tooltip>
 			)}
-			{!TagsUtil.isDirectoriesCategory(parentId) && (
+			{!TagsUtil.isSpecialCategory(parentId) && (
 				<Tooltip title="Add new tag">
 					<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
 						<AddIcon />

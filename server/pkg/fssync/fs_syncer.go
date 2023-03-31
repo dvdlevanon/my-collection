@@ -272,7 +272,7 @@ func renameDirs(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 		dst := dir.Path2
 
 		if err := moveDir(trw, drw, src, dst); err != nil {
-			errs = append(errs, err)
+			errs = append(errs, err...)
 			continue
 		}
 
@@ -300,34 +300,35 @@ func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, 
 	return errs
 }
 
-func moveDir(trw model.TagReaderWriter, drw model.DirectoryReaderWriter, src string, dst string) error {
+func moveDir(trw model.TagReaderWriter, drw model.DirectoryReaderWriter, src string, dst string) []error {
+	errs := make([]error, 0)
 	dstDirpath := directories.NormalizeDirectoryPath(filepath.Dir(dst))
 	dstdir, err := directories.GetDirectory(drw, dstDirpath)
 	if err != nil {
-		return err
+		return append(errs, err)
 	}
 	if dstdir != nil {
-		return errors.Errorf("destination directory already exists %s", dst)
+		return removeDir(trw, drw, src)
 	}
 
 	srcDirpath := directories.NormalizeDirectoryPath(filepath.Dir(src))
 	srcdir, err := directories.GetDirectory(drw, srcDirpath)
 	if err != nil {
-		return err
+		return append(errs, err)
 	}
 	if srcdir == nil {
-		return errors.Errorf("source directory not exists %s", src)
+		return append(errs, errors.Errorf("source directory not exists %s", src))
 	}
 
 	if err := directories.UpdatePath(drw, srcdir, dst); err != nil {
-		return err
+		return append(errs, err)
 	}
 
 	if directories.IsExcluded(srcdir) {
-		return nil
+		return errs
 	}
 
-	return nil
+	return errs
 }
 
 func renameFiles(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,

@@ -19,6 +19,8 @@ function Tag({ tag, size, onTagSelected }) {
 	const getImageUrl = () => {
 		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/directory/directory.png'));
+		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/dailymix/dailymix.png'));
 		} else if (hasImage()) {
 			return Client.buildFileUrl(tag.imageUrl);
 		} else {
@@ -57,7 +59,6 @@ function Tag({ tag, size, onTagSelected }) {
 						borderRadius: '5px',
 						'&:hover': {
 							filter: 'brightness(120%)',
-							border: 'red 1px solid',
 							borderColor: 'primary.main',
 						},
 					}}
@@ -156,13 +157,13 @@ function Tag({ tag, size, onTagSelected }) {
 		);
 	};
 
-	const directoryTagComponent = () => {
+	const specialTagComponent = () => {
 		return tagComponent('50px', tag.title, 1, false, <></>);
 	};
 
 	const getTagComponent = () => {
-		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
-			return directoryTagComponent();
+		if (TagsUtil.isSpecialCategory(tag.parentId)) {
+			return specialTagComponent();
 		} else if (tag.id > 0) {
 			return realTagComponent();
 		} else {
@@ -171,7 +172,7 @@ function Tag({ tag, size, onTagSelected }) {
 	};
 
 	const getWidth = () => {
-		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
+		if (TagsUtil.isSpecialCategory(tag.parentId)) {
 			return '200px';
 		} else if (size == 'small') {
 			return '225px';
@@ -181,7 +182,7 @@ function Tag({ tag, size, onTagSelected }) {
 	};
 
 	const getHeight = () => {
-		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
+		if (TagsUtil.isSpecialCategory(tag.parentId)) {
 			return '200px';
 		} else if (size == 'small') {
 			return '300px';

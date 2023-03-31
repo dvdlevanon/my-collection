@@ -44,6 +44,16 @@ func UpdateFileLocation(iw model.ItemWriter, item *model.Item, origin string, pa
 	return iw.UpdateItem(item)
 }
 
+func ItemExists(items []*model.Item, item *model.Item) bool {
+	for _, i := range items {
+		if item.Id == i.Id {
+			return true
+		}
+	}
+
+	return false
+}
+
 func TagExists(tags []*model.Tag, tag *model.Tag) bool {
 	for _, t := range tags {
 		if tag.Id == t.Id {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fssync"
 	processor "my-collection/server/pkg/processor"
@@ -66,6 +67,12 @@ func run() error {
 		return err
 	}
 	go fsManager.Watch()
+
+	automix, err := automix.New(db, db, db, 40)
+	if err != nil {
+		return err
+	}
+	go automix.Run()
 
 	return server.New(db, storage, fsManager, processor).Run(*listenAddress)
 }

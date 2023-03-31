@@ -100,7 +100,7 @@ function ItemPage() {
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
 							flexDirection="column"
-							tags={itemQuery.data.tags.filter((cur) => !TagsUtil.isDirectoriesCategory(cur.parentId))}
+							tags={itemQuery.data.tags.filter((cur) => !TagsUtil.isSpecialCategory(cur.parentId))}
 							onDelete={onTagRemoved}
 							onClick={onTagClicked}
 							tagHighlightedPredicate={() => {

@@ -1,5 +1,7 @@
 package model
 
+import "time"
+
 //go:generate mockgen -package model -source interfaces.go -destination interfaces_mock.go
 
 type ItemReader interface {
@@ -100,4 +102,8 @@ type FileLastModifiedGetter interface {
 
 type DirectoryChangedCallback interface {
 	DirectoryChanged(path string)
+}
+
+type CurrentTimeGetter interface {
+	GetCurrentTime() time.Time
 }

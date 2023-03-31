@@ -34,7 +34,7 @@ function DirectoryCategoriesCell({ directory, setCategories, onCreateCategoryCli
 
 	const getCategories = () => {
 		let result = TagsUtil.getCategories(tagsQuery.data);
-		result = result.filter((category) => !TagsUtil.isDirectoriesCategory(category.id));
+		result = result.filter((category) => !TagsUtil.isSpecialCategory(category.id));
 		result.push(getUnknownCategory());
 		result.push(getCreateCategory());
 		return result;

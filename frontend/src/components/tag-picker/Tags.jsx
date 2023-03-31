@@ -105,10 +105,10 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				{filterTags().map((tag) => {
 					return <Tag key={tag.id} tag={tag} size={size} onTagSelected={onTagSelected} />;
 				})}
-				{!TagsUtil.isDirectoriesCategory(parentId) && (
+				{!TagsUtil.isSpecialCategory(parentId) && (
 					<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
 				)}
-				{TagsUtil.isDirectoriesCategory(parentId) && tags.length == 0 && (
+				{TagsUtil.isSpecialCategory(parentId) && tags.length == 0 && (
 					<Stack
 						direction="row"
 						gap="10px"
