@@ -19,6 +19,8 @@ func (t TaskType) ToDescription(title string) string {
 		return fmt.Sprintf("Generating preview for %s", title)
 	case REFRESH_METADATA_TASK:
 		return fmt.Sprintf("Reading metadata for %s", title)
+	case SET_MAIN_COVER:
+		return fmt.Sprintf("Setting main cover for %s", title)
 	default:
 		return "unknown"
 	}
@@ -32,6 +34,8 @@ func (t TaskType) String() string {
 		return "preview"
 	case REFRESH_METADATA_TASK:
 		return "metadata"
+	case SET_MAIN_COVER:
+		return "main-cover"
 	default:
 		return "unknown"
 	}

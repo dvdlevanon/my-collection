@@ -1,6 +1,7 @@
 package items
 
 import (
+	"math/rand"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"os"
@@ -95,4 +96,24 @@ func RemoveItemAndItsAssociations(iw model.ItemWriter, item *model.Item) []error
 	}
 
 	return errors
+}
+
+func GetRandomItems(ir model.ItemReader, count int) ([]*model.Item, error) {
+	allItems, err := ir.GetAllItems()
+	if err != nil {
+		return nil, err
+	}
+
+	randomItems := make([]*model.Item, 0)
+	for i := 0; i < count; i++ {
+		chosenItem := &((*allItems)[rand.Intn(len(*allItems))])
+
+		for ItemExists(randomItems, chosenItem) {
+			chosenItem = &((*allItems)[rand.Intn(len(*allItems))])
+		}
+
+		randomItems = append(randomItems, chosenItem)
+	}
+
+	return randomItems, nil
 }

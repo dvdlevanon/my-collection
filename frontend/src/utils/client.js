@@ -94,6 +94,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/items`).then((response) => response.json());
 	};
 
+	static getSuggestedItems = async (itemId) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/suggestions`).then((response) => response.json());
+	};
+
 	static getItem = async (itemId) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}`).then((response) => response.json());
 	};

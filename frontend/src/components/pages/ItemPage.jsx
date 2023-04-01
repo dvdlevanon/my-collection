@@ -27,6 +27,12 @@ function ItemPage() {
 	const queryClient = useQueryClient();
 	const { itemId } = useParams();
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const suggestedQuery = useQuery({
+		queryKey: ReactQueryUtil.suggestedItemsKey(itemId),
+		queryFn: () => Client.getSuggestedItems(itemId),
+		staleTime: Infinity,
+		cacheTime: Infinity,
+	});
 	let [addTagMode, setAddTagMode] = useState(false);
 	let [windowWidth, windowHeight] = useWindowSize();
 	const itemQuery = useQuery({
@@ -93,9 +99,9 @@ function ItemPage() {
 				padding: '30px 50px',
 			}}
 		>
-			{itemQuery.isSuccess && (
+			{itemQuery.isSuccess && suggestedQuery.isSuccess && (
 				<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
-					<Player url={itemQuery.data.url} setMainCover={setMainCover} />
+					<Player url={itemQuery.data.url} suggestedItems={suggestedQuery.data} setMainCover={setMainCover} />
 					<Typography variant="h5">{itemQuery.data.title}</Typography>
 					<Stack flexDirection="row" gap="10px">
 						<TagChips

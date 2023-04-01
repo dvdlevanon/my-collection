@@ -14,7 +14,7 @@ import TagsFilter from './TagsFilter';
 function Tags({ tags, parentId, size, onTagSelected }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [sortBy, setSortBy] = useState('random');
+	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parentId) ? 'title-asc' : 'random');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
@@ -25,6 +25,14 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 					return availableAnnotations.some((annotation) => selected.id == annotation.id);
 				})
 			);
+
+			if (TagsUtil.isDailymixCategory(parentId)) {
+				var today = new Date();
+				var month = today.toLocaleString('default', { month: 'short' });
+				var year = today.getFullYear();
+				var defaultTagAnnotation = month + '-' + year;
+				setSelectedAnnotations(availableAnnotations.filter((cur) => cur.title == defaultTagAnnotation));
+			}
 		},
 	});
 
@@ -47,7 +55,8 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 			}
 
 			if (!cur.tags_annotations) {
-				return false;
+				let isNoneSelected = selectedAnnotations.some((annotation) => annotation.id == 'none');
+				return isNoneSelected;
 			}
 
 			return cur.tags_annotations.some((tagAnnotation) => {
@@ -83,12 +92,33 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 		}
 	};
 
+	const getAvailableAnnotations = (availableAnnotations) => {
+		if (availableAnnotations.length == 0) {
+			return availableAnnotations;
+		}
+
+		if (TagsUtil.isSpecialCategory(parentId)) {
+			return availableAnnotations;
+		}
+
+		return [
+			{
+				id: 'none',
+				title: 'None',
+			},
+			...availableAnnotations,
+		];
+	};
+
 	return (
 		<Stack width={'100%'} height={'100%'} flexGrow={1} backgroundColor="dark.lighter">
 			<TagsFilter
 				parentId={parentId}
 				setSearchTerm={setSearchTerm}
-				annotations={(availableAnnotationsQuery.isSuccess && availableAnnotationsQuery.data) || []}
+				annotations={
+					(availableAnnotationsQuery.isSuccess && getAvailableAnnotations(availableAnnotationsQuery.data)) ||
+					[]
+				}
 				setAddTagDialogOpened={setAddTagDialogOpened}
 				selectedAnnotations={selectedAnnotations}
 				setSelectedAnnotations={setSelectedAnnotations}

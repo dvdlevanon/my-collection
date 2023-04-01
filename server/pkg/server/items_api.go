@@ -5,6 +5,7 @@ import (
 	"io"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/suggestions"
 	"net/http"
 	"strconv"
 
@@ -116,4 +117,18 @@ func (s *Server) setMainCover(c *gin.Context) {
 
 	logger.Infof("Setting main cover for item %d at %d", itemId, second)
 	s.processor.EnqueueMainCover(itemId, second)
+}
+
+func (s *Server) getSuggestionsForItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	result, err := suggestions.GetSuggestionsForItem(s.db, s.db, itemId, 8)
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
 }

@@ -2,7 +2,6 @@ package automix
 
 import (
 	"fmt"
-	"math/rand"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tag_annotations"
 	"my-collection/server/pkg/bl/tags"
@@ -64,7 +63,7 @@ func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
 		return err
 	}
 
-	randomItems, err := getRandomItems(d.ir, d.dailyMixItemsCount)
+	randomItems, err := items.GetRandomItems(d.ir, d.dailyMixItemsCount)
 	if err != nil {
 		return err
 	}
@@ -101,24 +100,4 @@ func prepareDailymixTag(trw model.TagReaderWriter, tarw model.TagAnnotationReade
 	}
 
 	return tag, err
-}
-
-func getRandomItems(ir model.ItemReader, count int) ([]*model.Item, error) {
-	allItems, err := ir.GetAllItems()
-	if err != nil {
-		return nil, err
-	}
-
-	randomItems := make([]*model.Item, 0)
-	for i := 0; i < count; i++ {
-		chosenItem := &((*allItems)[rand.Intn(len(*allItems))])
-
-		for items.ItemExists(randomItems, chosenItem) {
-			chosenItem = &((*allItems)[rand.Intn(len(*allItems))])
-		}
-
-		randomItems = append(randomItems, chosenItem)
-	}
-
-	return randomItems, nil
 }

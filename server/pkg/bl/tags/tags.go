@@ -106,3 +106,12 @@ func RemoveTagAndItsAssociations(tw model.TagWriter, tag *model.Tag) []error {
 
 	return errors
 }
+
+func GetFullTags(tr model.TagReader, tagIds []*model.Tag) (*[]model.Tag, error) {
+	ids := make([]uint64, len(tagIds))
+	for i, tag := range tagIds {
+		ids[i] = tag.Id
+	}
+
+	return tr.GetTags(ids)
+}

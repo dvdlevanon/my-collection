@@ -4,12 +4,13 @@ import ImageIcon from '@mui/icons-material/Image';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import Client from '../../utils/client';
+import ItemSuggestions from './ItemSuggestions';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
 
-function Player({ url, setMainCover }) {
+function Player({ url, setMainCover, suggestedItems }) {
 	let [showControls, setShowControls] = useState(true);
 	let [showVolume, setShowVolume] = useState(false);
 	let [showSchedule, setShowSchedule] = useState(false);
@@ -18,8 +19,18 @@ function Player({ url, setMainCover }) {
 	let [fullScreen, setFullScreen] = useState(false);
 	let [duration, setDuration] = useState(0);
 	let [hideControlsTimerId, setHideControlsTimerId] = useState(0);
+	let [playerWidth, setPlayerWidth] = useState(0);
 	let videoElement = useRef();
 	let playerElement = useRef();
+
+	useLayoutEffect(() => {
+		function updateSize() {
+			setPlayerWidth(videoElement.current.offsetWidth);
+		}
+		window.addEventListener('resize', updateSize);
+		updateSize();
+		return () => window.removeEventListener('resize', updateSize);
+	}, []);
 
 	const togglePlay = (e) => {
 		if (isPlaying) {
@@ -119,6 +130,9 @@ function Player({ url, setMainCover }) {
 			>
 				<source src={Client.buildFileUrl(url)} />
 			</Box>
+			{!isPlaying && (
+				<ItemSuggestions suggestedItems={suggestedItems} width={playerWidth} onBackgroundClicked={togglePlay} />
+			)}
 			<Fade in={showControls}>
 				<Stack
 					onMouseEnter={() => onMouseEnter()}

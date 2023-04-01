@@ -12,6 +12,10 @@ export default class ReactQueryUtil {
 		return ['items', { id: itemId }];
 	};
 
+	static suggestedItemsKey = (itemId) => {
+		return ['suggested', { id: itemId }];
+	};
+
 	static tasksPageKey = (pageId, pageSize) => {
 		return ['tasks', { page: pageId, pageSize: pageSize }];
 	};

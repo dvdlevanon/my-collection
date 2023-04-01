@@ -45,14 +45,14 @@ function TagsFilter({
 				gap: '10px',
 			}}
 		>
-			{!TagsUtil.isSpecialCategory(parentId) && (
+			{!TagsUtil.isDirectoriesCategory(parentId) && (
 				<Tooltip title="Set images from directory">
 					<IconButton onClick={() => setShowImagesFromDirectory(true)}>
 						<ImageIcon />
 					</IconButton>
 				</Tooltip>
 			)}
-			{!TagsUtil.isSpecialCategory(parentId) && (
+			{!TagsUtil.isDirectoriesCategory(parentId) && (
 				<Tooltip title="Add new tag">
 					<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
 						<AddIcon />
@@ -74,7 +74,19 @@ function TagsFilter({
 				}}
 			>
 				{annotations
-					.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0))
+					.sort((a, b) => {
+						if (a.title == 'None' || b.title == 'None') {
+							return 2;
+						}
+
+						if (a.title > b.title) {
+							return 1;
+						} else if (a.title < b.title) {
+							return -1;
+						} else {
+							return 0;
+						}
+					})
 					.map((annotation) => {
 						return (
 							<TagAnnotation
