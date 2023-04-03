@@ -9,12 +9,13 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
-import TagsFilter from './TagsFilter';
+import TagsTopBar from './TagsTopBar';
 
 function Tags({ tags, parentId, size, onTagSelected }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parentId) ? 'title-asc' : 'random');
+	const [tit, setTit] = useState(null);
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
@@ -114,7 +115,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 
 	return (
 		<Stack width={'100%'} height={'100%'} flexGrow={1} backgroundColor="dark.lighter">
-			<TagsFilter
+			<TagsTopBar
 				parentId={parentId}
 				setSearchTerm={setSearchTerm}
 				annotations={
@@ -124,6 +125,8 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				setAddTagDialogOpened={setAddTagDialogOpened}
 				selectedAnnotations={selectedAnnotations}
 				setSelectedAnnotations={setSelectedAnnotations}
+				tit={tit}
+				setTit={setTit}
 			/>
 			<Box
 				sx={{
@@ -135,7 +138,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				}}
 			>
 				{filterTags().map((tag) => {
-					return <Tag key={tag.id} tag={tag} size={size} onTagSelected={onTagSelected} />;
+					return <Tag key={tag.id} tag={tag} size={size} selectedTit={tit} onTagSelected={onTagSelected} />;
 				})}
 				{!TagsUtil.isSpecialCategory(parentId) && (
 					<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />

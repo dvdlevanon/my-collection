@@ -86,6 +86,8 @@ func (s *Server) init() {
 	api.POST("/queue/pause", s.queuePause)
 	api.POST("/queue/clear-finished", s.clearFinishedTasks)
 
+	api.GET("/tag-image-types", s.getTagImageTypes)
+
 	api.GET("/ws", s.push.websocket)
 
 	s.router.Static("/ui", "ui/")

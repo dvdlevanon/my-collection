@@ -72,6 +72,11 @@ type DirectoryReaderWriter interface {
 	DirectoryWriter
 }
 
+type TagImageTypeReaderWriter interface {
+	CreateOrUpdateTagImageType(tit *TagImageType) error
+	GetTagImageType(conds ...interface{}) (*TagImageType, error)
+}
+
 type StorageUploader interface {
 	GetStorageUrl(name string) string
 	GetFileForWriting(name string) (string, error)

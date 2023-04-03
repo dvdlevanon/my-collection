@@ -10,7 +10,7 @@ import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
 
-function Tag({ tag, size, onTagSelected }) {
+function Tag({ tag, size, selectedTit, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
@@ -21,7 +21,20 @@ function Tag({ tag, size, onTagSelected }) {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/directory/directory.png'));
 		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/dailymix/dailymix.png'));
-		} else if (hasImage()) {
+		} else {
+			return getRegularTagImageUrl();
+		}
+	};
+
+	const getRegularTagImageUrl = () => {
+		if (selectedTit && tag.images) {
+			let selectedImage = tag.images.find((image) => image.imageType == selectedTit.id);
+			if (selectedImage && selectedImage.url) {
+				return Client.buildFileUrl(selectedImage.url);
+			}
+		}
+
+		if (hasImage()) {
 			return Client.buildFileUrl(tag.imageUrl);
 		} else {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));

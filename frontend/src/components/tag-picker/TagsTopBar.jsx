@@ -5,31 +5,22 @@ import React, { useState } from 'react';
 import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
-import TagAnnotation from './TagAnnotation';
+import TagImageTypeSelector from './TagImageTypeSelector';
+import TagsAnnotations from './TagsAnnotations';
 
-function TagsFilter({
+function TagsTopBar({
 	parentId,
 	annotations,
 	selectedAnnotations,
 	setSelectedAnnotations,
 	setSearchTerm,
 	setAddTagDialogOpened,
+	tit,
+	setTit,
 }) {
 	let [showImagesFromDirectory, setShowImagesFromDirectory] = useState(false);
 	const onSearchTermChanged = (e) => {
 		setSearchTerm(e.target.value);
-	};
-
-	const isSelectedAnnotation = (annotation) => {
-		return selectedAnnotations.some((cur) => annotation.id == cur.id);
-	};
-
-	const annotationSelected = (e, annotation) => {
-		if (isSelectedAnnotation(annotation)) {
-			setSelectedAnnotations(selectedAnnotations.filter((cur) => annotation.id != cur.id));
-		} else {
-			setSelectedAnnotations([...selectedAnnotations, annotation]);
-		}
 	};
 
 	const imageDirectoryChoosen = (directoryPath, doneCallback) => {
@@ -67,38 +58,12 @@ function TagsFilter({
 				size="small"
 				onChange={(e) => onSearchTermChanged(e)}
 			></TextField>
-			<Box
-				sx={{
-					display: 'flex',
-					flexDirection: 'row',
-				}}
-			>
-				{annotations
-					.sort((a, b) => {
-						if (a.title == 'None' || b.title == 'None') {
-							return 2;
-						}
-
-						if (a.title > b.title) {
-							return 1;
-						} else if (a.title < b.title) {
-							return -1;
-						} else {
-							return 0;
-						}
-					})
-					.map((annotation) => {
-						return (
-							<TagAnnotation
-								key={annotation.id}
-								selectedAnnotaions
-								annotation={annotation}
-								selected={isSelectedAnnotation(annotation)}
-								onClick={annotationSelected}
-							/>
-						);
-					})}
-			</Box>
+			<TagImageTypeSelector tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
+			<TagsAnnotations
+				annotations={annotations}
+				selectedAnnotations={selectedAnnotations}
+				setSelectedAnnotations={setSelectedAnnotations}
+			/>
 			{showImagesFromDirectory && (
 				<ChooseDirectoryDialog
 					title="Set images from directory"
@@ -112,4 +77,4 @@ function TagsFilter({
 	);
 }
 
-export default TagsFilter;
+export default TagsTopBar;

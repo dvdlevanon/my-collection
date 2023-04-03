@@ -3,6 +3,7 @@ export default class ReactQueryUtil {
 	static ITEMS_KEY = ['items'];
 	static QUEUE_METADATA_KEY = ['queue-metadata'];
 	static DIRECTORIES_KEY = ['directories'];
+	static TAG_IMAGE_TYPES_KEY = ['tag-image-types'];
 
 	static availableAnnotationsKey = (tagId) => {
 		return ['available-annotations', { id: tagId }];

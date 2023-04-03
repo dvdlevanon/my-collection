@@ -118,7 +118,7 @@ func (s *Server) autoImage(c *gin.Context) {
 		return
 	}
 
-	if s.handleError(c, tags.AutoImageChildren(s.storage, s.db, tag, fileUrl.Url)) {
+	if s.handleError(c, tags.AutoImageChildren(s.storage, s.db, s.db, tag, fileUrl.Url)) {
 		return
 	}
 

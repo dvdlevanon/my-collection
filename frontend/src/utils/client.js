@@ -125,6 +125,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/available-annotations`).then((response) => response.json());
 	};
 
+	static getTagImageTypes = async () => {
+		return await fetch(`${Client.apiUrl}/tag-image-types`).then((response) => response.json());
+	};
+
 	static saveItem(item, successCallback) {
 		fetch(`${Client.apiUrl}/items/${item.id}`, {
 			method: 'POST',

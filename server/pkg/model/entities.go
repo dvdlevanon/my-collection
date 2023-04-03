@@ -14,7 +14,20 @@ type Tag struct {
 	Active      *bool            `json:"active,omitempty"`
 	Selected    *bool            `json:"selected,omitempty"`
 	Image       string           `json:"imageUrl,omitempty"`
+	Images      []*TagImage      `json:"images,omitempty"`
 	Annotations []*TagAnnotation `json:"tags_annotations,omitempty" gorm:"many2many:tags_annotations;"`
+}
+
+type TagImageType struct {
+	Id       uint64 `json:"id,omitempty"`
+	Nickname string `json:"nickname,omitempty" gorm:"unique"`
+}
+
+type TagImage struct {
+	Id          uint64 `json:"id,omitempty"`
+	Url         string `json:"url,omitempty"`
+	TagId       uint64 `json:"tagId,omitempty"`
+	ImageTypeId uint64 `json:"imageType,omitempty"`
 }
 
 type Item struct {
@@ -31,6 +44,7 @@ type Item struct {
 	LastModified    int64   `json:"lastModified,omitempty"`
 	Covers          []Cover `json:"covers,omitempty"`
 	MainCoverUrl    *string `json:"mainCoverUrl,omitempty"`
+	MainCoverSecond float64 `json:"mainCoverSecond,omitempty"`
 	Tags            []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 }
 
