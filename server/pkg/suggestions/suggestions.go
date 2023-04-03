@@ -2,6 +2,7 @@ package suggestions
 
 import (
 	"math/rand"
+	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
@@ -35,7 +36,7 @@ func GetSuggestionsForItem(ir model.ItemReader, tr model.TagReader, itemId uint6
 	resultIndexes := getUniqueRandomNumbers(len(relatedItems), count)
 	result := make([]*model.Item, count)
 	for i, n := range resultIndexes {
-		result[i] = relatedItems[n]
+		result[i] = relatedItems[n-1]
 	}
 
 	return result, nil
@@ -45,6 +46,10 @@ func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) 
 	relatedItems := make([]*model.Item, 0)
 
 	for _, tag := range *t {
+		if *tag.ParentID == automix.DAILYMIX_TAG_ID {
+			continue
+		}
+
 		tagItems, err := tags.GetItems(ir, &tag)
 		if err != nil {
 			return nil, err
@@ -65,9 +70,9 @@ func getUniqueRandomNumbers(max int, count int) []int {
 	result := make([]int, count)
 
 	for i := 0; i < count; i++ {
-		num := rand.Intn(max)
+		num := rand.Intn(max) + 1
 		for numberExists(result, num) {
-			num = rand.Intn(max)
+			num = rand.Intn(max) + 1
 		}
 
 		result[i] = num

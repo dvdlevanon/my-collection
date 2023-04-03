@@ -22,7 +22,9 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 		onSuccess: (availableAnnotations) => {
 			setSelectedAnnotations(
 				selectedAnnotations.filter((selected) => {
-					return availableAnnotations.some((annotation) => selected.id == annotation.id);
+					return (
+						selected.id == 'none' || availableAnnotations.some((annotation) => selected.id == annotation.id)
+					);
 				})
 			);
 

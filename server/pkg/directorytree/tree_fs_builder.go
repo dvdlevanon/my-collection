@@ -3,6 +3,7 @@ package directorytree
 import (
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 type FilesFilter func(path string) bool
@@ -27,6 +28,11 @@ func buildFromDir(parent *DirectoryNode, path string, filter FilesFilter) (*Dire
 	}
 
 	for _, file := range files {
+		if strings.HasPrefix(".", file.Name()) {
+			// ignore hidden files and dirs
+			continue
+		}
+
 		if file.IsDir() {
 			child, err := buildFromDir(node, filepath.Join(path, file.Name()), filter)
 			if err != nil {

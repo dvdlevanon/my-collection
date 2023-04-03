@@ -78,6 +78,7 @@ func refreshMainCover(irw model.ItemReaderWriter, uploader model.StorageUploader
 		return err
 	}
 
+	item.MainCoverSecond = second
 	item.MainCoverUrl = pointer.String(uploader.GetStorageUrl(relativeFile))
 	return irw.UpdateItem(item)
 }
