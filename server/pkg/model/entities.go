@@ -21,6 +21,7 @@ type Tag struct {
 type TagImageType struct {
 	Id       uint64 `json:"id,omitempty"`
 	Nickname string `json:"nickname,omitempty" gorm:"unique"`
+	IconUrl  string `json:"iconUrl,omitempty"`
 }
 
 type TagImage struct {

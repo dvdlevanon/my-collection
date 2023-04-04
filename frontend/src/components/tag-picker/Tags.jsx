@@ -127,6 +127,8 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				setSelectedAnnotations={setSelectedAnnotations}
 				tit={tit}
 				setTit={setTit}
+				sortBy={sortBy}
+				setSortBy={setSortBy}
 			/>
 			<Box
 				sx={{

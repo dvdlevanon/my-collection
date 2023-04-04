@@ -5,7 +5,15 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 
 function TagImageTypeSelector({ tit, onTitChanged }) {
-	const titsQuery = useQuery(ReactQueryUtil.TAG_IMAGE_TYPES_KEY, Client.getTagImageTypes);
+	const titsQuery = useQuery({
+		queryKey: ReactQueryUtil.TAG_IMAGE_TYPES_KEY,
+		queryFn: Client.getTagImageTypes,
+		onSuccess: (tits) => {
+			if (!tit && tits.length > 0) {
+				onTitChanged(tits[0]);
+			}
+		},
+	});
 
 	return (
 		<>
@@ -23,7 +31,7 @@ function TagImageTypeSelector({ tit, onTitChanged }) {
 					{titsQuery.data.map((tit) => {
 						return (
 							<ToggleButton key={tit.id} value={tit}>
-								{tit.nickname}
+								<img width="20" height="20" src={Client.buildFileUrl(tit.iconUrl)}></img>
 							</ToggleButton>
 						);
 					})}

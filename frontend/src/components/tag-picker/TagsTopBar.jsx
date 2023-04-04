@@ -6,6 +6,7 @@ import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
 import TagImageTypeSelector from './TagImageTypeSelector';
+import TagSortSelector from './TagSortSelector';
 import TagsAnnotations from './TagsAnnotations';
 
 function TagsTopBar({
@@ -17,6 +18,8 @@ function TagsTopBar({
 	setAddTagDialogOpened,
 	tit,
 	setTit,
+	sortBy,
+	setSortBy,
 }) {
 	let [showImagesFromDirectory, setShowImagesFromDirectory] = useState(false);
 	const onSearchTermChanged = (e) => {
@@ -50,6 +53,7 @@ function TagsTopBar({
 					</IconButton>
 				</Tooltip>
 			)}
+			<TagImageTypeSelector tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
 			<TextField
 				variant="outlined"
 				autoFocus
@@ -58,7 +62,7 @@ function TagsTopBar({
 				size="small"
 				onChange={(e) => onSearchTermChanged(e)}
 			></TextField>
-			<TagImageTypeSelector tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
+			<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
 			<TagsAnnotations
 				annotations={annotations}
 				selectedAnnotations={selectedAnnotations}

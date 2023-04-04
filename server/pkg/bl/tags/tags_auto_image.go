@@ -45,11 +45,44 @@ func autoImageTagType(storage *storage.Storage, tw model.TagWriter,
 		return err
 	}
 
+	if err := updateTagImageTypeIcon(storage, titrw, tit, directoryPath); err != nil {
+		return err
+	}
+
 	if imageExists(tag, tit) {
 		return nil
 	}
 
 	return autoImageTag(storage, tw, tag, directoryPath, tit)
+}
+
+func updateTagImageTypeIcon(storage *storage.Storage, titrw model.TagImageTypeReaderWriter, tit *model.TagImageType, directoryPath string) error {
+	if tit.IconUrl != "" {
+		return nil
+	}
+
+	path, err := findExistingImage("icon", directoryPath)
+	if err != nil {
+		return err
+	}
+	if path == "" {
+		return nil
+	}
+
+	fileName := fmt.Sprintf("%s-%s", filepath.Base(path), uuid.NewString())
+	relativeFile := filepath.Join("tit-icon", fmt.Sprint(tit.Id), fileName)
+	storageFile, err := storage.GetFileForWriting(relativeFile)
+	if err != nil {
+		return err
+	}
+
+	if err = cp.Copy(path, storageFile); err != nil {
+		logger.Errorf("Error coping tit icon %s to %s - %s", path, storageFile, err)
+		return nil
+	}
+
+	tit.IconUrl = storage.GetStorageUrl(relativeFile)
+	return titrw.CreateOrUpdateTagImageType(tit)
 }
 
 func imageExists(tag *model.Tag, tit *model.TagImageType) bool {
@@ -88,7 +121,6 @@ func autoImageTag(storage *storage.Storage, tw model.TagWriter, tag *model.Tag,
 	if err != nil {
 		return err
 	}
-
 	if path == "" {
 		return nil
 	}
