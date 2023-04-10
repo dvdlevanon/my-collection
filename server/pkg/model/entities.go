@@ -11,8 +11,6 @@ type Tag struct {
 	ParentID    *uint64          `json:"parentId,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
 	Items       []*Item          `json:"items,omitempty" gorm:"many2many:tag_items;"`
 	Children    []*Tag           `json:"children,omitempty" gorm:"foreignkey:ParentID"`
-	Active      *bool            `json:"active,omitempty"`
-	Selected    *bool            `json:"selected,omitempty"`
 	Image       string           `json:"imageUrl,omitempty"`
 	Images      []*TagImage      `json:"images,omitempty"`
 	Annotations []*TagAnnotation `json:"tags_annotations,omitempty" gorm:"many2many:tags_annotations;"`

@@ -1,39 +1,28 @@
 import { Stack } from '@mui/material';
 import React, { useState } from 'react';
-import { useMutation, useQueryClient } from 'react-query';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
-import Client from '../../utils/client';
-import ReactQueryUtil from '../../utils/react-query-util';
 import GalleryFilters from './GalleryFilters';
 import ItemsList from './ItemsList';
 import ItemsViewControls from './ItemsViewControls';
 
-function ItemsView({ previewMode, tagsQuery, itemsQuery }) {
-	const queryClient = useQueryClient();
+function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	const [conditionType, setConditionType] = useState('||');
 	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
 	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
-	const saveTag = useMutation(Client.saveTag);
-
-	const changeTagState = (tag, updater) => {
-		saveTag.mutate(updater(tag), {
-			onSuccess: () => {
-				ReactQueryUtil.updateTags(queryClient, tag.id, (currentTag) => {
-					return updater(currentTag);
-				});
-			},
-		});
-	};
 
 	const getSelectedTags = () => {
+		let selectedTagsIds = galleryUrlParams.getSelectedTags();
+
 		return tagsQuery.data.filter((tag) => {
-			return tag.selected;
+			return selectedTagsIds.some((id) => tag.id == id);
 		});
 	};
 
 	const getActiveTags = () => {
+		let activeTagsIds = galleryUrlParams.getActiveTags();
+
 		return tagsQuery.data.filter((tag) => {
-			return tag.active;
+			return activeTagsIds.some((id) => tag.id == id);
 		});
 	};
 
@@ -66,22 +55,11 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery }) {
 	};
 
 	const onTagDeactivated = (tag) => {
-		changeTagState(tag, (currentTag) => {
-			return {
-				...currentTag,
-				active: false,
-				selected: false,
-			};
-		});
+		galleryUrlParams.deactivateTag(tag.id);
 	};
 
 	const onTagClick = (tag) => {
-		changeTagState(tag, (currentTag) => {
-			return {
-				...currentTag,
-				selected: !tag.selected,
-			};
-		});
+		galleryUrlParams.toggleTagSelection(tag.id);
 	};
 
 	const onChangeCondition = (conditionType) => {
@@ -109,6 +87,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery }) {
 					<GalleryFilters
 						conditionType={conditionType}
 						activeTags={getActiveTags()}
+						selectedTags={getSelectedTags()}
 						onTagClick={onTagClick}
 						onTagDelete={onTagDeactivated}
 						onChangeCondition={onChangeCondition}

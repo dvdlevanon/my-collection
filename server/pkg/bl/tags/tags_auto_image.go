@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 
 	"github.com/go-errors/errors"
-	"github.com/google/uuid"
 	cp "github.com/otiai10/copy"
 	"gorm.io/gorm"
 )
@@ -69,8 +68,7 @@ func updateTagImageTypeIcon(storage *storage.Storage, titrw model.TagImageTypeRe
 		return nil
 	}
 
-	fileName := fmt.Sprintf("%s-%s", filepath.Base(path), uuid.NewString())
-	relativeFile := filepath.Join("tit-icon", fmt.Sprint(tit.Id), fileName)
+	relativeFile := filepath.Join("tit-icon", fmt.Sprint(tit.Id), filepath.Base(path))
 	storageFile, err := storage.GetFileForWriting(relativeFile)
 	if err != nil {
 		return err
@@ -125,8 +123,7 @@ func autoImageTag(storage *storage.Storage, tw model.TagWriter, tag *model.Tag,
 		return nil
 	}
 
-	fileName := fmt.Sprintf("%s-%s", filepath.Base(path), uuid.NewString())
-	relativeFile := filepath.Join("tags-image-types", fmt.Sprint(tag.Id), fmt.Sprint(tit.Id), fileName)
+	relativeFile := filepath.Join("tags-image-types", fmt.Sprint(tag.Id), fmt.Sprint(tit.Id), filepath.Base(path))
 	storageFile, err := storage.GetFileForWriting(relativeFile)
 	if err != nil {
 		return err

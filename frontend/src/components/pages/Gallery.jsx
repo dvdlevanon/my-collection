@@ -1,41 +1,27 @@
 import { Divider, Stack } from '@mui/material';
 import { useEffect, useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useQuery } from 'react-query';
+import { useSearchParams } from 'react-router-dom';
 import Client from '../../utils/client';
+import GalleryUrlParams from '../../utils/gallery-url-params';
 import ReactQueryUtil from '../../utils/react-query-util';
 import ItemsView from '../items-viewer/ItemsView';
 import TagPicker from '../tag-picker/TagPicker';
 
 function Gallery({ previewMode }) {
-	const queryClient = useQueryClient();
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
-	const saveTag = useMutation(Client.saveTag);
-	let [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
+	const [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
+	const [searchParams, setSearchParams] = useSearchParams();
+	const galleryUrlParams = new GalleryUrlParams(searchParams, setSearchParams);
 
 	useEffect(() => {
 		document.title = 'My Collection';
 	}, []);
 
-	const changeTagState = (tag, updater) => {
-		saveTag.mutate(updater(tag), {
-			onSuccess: () => {
-				ReactQueryUtil.updateTags(queryClient, tag.id, (currentTag) => {
-					return updater(currentTag);
-				});
-			},
-		});
-	};
-
 	const onTagActivated = (tag) => {
+		galleryUrlParams.activateTag(tag.id);
 		window.scrollTo(0, 0);
-		changeTagState(tag, (currentTag) => {
-			return {
-				...currentTag,
-				active: true,
-				selected: true,
-			};
-		});
 	};
 
 	return (
@@ -52,7 +38,12 @@ function Gallery({ previewMode }) {
 			<Divider />
 			<Stack padding="10px">
 				{!tagsDropDownOpened && (
-					<ItemsView tagsQuery={tagsQuery} itemsQuery={itemsQuery} previewMode={previewMode} />
+					<ItemsView
+						tagsQuery={tagsQuery}
+						itemsQuery={itemsQuery}
+						galleryUrlParams={galleryUrlParams}
+						previewMode={previewMode}
+					/>
 				)}
 			</Stack>
 		</Stack>

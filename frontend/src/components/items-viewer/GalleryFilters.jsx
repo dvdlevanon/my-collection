@@ -1,7 +1,7 @@
 import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import TagChips from '../tags-chip/TagChips';
 
-function GalleryFilters({ conditionType, activeTags, onTagClick, onTagDelete, onChangeCondition }) {
+function GalleryFilters({ conditionType, activeTags, selectedTags, onTagClick, onTagDelete, onChangeCondition }) {
 	return (
 		<Stack flexDirection="row" gap="10px">
 			{activeTags.length > 1 && (
@@ -25,7 +25,7 @@ function GalleryFilters({ conditionType, activeTags, onTagClick, onTagDelete, on
 					onClick={onTagClick}
 					onDelete={onTagDelete}
 					tagHighlightedPredicate={(tag) => {
-						return tag.selected;
+						return selectedTags.some((cur) => cur.id == tag.id);
 					}}
 				/>
 			)}

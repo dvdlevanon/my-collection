@@ -28,7 +28,7 @@ func buildFromDir(parent *DirectoryNode, path string, filter FilesFilter) (*Dire
 	}
 
 	for _, file := range files {
-		if strings.HasPrefix(".", file.Name()) {
+		if strings.HasPrefix(file.Name(), ".") {
 			// ignore hidden files and dirs
 			continue
 		}

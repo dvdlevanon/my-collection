@@ -27,7 +27,7 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClicked }) {
 			<Grid container height="100%" width="100%">
 				{suggestedItems.map((item) => {
 					return (
-						<Grid item xs={3}>
+						<Grid item xs={3} key={item.id}>
 							<Box
 								height="100%"
 								width="100%"

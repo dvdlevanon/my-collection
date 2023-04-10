@@ -1,15 +1,16 @@
 import AddIcon from '@mui/icons-material/Add';
 
 import NoImageIcon from '@mui/icons-material/HideImage';
-import { Box, Typography } from '@mui/material';
+import { Box, Link, Typography } from '@mui/material';
 import React, { useState } from 'react';
+import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
+import GalleryUrlParams from '../../utils/gallery-url-params';
 import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
-
 function Tag({ tag, size, selectedTit, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
@@ -34,15 +35,19 @@ function Tag({ tag, size, selectedTit, onTagSelected }) {
 			}
 		}
 
-		if (hasImage()) {
-			return Client.buildFileUrl(tag.imageUrl);
-		} else {
-			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
+		if (tag.images) {
+			for (let i = 0; i < tag.images.length; i++) {
+				if (tag.images[i].url) {
+					return Client.buildFileUrl(tag.images[i].url);
+				}
+			}
 		}
+
+		return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
 	};
 
 	const hasImage = () => {
-		return tag.imageUrl && tag.imageUrl != 'none';
+		return tag.images && tag.images.length > 0;
 	};
 
 	const onManageAttributesClicked = (e) => {
@@ -205,33 +210,40 @@ function Tag({ tag, size, selectedTit, onTagSelected }) {
 	};
 
 	return (
-		<Box
-			sx={{
-				display: 'flex',
-				flexDirection: 'column',
-				justifyContent: 'space-between',
-				padding: '3px',
-				cursor: 'pointer',
-				position: 'relative',
-				width: getWidth(),
-				height: getHeight(),
-			}}
-			onClick={() => onTagSelected(tag)}
-			onMouseEnter={() => setOptionsHidden(false)}
-			onMouseLeave={() => setOptionsHidden(true)}
-		>
-			{getTagComponent()}
+		<Link component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'column',
+					justifyContent: 'space-between',
+					padding: '3px',
+					cursor: 'pointer',
+					position: 'relative',
+					width: getWidth(),
+					height: getHeight(),
+				}}
+				onClick={(e) => {
+					e.preventDefault();
+					onTagSelected(tag);
+				}}
+				onMouseEnter={() => setOptionsHidden(false)}
+				onMouseLeave={() => setOptionsHidden(true)}
+			>
+				{getTagComponent()}
 
-			{attachMenuAttributes !== null && (
-				<TagAttachAnnotationMenu
-					tag={tag}
-					menu={attachMenuAttributes}
-					onClose={() => setAttachMenuAttributes(null)}
-				/>
-			)}
-			{removeTagDialogOpened && <RemoveTagDialog tag={tag} onClose={() => setRemoveTagDialogOpened(false)} />}
-			{manageTagImageOpened && <ManageTagImageDialog tag={tag} onClose={() => setManageTagImageOpened(false)} />}
-		</Box>
+				{attachMenuAttributes !== null && (
+					<TagAttachAnnotationMenu
+						tag={tag}
+						menu={attachMenuAttributes}
+						onClose={() => setAttachMenuAttributes(null)}
+					/>
+				)}
+				{removeTagDialogOpened && <RemoveTagDialog tag={tag} onClose={() => setRemoveTagDialogOpened(false)} />}
+				{manageTagImageOpened && (
+					<ManageTagImageDialog tag={tag} onClose={() => setManageTagImageOpened(false)} />
+				)}
+			</Box>
+		</Link>
 	);
 }
 
