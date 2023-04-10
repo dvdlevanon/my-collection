@@ -22,6 +22,7 @@ function GalleryFilters({ conditionType, activeTags, selectedTags, onTagClick, o
 			{activeTags.length > 0 && (
 				<TagChips
 					tags={activeTags}
+					linkable={false}
 					onClick={onTagClick}
 					onDelete={onTagDelete}
 					tagHighlightedPredicate={(tag) => {

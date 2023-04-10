@@ -3,7 +3,7 @@ import React from 'react';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import Item from '../items-viewer/Item';
 
-function ItemSuggestions({ suggestedItems, width, onBackgroundClicked }) {
+function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroundDoubleClick }) {
 	const getItemSize = () => {
 		let itemWidth = width / 5;
 		return {
@@ -15,7 +15,8 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClicked }) {
 	return (
 		<Stack
 			flexDirection="column"
-			onClick={onBackgroundClicked}
+			onClick={onBackgroundClick}
+			onDoubleClick={onBackgroundDoubleClick}
 			sx={{
 				position: 'absolute',
 				left: 50,
@@ -34,6 +35,8 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClicked }) {
 								display="flex"
 								justifyContent="center"
 								alignItems="center"
+								onClick={onBackgroundClick}
+								onDoubleClick={onBackgroundDoubleClick}
 								sx={{
 									padding: '10px',
 								}}
@@ -42,6 +45,8 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClicked }) {
 									display="flex"
 									justifyContent="center"
 									alignItems="center"
+									onClick={onBackgroundClick}
+									onDoubleClick={onBackgroundDoubleClick}
 									sx={{
 										padding: '10px',
 										background: 'rgba(0, 0, 0, 0.4)',

@@ -3,6 +3,7 @@ import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import ImageIcon from '@mui/icons-material/Image';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
+import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
 import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useLayoutEffect, useRef, useState } from 'react';
 import Client from '../../utils/client';
@@ -17,6 +18,7 @@ function Player({ url, setMainCover, suggestedItems }) {
 	let [isPlaying, setIsPlaying] = useState(true);
 	let [currentTime, setCurrentTime] = useState(0);
 	let [fullScreen, setFullScreen] = useState(false);
+	let [showSuggestions, setShowSuggestions] = useState(false);
 	let [duration, setDuration] = useState(0);
 	let [hideControlsTimerId, setHideControlsTimerId] = useState(0);
 	let [playerWidth, setPlayerWidth] = useState(0);
@@ -39,6 +41,7 @@ function Player({ url, setMainCover, suggestedItems }) {
 		} else {
 			videoElement.current.play();
 			setIsPlaying(true);
+			setShowSuggestions(false);
 		}
 	};
 
@@ -123,6 +126,10 @@ function Player({ url, setMainCover, suggestedItems }) {
 				loop={false}
 				ref={videoElement}
 				onClick={togglePlay}
+				onEnded={() => {
+					setShowSuggestions(true);
+					setIsPlaying(false);
+				}}
 				onDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
 				onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
 				onLoadedMetadata={(e) => setDuration(e.target.duration)}
@@ -130,8 +137,13 @@ function Player({ url, setMainCover, suggestedItems }) {
 			>
 				<source src={Client.buildFileUrl(url)} />
 			</Box>
-			{!isPlaying && (
-				<ItemSuggestions suggestedItems={suggestedItems} width={playerWidth} onBackgroundClicked={togglePlay} />
+			{showSuggestions && (
+				<ItemSuggestions
+					suggestedItems={suggestedItems}
+					width={playerWidth}
+					onBackgroundClick={togglePlay}
+					onBackgroundDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
+				/>
 			)}
 			<Fade in={showControls}>
 				<Stack
@@ -166,6 +178,11 @@ function Player({ url, setMainCover, suggestedItems }) {
 					>
 						<Tooltip title={isPlaying ? 'Pause' : 'Play'}>
 							<IconButton onClick={togglePlay}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</IconButton>
+						</Tooltip>
+						<Tooltip title={showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}>
+							<IconButton onClick={() => setShowSuggestions(!showSuggestions)}>
+								{<PlayNextIcon />}
+							</IconButton>
 						</Tooltip>
 						<VolumeControls
 							showVolume={showVolume}

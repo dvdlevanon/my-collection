@@ -64,10 +64,6 @@ function ItemPage() {
 		});
 	};
 
-	const onTagClicked = (tag) => {
-		console.log('send to gallery with selected filter');
-	};
-
 	const setMainCover = (second) => {
 		Client.setMainCover(itemQuery.data.id, second).then(() => {
 			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
@@ -107,8 +103,9 @@ function ItemPage() {
 						<TagChips
 							flexDirection="column"
 							tags={itemQuery.data.tags.filter((cur) => !TagsUtil.isSpecialCategory(cur.parentId))}
+							linkable={true}
 							onDelete={onTagRemoved}
-							onClick={onTagClicked}
+							onClick={() => {}}
 							tagHighlightedPredicate={() => {
 								return true;
 							}}

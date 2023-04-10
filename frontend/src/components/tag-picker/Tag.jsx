@@ -11,6 +11,7 @@ import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
+
 function Tag({ tag, size, selectedTit, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
