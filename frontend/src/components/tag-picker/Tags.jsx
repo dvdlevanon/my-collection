@@ -16,6 +16,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parentId) ? 'title-asc' : 'random');
 	const [tit, setTit] = useState(null);
+	const [prefixFilter, setPrefixFilter] = useState('');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
@@ -51,6 +52,18 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 		return filteredTags;
 	};
 
+	const filterByPrefix = (tags) => {
+		let filteredTags = tags;
+
+		if (prefixFilter) {
+			filteredTags = tags.filter((tag) => {
+				return tag.title.toLowerCase().startsWith(prefixFilter.toLowerCase());
+			});
+		}
+
+		return filteredTags;
+	};
+
 	const filterTagsByAnnotations = (tags) => {
 		return tags.filter((cur) => {
 			if (selectedAnnotations.length == 0) {
@@ -69,7 +82,7 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 	};
 
 	const filterTags = () => {
-		let filteredTags = filterTagsByAnnotations(filterTagsBySearch(tags));
+		let filteredTags = filterByPrefix(filterTagsByAnnotations(filterTagsBySearch(tags)));
 
 		if (sortBy == 'random') {
 			let epochDay = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
@@ -129,6 +142,8 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				setTit={setTit}
 				sortBy={sortBy}
 				setSortBy={setSortBy}
+				prefixFilter={prefixFilter}
+				setPrefixFilter={setPrefixFilter}
 			/>
 			<Box
 				sx={{

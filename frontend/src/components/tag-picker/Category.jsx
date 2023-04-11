@@ -11,7 +11,6 @@ function Category({ isHighlighted, category, onClick }) {
 			}}
 		>
 			<Link
-				// color={isHighlighted ? 'primary.light' : 'primary'}
 				variant="h6"
 				onClick={(e) => onClick(category)}
 				sx={{

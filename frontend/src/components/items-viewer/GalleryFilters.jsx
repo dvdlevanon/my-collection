@@ -1,34 +1,70 @@
-import { Stack, ToggleButton, ToggleButtonGroup } from '@mui/material';
+import CloseIcon from '@mui/icons-material/Close';
+import { IconButton, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import TagChips from '../tags-chip/TagChips';
 
-function GalleryFilters({ conditionType, activeTags, selectedTags, onTagClick, onTagDelete, onChangeCondition }) {
+function GalleryFilters({
+	conditionType,
+	activeTags,
+	selectedTags,
+	onTagClick,
+	onTagDelete,
+	onChangeCondition,
+	searchTerm,
+	setSearchTerm,
+	galleryUrlParams,
+}) {
 	return (
-		<Stack flexDirection="row" gap="10px">
-			{activeTags.length > 1 && (
-				<Stack justifyContent="center" alignContent="center">
-					<ToggleButtonGroup
-						size="small"
-						exclusive
-						value={conditionType}
-						onChange={(e, newValue) => {
-							onChangeCondition(newValue);
-						}}
-					>
-						<ToggleButton value="||">OR</ToggleButton>
-						<ToggleButton value="&&">ADD</ToggleButton>
-					</ToggleButtonGroup>
-				</Stack>
-			)}
+		<Stack flexDirection="row" gap="10px" alignItems="center">
+			<TextField
+				variant="outlined"
+				autoFocus
+				label="Search..."
+				type="search"
+				size="small"
+				onChange={(e) => setSearchTerm(e.target.value)}
+				value={searchTerm}
+			></TextField>
 			{activeTags.length > 0 && (
-				<TagChips
-					tags={activeTags}
-					linkable={false}
-					onClick={onTagClick}
-					onDelete={onTagDelete}
-					tagHighlightedPredicate={(tag) => {
-						return selectedTags.some((cur) => cur.id == tag.id);
+				<Paper
+					variant="outlined"
+					sx={{
+						display: 'flex',
+						gap: '10px',
+						padding: '0px 0px 0px 0px',
 					}}
-				/>
+				>
+					<Tooltip title="Remove all filters">
+						<IconButton
+							onClick={() => {
+								galleryUrlParams.deactivateAllTags();
+							}}
+						>
+							<CloseIcon sx={{ fontSize: '25px' }} />
+						</IconButton>
+					</Tooltip>
+					<TagChips
+						tags={activeTags}
+						linkable={false}
+						onClick={onTagClick}
+						onDelete={onTagDelete}
+						tagHighlightedPredicate={(tag) => {
+							return selectedTags.some((cur) => cur.id == tag.id);
+						}}
+					/>
+					<Stack justifyContent="center" alignContent="center">
+						<ToggleButtonGroup
+							size="small"
+							exclusive
+							value={conditionType}
+							onChange={(e, newValue) => {
+								onChangeCondition(newValue);
+							}}
+						>
+							<ToggleButton value="||">OR</ToggleButton>
+							<ToggleButton value="&&">AND</ToggleButton>
+						</ToggleButtonGroup>
+					</Stack>
+				</Paper>
 			)}
 		</Stack>
 	);

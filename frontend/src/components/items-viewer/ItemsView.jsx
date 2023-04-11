@@ -7,6 +7,7 @@ import ItemsViewControls from './ItemsViewControls';
 
 function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	const [conditionType, setConditionType] = useState('||');
+	const [searchTerm, setSearchTerm] = useState('');
 	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
 	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
 
@@ -26,12 +27,28 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 		});
 	};
 
-	const getSeletedItems = (selectedTags) => {
+	const isMetSearchTerm = (item) => {
+		return item.title && item.title.toLowerCase().includes(searchTerm.toLowerCase());
+	};
+
+	const getFilteredItems = (selectedTags, searchTerm) => {
 		if (selectedTags.length === 0) {
-			return [];
+			if (!searchTerm || searchTerm.length < 3) {
+				return [];
+			}
+
+			let filtered = itemsQuery.data.filter((item) => isMetSearchTerm(item));
+			if (filtered.length > 500) {
+				return filtered.slice(500);
+			}
+			return filtered;
 		}
 
 		let result = itemsQuery.data.filter((item) => {
+			if (searchTerm && !isMetSearchTerm(item)) {
+				return false;
+			}
+
 			let tagsWithItem = selectedTags.filter((tag) => {
 				if (!tag.items) {
 					return false;
@@ -91,11 +108,18 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 						onTagClick={onTagClick}
 						onTagDelete={onTagDeactivated}
 						onChangeCondition={onChangeCondition}
+						searchTerm={searchTerm}
+						setSearchTerm={setSearchTerm}
+						galleryUrlParams={galleryUrlParams}
 					/>
 				)}
 			</Stack>
 			{tagsQuery.isSuccess && itemsQuery.isSuccess && (
-				<ItemsList itemsSize={itemsSize} items={getSeletedItems(getSelectedTags())} previewMode={previewMode} />
+				<ItemsList
+					itemsSize={itemsSize}
+					items={getFilteredItems(getSelectedTags(), searchTerm)}
+					previewMode={previewMode}
+				/>
 			)}
 		</Stack>
 	);

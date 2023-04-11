@@ -12,8 +12,8 @@ function Gallery({ previewMode }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
 	const [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
-	const [searchParams, setSearchParams] = useSearchParams();
-	const galleryUrlParams = new GalleryUrlParams(searchParams, setSearchParams);
+	let [searchParams, setSearchParams] = useSearchParams();
+	let galleryUrlParams = new GalleryUrlParams(searchParams, setSearchParams);
 
 	useEffect(() => {
 		document.title = 'My Collection';
@@ -26,15 +26,17 @@ function Gallery({ previewMode }) {
 
 	return (
 		<Stack flexGrow={1} padding="10px">
-			{tagsQuery.isSuccess && (
-				<TagPicker
-					size="big"
-					showSpecialCategories={true}
-					onTagSelected={onTagActivated}
-					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
-					initialSelectedCategoryId={0}
-				/>
-			)}
+			<Stack>
+				{tagsQuery.isSuccess && (
+					<TagPicker
+						size="big"
+						showSpecialCategories={true}
+						onTagSelected={onTagActivated}
+						onDropDownToggled={(state) => setTagsDropDownOpened(state)}
+						initialSelectedCategoryId={0}
+					/>
+				)}
+			</Stack>
 			<Divider />
 			<Stack padding="10px">
 				{!tagsDropDownOpened && (

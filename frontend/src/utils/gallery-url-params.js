@@ -65,10 +65,13 @@ export default class GalleryUrlParams {
 		this.updateActiveTagsString(updatedTags);
 	}
 
+	deactivateAllTags() {
+		this.updateActiveTagsString([]);
+	}
+
 	updateActiveTagsString(activeTags) {
 		let parsed = queryString.parse(this.searchParams.toString());
-
-		if (activeTags) {
+		if (activeTags.length > 0) {
 			parsed['active-tags'] = activeTags.join(',');
 		} else {
 			delete parsed['active-tags'];
