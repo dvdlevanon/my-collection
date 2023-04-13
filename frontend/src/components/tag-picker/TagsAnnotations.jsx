@@ -20,6 +20,7 @@ function TagsAnnotations({ annotations, selectedAnnotations, setSelectedAnnotati
 			sx={{
 				display: 'flex',
 				flexDirection: 'row',
+				flexWrap: 'wrap',
 			}}
 		>
 			{annotations

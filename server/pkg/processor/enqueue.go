@@ -1,9 +1,12 @@
 package processor
 
 import (
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/model"
+	"os"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/google/uuid"
 	"k8s.io/utils/pointer"
 )
@@ -26,15 +29,27 @@ func (p *itemProcessorImpl) enqueue(t *model.Task) {
 	}
 }
 
+func (p itemProcessorImpl) GetLastModified(path string) (int64, error) {
+	file, err := os.Stat(path)
+	if err != nil {
+		return 0, errors.Wrap(err, 1)
+	}
+
+	return file.ModTime().UnixMilli(), nil
+}
+
 func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata(force bool) error {
-	items, err := p.db.GetAllItems()
+	allItems, err := p.db.GetAllItems()
 	if err != nil {
 		return err
 	}
 
-	for _, item := range *items {
+	for _, item := range *allItems {
 		if !force && item.DurationSeconds != 0 {
-			continue
+			modified, err := items.IsModified(&item, p)
+			if !modified || err != nil {
+				continue
+			}
 		}
 
 		p.EnqueueItemVideoMetadata(item.Id)

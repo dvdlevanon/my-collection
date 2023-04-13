@@ -1,5 +1,6 @@
-import { Box, Tooltip, Typography } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import React from 'react';
+import ItemTitle from './ItemTitle';
 
 function ItemFooter({ item }) {
 	return (
@@ -13,19 +14,17 @@ function ItemFooter({ item }) {
 			}}
 		>
 			<Tooltip title={item.title} arrow followCursor>
-				<Typography
-					variant="caption"
+				<Box
 					sx={{
 						whiteSpace: 'nowrap',
 						overflow: 'hidden',
 						textOverflow: 'ellipsis',
-						cursor: 'pointer',
 						textAlign: 'center',
 						flexGrow: 1,
 					}}
 				>
-					{item.title}
-				</Typography>
+					<ItemTitle item={item} variant="caption" />
+				</Box>
 			</Tooltip>
 		</Box>
 	);

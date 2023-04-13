@@ -40,30 +40,42 @@ function TagsTopBar({
 					gap: '10px',
 				}}
 			>
-				{!TagsUtil.isDirectoriesCategory(parentId) && (
-					<Tooltip title="Set images from directory">
-						<IconButton onClick={() => setShowImagesFromDirectory(true)}>
-							<ImageIcon />
-						</IconButton>
-					</Tooltip>
-				)}
-				{!TagsUtil.isDirectoriesCategory(parentId) && (
-					<Tooltip title="Add new tag">
-						<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
-							<AddIcon />
-						</IconButton>
-					</Tooltip>
-				)}
-				<TagImageTypeSelector tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
-				<TextField
-					variant="outlined"
-					autoFocus
-					label="Search for tags..."
-					type="search"
-					size="small"
-					onChange={(e) => setSearchTerm(e.target.value)}
-				></TextField>
-				<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
+				<Stack
+					sx={{
+						display: 'flex',
+						flexDirection: 'row',
+						gap: '10px',
+						maxHeight: '44px',
+					}}
+				>
+					{!TagsUtil.isDirectoriesCategory(parentId) && (
+						<Tooltip title="Set images from directory">
+							<IconButton onClick={() => setShowImagesFromDirectory(true)}>
+								<ImageIcon />
+							</IconButton>
+						</Tooltip>
+					)}
+					{!TagsUtil.isDirectoriesCategory(parentId) && (
+						<Tooltip title="Add new tag">
+							<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
+								<AddIcon />
+							</IconButton>
+						</Tooltip>
+					)}
+					<TagImageTypeSelector tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
+					<TextField
+						variant="outlined"
+						autoFocus
+						label="Search for tags..."
+						type="search"
+						size="small"
+						onChange={(e) => setSearchTerm(e.target.value)}
+						sx={{
+							minWidth: '200px',
+						}}
+					></TextField>
+					<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
+				</Stack>
 				<TagsAnnotations
 					annotations={annotations}
 					selectedAnnotations={selectedAnnotations}

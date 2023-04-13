@@ -24,7 +24,10 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 					}}
 					ariaLabel="tag-actions"
 					icon={<OptionsIcon />}
-					onClick={(e) => e.stopPropagation()}
+					onClick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+					}}
 				>
 					<SpeedDialAction
 						key="copy-name"
@@ -49,6 +52,8 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 						tooltipTitle="Manage annotations"
 						icon={<AddLink />}
 						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
 							onManageAttributesClicked(e);
 						}}
 					/>
@@ -57,6 +62,7 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 						tooltipTitle="Remove tag"
 						icon={<RemoveIcon />}
 						onClick={(e) => {
+							e.preventDefault();
 							e.stopPropagation();
 							onRemoveTagClicked();
 						}}

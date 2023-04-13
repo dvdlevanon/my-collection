@@ -5,7 +5,7 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
 import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Client from '../../utils/client';
 import ItemSuggestions from './ItemSuggestions';
 import TimingControls from './TimingControls';
@@ -33,6 +33,23 @@ function Player({ url, setMainCover, suggestedItems }) {
 		updateSize();
 		return () => window.removeEventListener('resize', updateSize);
 	}, []);
+
+	useEffect(() => {
+		window.addEventListener('keyup', onKeyDown, false);
+		return () => {
+			window.removeEventListener('keyup', onKeyDown, false);
+		};
+	}, [isPlaying]);
+
+	const onKeyDown = (e) => {
+		if (e.key == ' ') {
+			togglePlay();
+		} else if (e.key == 'ArrowLeft') {
+			setRelativeTime(-10);
+		} else if (e.key == 'ArrowRight') {
+			setRelativeTime(10);
+		}
+	};
 
 	const togglePlay = (e) => {
 		if (isPlaying) {
@@ -112,9 +129,6 @@ function Player({ url, setMainCover, suggestedItems }) {
 				cursor: isPlaying && !showControls ? 'none' : 'auto',
 			}}
 			tabIndex="0"
-			onKeyPress={(e) => {
-				console.log('KEY PRESS');
-			}}
 			onMouseLeave={() => onMouseLeave()}
 		>
 			<Box

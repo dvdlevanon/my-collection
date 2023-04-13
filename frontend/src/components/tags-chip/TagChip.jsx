@@ -13,6 +13,7 @@ function TagChip({ tag, linkable, onClick, onDelete, tagHighlightedPredicate }) 
 					onClick(tag);
 				}}
 				onDelete={(e) => {
+					e.preventDefault();
 					e.stopPropagation();
 					onDelete(tag);
 				}}

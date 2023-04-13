@@ -95,7 +95,7 @@ func TagExists(tags []*model.Tag, tag *model.Tag) bool {
 
 func RemoveMissingTags(drw model.DirectoryReaderWriter, directory *model.Directory, tags []*model.Tag) {
 	for _, tag := range directory.Tags {
-		if TagExists(directory.Tags, tag) {
+		if TagExists(tags, tag) {
 			continue
 		}
 

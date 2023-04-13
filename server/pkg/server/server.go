@@ -52,6 +52,7 @@ func (s *Server) init() {
 	api.POST("/items", s.createItem)
 	api.POST("/items/:item", s.updateItem)
 	api.GET("/items/:item", s.getItem)
+	api.GET("/items/:item/location", s.getItemLocation)
 	api.POST("/items/:item/remove-tag/:tag", s.removeTagFromItem)
 	api.POST("/items/:item/main-cover", s.setMainCover)
 	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)

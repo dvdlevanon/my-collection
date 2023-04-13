@@ -76,6 +76,22 @@ func (s *Server) getItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+func (s *Server) getItemLocation(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	item, err := s.db.GetItem(itemId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, model.FileUrl{
+		Url: relativasor.GetAbsoluteFile(item.Url),
+	})
+}
+
 func (s *Server) getItems(c *gin.Context) {
 	items, err := s.db.GetAllItems()
 	if s.handleError(c, err) {

@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Chip, Stack, Typography } from '@mui/material';
+import { Box, Chip, Stack } from '@mui/material';
 import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
@@ -7,6 +7,7 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
+import ItemTitle from '../items-viewer/ItemTitle';
 import Player from '../player/Player';
 import TagChips from '../tags-chip/TagChips';
 
@@ -26,7 +27,6 @@ function useWindowSize() {
 function ItemPage() {
 	const queryClient = useQueryClient();
 	const { itemId } = useParams();
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const suggestedQuery = useQuery({
 		queryKey: ReactQueryUtil.suggestedItemsKey(itemId),
 		queryFn: () => Client.getSuggestedItems(itemId),
@@ -98,7 +98,7 @@ function ItemPage() {
 			{itemQuery.isSuccess && suggestedQuery.isSuccess && (
 				<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
 					<Player url={itemQuery.data.url} suggestedItems={suggestedQuery.data} setMainCover={setMainCover} />
-					<Typography variant="h5">{itemQuery.data.title}</Typography>
+					<ItemTitle item={itemQuery.data} variant="h5" onTagAdded={onTagAdded} />
 					<Stack flexDirection="row" gap="10px">
 						<TagChips
 							flexDirection="column"

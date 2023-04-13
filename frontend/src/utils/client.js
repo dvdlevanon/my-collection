@@ -102,6 +102,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/items/${itemId}`).then((response) => response.json());
 	};
 
+	static getItemLocation = async (itemId) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/location`).then((response) => response.json());
+	};
+
 	static addAnnotationToTag = async ({ tagId, annotation }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations`, {
 			method: 'POST',

@@ -18,11 +18,13 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 	);
 
 	const handleClose = (e) => {
+		e.preventDefault();
 		e.stopPropagation();
 		onClose();
 	};
 
 	const addNewAnnotation = (e) => {
+		e.preventDefault();
 		e.stopPropagation();
 		if (newAnnotationName.current.value == '') {
 			return;
@@ -32,6 +34,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 	};
 
 	const addAnnotation = (e, annotation) => {
+		e.preventDefault();
 		e.stopPropagation();
 		addAnnotationToTagMutation.mutate(
 			{ tagId: tag.id, annotation: annotation },
@@ -56,6 +59,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 	};
 
 	const removeAnnotation = (e, annotation) => {
+		e.preventDefault();
 		e.stopPropagation();
 		removeAnnotationFromTagMutation.mutate(
 			{ tagId: tag.id, annotationId: annotation.id },
@@ -120,12 +124,18 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 					flexDirection: 'column',
 					padding: '10px',
 				},
-				onClick: (e) => e.stopPropagation(),
+				onClick: (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+				},
 			}}
 		>
 			<Box>
 				<Box
-					onClick={(e) => e.stopPropagation()}
+					onClick={(e) => {
+						e.preventDefault();
+						e.stopPropagation();
+					}}
 					sx={{
 						display: 'flex',
 						gap: '10px',
@@ -135,7 +145,14 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 					<IconButton onClick={handleClose}>
 						<CloseIcon />
 					</IconButton>
-					<Typography variant="body1" noWrap onClick={(e) => e.stopPropagation()}>
+					<Typography
+						variant="body1"
+						noWrap
+						onClick={(e) => {
+							e.preventDefault();
+							e.stopPropagation();
+						}}
+					>
 						{tag.title} Annotations
 					</Typography>
 				</Box>
@@ -176,6 +193,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 						alignItems: 'center',
 					}}
 					onClick={(e) => {
+						e.preventDefault();
 						e.stopPropagation();
 					}}
 				>

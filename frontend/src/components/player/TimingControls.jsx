@@ -15,7 +15,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 	};
 
 	const installLongPressTimer = (offset) => {
-		let millisSinceStart = Date.now() - pressStartedAt;
+		let millisSinceStart = pressStartedAt == 0 ? 0 : Date.now() - pressStartedAt;
 		console.log(millisSinceStart);
 		setChangeTimerId(
 			setTimeout(() => {
@@ -49,16 +49,6 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 			{showSchedule && (
 				<Fade in={showSchedule}>
 					<Stack flexDirection="row">
-						<Tooltip title="-250ms">
-							<IconButton
-								size="small"
-								onMouseDown={() => onMouseDown(-0.025)}
-								onMouseUp={onMouseUp}
-								onMouseLeave={onMouseLeave}
-							>
-								<LeftIcon sx={{ fontSize: '20px' }} />
-							</IconButton>
-						</Tooltip>
 						<Tooltip title="-1s">
 							<IconButton
 								size="small"
@@ -66,7 +56,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<LeftIcon sx={{ fontSize: '25px' }} />
+								<LeftIcon sx={{ fontSize: '20px' }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="-10s">
@@ -76,7 +66,27 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
+								<LeftIcon sx={{ fontSize: '25px' }} />
+							</IconButton>
+						</Tooltip>
+						<Tooltip title="-30s">
+							<IconButton
+								size="small"
+								onMouseDown={() => onMouseDown(-30)}
+								onMouseUp={onMouseUp}
+								onMouseLeave={onMouseLeave}
+							>
 								<LeftIcon sx={{ fontSize: '30px' }} />
+							</IconButton>
+						</Tooltip>
+						<Tooltip title="+30s">
+							<IconButton
+								size="small"
+								onMouseDown={() => onMouseDown(30)}
+								onMouseUp={onMouseUp}
+								onMouseLeave={onMouseLeave}
+							>
+								<RightIcon sx={{ fontSize: '30px' }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="+10s">
@@ -86,23 +96,13 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<RightIcon sx={{ fontSize: '30px' }} />
+								<RightIcon sx={{ fontSize: '25px' }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="+1s">
 							<IconButton
 								size="small"
 								onMouseDown={() => onMouseDown(1)}
-								onMouseUp={onMouseUp}
-								onMouseLeave={onMouseLeave}
-							>
-								<RightIcon sx={{ fontSize: '25px' }} />
-							</IconButton>
-						</Tooltip>
-						<Tooltip title="+250ms">
-							<IconButton
-								size="small"
-								onMouseDown={() => onMouseDown(0.025)}
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>

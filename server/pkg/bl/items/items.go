@@ -23,12 +23,12 @@ func TitleFromFileName(path string) string {
 }
 
 func BuildItemFromPath(origin string, path string, flmg model.FileLastModifiedGetter) (*model.Item, error) {
-	title := TitleFromFileName(path)
 	lastModified, err := flmg.GetLastModified(path)
 	if err != nil {
 		return nil, err
 	}
 
+	title := TitleFromFileName(path)
 	return &model.Item{
 		Title:        title,
 		Origin:       origin,
@@ -116,4 +116,14 @@ func GetRandomItems(ir model.ItemReader, count int) ([]*model.Item, error) {
 	}
 
 	return randomItems, nil
+}
+
+func IsModified(item *model.Item, flmg model.FileLastModifiedGetter) (bool, error) {
+	path := relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
+	lastModified, err := flmg.GetLastModified(path)
+	if err != nil {
+		return false, err
+	}
+
+	return item.LastModified != lastModified, nil
 }
