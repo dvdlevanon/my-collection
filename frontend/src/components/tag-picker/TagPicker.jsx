@@ -7,7 +7,14 @@ import TagsUtil from '../../utils/tags-util';
 import Categories from './Categories';
 import Tags from './Tags';
 
-function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCategoryId, showSpecialCategories }) {
+function TagPicker({
+	size,
+	onTagSelected,
+	onDropDownToggled,
+	initialSelectedCategoryId,
+	showSpecialCategories,
+	tagLinkBuilder,
+}) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 
 	let [selectedCategoryId, setSelectedCategoryId] = useState(initialSelectedCategoryId);
@@ -62,6 +69,7 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCat
 					tags={getChildrenTags(selectedCategoryId)}
 					parentId={selectedCategoryId}
 					size={size}
+					tagLinkBuilder={tagLinkBuilder}
 					onTagSelected={tagSelectedHandler}
 				/>
 			)}
@@ -69,4 +77,4 @@ function TagChooser({ size, onTagSelected, onDropDownToggled, initialSelectedCat
 	);
 }
 
-export default TagChooser;
+export default TagPicker;

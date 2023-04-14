@@ -5,14 +5,13 @@ import { Box, Link, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
-import GalleryUrlParams from '../../utils/gallery-url-params';
 import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagSpeedDial from './TagSpeedDial';
 
-function Tag({ tag, size, selectedTit, onTagSelected }) {
+function Tag({ tag, size, selectedTit, tagLinkBuilder, onTagSelected }) {
 	let [optionsHidden, setOptionsHidden] = useState(true);
 	let [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
@@ -211,7 +210,7 @@ function Tag({ tag, size, selectedTit, onTagSelected }) {
 	};
 
 	return (
-		<Link component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
+		<Link component={RouterLink} to={tagLinkBuilder(tag)}>
 			<Box
 				sx={{
 					display: 'flex',

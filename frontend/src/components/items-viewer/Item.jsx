@@ -6,7 +6,7 @@ import ItemBadges from './ItemBadges';
 import ItemCoverIndicator from './ItemCoverIndicator';
 import ItemFooter from './ItemFooter';
 
-function Item({ item, preferPreview, itemWidth, itemHeight, onConvertAudio, onConvertVideo }) {
+function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onConvertAudio, onConvertVideo }) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
 	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
 	let [showPreview, setShowPreview] = useState(false);
@@ -90,7 +90,7 @@ function Item({ item, preferPreview, itemWidth, itemHeight, onConvertAudio, onCo
 					width: itemWidth,
 					height: itemHeight,
 				}}
-				to={'/spa/item/' + item.id}
+				to={itemLinkBuilder(item)}
 				onMouseLeave={(e) => mouseLeave(e)}
 				onMouseMove={(e) => mouseMove(e)}
 				onMouseEnter={(e) => mouseEnter(e)}

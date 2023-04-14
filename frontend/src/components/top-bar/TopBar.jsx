@@ -49,7 +49,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					verticalAlign: 'center',
 				}}
 			>
-				<Link sx={{ flexGrow: 1 }} component={RouterLink} to="/">
+				<Link sx={{ flexGrow: 1 }} component={RouterLink} to={'/' + window.location.search}>
 					<Typography variant="h5">My Collection</Typography>
 				</Link>
 				{queueMetadataQuery.isSuccess && (

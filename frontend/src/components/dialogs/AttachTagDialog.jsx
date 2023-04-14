@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../utils/client';
+import GalleryUrlParams from '../../utils/gallery-url-params';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagPicker from '../tag-picker/TagPicker';
 
@@ -46,6 +47,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 					size="small"
 					onTagSelected={onTagAdded}
 					onDropDownToggled={() => {}}
+					tagLinkBuilder={(tag) => '/?' + GalleryUrlParams.buildUrlParams(tag.id)}
 				/>
 			</DialogContent>
 		</Dialog>

@@ -119,6 +119,9 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 					itemsSize={itemsSize}
 					items={getFilteredItems(getSelectedTags(), searchTerm)}
 					previewMode={previewMode}
+					itemLinkBuilder={(item) => {
+						return '/spa/item/' + item.id + '?' + galleryUrlParams.getUrlParamsString();
+					}}
 				/>
 			)}
 		</Stack>

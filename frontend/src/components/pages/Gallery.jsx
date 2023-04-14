@@ -34,6 +34,9 @@ function Gallery({ previewMode }) {
 						onTagSelected={onTagActivated}
 						onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 						initialSelectedCategoryId={0}
+						tagLinkBuilder={(tag) => {
+							return '/?' + galleryUrlParams.buildActivateTagUrl(tag.id);
+						}}
 					/>
 				)}
 			</Stack>

@@ -12,6 +12,10 @@ export default class GalleryUrlParams {
 		return queryString.stringify(params);
 	}
 
+	getUrlParamsString() {
+		return this.searchParams.toString();
+	}
+
 	getTags() {
 		let parsed = queryString.parse(this.searchParams.toString());
 		let activeTags = parsed['active-tags'];
@@ -57,6 +61,13 @@ export default class GalleryUrlParams {
 		this.updateActiveTagsString(updatedTags);
 	}
 
+	buildActivateTagUrl(tagId) {
+		let tagsStatus = this.getTags();
+		let updatedTags = tagsStatus.map((tag) => this.tagToString(tag.id, false));
+		updatedTags.push(this.tagToString(tagId, true));
+		return this.buildActiveTagsString(updatedTags);
+	}
+
 	deactivateTag(tagId) {
 		let tagsStatus = this.getTags();
 		let updatedTags = tagsStatus
@@ -70,6 +81,10 @@ export default class GalleryUrlParams {
 	}
 
 	updateActiveTagsString(activeTags) {
+		this.setSearchParams(this.buildActiveTagsString(activeTags));
+	}
+
+	buildActiveTagsString(activeTags) {
 		let parsed = queryString.parse(this.searchParams.toString());
 		if (activeTags.length > 0) {
 			parsed['active-tags'] = activeTags.join(',');
@@ -77,6 +92,6 @@ export default class GalleryUrlParams {
 			delete parsed['active-tags'];
 		}
 
-		this.setSearchParams(queryString.stringify(parsed));
+		return queryString.stringify(parsed);
 	}
 }

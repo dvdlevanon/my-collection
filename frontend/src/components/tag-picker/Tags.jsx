@@ -11,7 +11,7 @@ import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
 import TagsTopBar from './TagsTopBar';
 
-function Tags({ tags, parentId, size, onTagSelected }) {
+function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parentId) ? 'title-asc' : 'random');
@@ -155,10 +155,25 @@ function Tags({ tags, parentId, size, onTagSelected }) {
 				}}
 			>
 				{filterTags().map((tag) => {
-					return <Tag key={tag.id} tag={tag} size={size} selectedTit={tit} onTagSelected={onTagSelected} />;
+					return (
+						<Tag
+							key={tag.id}
+							tag={tag}
+							size={size}
+							selectedTit={tit}
+							tagLinkBuilder={tagLinkBuilder}
+							onTagSelected={onTagSelected}
+						/>
+					);
 				})}
 				{!TagsUtil.isSpecialCategory(parentId) && (
-					<Tag key="add-tag" tag={{ id: -1 }} size={size} onTagSelected={() => setAddTagDialogOpened(true)} />
+					<Tag
+						key="add-tag"
+						tag={{ id: -1 }}
+						size={size}
+						tagLinkBuilder={tagLinkBuilder}
+						onTagSelected={() => setAddTagDialogOpened(true)}
+					/>
 				)}
 				{TagsUtil.isSpecialCategory(parentId) && tags.length == 0 && (
 					<Stack
