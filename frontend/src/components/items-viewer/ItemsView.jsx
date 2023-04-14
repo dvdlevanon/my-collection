@@ -79,10 +79,6 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 		galleryUrlParams.toggleTagSelection(tag.id);
 	};
 
-	const onChangeCondition = (conditionType) => {
-		setConditionType(conditionType);
-	};
-
 	const onZoomChanged = (offset, aspectRatio) => {
 		let newWidth = itemsSize.width + offset;
 		setItemsSize({ width: newWidth, height: AspectRatioUtil.calcHeight(newWidth, aspectRatio) });
@@ -103,11 +99,11 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 				{tagsQuery.isSuccess && (
 					<GalleryFilters
 						conditionType={conditionType}
+						setConditionType={setConditionType}
 						activeTags={getActiveTags()}
 						selectedTags={getSelectedTags()}
 						onTagClick={onTagClick}
 						onTagDelete={onTagDeactivated}
-						onChangeCondition={onChangeCondition}
 						searchTerm={searchTerm}
 						setSearchTerm={setSearchTerm}
 						galleryUrlParams={galleryUrlParams}

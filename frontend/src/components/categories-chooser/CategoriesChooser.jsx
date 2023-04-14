@@ -16,7 +16,6 @@ function CategoriesChooser({
 	const unknownCategoryId = -1;
 	const createCategoryId = -2;
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
-	// const [selectedCategories, setSelectedCategories] = useState(selectedIds);
 	const [open, setOpen] = useState(false);
 
 	const getUnknownCategory = () => {
@@ -54,7 +53,6 @@ function CategoriesChooser({
 
 		if (value[value.length - 1] == unknownCategoryId) {
 			setCategories([]);
-			// setSelectedCategories([unknownCategoryId]);
 			setOpen(false);
 			return;
 		}
@@ -64,7 +62,6 @@ function CategoriesChooser({
 		}
 
 		setCategories(value);
-		// setSelectedCategories(value);
 		setOpen(false);
 	};
 

@@ -59,6 +59,9 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 										preferPreview={true}
 										itemWidth={getItemSize().width}
 										itemHeight={getItemSize().height}
+										itemLinkBuilder={(item) => {
+											return '/spa/item/' + item.id + window.location.search;
+										}}
 									/>
 								</Box>
 							</Box>

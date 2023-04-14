@@ -3,12 +3,12 @@ import { IconButton, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, T
 import TagChips from '../tags-chip/TagChips';
 
 function GalleryFilters({
-	conditionType,
 	activeTags,
 	selectedTags,
 	onTagClick,
 	onTagDelete,
-	onChangeCondition,
+	conditionType,
+	setConditionType,
 	searchTerm,
 	setSearchTerm,
 	galleryUrlParams,
@@ -57,7 +57,7 @@ function GalleryFilters({
 							exclusive
 							value={conditionType}
 							onChange={(e, newValue) => {
-								onChangeCondition(newValue);
+								setConditionType(newValue);
 							}}
 						>
 							<ToggleButton value="||">OR</ToggleButton>
