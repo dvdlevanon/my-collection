@@ -10,4 +10,16 @@ export default class TimeUtil {
 		else if (hours < 24) return Math.floor(hours) + ' Hours';
 		else return Math.floor(days) + ' Days';
 	};
+
+	static formatDuration = (duration_seconds) => {
+		if (!duration_seconds) {
+			return '00:00';
+		}
+
+		if (duration_seconds < 60 * 60) {
+			return new Date(duration_seconds * 1000).toISOString().slice(14, 19);
+		} else {
+			return new Date(duration_seconds * 1000).toISOString().slice(11, 19);
+		}
+	};
 }

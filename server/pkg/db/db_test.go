@@ -451,6 +451,30 @@ func TestRemoveItem(t *testing.T) {
 	assert.Equal(t, 0, len(loaded.Tags))
 }
 
+func TestSubItems(t *testing.T) {
+	db, err := setupNewDb(t, "sub-items.sqlite")
+	assert.NoError(t, err)
+	item := &model.Item{Title: "main", Origin: "origin", DurationSeconds: 100}
+	sub1 := &model.Item{Title: "sub1", Origin: "origin", StartPosition: 0, EndPosition: 50}
+	sub2 := &model.Item{Title: "sub2", Origin: "origin", StartPosition: 50, EndPosition: 100}
+	assert.NoError(t, db.CreateOrUpdateItem(item))
+	assert.NoError(t, db.CreateOrUpdateItem(sub1))
+	assert.NoError(t, db.CreateOrUpdateItem(sub2))
+	item.SubItems = append(item.SubItems, sub1, sub2)
+	assert.NoError(t, db.UpdateItem(item))
+	sub1.Covers = append(sub1.Covers, model.Cover{Url: "test"})
+	sub2.Covers = append(sub1.Covers, model.Cover{Url: "test"})
+	assert.NoError(t, db.UpdateItem(sub1))
+	assert.NoError(t, db.UpdateItem(sub2))
+	mainItem, err := db.GetItem(item.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(mainItem.SubItems))
+	assert.Equal(t, mainItem.Id, *sub1.MainItemId)
+	assert.Equal(t, mainItem.Id, *sub2.MainItemId)
+	assert.Equal(t, 1, len(mainItem.SubItems[0].Covers))
+	assert.Equal(t, "test", mainItem.SubItems[0].Covers[0].Url)
+}
+
 // Fail because of https://github.com/go-gorm/sqlite/issues/134
 //
 // func TestReuseId(t *testing.T) {

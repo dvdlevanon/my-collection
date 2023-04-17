@@ -2,11 +2,26 @@ import { Box, Link, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
+import ItemsUtil from '../../utils/items-util';
+import TimeUtil from '../../utils/time-utils';
 import ItemBadges from './ItemBadges';
 import ItemCoverIndicator from './ItemCoverIndicator';
-import ItemFooter from './ItemFooter';
+import ItemOffests from './ItemOffests';
+import ItemTitle from './ItemTitle';
 
-function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onConvertAudio, onConvertVideo }) {
+function Item({
+	item,
+	preferPreview,
+	itemWidth,
+	itemHeight,
+	direction,
+	showOffests,
+	titleSx,
+	withItemTitleMenu,
+	itemLinkBuilder,
+	onConvertAudio,
+	onConvertVideo,
+}) {
 	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
 	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
 	let [showPreview, setShowPreview] = useState(false);
@@ -14,18 +29,8 @@ function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onC
 		item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0
 	);
 
-	const getCover = () => {
-		if (item.mainCoverUrl) {
-			return Client.buildFileUrl(item.mainCoverUrl);
-		} else if (item.covers && item.covers.length > 0 && item.covers[coverNumber]) {
-			return Client.buildFileUrl(item.covers[coverNumber].url);
-		} else {
-			return 'empty';
-		}
-	};
-
 	const previewMode = () => {
-		return preferPreview && item.previewUrl != '';
+		return preferPreview && item.preview_url != '';
 	};
 
 	const mouseMove = (e) => {
@@ -63,22 +68,11 @@ function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onC
 		}
 	};
 
-	const getFormattedDuration = () => {
-		if (!item.duration_seconds) {
-			return '00:00';
-		}
-
-		if (item.duration_seconds < 60 * 60) {
-			return new Date(item.duration_seconds * 1000).toISOString().slice(14, 19);
-		} else {
-			return new Date(item.duration_seconds * 1000).toISOString().slice(11, 19);
-		}
-	};
-
 	return (
 		<Stack
+			flexDirection={direction}
 			sx={{
-				maxWidth: itemWidth,
+				maxWidth: direction == 'column' ? itemWidth : 'unset',
 			}}
 		>
 			<Link
@@ -99,7 +93,7 @@ function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onC
 				<Box position="relative">
 					<Box
 						component="img"
-						src={getCover()}
+						src={ItemsUtil.getCover(item, coverNumber)}
 						alt={item.title}
 						loading="lazy"
 						sx={{
@@ -124,7 +118,7 @@ function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onC
 							zIndex: 100,
 						}}
 					>
-						{getFormattedDuration()}
+						{TimeUtil.formatDuration(item.duration_seconds)}
 					</Typography>
 				</Box>
 				{showCoverNavigator && item.covers && item.covers.length > 1 && (
@@ -150,7 +144,7 @@ function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onC
 						})}
 					</Stack>
 				)}
-				{previewMode() && showPreview && item.previewUrl && (
+				{previewMode() && showPreview && item.preview_url && (
 					<Box
 						flexGrow={1}
 						padding="10px"
@@ -176,12 +170,34 @@ function Item({ item, preferPreview, itemWidth, itemHeight, itemLinkBuilder, onC
 								borderRadius: '10px',
 							}}
 						>
-							<source src={Client.buildFileUrl(item.previewUrl)} />
+							<source src={Client.buildFileUrl(item.preview_url)} />
 						</Box>
 					</Box>
 				)}
 			</Link>
-			<ItemFooter item={item} />
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'column',
+					padding: '10px',
+					gap: '10px',
+				}}
+			>
+				<ItemTitle
+					item={item}
+					variant="caption"
+					withTooltip={true}
+					withMenu={withItemTitleMenu}
+					preventDefault={direction == 'column' ? true : false}
+					sx={{
+						whiteSpace: 'nowrap',
+						overflow: 'hidden',
+						textAlign: 'center',
+						...titleSx,
+					}}
+				/>
+				{showOffests && item.main_item && <ItemOffests item={item} />}
+			</Box>
 		</Stack>
 	);
 }

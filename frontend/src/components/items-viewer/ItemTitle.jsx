@@ -1,4 +1,4 @@
-import { Menu, MenuItem, Typography } from '@mui/material';
+import { Box, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../utils/client';
@@ -6,7 +6,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 
-function ItemTitle({ item, variant, onTagAdded }) {
+function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preventDefault }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(null);
@@ -54,43 +54,78 @@ function ItemTitle({ item, variant, onTagAdded }) {
 		}
 	};
 
-	return (
-		<>
-			<Typography
-				variant={variant}
-				onMouseUp={(e) => {
-					let event = e;
-					console.log('up');
-					setMenuDelayTimer(
-						setTimeout(() => {
-							let selection = window.getSelection();
-							let selectedText = selection.toString();
+	const preventDefaultIfNeeded = (e) => {
+		if (preventDefault) {
+			e.preventDefault();
+			e.stopPropagation();
+		}
+	};
 
-							if (!selectedText) {
-								setSelectedText(null);
-								setMenuX(event.clientX);
-								setMenuY(event.clientY);
-							} else {
-								setSelectedText(selectedText);
-								let selectionRect = selection.getRangeAt(0).getBoundingClientRect();
-								setMenuX(selectionRect.left);
-								setMenuY(selectionRect.bottom);
-							}
-
-							setMenuAchrosEl(event.target);
-							setMenuDelayTimer(0);
-						}, 200)
-					);
-				}}
-				onMouseDown={() => {
-					if (menuDelayTimer != 0) {
-						clearTimeout(menuDelayTimer);
-						setMenuDelayTimer(0);
-					}
+	const getTitleComponent = () => {
+		return (
+			<Box
+				onDoubleClick={preventDefaultIfNeeded}
+				onClick={preventDefaultIfNeeded}
+				sx={{
+					textOverflow: 'ellipsis',
+					flexGrow: 1,
+					...sx,
 				}}
 			>
-				{item.title}
-			</Typography>
+				<Typography
+					variant={variant}
+					onClick={preventDefaultIfNeeded}
+					onMouseUp={(e) => {
+						if (!withMenu) {
+							return;
+						}
+						let event = e;
+						setMenuDelayTimer(
+							setTimeout(() => {
+								let selection = window.getSelection();
+								let selectedText = selection.toString();
+
+								if (!selectedText) {
+									setSelectedText(null);
+									setMenuX(event.clientX);
+									setMenuY(event.clientY);
+								} else {
+									setSelectedText(selectedText);
+									let selectionRect = selection.getRangeAt(0).getBoundingClientRect();
+									setMenuX(selectionRect.left);
+									setMenuY(selectionRect.bottom);
+								}
+
+								setMenuAchrosEl(event.target);
+								setMenuDelayTimer(0);
+							}, 200)
+						);
+					}}
+					onMouseDown={(e) => {
+						if (menuDelayTimer != 0) {
+							clearTimeout(menuDelayTimer);
+							setMenuDelayTimer(0);
+						}
+					}}
+				>
+					{item.title}
+				</Typography>
+			</Box>
+		);
+	};
+
+	const getTitleComponentWithTooltip = () => {
+		return (
+			<Tooltip title={item.title} arrow followCursor>
+				{getTitleComponent()}
+			</Tooltip>
+		);
+	};
+
+	return (
+		<>
+			{!withTooltip && getTitleComponent()}
+			{withTooltip && getTitleComponentWithTooltip()}
 			{menuAchrosEl != null && tagsQuery.isSuccess && (
 				<Menu
 					open={menuAchrosEl != null}

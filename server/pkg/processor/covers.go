@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -26,14 +27,27 @@ func refreshItemCovers(irw model.ItemReaderWriter, uploader model.StorageUploade
 	return nil
 }
 
+func getDurationForItem(item *model.Item, videoFile string) (float64, error) {
+	if items.IsSubItem(item) {
+		return item.DurationSeconds, nil
+	}
+
+	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
+	if err != nil {
+		logger.Errorf("Error getting duration of a video %s", videoFile)
+		return 0, err
+	}
+
+	return duration, err
+}
+
 func refreshItemCover(irw model.ItemReaderWriter, uploader model.StorageUploader,
 	item *model.Item, coversCount int, coverNumber int) error {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("Setting cover for item %d [coverNumber: %d] [videoFile: %s]", item.Id, coverNumber, videoFile)
 
-	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
+	duration, err := getDurationForItem(item, videoFile)
 	if err != nil {
-		logger.Errorf("Error getting duration of a video %s", videoFile)
 		return err
 	}
 
@@ -44,8 +58,13 @@ func refreshItemCover(irw model.ItemReaderWriter, uploader model.StorageUploader
 		return err
 	}
 
-	screenshotSecond := (int(duration) / (coversCount + 1)) * coverNumber
-	if err := ffmpeg.TakeScreenshot(videoFile, float64(screenshotSecond), storageFile); err != nil {
+	startOffset := 0.0
+	if items.IsSubItem(item) {
+		startOffset = item.StartPosition
+	}
+
+	screenshotSecond := startOffset + ((duration / float64(coversCount+1)) * float64(coverNumber))
+	if err := ffmpeg.TakeScreenshot(videoFile, screenshotSecond, storageFile); err != nil {
 		logger.Errorf("Error taking screenshot for item %d, error %v", item.Id, err)
 		return err
 	}

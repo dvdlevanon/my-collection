@@ -3,6 +3,7 @@ package server
 import (
 	"encoding/json"
 	"io"
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/suggestions"
@@ -133,6 +134,33 @@ func (s *Server) setMainCover(c *gin.Context) {
 
 	logger.Infof("Setting main cover for item %d at %d", itemId, second)
 	s.processor.EnqueueMainCover(itemId, second)
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) splitItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	second, err := strconv.ParseFloat(c.Query("second"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Splitting item %d at %d", itemId, second)
+	changedItems, err := items.Split(s.db, itemId, second)
+	if s.handleError(c, err) {
+		return
+	}
+
+	for _, item := range changedItems {
+		s.processor.EnqueueItemVideoMetadata(item.Id)
+		s.processor.EnqueueItemCovers(item.Id)
+		s.processor.EnqueueItemPreview(item.Id)
+	}
+
+	c.Status(http.StatusOK)
 }
 
 func (s *Server) getSuggestionsForItem(c *gin.Context) {

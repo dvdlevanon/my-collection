@@ -2,6 +2,7 @@ package processor
 
 import (
 	"fmt"
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -53,14 +54,19 @@ func refreshItemPreview(irw model.ItemReaderWriter, uploader model.StorageUpload
 func getPreviewParts(uploader model.StorageUploader, item *model.Item,
 	previewSceneCount int, previewSceneDuration int) ([]string, error) {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
+	duration, err := getDurationForItem(item, videoFile)
 	if err != nil {
 		return nil, err
 	}
 
 	result := make([]string, 0)
 	for i := 1; i <= int(previewSceneCount); i++ {
-		startSecond := (int(duration) / (previewSceneCount + 1)) * i
+		startOffset := 0.0
+		if items.IsSubItem(item) {
+			startOffset = item.StartPosition
+		}
+
+		startSecond := startOffset + ((duration / float64(previewSceneCount+1)) * float64(i))
 		tempFile := fmt.Sprintf("%s.mp4", uploader.GetTempFile())
 		result = append(result, tempFile)
 

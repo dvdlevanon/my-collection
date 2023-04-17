@@ -16,8 +16,8 @@ function ItemBadges({ item }) {
 			}}
 		>
 			<Stack gap="10px" flexDirection="row">
-				{!CodecUtil.isVideoSupported(item.videoCodec) && (
-					<Tooltip title={'Video codec "' + item.videoCodec + '" is not supported. click to convert'}>
+				{!CodecUtil.isVideoSupported(item.video_codec) && (
+					<Tooltip title={'Video codec "' + item.video_codec + '" is not supported. click to convert'}>
 						<IconButton
 							onClick={(e) => {
 								e.preventDefault();
@@ -29,8 +29,8 @@ function ItemBadges({ item }) {
 						</IconButton>
 					</Tooltip>
 				)}
-				{!CodecUtil.isAudioSupported(item.audioCodec) && (
-					<Tooltip title={'Audio codec "' + item.audioCodec + '" is not supported. click to convert'}>
+				{!CodecUtil.isAudioSupported(item.audio_codec) && (
+					<Tooltip title={'Audio codec "' + item.audio_codec + '" is not supported. click to convert'}>
 						<IconButton
 							onClick={(e) => {
 								e.preventDefault();

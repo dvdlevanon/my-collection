@@ -55,6 +55,7 @@ func (s *Server) init() {
 	api.GET("/items/:item/location", s.getItemLocation)
 	api.POST("/items/:item/remove-tag/:tag", s.removeTagFromItem)
 	api.POST("/items/:item/main-cover", s.setMainCover)
+	api.POST("/items/:item/split", s.splitItem)
 	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)
 
 	api.GET("/tags", s.getTags)

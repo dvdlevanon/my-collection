@@ -60,7 +60,7 @@ func execute(name string, arg ...string) ([]byte, error) {
 	return stdout.Bytes(), nil
 }
 
-func GetDurationInSeconds(videoFile string) (int, error) {
+func GetDurationInSeconds(videoFile string) (float64, error) {
 	output, err := execute("ffprobe", videoFile, "-show_format", "-v", "quiet", "-print_format", "json")
 	if err != nil {
 		return 0, err
@@ -76,7 +76,7 @@ func GetDurationInSeconds(videoFile string) (int, error) {
 		return 0, errors.Wrap(err, 0)
 	}
 
-	return int(durationInSeconds), nil
+	return durationInSeconds, nil
 }
 
 func GetVideoMetadata(videoFile string) (FfprobeShowStreamOutput, error) {
@@ -128,8 +128,8 @@ func TakeScreenshot(videoFile string, second float64, targetFile string) error {
 	return nil
 }
 
-func ExtractPartOfVideo(videoFile string, second int, duration int, targetFile string) error {
-	_, err := execute("ffmpeg", "-ss", fmt.Sprintf("%d", second), "-i", videoFile,
+func ExtractPartOfVideo(videoFile string, second float64, duration int, targetFile string) error {
+	_, err := execute("ffmpeg", "-ss", fmt.Sprintf("%f", second), "-i", videoFile,
 		"-t", fmt.Sprintf("%d", duration), "-vcodec", "copy", "-acodec", "aac", "-ac", "4", targetFile)
 	if err != nil {
 		return err

@@ -113,5 +113,10 @@ func GetFullTags(tr model.TagReader, tagIds []*model.Tag) (*[]model.Tag, error) 
 		ids[i] = tag.Id
 	}
 
+	if len(ids) == 0 {
+		result := make([]model.Tag, 0)
+		return &result, nil
+	}
+
 	return tr.GetTags(ids)
 }

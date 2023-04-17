@@ -14,7 +14,7 @@ var sample3SecondsScreenshotPng = filepath.Join(testFiles, "sample-3-second-scre
 func TestGetDuration(t *testing.T) {
 	duration, err := GetDurationInSeconds(filepath.Join(testFiles, "sample.mp4"))
 	assert.NoError(t, err)
-	assert.Equal(t, duration, 5)
+	assert.Equal(t, duration, 5.568)
 }
 
 func TestGetDurationOfMissingFile(t *testing.T) {

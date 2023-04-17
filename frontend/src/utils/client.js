@@ -119,6 +119,12 @@ export default class Client {
 		});
 	};
 
+	static splitItem = async (itemId, second) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/split?second=${second}`, {
+			method: 'POST',
+		});
+	};
+
 	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',

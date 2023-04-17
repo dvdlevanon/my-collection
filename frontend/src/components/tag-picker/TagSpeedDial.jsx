@@ -72,6 +72,5 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 		</>
 	);
 }
-// let [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
 
 export default TagSpeedDial;

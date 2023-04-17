@@ -7,8 +7,10 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
+import ConfirmationDialog from '../dialogs/ConfirmationDialog';
 import ItemTitle from '../items-viewer/ItemTitle';
 import Player from '../player/Player';
+import SubItems from '../sub-items/SubItems';
 import TagChips from '../tags-chip/TagChips';
 
 function useWindowSize() {
@@ -33,8 +35,10 @@ function ItemPage() {
 		staleTime: Infinity,
 		cacheTime: Infinity,
 	});
-	let [addTagMode, setAddTagMode] = useState(false);
-	let [windowWidth, windowHeight] = useWindowSize();
+	const [addTagMode, setAddTagMode] = useState(false);
+	const [windowWidth, windowHeight] = useWindowSize();
+	const [showSplitVideoConfirmationDialog, setShowSplitVideoConfirmationDialog] = useState(false);
+	const [splitVideoSecond, setSplitVideoSecond] = useState(0);
 	const itemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(itemId),
 		queryFn: () => Client.getItem(itemId),
@@ -70,6 +74,18 @@ function ItemPage() {
 		});
 	};
 
+	const closeSplitVideoDialog = () => {
+		setSplitVideoSecond(0);
+		setShowSplitVideoConfirmationDialog(false);
+	};
+
+	const splitItem = () => {
+		Client.splitItem(itemQuery.data.id, splitVideoSecond).then(() => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
+		closeSplitVideoDialog();
+	};
+
 	const calcHeight = () => {
 		let result = (windowHeight / 10) * 7;
 
@@ -86,44 +102,95 @@ function ItemPage() {
 		return actualWidth;
 	};
 
+	const shouldShowSubItems = () => {
+		return itemQuery.data.main_item || itemQuery.data.sub_items;
+	};
+
 	return (
 		<Box
 			sx={{
 				display: 'flex',
-				flexDirection: 'column',
-				alignItems: 'center',
+				flexDirection: 'row',
 				padding: '30px 50px',
+				justifyContent: 'center',
+				gap: '10px',
 			}}
 		>
-			{itemQuery.isSuccess && suggestedQuery.isSuccess && (
-				<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
-					<Player url={itemQuery.data.url} suggestedItems={suggestedQuery.data} setMainCover={setMainCover} />
-					<ItemTitle item={itemQuery.data} variant="h5" onTagAdded={onTagAdded} />
-					<Stack flexDirection="row" gap="10px">
-						<TagChips
-							flexDirection="column"
-							tags={itemQuery.data.tags.filter((cur) => !TagsUtil.isSpecialCategory(cur.parentId))}
-							linkable={true}
-							onDelete={onTagRemoved}
-							onClick={() => {}}
-							tagHighlightedPredicate={() => {
-								return true;
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'column',
+					alignItems: 'center',
+				}}
+			>
+				{itemQuery.isSuccess && suggestedQuery.isSuccess && (
+					<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
+						<Player
+							url={itemQuery.data.url}
+							suggestedItems={suggestedQuery.data}
+							setMainCover={setMainCover}
+							allowToSplit={() => {
+								return !itemQuery.data.sub_items;
 							}}
-						></TagChips>
-						<Chip
-							color="secondary"
-							icon={<AddIcon />}
-							onClick={onAddTag}
-							sx={{ '& .MuiChip-label': { padding: '5px' } }}
+							splitVideo={(splitSecond) => {
+								setShowSplitVideoConfirmationDialog(true);
+								setSplitVideoSecond(splitSecond);
+							}}
+							startPosition={itemQuery.data.start_position || 0}
+							initialEndPosition={itemQuery.data.end_position || 0}
+						/>
+						<ItemTitle
+							item={itemQuery.data}
+							variant="h5"
+							onTagAdded={onTagAdded}
+							sx={{
+								whiteSpace: 'normal',
+								overflow: 'visible',
+								textAlign: 'start',
+							}}
+							withTooltip={false}
+							withMenu={true}
+						/>
+						<Stack flexDirection="row" gap="10px">
+							<TagChips
+								flexDirection="column"
+								tags={(itemQuery.data.tags || []).filter(
+									(cur) => !TagsUtil.isSpecialCategory(cur.parentId)
+								)}
+								linkable={true}
+								onDelete={onTagRemoved}
+								onClick={() => {}}
+								tagHighlightedPredicate={() => {
+									return true;
+								}}
+							></TagChips>
+							<Chip
+								color="secondary"
+								icon={<AddIcon />}
+								onClick={onAddTag}
+								sx={{ '& .MuiChip-label': { padding: '5px' } }}
+							/>
+						</Stack>
+						<AttachTagDialog
+							open={addTagMode}
+							item={itemQuery.data}
+							onTagAdded={onTagAdded}
+							onClose={(e) => setAddTagMode(false)}
 						/>
 					</Stack>
-					<AttachTagDialog
-						open={addTagMode}
-						item={itemQuery.data}
-						onTagAdded={onTagAdded}
-						onClose={(e) => setAddTagMode(false)}
-					/>
-				</Stack>
+				)}
+			</Box>
+			<Stack maxWidth={500}>
+				{itemQuery.isSuccess && shouldShowSubItems() && <SubItems item={itemQuery.data} />}
+			</Stack>
+			{showSplitVideoConfirmationDialog && (
+				<ConfirmationDialog
+					title="Split Video"
+					text={'Are you sure you want to split the video at second ' + splitVideoSecond + '?'}
+					actionButtonTitle="Split"
+					onCancel={closeSplitVideoDialog}
+					onConfirm={splitItem}
+				/>
 			)}
 		</Box>
 	);

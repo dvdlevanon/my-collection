@@ -54,7 +54,11 @@ func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 		}
 	}
 
-	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Covers")
+	subItemsPreloading := func(db *gorm.DB) *gorm.DB {
+		return db.Preload("Covers").Preload("Tags", tagsPreloading)
+	}
+
+	return d.db.Model(&model.Item{}).Preload("Tags", tagsPreloading).Preload("Covers").Preload("SubItems", subItemsPreloading)
 }
 
 func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {

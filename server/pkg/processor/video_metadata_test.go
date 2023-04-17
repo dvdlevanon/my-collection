@@ -21,7 +21,7 @@ func TestRefreshVideoMetadata(t *testing.T) {
 	irw.EXPECT().GetItem(gomock.Any()).Return(&item, nil)
 	irw.EXPECT().UpdateItem(gomock.Any()).Return(nil)
 	assert.NoError(t, refreshItemMetadata(irw, 0))
-	assert.Equal(t, 5, item.DurationSeconds)
+	assert.Equal(t, 5.568, item.DurationSeconds)
 	assert.Equal(t, 560, item.Width)
 	assert.Equal(t, 320, item.Height)
 	assert.Equal(t, "h264", item.VideoCodecName)

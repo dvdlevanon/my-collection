@@ -1,3 +1,4 @@
+import SplitIcon from '@mui/icons-material/ContentCut';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import ImageIcon from '@mui/icons-material/Image';
@@ -11,15 +12,16 @@ import ItemSuggestions from './ItemSuggestions';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
 
-function Player({ url, setMainCover, suggestedItems }) {
+function Player({ url, setMainCover, startPosition, initialEndPosition, splitVideo, allowToSplit, suggestedItems }) {
 	let [showControls, setShowControls] = useState(true);
 	let [showVolume, setShowVolume] = useState(false);
 	let [showSchedule, setShowSchedule] = useState(false);
 	let [isPlaying, setIsPlaying] = useState(true);
-	let [currentTime, setCurrentTime] = useState(0);
+	let [currentTime, setCurrentTime] = useState(startPosition);
+	let [endPosition, setEndPosition] = useState(initialEndPosition);
 	let [fullScreen, setFullScreen] = useState(false);
 	let [showSuggestions, setShowSuggestions] = useState(false);
-	let [duration, setDuration] = useState(0);
+	let [duration, setDuration] = useState(initialEndPosition - startPosition);
 	let [hideControlsTimerId, setHideControlsTimerId] = useState(0);
 	let [playerWidth, setPlayerWidth] = useState(0);
 	let videoElement = useRef();
@@ -89,7 +91,14 @@ function Player({ url, setMainCover, suggestedItems }) {
 	};
 
 	const setRelativeTime = (offset) => {
-		videoElement.current.currentTime = videoElement.current.currentTime + offset;
+		let newOffset = videoElement.current.currentTime + offset;
+		if (newOffset > endPosition) {
+			videoElement.current.currentTime = endPosition;
+		} else if (newOffset < startPosition) {
+			videoElement.current.currentTime = startPosition;
+		} else {
+			videoElement.current.currentTime = newOffset;
+		}
 	};
 
 	const onMouseEnter = () => {
@@ -145,8 +154,22 @@ function Player({ url, setMainCover, suggestedItems }) {
 					setIsPlaying(false);
 				}}
 				onDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
-				onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
-				onLoadedMetadata={(e) => setDuration(e.target.duration)}
+				onTimeUpdate={(e) => {
+					setCurrentTime(e.target.currentTime);
+					if (endPosition > 0 && e.target.currentTime >= endPosition) {
+						e.target.currentTime = startPosition;
+						videoElement.current.pause();
+						setShowSuggestions(true);
+						setIsPlaying(false);
+					}
+				}}
+				onLoadedMetadata={(e) => {
+					e.target.currentTime = startPosition;
+					if (endPosition == 0) {
+						setEndPosition(e.target.duration);
+						setDuration(e.target.duration);
+					}
+				}}
 				onMouseMove={() => onMouseMove()}
 			>
 				<source src={Client.buildFileUrl(url)} />
@@ -174,8 +197,8 @@ function Player({ url, setMainCover, suggestedItems }) {
 					}}
 				>
 					<Slider
-						min={0}
-						max={duration}
+						min={startPosition}
+						max={endPosition}
 						value={currentTime}
 						valueLabelDisplay="auto"
 						valueLabelFormat={(number) => {
@@ -206,7 +229,7 @@ function Player({ url, setMainCover, suggestedItems }) {
 						/>
 						<Box>
 							<Typography>
-								{formatSeconds(currentTime)} / {formatSeconds(duration)}
+								{formatSeconds(currentTime - startPosition)} / {formatSeconds(duration)}
 							</Typography>
 						</Box>
 						<Box display="flex" flexGrow={1} justifyContent="flex-end">
@@ -217,6 +240,12 @@ function Player({ url, setMainCover, suggestedItems }) {
 							/>
 							<IconButton onClick={() => setMainCover(videoElement.current.currentTime)}>
 								<ImageIcon />
+							</IconButton>
+							<IconButton
+								disabled={!allowToSplit()}
+								onClick={() => splitVideo(videoElement.current.currentTime)}
+							>
+								<SplitIcon />
 							</IconButton>
 							{(!fullScreen && (
 								<Tooltip title="Full screen">

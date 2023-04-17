@@ -38,7 +38,9 @@ function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder }) {
 							onConvertVideo={onConvertVideo}
 							itemWidth={itemsSize.width}
 							itemHeight={itemsSize.height}
+							direction="column"
 							itemLinkBuilder={itemLinkBuilder}
+							withItemTitleMenu={false}
 						/>
 					);
 				})}

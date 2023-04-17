@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -12,6 +13,35 @@ func refreshItemMetadata(irw model.ItemReaderWriter, id uint64) error {
 		return err
 	}
 
+	if items.IsSubItem(item) {
+		if err := updateSubItemMetadata(irw, item); err != nil {
+			return err
+		}
+	} else {
+		if err := updateMainItemMetadata(item); err != nil {
+			return err
+		}
+	}
+
+	return irw.UpdateItem(item)
+}
+
+func updateSubItemMetadata(ir model.ItemReader, item *model.Item) error {
+	item.DurationSeconds = item.EndPosition - item.StartPosition
+
+	mainItem, err := ir.GetItem(item.MainItemId)
+	if err != nil {
+		return err
+	}
+
+	item.Width = mainItem.Width
+	item.Height = mainItem.Height
+	item.VideoCodecName = mainItem.VideoCodecName
+	item.AudioCodecName = mainItem.AudioCodecName
+	return nil
+}
+
+func updateMainItemMetadata(item *model.Item) error {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("Refreshing video metadata for item %d  [videoFile: %s]", item.Id, videoFile)
 
@@ -38,5 +68,5 @@ func refreshItemMetadata(irw model.ItemReaderWriter, id uint64) error {
 	item.Height = rawVideoMetadata.Height
 	item.VideoCodecName = rawVideoMetadata.CodecName
 	item.AudioCodecName = rawAudioMetadata.CodecName
-	return irw.UpdateItem(item)
+	return nil
 }

@@ -59,6 +59,8 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 										preferPreview={true}
 										itemWidth={getItemSize().width}
 										itemHeight={getItemSize().height}
+										direction="column"
+										withItemTitleMenu={false}
 										itemLinkBuilder={(item) => {
 											return '/spa/item/' + item.id + window.location.search;
 										}}

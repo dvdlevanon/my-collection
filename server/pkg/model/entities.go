@@ -33,18 +33,22 @@ type Item struct {
 	Id              uint64  `json:"id,omitempty"`
 	Title           string  `json:"title,omitempty" gorm:"uniqueIndex:title_and_dir_idx"`
 	Origin          string  `json:"origin,omitempty" gorm:"uniqueIndex:title_and_dir_idx"`
-	DurationSeconds int     `json:"duration_seconds,omitempty"`
+	DurationSeconds float64 `json:"duration_seconds,omitempty"`
 	Width           int     `json:"width,omitempty"`
 	Height          int     `json:"height,omitempty"`
-	VideoCodecName  string  `json:"videoCodec,omitempty"`
-	AudioCodecName  string  `json:"audioCodec,omitempty"`
+	VideoCodecName  string  `json:"video_codec,omitempty"`
+	AudioCodecName  string  `json:"audio_codec,omitempty"`
 	Url             string  `json:"url,omitempty"`
-	PreviewUrl      string  `json:"previewUrl,omitempty"`
+	PreviewUrl      string  `json:"preview_url,omitempty"`
 	LastModified    int64   `json:"lastModified,omitempty"`
 	Covers          []Cover `json:"covers,omitempty"`
-	MainCoverUrl    *string `json:"mainCoverUrl,omitempty"`
-	MainCoverSecond float64 `json:"mainCoverSecond,omitempty"`
+	MainCoverUrl    *string `json:"main_cover_url,omitempty"`
+	MainCoverSecond float64 `json:"main_cover_second,omitempty"`
 	Tags            []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
+	StartPosition   float64 `json:"start_position,omitempty"`
+	EndPosition     float64 `json:"end_position,omitempty"`
+	SubItems        []*Item `json:"sub_items,omitempty" gorm:"foreignkey:MainItemId"`
+	MainItemId      *uint64 `json:"main_item,omitempty"`
 }
 
 type Cover struct {
