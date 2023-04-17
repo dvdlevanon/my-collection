@@ -12,6 +12,7 @@ import (
 	"strings"
 
 	"github.com/go-errors/errors"
+	"gorm.io/gorm"
 )
 
 func newFsSyncer(path string, db *db.Database, dig model.DirectoryItemsGetter, filter directorytree.FilesFilter) (*fsSyncer, error) {
@@ -72,8 +73,8 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 		errs = append(errs, addMissingDirs(db, f.diff.AddedDirectories)...)
 		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
 		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
-		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
 		errs = append(errs, renameDirs(db, db, db, f.diff.MovedDirectories)...)
+		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
 		errs = append(errs, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
 	}
 
@@ -271,19 +272,16 @@ func renameDirs(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 		src := dir.Path1
 		dst := dir.Path2
 
-		if err := moveDir(trw, drw, src, dst); err != nil {
+		if err := moveDir(trw, drw, irw, src, dst); err != nil {
 			errs = append(errs, err...)
-			continue
 		}
-
-		errs = append(errs, updateItemsLocation(trw, irw, dst)...)
 	}
 
 	return errs
 }
 
 func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, path string) []error {
-	dirpath := directories.NormalizeDirectoryPath(filepath.Dir(path))
+	dirpath := directories.NormalizeDirectoryPath(path)
 	errs := make([]error, 0)
 	dir := newFsDirectory(dirpath)
 	belongingItems, err := dir.getItems(trw, irw)
@@ -292,7 +290,7 @@ func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, 
 	}
 
 	for _, item := range *belongingItems {
-		if err := items.UpdateFileLocation(irw, &item, dirpath, path); err != nil {
+		if err := items.UpdateFileLocation(irw, &item, dirpath, filepath.Join(item.Origin, item.Title)); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -300,18 +298,19 @@ func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, 
 	return errs
 }
 
-func moveDir(trw model.TagReaderWriter, drw model.DirectoryReaderWriter, src string, dst string) []error {
+func moveDir(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
+	irw model.ItemReaderWriter, src string, dst string) []error {
 	errs := make([]error, 0)
-	dstDirpath := directories.NormalizeDirectoryPath(filepath.Dir(dst))
+	dstDirpath := directories.NormalizeDirectoryPath(dst)
 	dstdir, err := directories.GetDirectory(drw, dstDirpath)
-	if err != nil {
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return append(errs, err)
 	}
-	if dstdir != nil {
+	if dstdir == nil {
 		return removeDir(trw, drw, src)
 	}
 
-	srcDirpath := directories.NormalizeDirectoryPath(filepath.Dir(src))
+	srcDirpath := directories.NormalizeDirectoryPath(src)
 	srcdir, err := directories.GetDirectory(drw, srcDirpath)
 	if err != nil {
 		return append(errs, err)
@@ -328,7 +327,7 @@ func moveDir(trw model.TagReaderWriter, drw model.DirectoryReaderWriter, src str
 		return errs
 	}
 
-	return errs
+	return append(errs, updateItemsLocation(trw, irw, dst)...)
 }
 
 func renameFiles(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,

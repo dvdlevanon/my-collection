@@ -6,6 +6,7 @@ package model
 
 import (
 	reflect "reflect"
+	time "time"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -918,6 +919,20 @@ func (mr *MockDirectoryWriterMockRecorder) RemoveTagFromDirectory(direcotryPath,
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagFromDirectory", reflect.TypeOf((*MockDirectoryWriter)(nil).RemoveTagFromDirectory), direcotryPath, tagId)
 }
 
+// UpdateDirectory mocks base method.
+func (m *MockDirectoryWriter) UpdateDirectory(directory *Directory) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDirectory", directory)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDirectory indicates an expected call of UpdateDirectory.
+func (mr *MockDirectoryWriterMockRecorder) UpdateDirectory(directory interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDirectory", reflect.TypeOf((*MockDirectoryWriter)(nil).UpdateDirectory), directory)
+}
+
 // MockDirectoryReaderWriter is a mock of DirectoryReaderWriter interface.
 type MockDirectoryReaderWriter struct {
 	ctrl     *gomock.Controller
@@ -1034,6 +1049,76 @@ func (m *MockDirectoryReaderWriter) RemoveTagFromDirectory(direcotryPath string,
 func (mr *MockDirectoryReaderWriterMockRecorder) RemoveTagFromDirectory(direcotryPath, tagId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagFromDirectory", reflect.TypeOf((*MockDirectoryReaderWriter)(nil).RemoveTagFromDirectory), direcotryPath, tagId)
+}
+
+// UpdateDirectory mocks base method.
+func (m *MockDirectoryReaderWriter) UpdateDirectory(directory *Directory) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDirectory", directory)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDirectory indicates an expected call of UpdateDirectory.
+func (mr *MockDirectoryReaderWriterMockRecorder) UpdateDirectory(directory interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDirectory", reflect.TypeOf((*MockDirectoryReaderWriter)(nil).UpdateDirectory), directory)
+}
+
+// MockTagImageTypeReaderWriter is a mock of TagImageTypeReaderWriter interface.
+type MockTagImageTypeReaderWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockTagImageTypeReaderWriterMockRecorder
+}
+
+// MockTagImageTypeReaderWriterMockRecorder is the mock recorder for MockTagImageTypeReaderWriter.
+type MockTagImageTypeReaderWriterMockRecorder struct {
+	mock *MockTagImageTypeReaderWriter
+}
+
+// NewMockTagImageTypeReaderWriter creates a new mock instance.
+func NewMockTagImageTypeReaderWriter(ctrl *gomock.Controller) *MockTagImageTypeReaderWriter {
+	mock := &MockTagImageTypeReaderWriter{ctrl: ctrl}
+	mock.recorder = &MockTagImageTypeReaderWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTagImageTypeReaderWriter) EXPECT() *MockTagImageTypeReaderWriterMockRecorder {
+	return m.recorder
+}
+
+// CreateOrUpdateTagImageType mocks base method.
+func (m *MockTagImageTypeReaderWriter) CreateOrUpdateTagImageType(tit *TagImageType) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrUpdateTagImageType", tit)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrUpdateTagImageType indicates an expected call of CreateOrUpdateTagImageType.
+func (mr *MockTagImageTypeReaderWriterMockRecorder) CreateOrUpdateTagImageType(tit interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateTagImageType", reflect.TypeOf((*MockTagImageTypeReaderWriter)(nil).CreateOrUpdateTagImageType), tit)
+}
+
+// GetTagImageType mocks base method.
+func (m *MockTagImageTypeReaderWriter) GetTagImageType(conds ...interface{}) (*TagImageType, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetTagImageType", varargs...)
+	ret0, _ := ret[0].(*TagImageType)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTagImageType indicates an expected call of GetTagImageType.
+func (mr *MockTagImageTypeReaderWriterMockRecorder) GetTagImageType(conds ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTagImageType", reflect.TypeOf((*MockTagImageTypeReaderWriter)(nil).GetTagImageType), conds...)
 }
 
 // MockStorageUploader is a mock of StorageUploader interface.
@@ -1368,4 +1453,41 @@ func (m *MockDirectoryChangedCallback) DirectoryChanged(path string) {
 func (mr *MockDirectoryChangedCallbackMockRecorder) DirectoryChanged(path interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DirectoryChanged", reflect.TypeOf((*MockDirectoryChangedCallback)(nil).DirectoryChanged), path)
+}
+
+// MockCurrentTimeGetter is a mock of CurrentTimeGetter interface.
+type MockCurrentTimeGetter struct {
+	ctrl     *gomock.Controller
+	recorder *MockCurrentTimeGetterMockRecorder
+}
+
+// MockCurrentTimeGetterMockRecorder is the mock recorder for MockCurrentTimeGetter.
+type MockCurrentTimeGetterMockRecorder struct {
+	mock *MockCurrentTimeGetter
+}
+
+// NewMockCurrentTimeGetter creates a new mock instance.
+func NewMockCurrentTimeGetter(ctrl *gomock.Controller) *MockCurrentTimeGetter {
+	mock := &MockCurrentTimeGetter{ctrl: ctrl}
+	mock.recorder = &MockCurrentTimeGetterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockCurrentTimeGetter) EXPECT() *MockCurrentTimeGetterMockRecorder {
+	return m.recorder
+}
+
+// GetCurrentTime mocks base method.
+func (m *MockCurrentTimeGetter) GetCurrentTime() time.Time {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetCurrentTime")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// GetCurrentTime indicates an expected call of GetCurrentTime.
+func (mr *MockCurrentTimeGetterMockRecorder) GetCurrentTime() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentTime", reflect.TypeOf((*MockCurrentTimeGetter)(nil).GetCurrentTime))
 }

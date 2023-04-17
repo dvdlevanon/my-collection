@@ -179,13 +179,13 @@ func NormalizeDirectoryPath(path string) string {
 
 func CreateOrUpdateDirectory(dw model.DirectoryWriter, directory *model.Directory) error {
 	directory.Excluded = pointer.Bool(false)
-	// directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
 	directory.Path = NormalizeDirectoryPath(directory.Path)
 	return dw.CreateOrUpdateDirectory(directory)
 }
 
 func UpdatePath(dw model.DirectoryWriter, directory *model.Directory, newpath string) error {
-	return nil
+	directory.Path = NormalizeDirectoryPath(newpath)
+	return dw.UpdateDirectory(directory)
 }
 
 func StartDirectoryProcessing(dw model.DirectoryWriter, directory *model.Directory) error {

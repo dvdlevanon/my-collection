@@ -63,6 +63,7 @@ type DirectoryReader interface {
 
 type DirectoryWriter interface {
 	CreateOrUpdateDirectory(directory *Directory) error
+	UpdateDirectory(directory *Directory) error
 	RemoveDirectory(path string) error
 	RemoveTagFromDirectory(direcotryPath string, tagId uint64) error
 }

@@ -18,6 +18,10 @@ func (d *Database) CreateOrUpdateDirectory(directory *model.Directory) error {
 	return err
 }
 
+func (d *Database) UpdateDirectory(directory *model.Directory) error {
+	return d.update(directory)
+}
+
 func (d *Database) RemoveDirectory(path string) error {
 	return d.delete(model.Directory{Path: path})
 }
