@@ -71,10 +71,10 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 		errs = append(errs, removeStaleItems(digs, db, f.stales.Files)...)
 		errs = append(errs, removeStaleDirs(db, db, f.stales.Dirs)...)
 		errs = append(errs, addMissingDirs(db, f.diff.AddedDirectories)...)
-		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
-		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
 		errs = append(errs, renameDirs(db, db, db, f.diff.MovedDirectories)...)
 		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
+		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
+		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
 		errs = append(errs, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
 	}
 
@@ -137,8 +137,7 @@ func addMissingDirectoryTag(dr model.DirectoryReader, trw model.TagReaderWriter,
 		return nil
 	}
 
-	title := directories.DirectoryNameToTag(dir.Path)
-	_, err := tags.GetOrCreateChildTag(trw, directories.DIRECTORIES_TAG_ID, title)
+	_, err := tags.GetOrCreateChildTag(trw, directories.DIRECTORIES_TAG_ID, dir.Path)
 	return err
 }
 
