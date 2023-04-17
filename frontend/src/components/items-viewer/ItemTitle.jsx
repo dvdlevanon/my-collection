@@ -1,4 +1,4 @@
-import { Box, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { Box, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../utils/client';
@@ -6,7 +6,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 
-function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preventDefault }) {
+function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, onTitleChanged, preventDefault }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(null);
@@ -14,6 +14,7 @@ function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preve
 	const [selectedText, setSelectedText] = useState(null);
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [menuDelayTimer, setMenuDelayTimer] = useState(0);
+	const [editTitleMode, setEditTitleMode] = useState(false);
 
 	const getTagByTitle = (tagTitle) => {
 		let tags = tagsQuery.data.filter((tag) => {
@@ -61,6 +62,24 @@ function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preve
 		}
 	};
 
+	const getTitleEditComponent = () => {
+		return (
+			<TextField
+				autoFocus
+				defaultValue={item.title}
+				onFocus={(event) => {
+					event.target.select();
+				}}
+				onKeyDown={(e) => {
+					if (e.key == 'Enter') {
+						onTitleChanged(e.target.value);
+						setEditTitleMode(false);
+					}
+				}}
+			></TextField>
+		);
+	};
+
 	const getTitleComponent = () => {
 		return (
 			<Box
@@ -68,7 +87,6 @@ function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preve
 				onClick={preventDefaultIfNeeded}
 				sx={{
 					textOverflow: 'ellipsis',
-					flexGrow: 1,
 					...sx,
 				}}
 			>
@@ -124,8 +142,9 @@ function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preve
 
 	return (
 		<>
-			{!withTooltip && getTitleComponent()}
-			{withTooltip && getTitleComponentWithTooltip()}
+			{!withTooltip && !editTitleMode && getTitleComponent()}
+			{withTooltip && !editTitleMode && getTitleComponentWithTooltip()}
+			{editTitleMode && getTitleEditComponent()}
 			{menuAchrosEl != null && tagsQuery.isSuccess && (
 				<Menu
 					open={menuAchrosEl != null}
@@ -145,6 +164,14 @@ function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, preve
 							Copy '{TagsUtil.normalizeTagTitle(selectedText)}'
 						</MenuItem>
 					)}
+					<MenuItem
+						onClick={(e) => {
+							setEditTitleMode(true);
+							setMenuAchrosEl(null);
+						}}
+					>
+						Edit title
+					</MenuItem>
 					<MenuItem
 						onClick={(e) => {
 							Client.getItemLocation(item.id).then((location) => {

@@ -21,6 +21,7 @@ const theme = createTheme({
 		bright: {
 			main: '#ffddcc',
 			darker: '#ddbbaa',
+			text: '#ffffff',
 		},
 		dark: {
 			main: '#121212',

@@ -68,6 +68,36 @@ function Item({
 		}
 	};
 
+	const getTitleComponent = () => {
+		return (
+			<Box
+				sx={{
+					display: 'flex',
+					flexDirection: 'column',
+					padding: '10px',
+					gap: '10px',
+				}}
+			>
+				<ItemTitle
+					item={item}
+					variant="caption"
+					withTooltip={true}
+					withMenu={withItemTitleMenu}
+					preventDefault={direction == 'column' ? true : false}
+					onTagAdded={() => console.log('unsupported adding tag')}
+					onTitleChanged={() => console.log('unsupported changing title')}
+					sx={{
+						whiteSpace: 'nowrap',
+						overflow: 'hidden',
+						textAlign: 'center',
+						...titleSx,
+					}}
+				/>
+				{showOffests && item.main_item && <ItemOffests item={item} />}
+			</Box>
+		);
+	};
+
 	return (
 		<Stack
 			flexDirection={direction}
@@ -77,6 +107,8 @@ function Item({
 		>
 			<Link
 				component={RouterLink}
+				reloadDocument
+				to={itemLinkBuilder(item)}
 				sx={{
 					display: 'flex',
 					position: 'relative',
@@ -84,7 +116,6 @@ function Item({
 					width: itemWidth,
 					height: itemHeight,
 				}}
-				to={itemLinkBuilder(item)}
 				onMouseLeave={(e) => mouseLeave(e)}
 				onMouseMove={(e) => mouseMove(e)}
 				onMouseEnter={(e) => mouseEnter(e)}
@@ -175,29 +206,12 @@ function Item({
 					</Box>
 				)}
 			</Link>
-			<Box
-				sx={{
-					display: 'flex',
-					flexDirection: 'column',
-					padding: '10px',
-					gap: '10px',
-				}}
-			>
-				<ItemTitle
-					item={item}
-					variant="caption"
-					withTooltip={true}
-					withMenu={withItemTitleMenu}
-					preventDefault={direction == 'column' ? true : false}
-					sx={{
-						whiteSpace: 'nowrap',
-						overflow: 'hidden',
-						textAlign: 'center',
-						...titleSx,
-					}}
-				/>
-				{showOffests && item.main_item && <ItemOffests item={item} />}
-			</Box>
+			{direction == 'column' && getTitleComponent()}
+			{direction != 'column' && (
+				<Link component={RouterLink} reloadDocument to={itemLinkBuilder(item)} color="bright.text">
+					{getTitleComponent()}
+				</Link>
+			)}
 		</Stack>
 	);
 }

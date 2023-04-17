@@ -17,11 +17,21 @@ function SubItems({ item }) {
 		},
 	});
 
+	const sortedSubItems = () => {
+		return mainItemQuery.data.sub_items.sort((item1, item2) => {
+			return item1.start_position > item2.start_position
+				? 1
+				: item1.start_position < item2.start_position
+				? -1
+				: 0;
+		});
+	};
+
 	return (
 		<>
 			{mainItemQuery.isSuccess && (
 				<Stack flexDirection="column" gap="10px">
-					{mainItemQuery.data.sub_items.map((subItem) => {
+					{sortedSubItems().map((subItem) => {
 						return (
 							<SubItem
 								key={subItem.id}

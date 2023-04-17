@@ -54,7 +54,6 @@ func GetContainedSubItem(mainItem *model.Item, second float64) (*model.Item, err
 }
 
 func splitMain(iw model.ItemWriter, mainItem *model.Item, second float64) ([]*model.Item, error) {
-	changedItems := make([]*model.Item, 0)
 	sub1 := buildSubItem(mainItem, 0, second)
 	sub2 := buildSubItem(mainItem, second, float64(mainItem.DurationSeconds))
 	if err := iw.CreateOrUpdateItem(sub1); err != nil {
@@ -64,12 +63,11 @@ func splitMain(iw model.ItemWriter, mainItem *model.Item, second float64) ([]*mo
 		return nil, err
 	}
 	mainItem.SubItems = append(mainItem.SubItems, sub1, sub2)
-	changedItems = append(mainItem.SubItems, sub1, sub2)
+	changedItems := []*model.Item{sub1, sub2}
 	return changedItems, nil
 }
 
 func shrinkAndSplit(iw model.ItemWriter, mainItem *model.Item, containedItem *model.Item, second float64) ([]*model.Item, error) {
-	changedItems := make([]*model.Item, 0)
 	sub := buildSubItem(mainItem, second, containedItem.EndPosition)
 	if err := iw.CreateOrUpdateItem(sub); err != nil {
 		return nil, err
@@ -80,7 +78,7 @@ func shrinkAndSplit(iw model.ItemWriter, mainItem *model.Item, containedItem *mo
 		return nil, err
 	}
 	mainItem.SubItems = append(mainItem.SubItems, sub)
-	changedItems = append(mainItem.SubItems, sub, containedItem)
+	changedItems := []*model.Item{sub, containedItem}
 	return changedItems, nil
 }
 

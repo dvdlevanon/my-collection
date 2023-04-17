@@ -43,7 +43,17 @@ function Player({ url, setMainCover, startPosition, initialEndPosition, splitVid
 		};
 	}, [isPlaying]);
 
+	const isInputFocused = () => {
+		var activeElement = document.activeElement;
+		var inputs = ['input', 'select', 'button', 'textarea'];
+		return activeElement && inputs.indexOf(activeElement.tagName.toLowerCase()) !== -1;
+	};
+
 	const onKeyDown = (e) => {
+		if (isInputFocused()) {
+			return;
+		}
+
 		if (e.key == ' ') {
 			togglePlay();
 		} else if (e.key == 'ArrowLeft') {
@@ -130,8 +140,6 @@ function Player({ url, setMainCover, startPosition, initialEndPosition, splitVid
 	return (
 		<Box
 			display="flex"
-			height="100%"
-			width="100%"
 			ref={playerElement}
 			sx={{
 				position: 'relative',

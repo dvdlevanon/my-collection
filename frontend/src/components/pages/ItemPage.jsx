@@ -51,6 +51,16 @@ function ItemPage() {
 		setAddTagMode(true);
 	};
 
+	const onTitleChanged = (newTitle) => {
+		if (!newTitle) {
+			return;
+		}
+
+		Client.saveItem({ ...itemQuery.data, title: newTitle }, () => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
+	};
+
 	const onTagAdded = (tag) => {
 		setAddTagMode(false);
 
@@ -143,6 +153,7 @@ function ItemPage() {
 							item={itemQuery.data}
 							variant="h5"
 							onTagAdded={onTagAdded}
+							onTitleChanged={onTitleChanged}
 							sx={{
 								whiteSpace: 'normal',
 								overflow: 'visible',

@@ -72,8 +72,8 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 		errs = append(errs, addMissingDirs(db, f.diff.AddedDirectories)...)
 		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
 		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
-		errs = append(errs, renameDirs(db, db, db, f.diff.MovedDirectories)...)
 		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
+		errs = append(errs, renameDirs(db, db, db, f.diff.MovedDirectories)...)
 		errs = append(errs, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
 	}
 
