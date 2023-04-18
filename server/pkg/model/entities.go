@@ -6,14 +6,23 @@ type ItemsAndTags struct {
 }
 
 type Tag struct {
-	Id          uint64           `json:"id,omitempty"`
-	Title       string           `json:"title,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
-	ParentID    *uint64          `json:"parentId,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
-	Items       []*Item          `json:"items,omitempty" gorm:"many2many:tag_items;"`
-	Children    []*Tag           `json:"children,omitempty" gorm:"foreignkey:ParentID"`
-	Image       string           `json:"imageUrl,omitempty"`
-	Images      []*TagImage      `json:"images,omitempty"`
-	Annotations []*TagAnnotation `json:"tags_annotations,omitempty" gorm:"many2many:tags_annotations;"`
+	Id              uint64              `json:"id,omitempty"`
+	Title           string              `json:"title,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
+	ParentID        *uint64             `json:"parentId,omitempty" gorm:"uniqueIndex:title_and_parent_idx"`
+	Items           []*Item             `json:"items,omitempty" gorm:"many2many:tag_items;"`
+	Children        []*Tag              `json:"children,omitempty" gorm:"foreignkey:ParentID"`
+	Image           string              `json:"imageUrl,omitempty"`
+	Images          []*TagImage         `json:"images,omitempty"`
+	Annotations     []*TagAnnotation    `json:"tags_annotations,omitempty" gorm:"many2many:tags_annotations;"`
+	DisplaySettings *TagDisplaySettings `json:"display_settings,omitempty"`
+}
+
+type TagDisplaySettings struct {
+	Id              uint64 `json:"id,omitempty"`
+	TagId           uint64 `json:"tagId,omitempty"`
+	Style           string `json:"style,omitempty"`
+	PreferredWidth  int    `json:"preferred_width,omitempty"`
+	PreferredHeight int    `json:"preferred_height,omitempty"`
 }
 
 type TagImageType struct {

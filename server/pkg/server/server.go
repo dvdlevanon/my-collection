@@ -59,6 +59,7 @@ func (s *Server) init() {
 	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)
 
 	api.GET("/tags", s.getTags)
+	api.GET("/special-tags", s.getSpecialTags)
 	api.POST("/tags", s.createTag)
 	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/tags/:tag", s.getTag)

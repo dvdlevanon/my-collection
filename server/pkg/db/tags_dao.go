@@ -37,7 +37,7 @@ func (d *Database) UpdateTag(tag *model.Tag) error {
 	return d.update(tag)
 }
 
-func (d *Database) getTagModel() *gorm.DB {
+func (d *Database) getTagModel(withChildren bool) *gorm.DB {
 	itemsPreloading := func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID")
 	}
@@ -46,22 +46,34 @@ func (d *Database) getTagModel() *gorm.DB {
 		return db.Select("ID")
 	}
 
-	return d.db.Model(model.Tag{}).
-		Preload("Children").
+	model := d.db.Model(model.Tag{}).
 		Preload("Images").
+		Preload("DisplaySettings").
 		Preload("Items", itemsPreloading).
 		Preload("Annotations", annotationsPreloading)
+
+	if withChildren {
+		model = model.Preload("Children")
+	}
+
+	return model
 }
 
 func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
 	tag := &model.Tag{}
-	err := d.handleError(d.getTagModel().First(tag, conds...).Error)
+	err := d.handleError(d.getTagModel(true).First(tag, conds...).Error)
 	return tag, err
+}
+
+func (d *Database) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
+	var tags []model.Tag
+	err := d.handleError(d.getTagModel(false).Find(&tags, conds...).Error)
+	return &tags, err
 }
 
 func (d *Database) GetTags(conds ...interface{}) (*[]model.Tag, error) {
 	var tags []model.Tag
-	err := d.handleError(d.getTagModel().Find(&tags, conds...).Error)
+	err := d.handleError(d.getTagModel(true).Find(&tags, conds...).Error)
 	return &tags, err
 }
 

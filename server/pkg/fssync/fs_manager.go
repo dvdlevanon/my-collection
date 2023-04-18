@@ -18,13 +18,6 @@ import (
 var logger = logging.MustGetLogger("fsmanager")
 
 func NewFsManager(db *db.Database, filesFilter directorytree.FilesFilter, periodicCheckDuration time.Duration) (*FsManager, error) {
-	_, err := db.GetTag(directories.DirectoriesTag)
-	if err != nil {
-		if err := db.CreateOrUpdateTag(&directories.DirectoriesTag); err != nil {
-			return nil, err
-		}
-	}
-
 	return &FsManager{
 		filesFilter:           filesFilter,
 		periodicCheckDuration: periodicCheckDuration,

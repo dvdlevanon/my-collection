@@ -30,14 +30,14 @@ func TestAddMissingDirectoryTags(t *testing.T) {
 
 	trw := model.NewMockTagReaderWriter(ctrl)
 	trw.EXPECT().GetTag(gomock.Any()).Return(nil, nil)
-	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "Dir1", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}).Return(nil)
+	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "dir1", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())}).Return(nil)
 	trw.EXPECT().GetTag(gomock.Any()).Return(nil, nil)
-	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "Dir 2", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}).Return(nil)
+	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "dir-2", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())}).Return(nil)
 	trw.EXPECT().GetTag(gomock.Any()).Return(nil, nil)
-	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "Dir 3", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}).Return(nil)
+	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "dir_3", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())}).Return(nil)
 	trw.EXPECT().GetTag(gomock.Any()).Return(nil, nil)
-	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "Path", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}).Return(nil)
-	trw.EXPECT().GetTag(gomock.Any()).Return(&model.Tag{Title: "Exists", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}, nil)
+	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "some/inner/path", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())}).Return(nil)
+	trw.EXPECT().GetTag(gomock.Any()).Return(&model.Tag{Title: "tag/exists", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())}, nil)
 	errs := addMissingDirectoryTags(dr, trw)
 	assert.Equal(t, 0, len(errs))
 }
@@ -176,12 +176,12 @@ func TestRenameFiles(t *testing.T) {
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "/new", Excluded: pointer.Bool(false)}).Return(nil)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(&model.Directory{Path: "/new", Excluded: pointer.Bool(false)}, nil)
 	trw.EXPECT().GetTag(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
-	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "New", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)})
-	oldTag := &model.Tag{Id: 4321, Title: "/", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID), Items: []*model.Item{{Id: 1}}}
+	trw.EXPECT().CreateOrUpdateTag(&model.Tag{Title: "/new", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())})
+	oldTag := &model.Tag{Id: 4321, Title: "/", ParentID: pointer.Uint64(directories.GetDirectoriesTagId()), Items: []*model.Item{{Id: 1}}}
 	trw.EXPECT().GetTag(gomock.Any()).Return(oldTag, nil)
 	irw.EXPECT().GetItems(gomock.Any()).Return(&[]model.Item{{Id: 1, Title: "file1"}}, nil)
 	irw.EXPECT().UpdateItem(&model.Item{Id: 1, Title: "file1", Origin: "/new", Url: "/new/file1"}).Return(nil)
-	newTag := &model.Tag{Title: "New", ParentID: pointer.Uint64(directories.DIRECTORIES_TAG_ID)}
+	newTag := &model.Tag{Title: "new", ParentID: pointer.Uint64(directories.GetDirectoriesTagId())}
 	trw.EXPECT().GetTag(gomock.Any()).Return(newTag, nil)
 	irw.EXPECT().CreateOrUpdateItem(&model.Item{Id: 1, Title: "file1", Origin: "/new", Url: "/new/file1", Tags: []*model.Tag{newTag}})
 	trw.EXPECT().GetTag(gomock.Any()).Return(oldTag, nil)

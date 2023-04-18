@@ -1,10 +1,29 @@
 export default class TagsUtil {
+	static directoriesTag;
+	static dailyMixTag;
+
+	static initSpecialTags(specialTags) {
+		for (let i = 0; i < specialTags.length; i++) {
+			if (specialTags[i].title == 'Directories') {
+				// directories.go
+				TagsUtil.directoriesTag = specialTags[i];
+			} else if (specialTags[i].title == 'DailyMix') {
+				// automix.go
+				TagsUtil.dailyMixTag = specialTags[i];
+			}
+		}
+
+		if (!TagsUtil.directoriesTag || !TagsUtil.dailyMixTag) {
+			console.log('Missing mandatory special tags');
+		}
+	}
+
 	static isDirectoriesCategory(tagId) {
-		return tagId == 1; // directories.go
+		return tagId == TagsUtil.directoriesTag.id;
 	}
 
 	static isDailymixCategory(tagId) {
-		return tagId == 343; // automix.go
+		return tagId == TagsUtil.dailyMixTag.id;
 	}
 
 	static isSpecialCategory(tagId) {
@@ -16,9 +35,12 @@ export default class TagsUtil {
 			return [];
 		}
 
-		return tags.filter((tag) => {
+		let result = tags.filter((tag) => {
 			return !tag.parentId;
 		});
+
+		console.log(result);
+		return result;
 	}
 
 	static normalizeTagTitle(rawTitle) {

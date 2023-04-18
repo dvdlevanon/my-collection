@@ -49,6 +49,9 @@ func run() error {
 		return err
 	}
 
+	if err := directories.Init(db); err != nil {
+		return err
+	}
 	fs, err := fssync.NewFsManager(db, filesFilter, 1*time.Second)
 	if err != nil {
 		return err

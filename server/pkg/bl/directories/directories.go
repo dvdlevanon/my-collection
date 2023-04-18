@@ -10,40 +10,30 @@ import (
 	"time"
 
 	"github.com/op/go-logging"
-	"github.com/patrickmn/go-cache"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"gorm.io/gorm"
 	"k8s.io/utils/pointer"
 )
 
-const DIRECTORIES_TAG_ID = uint64(1) // tags-util.js
 const ROOT_DIRECTORY_PATH = "<root>"
 
-var DirectoriesTag = model.Tag{
-	Id:    DIRECTORIES_TAG_ID,
-	Title: "Directories",
+var directoriesTag = &model.Tag{
+	Title:    "Directories", // tags-utils.js
+	ParentID: nil,
 }
 
 var logger = logging.MustGetLogger("directories")
-var directoriesCache = cache.New(time.Second*3, time.Second)
-var directoriesCacheKey = "all-directories"
 
-func GetAllDirectoriesWithCache(dr model.DirectoryReader) (*[]model.Directory, error) {
-	allDirectoriesIfc, found := directoriesCache.Get(directoriesCacheKey)
-	allDirectories, ok := allDirectoriesIfc.(*[]model.Directory)
-
-	if found && ok {
-		return allDirectories, nil
-	}
-
-	allDirectories, err := dr.GetAllDirectories()
+func Init(trw model.TagReaderWriter) error {
+	var err error
+	directoriesTag, err = trw.GetTag(directoriesTag)
 	if err != nil {
-		return nil, err
+		if err := trw.CreateOrUpdateTag(directoriesTag); err != nil {
+			return err
+		}
 	}
-
-	directoriesCache.Add(directoriesCacheKey, allDirectories, cache.DefaultExpiration)
-	return allDirectories, nil
+	return nil
 }
 
 func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
@@ -243,4 +233,8 @@ func ValidateReadyDirectory(drw model.DirectoryReaderWriter, path string) (*mode
 	}
 
 	return dir, nil
+}
+
+func GetDirectoriesTagId() uint64 {
+	return directoriesTag.Id
 }

@@ -14,7 +14,6 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.16
 	github.com/op/go-logging v0.0.0-20160315200505-970db520ece7
 	github.com/otiai10/copy v1.10.0
-	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.2
 	golang.org/x/text v0.9.0

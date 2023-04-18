@@ -137,7 +137,7 @@ func addMissingDirectoryTag(dr model.DirectoryReader, trw model.TagReaderWriter,
 		return nil
 	}
 
-	_, err := tags.GetOrCreateChildTag(trw, directories.DIRECTORIES_TAG_ID, dir.Path)
+	_, err := tags.GetOrCreateChildTag(trw, directories.GetDirectoriesTagId(), dir.Path)
 	return err
 }
 

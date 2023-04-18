@@ -1,5 +1,6 @@
 import { createTheme, CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material';
 import React, { useState } from 'react';
+import { useQuery } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
@@ -7,6 +8,9 @@ import Gallery from './components/pages/Gallery';
 import ItemPage from './components/pages/ItemPage';
 import ManageDirectories from './components/pages/ManageDirectories';
 import TopBar from './components/top-bar/TopBar';
+import Client from './utils/client';
+import ReactQueryUtil from './utils/react-query-util';
+import TagsUtil from './utils/tags-util';
 
 const theme = createTheme({
 	palette: {
@@ -35,6 +39,12 @@ const theme = createTheme({
 });
 
 function App() {
+	const specialTagsQuery = useQuery({
+		queryKey: ReactQueryUtil.SPECIAL_TAGS_KEY,
+		queryFn: Client.getSpecialTags,
+		onSuccess: (specialTags) => TagsUtil.initSpecialTags(specialTags),
+	});
+
 	let [previewMode, setPreviewMode] = useState(true);
 	const onPreviewModeChange = (previewMode) => {
 		setPreviewMode(previewMode);
@@ -47,11 +57,13 @@ function App() {
 					<CssBaseline />
 					<BrowserRouter>
 						<TopBar previewMode={previewMode} onPreviewModeChange={onPreviewModeChange} />
-						<Routes>
-							<Route index element={<Gallery previewMode={previewMode} />} />
-							<Route path="/spa/item/:itemId" element={<ItemPage />} />
-							<Route path="/spa/manage-directories" element={<ManageDirectories />} />
-						</Routes>
+						{specialTagsQuery.isSuccess && (
+							<Routes>
+								<Route index element={<Gallery previewMode={previewMode} />} />
+								<Route path="/spa/item/:itemId" element={<ItemPage />} />
+								<Route path="/spa/manage-directories" element={<ManageDirectories />} />
+							</Routes>
+						)}
 					</BrowserRouter>
 					<ReactQueryDevtools initialIsOpen={false} />
 				</ThemeProvider>

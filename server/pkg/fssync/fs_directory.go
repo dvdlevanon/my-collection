@@ -21,7 +21,7 @@ type FsDirectory struct {
 }
 
 func (d *FsDirectory) getTag(tr model.TagReader) (*model.Tag, error) {
-	tag, err := tags.GetChildTag(tr, directories.DIRECTORIES_TAG_ID, d.path)
+	tag, err := tags.GetChildTag(tr, directories.GetDirectoriesTagId(), d.path)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil

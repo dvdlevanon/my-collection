@@ -10,18 +10,17 @@ import (
 	"time"
 )
 
-const DAILYMIX_TAG_ID = uint64(343) // tags-util.js
-
-var DailymixTag = model.Tag{
-	Id:    DAILYMIX_TAG_ID,
-	Title: "DailyMix",
+var dailymixTag = &model.Tag{
+	Title:    "DailyMix", // tags-utils.js
+	ParentID: nil,
 }
 
 func New(trw model.TagReaderWriter, ir model.ItemReader,
 	tarw model.TagAnnotationReaderWriter, dailyMixItemsCount int) (*Automix, error) {
-	_, err := trw.GetTag(DailymixTag)
+	var err error
+	dailymixTag, err = trw.GetTag(dailymixTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(&DailymixTag); err != nil {
+		if err := trw.CreateOrUpdateTag(dailymixTag); err != nil {
 			return nil, err
 		}
 	}
@@ -73,7 +72,7 @@ func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
 }
 
 func isDailymixExists(trw model.TagReaderWriter, ctg model.CurrentTimeGetter) bool {
-	_, err := tags.GetChildTag(trw, DAILYMIX_TAG_ID, getCurrentDailymixTitle(ctg))
+	_, err := tags.GetChildTag(trw, dailymixTag.Id, getCurrentDailymixTitle(ctg))
 	return err == nil
 }
 
@@ -87,7 +86,7 @@ func getCurrentDailymixAnnotation(ctg model.CurrentTimeGetter) string {
 
 func prepareDailymixTag(trw model.TagReaderWriter, tarw model.TagAnnotationReaderWriter,
 	ctg model.CurrentTimeGetter) (*model.Tag, error) {
-	tag, err := tags.GetOrCreateChildTag(trw, DAILYMIX_TAG_ID, getCurrentDailymixTitle(ctg))
+	tag, err := tags.GetOrCreateChildTag(trw, dailymixTag.Id, getCurrentDailymixTitle(ctg))
 	if err != nil {
 		return nil, err
 	}
@@ -100,4 +99,8 @@ func prepareDailymixTag(trw model.TagReaderWriter, tarw model.TagAnnotationReade
 	}
 
 	return tag, err
+}
+
+func GetDailymixTagId() uint64 {
+	return dailymixTag.Id
 }

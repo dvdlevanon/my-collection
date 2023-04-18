@@ -3,6 +3,10 @@ export default class Client {
 	static apiUrl = `http://${Client.baseUrl}/api`;
 	static websocketUrl = `ws://${Client.baseUrl}/api/ws`;
 
+	static getSpecialTags = async () => {
+		return await fetch(`${Client.apiUrl}/special-tags`).then((response) => response.json());
+	};
+
 	static getTags = async () => {
 		return await fetch(`${Client.apiUrl}/tags`).then((response) => response.json());
 	};

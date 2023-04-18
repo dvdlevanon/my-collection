@@ -3,6 +3,8 @@ package server
 import (
 	"encoding/json"
 	"io"
+	"my-collection/server/pkg/automix"
+	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
 	"net/http"
@@ -88,6 +90,16 @@ func (s *Server) removeTag(c *gin.Context) {
 
 func (s *Server) getTags(c *gin.Context) {
 	tags, err := s.db.GetAllTags()
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Get tags return %d tags", len(*tags))
+	c.JSON(http.StatusOK, tags)
+}
+
+func (s *Server) getSpecialTags(c *gin.Context) {
+	tags, err := s.db.GetTagsWithoutChildren(directories.GetDirectoriesTagId(), automix.GetDailymixTagId())
 	if s.handleError(c, err) {
 		return
 	}

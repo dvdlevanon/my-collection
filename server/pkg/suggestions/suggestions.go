@@ -46,7 +46,7 @@ func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) 
 	relatedItems := make([]*model.Item, 0)
 
 	for _, tag := range *t {
-		if *tag.ParentID == automix.DAILYMIX_TAG_ID {
+		if *tag.ParentID == automix.GetDailymixTagId() {
 			continue
 		}
 

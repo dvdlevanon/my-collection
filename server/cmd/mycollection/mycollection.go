@@ -3,6 +3,7 @@ package main
 import (
 	"flag"
 	"my-collection/server/pkg/automix"
+	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fssync"
 	processor "my-collection/server/pkg/processor"
@@ -62,6 +63,9 @@ func run() error {
 	processor.Pause()
 	go processor.Run()
 
+	if err := directories.Init(db); err != nil {
+		return err
+	}
 	fsManager, err := fssync.NewFsManager(db, filesFilter, 60*time.Second)
 	if err != nil {
 		return err
