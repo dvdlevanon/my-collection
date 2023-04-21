@@ -129,13 +129,15 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 	};
 
 	const calculateTagSize = () => {
-		if (parent.display_style == 'portrait') {
+		if (parent.display_style === 'portrait') {
 			return { width: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9), height: tagSize };
+		} else if (parent.display_style === 'landscape') {
+			return { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
 		} else if (parent.display_style == 'icon') {
 			return { width: tagSize / 4, height: tagSize / 4 };
-		} else if (parent.display_style == 'landscape') {
+		} else if (parent.display_style === 'banner') {
 			return { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
-		} else if (parent.display_style == 'chip') {
+		} else if (parent.display_style === 'chip') {
 			return { width: 'auto', height: 'auto' };
 		} else {
 			console.log('unsupported display style ' + parent.display_style);

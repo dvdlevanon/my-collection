@@ -56,10 +56,10 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 
 	return (
 		<Stack
-			// maxWidth={tagDimension.width}
-			// maxHeight={tagDimension.height}
-			width={tagDimension.width}
-			height={tagDimension.height}
+			maxWidth={tagDimension.width}
+			maxHeight={tagDimension.height}
+			width={parent.display_style !== 'banner' ? tagDimension.width : 'auto'}
+			height={parent.display_style !== 'banner' ? tagDimension.height : 'auto'}
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 			position="relative"
@@ -80,9 +80,13 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 						e.preventDefault();
 						onTagClicked(tag);
 					}}
+					imgSx={{
+						overflow: parent.display_style !== 'banner' ? 'visible' : 'hidden',
+						objectFit: parent.display_style !== 'banner' ? 'auto' : 'contain',
+					}}
 				/>
 			</Link>
-			<TagTitle tag={tag} />
+			{parent.display_style !== 'banner' && <TagTitle tag={tag} />}
 			{optionsComponents()}
 		</Stack>
 	);

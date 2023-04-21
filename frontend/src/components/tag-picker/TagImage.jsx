@@ -3,7 +3,7 @@ import { Box } from '@mui/material';
 import React from 'react';
 import TagsUtil from '../../utils/tags-util';
 
-function TagImage({ tag, selectedTit, onClick }) {
+function TagImage({ tag, selectedTit, onClick, imgSx }) {
 	return (
 		<Box
 			onClick={onClick}
@@ -26,7 +26,7 @@ function TagImage({ tag, selectedTit, onClick }) {
 				sx={{
 					borderRadius: '5px',
 					overflow: 'hidden',
-					objectFit: 'contain',
+					...imgSx,
 				}}
 				component="img"
 				src={TagsUtil.getTagImageUrl(tag, selectedTit)}
