@@ -96,13 +96,10 @@ func TestTag(t *testing.T) {
 		parentFromDb, err := db.GetTag(expectedId)
 		assert.NoError(t, err)
 		assert.Equal(t, title, parentFromDb.Title)
-		tagWithImage := model.Tag{Id: expectedId, Image: fmt.Sprintf("image-%d", i)}
-		assert.NoError(t, db.CreateOrUpdateTag(&tagWithImage))
 		updatedFromDb, err := db.GetTag(model.Tag{Id: expectedId})
 		assert.NoError(t, err)
 		assert.Equal(t, expectedId, updatedFromDb.Id)
 		assert.Equal(t, title, updatedFromDb.Title)
-		assert.Equal(t, fmt.Sprintf("image-%d", i), updatedFromDb.Image)
 		assert.NoError(t, db.CreateOrUpdateTag(&model.Tag{Id: expectedId, Items: []*model.Item{{Id: 1}, {Id: 2}}}))
 		withItemsFromDb, err := db.GetTag("title = ?", title)
 		assert.NoError(t, err)
@@ -136,8 +133,6 @@ func TestTag(t *testing.T) {
 			childFromDb, err := db.GetTag("title = ? and parent_id = ?", title, parent.Id)
 			assert.NoError(t, err)
 			assert.Equal(t, expectedId, childFromDb.Id)
-			updateTag := model.Tag{Id: expectedId, Image: fmt.Sprintf("image-%d", i)}
-			assert.NoError(t, db.CreateOrUpdateTag(&updateTag))
 		}
 	}
 }

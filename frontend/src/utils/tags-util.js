@@ -1,13 +1,15 @@
+import Client from './client';
+
 export default class TagsUtil {
 	static directoriesTag;
 	static dailyMixTag;
 
 	static initSpecialTags(specialTags) {
 		for (let i = 0; i < specialTags.length; i++) {
-			if (specialTags[i].title == 'Directories') {
+			if (specialTags[i].title === 'Directories') {
 				// directories.go
 				TagsUtil.directoriesTag = specialTags[i];
-			} else if (specialTags[i].title == 'DailyMix') {
+			} else if (specialTags[i].title === 'DailyMix') {
 				// automix.go
 				TagsUtil.dailyMixTag = specialTags[i];
 			}
@@ -19,11 +21,11 @@ export default class TagsUtil {
 	}
 
 	static isDirectoriesCategory(tagId) {
-		return tagId == TagsUtil.directoriesTag.id;
+		return tagId === TagsUtil.directoriesTag.id;
 	}
 
 	static isDailymixCategory(tagId) {
-		return tagId == TagsUtil.dailyMixTag.id;
+		return tagId === TagsUtil.dailyMixTag.id;
 	}
 
 	static isSpecialCategory(tagId) {
@@ -39,7 +41,6 @@ export default class TagsUtil {
 			return !tag.parentId;
 		});
 
-		console.log(result);
 		return result;
 	}
 
@@ -67,4 +68,37 @@ export default class TagsUtil {
 
 		return words.join(' ');
 	}
+
+	static hasImage = (tag) => {
+		if (this.isSpecialCategory(tag.parentId)) {
+			return true;
+		}
+
+		return tag.images && tag.images.length > 0;
+	};
+
+	static getTagImageUrl = (tag, selectedTit) => {
+		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/directory/directory.png'));
+		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/dailymix/dailymix.png'));
+		}
+
+		if (selectedTit && tag.images) {
+			let selectedImage = tag.images.find((image) => image.imageType === selectedTit.id);
+			if (selectedImage && selectedImage.url) {
+				return Client.buildFileUrl(selectedImage.url);
+			}
+		}
+
+		if (tag.images) {
+			for (let i = 0; i < tag.images.length; i++) {
+				if (tag.images[i].url) {
+					return Client.buildFileUrl(tag.images[i].url);
+				}
+			}
+		}
+
+		return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
+	};
 }

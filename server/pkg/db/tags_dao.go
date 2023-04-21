@@ -48,7 +48,6 @@ func (d *Database) getTagModel(withChildren bool) *gorm.DB {
 
 	model := d.db.Model(model.Tag{}).
 		Preload("Images").
-		Preload("DisplaySettings").
 		Preload("Items", itemsPreloading).
 		Preload("Annotations", annotationsPreloading)
 

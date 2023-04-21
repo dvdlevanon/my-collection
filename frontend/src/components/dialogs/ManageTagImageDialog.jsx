@@ -2,24 +2,14 @@ import CloseIcon from '@mui/icons-material/Close';
 import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React, { useRef } from 'react';
-import { QueryClient, useQueryClient } from 'react-query';
-import Client from '../../utils/client';
-import ReactQueryUtil from '../../utils/react-query-util';
+import TagsUtil from '../../utils/tags-util';
 
 function ManageTagImageDialog({ tag, onClose }) {
-	const queryClient = useQueryClient();
+	// const queryClient = useQueryClient();
 	const fileDialog = useRef(null);
 
-	const getImageUrl = () => {
-		if (hasImage()) {
-			return Client.buildFileUrl(tag.imageUrl);
-		} else {
-			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
-		}
-	};
-
 	const hasImage = () => {
-		return tag.imageUrl && tag.imageUrl != 'none';
+		return tag.images && tag.images.length > 0;
 	};
 
 	const changeTagImageClicked = (e) => {
@@ -29,30 +19,30 @@ function ManageTagImageDialog({ tag, onClose }) {
 	};
 
 	const imageSelected = (e) => {
-		if (fileDialog.current.files.length != 1) {
+		if (fileDialog.current.files.length !== 1) {
 			return;
 		}
 
-		Client.uploadFile(`tags-image/${tag.id}`, fileDialog.current.files[0], (fileUrl) => {
-			Client.saveTag({ ...tag, imageUrl: fileUrl.url }).then(() => {
-				onClose();
-				QueryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
-			});
-		});
+		// Client.uploadFile(`tags-image/${tag.id}`, fileDialog.current.files[0], (fileUrl) => {
+		// 	Client.saveTag({ ...tag, imageUrl: fileUrl.url }).then(() => {
+		// 		onClose();
+		// 		QueryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
+		// 	});
+		// });
 	};
 
 	const removeTagImageClicked = (e) => {
 		e.stopPropagation();
-		Client.saveTag({ ...tag, imageUrl: 'none' }).then(() => {
-			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
-		});
+		// Client.saveTag({ ...tag, imageUrl: 'none' }).then(() => {
+		// 	queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
+		// });
 	};
 
 	return (
 		<Dialog
 			onClose={(e, reason) => {
 				e.stopPropagation();
-				if (reason == 'backdropClick' || reason == 'escapeKeyDown') {
+				if (reason === 'backdropClick' || reason === 'escapeKeyDown') {
 					onClose();
 				}
 			}}
@@ -103,7 +93,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 							overflow: 'hidden',
 						}}
 						component="img"
-						src={getImageUrl()}
+						src={TagsUtil.getTagImageUrl(tag, { id: 5 })}
 						alt={tag.title}
 						loading="lazy"
 					/>

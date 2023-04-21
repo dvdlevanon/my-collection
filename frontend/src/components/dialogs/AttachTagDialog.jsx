@@ -44,7 +44,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 				<TagPicker
 					initialSelectedCategoryId={3}
 					showSpecialCategories={false}
-					size="small"
+					initialTagSize={350}
 					onTagSelected={onTagAdded}
 					onDropDownToggled={() => {}}
 					tagLinkBuilder={(tag) => '/?' + GalleryUrlParams.buildUrlParams(tag.id)}

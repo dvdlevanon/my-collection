@@ -11,6 +11,7 @@ function TagPicker({
 	size,
 	onTagSelected,
 	onDropDownToggled,
+	initialTagSize,
 	initialSelectedCategoryId,
 	showSpecialCategories,
 	tagLinkBuilder,
@@ -67,10 +68,10 @@ function TagPicker({
 			{tagsQuery.isSuccess && selectedCategoryId > 0 && (
 				<Tags
 					tags={getChildrenTags(selectedCategoryId)}
-					parentId={selectedCategoryId}
-					size={size}
+					parent={tagsQuery.data.find((cur) => cur.id == selectedCategoryId)}
+					initialTagSize={initialTagSize}
 					tagLinkBuilder={tagLinkBuilder}
-					onTagSelected={tagSelectedHandler}
+					onTagClicked={tagSelectedHandler}
 				/>
 			)}
 		</Stack>

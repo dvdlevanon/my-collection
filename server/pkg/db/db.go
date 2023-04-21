@@ -73,10 +73,6 @@ func New(rootDirectory string, filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
-	if err = db.AutoMigrate(&model.TagDisplaySettings{}); err != nil {
-		return nil, errors.Wrap(err, 0)
-	}
-
 	logger.Infof("DB initialized with db file: %s", actualpath)
 
 	return &Database{

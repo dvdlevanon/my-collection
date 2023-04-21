@@ -8,6 +8,7 @@ import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
 import PrefixFilter from './PrefixFilter';
 import TagImageTypeSelector from './TagImageTypeSelector';
 import TagSortSelector from './TagSortSelector';
+import TagViewControls from './TagViewControls';
 import TagsAnnotations from './TagsAnnotations';
 
 function TagsTopBar({
@@ -23,6 +24,8 @@ function TagsTopBar({
 	setSortBy,
 	prefixFilter,
 	setPrefixFilter,
+	tagSize,
+	onZoomChanged,
 }) {
 	let [showImagesFromDirectory, setShowImagesFromDirectory] = useState(false);
 
@@ -75,6 +78,7 @@ function TagsTopBar({
 						}}
 					></TextField>
 					<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
+					<TagViewControls tagSize={tagSize} onZoomChanged={onZoomChanged} />
 				</Stack>
 				<TagsAnnotations
 					annotations={annotations}

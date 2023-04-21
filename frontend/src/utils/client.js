@@ -63,10 +63,6 @@ export default class Client {
 		});
 	};
 
-	static getTag = async ({ tagId }) => {
-		return await fetch(`${Client.apiUrl}/tags/${tagId}`).then((response) => response.json());
-	};
-
 	static createTag = async (tag) => {
 		return await fetch(`${Client.apiUrl}/tags`, {
 			method: 'POST',
@@ -104,6 +100,10 @@ export default class Client {
 
 	static getItem = async (itemId) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}`).then((response) => response.json());
+	};
+
+	static getTag = async (tagId) => {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}`).then((response) => response.json());
 	};
 
 	static getItemLocation = async (itemId) => {

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
 import seedrandom from 'seedrandom';
+import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
@@ -11,16 +12,17 @@ import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
 import TagsTopBar from './TagsTopBar';
 
-function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
+function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parentId) ? 'title-asc' : 'random');
+	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parent.id) ? 'title-asc' : 'random');
 	const [tit, setTit] = useState(null);
 	const [prefixFilter, setPrefixFilter] = useState('');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
+	const [tagSize, setTagSize] = useState(initialTagSize);
 	const availableAnnotationsQuery = useQuery({
-		queryKey: ReactQueryUtil.availableAnnotationsKey(parentId),
-		queryFn: () => Client.getAvailableAnnotations(parentId),
+		queryKey: ReactQueryUtil.availableAnnotationsKey(parent.id),
+		queryFn: () => Client.getAvailableAnnotations(parent.id),
 		onSuccess: (availableAnnotations) => {
 			setSelectedAnnotations(
 				selectedAnnotations.filter((selected) => {
@@ -30,7 +32,7 @@ function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 				})
 			);
 
-			if (TagsUtil.isDailymixCategory(parentId)) {
+			if (TagsUtil.isDailymixCategory(parent.id)) {
 				var today = new Date();
 				var month = today.toLocaleString('default', { month: 'short' });
 				var year = today.getFullYear();
@@ -113,7 +115,7 @@ function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 			return availableAnnotations;
 		}
 
-		if (TagsUtil.isSpecialCategory(parentId)) {
+		if (TagsUtil.isSpecialCategory(parent.id)) {
 			return availableAnnotations;
 		}
 
@@ -126,10 +128,25 @@ function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 		];
 	};
 
+	const calculateTagSize = () => {
+		if (parent.display_style == 'portrait') {
+			return { width: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9), height: tagSize };
+		} else if (parent.display_style == 'icon') {
+			return { width: tagSize / 4, height: tagSize / 4 };
+		} else if (parent.display_style == 'landscape') {
+			return { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
+		} else if (parent.display_style == 'chip') {
+			return { width: 'auto', height: 'auto' };
+		} else {
+			console.log('unsupported display style ' + parent.display_style);
+			return { width: 'auto', height: 'auto' };
+		}
+	};
+
 	return (
 		<Stack width={'100%'} height={'100%'} flexGrow={1} backgroundColor="dark.lighter">
 			<TagsTopBar
-				parentId={parentId}
+				parentId={parent.id}
 				setSearchTerm={setSearchTerm}
 				annotations={
 					(availableAnnotationsQuery.isSuccess && getAvailableAnnotations(availableAnnotationsQuery.data)) ||
@@ -144,6 +161,8 @@ function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 				setSortBy={setSortBy}
 				prefixFilter={prefixFilter}
 				setPrefixFilter={setPrefixFilter}
+				tagSize={tagSize}
+				onZoomChanged={(offset) => setTagSize(tagSize + offset)}
 			/>
 			<Box
 				sx={{
@@ -159,23 +178,15 @@ function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 						<Tag
 							key={tag.id}
 							tag={tag}
-							size={size}
+							parent={parent}
+							tagDimension={calculateTagSize()}
 							selectedTit={tit}
 							tagLinkBuilder={tagLinkBuilder}
-							onTagSelected={onTagSelected}
+							onTagClicked={onTagClicked}
 						/>
 					);
 				})}
-				{!TagsUtil.isSpecialCategory(parentId) && (
-					<Tag
-						key="add-tag"
-						tag={{ id: -1 }}
-						size={size}
-						tagLinkBuilder={tagLinkBuilder}
-						onTagSelected={() => setAddTagDialogOpened(true)}
-					/>
-				)}
-				{TagsUtil.isSpecialCategory(parentId) && tags.length == 0 && (
+				{TagsUtil.isSpecialCategory(parent.id) && tags.length == 0 && (
 					<Stack
 						direction="row"
 						gap="10px"
@@ -194,7 +205,7 @@ function Tags({ tags, parentId, size, tagLinkBuilder, onTagSelected }) {
 				)}
 			</Box>
 			{addTagDialogOpened && (
-				<AddTagDialog parentId={parentId} verb="Tag" onClose={() => setAddTagDialogOpened(false)} />
+				<AddTagDialog parentId={parent.id} verb="Tag" onClose={() => setAddTagDialogOpened(false)} />
 			)}
 		</Stack>
 	);

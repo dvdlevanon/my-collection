@@ -29,7 +29,7 @@ function Gallery({ previewMode }) {
 			<Stack>
 				{tagsQuery.isSuccess && (
 					<TagPicker
-						size="big"
+						initialTagSize={650}
 						showSpecialCategories={true}
 						onTagSelected={onTagActivated}
 						onDropDownToggled={(state) => setTagsDropDownOpened(state)}
