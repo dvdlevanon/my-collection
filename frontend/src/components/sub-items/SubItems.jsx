@@ -31,6 +31,7 @@ function SubItems({ item }) {
 		<>
 			{mainItemQuery.isSuccess && (
 				<Stack flexDirection="column" gap="10px">
+					<SubItem item={mainItemQuery.data} itemWidth={200} highlighted={mainItemQuery.data.id == item.id} />
 					{sortedSubItems().map((subItem) => {
 						return (
 							<SubItem
