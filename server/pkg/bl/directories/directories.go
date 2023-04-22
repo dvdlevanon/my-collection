@@ -26,13 +26,15 @@ var directoriesTag = &model.Tag{
 var logger = logging.MustGetLogger("directories")
 
 func Init(trw model.TagReaderWriter) error {
-	var err error
-	directoriesTag, err = trw.GetTag(directoriesTag)
+	d, err := trw.GetTag(directoriesTag)
 	if err != nil {
 		if err := trw.CreateOrUpdateTag(directoriesTag); err != nil {
 			return err
 		}
+	} else {
+		directoriesTag = d
 	}
+
 	return nil
 }
 

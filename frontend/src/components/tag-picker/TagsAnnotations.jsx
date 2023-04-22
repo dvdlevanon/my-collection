@@ -26,6 +26,9 @@ function TagsAnnotations({ annotations, selectedAnnotations, setSelectedAnnotati
 			{annotations
 				.sort((a, b) => {
 					if (a.title == 'None' || b.title == 'None') {
+						return 3;
+					}
+					if (a.title == 'No Image' || b.title == 'No Image') {
 						return 2;
 					}
 

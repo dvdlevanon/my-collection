@@ -38,10 +38,8 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 					color="dark"
 					sx={{
 						position: 'absolute',
-						// width: '40%',
-						// height: '100%',
-						width: '100%',
-						height: '40%',
+						width: '40%',
+						height: '100%',
 					}}
 				/>
 			)}

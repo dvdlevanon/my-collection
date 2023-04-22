@@ -17,12 +17,13 @@ var dailymixTag = &model.Tag{
 
 func New(trw model.TagReaderWriter, ir model.ItemReader,
 	tarw model.TagAnnotationReaderWriter, dailyMixItemsCount int) (*Automix, error) {
-	var err error
-	dailymixTag, err = trw.GetTag(dailymixTag)
+	d, err := trw.GetTag(dailymixTag)
 	if err != nil {
 		if err := trw.CreateOrUpdateTag(dailymixTag); err != nil {
 			return nil, err
 		}
+	} else {
+		dailymixTag = d
 	}
 
 	return &Automix{

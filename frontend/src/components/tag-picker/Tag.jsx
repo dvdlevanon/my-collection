@@ -1,6 +1,7 @@
 import { Chip, Link, Stack } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
@@ -54,6 +55,41 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 		);
 	};
 
+	const tagChipComponent = () => {
+		return (
+			<Chip
+				label={tag.title + ' (' + TagsUtil.itemsCount(tag) + ')'}
+				variant="outlined"
+				onClick={(e) => {
+					e.preventDefault();
+					onTagClicked(tag);
+				}}
+				sx={{
+					cursor: 'pointer',
+					fontSize: '20px',
+					padding: '20px 25px',
+				}}
+			></Chip>
+		);
+	};
+
+	const tagImageComponent = () => {
+		return (
+			<TagImage
+				tag={tag}
+				selectedTit={selectedTit}
+				onClick={(e) => {
+					e.preventDefault();
+					onTagClicked(tag);
+				}}
+				imgSx={{
+					overflow: parent.display_style !== 'banner' ? 'visible' : 'hidden',
+					objectFit: parent.display_style !== 'banner' ? 'auto' : 'contain',
+				}}
+			/>
+		);
+	};
+
 	return (
 		<Stack
 			maxWidth={tagDimension.width}
@@ -74,34 +110,7 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 					overflow: 'hidden',
 				}}
 			>
-				{(parent.display_style === 'chip' && (
-					<Chip
-						label={tag.title}
-						variant="outlined"
-						onClick={(e) => {
-							e.preventDefault();
-							onTagClicked(tag);
-						}}
-						sx={{
-							cursor: 'pointer',
-							fontSize: '20px',
-							padding: '20px 25px',
-						}}
-					/>
-				)) || (
-					<TagImage
-						tag={tag}
-						selectedTit={selectedTit}
-						onClick={(e) => {
-							e.preventDefault();
-							onTagClicked(tag);
-						}}
-						imgSx={{
-							overflow: parent.display_style !== 'banner' ? 'visible' : 'hidden',
-							objectFit: parent.display_style !== 'banner' ? 'auto' : 'contain',
-						}}
-					/>
-				)}
+				{(parent.display_style === 'chip' && tagChipComponent()) || tagImageComponent()}
 			</Link>
 			{parent.display_style !== 'banner' && parent.display_style !== 'chip' && <TagTitle tag={tag} />}
 			{parent.display_style !== 'chip' && optionsComponents()}

@@ -7,17 +7,26 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddAnnotationToTag(trw model.TagReaderWriter, tarw model.TagAnnotationReaderWriter,
-	tagId uint64, a model.TagAnnotation) (uint64, error) {
+func GetOrCreateTagAnnoation(tarw model.TagAnnotationReaderWriter, a *model.TagAnnotation) (*model.TagAnnotation, error) {
 	annotation, err := tarw.GetTagAnnotation(a)
 
 	if errors.Is(err, gorm.ErrRecordNotFound) {
-		err = tarw.CreateTagAnnotation(&a)
+		err = tarw.CreateTagAnnotation(a)
 		if err != nil {
-			return 0, err
+			return a, err
 		}
 
-		annotation = &a
+		annotation = a
+	}
+
+	return annotation, nil
+}
+
+func AddAnnotationToTag(trw model.TagReaderWriter, tarw model.TagAnnotationReaderWriter,
+	tagId uint64, a model.TagAnnotation) (uint64, error) {
+	annotation, err := GetOrCreateTagAnnoation(tarw, &a)
+	if err != nil {
+		return 0, err
 	}
 
 	tag, err := trw.GetTag(tagId)

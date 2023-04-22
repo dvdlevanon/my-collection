@@ -11,12 +11,13 @@ var highlightsTag = &model.Tag{
 }
 
 func InitHighlights(trw model.TagReaderWriter) error {
-	var err error
-	highlightsTag, err = trw.GetTag(highlightsTag)
+	h, err := trw.GetTag(highlightsTag)
 	if err != nil {
 		if err := trw.CreateOrUpdateTag(highlightsTag); err != nil {
 			return err
 		}
+	} else {
+		highlightsTag = h
 	}
 	return nil
 }

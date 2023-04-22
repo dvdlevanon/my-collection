@@ -24,4 +24,8 @@ export default class ItemsUtil {
 			return item.preview_url;
 		}
 	};
+
+	static isHighlight = (item) => {
+		return item.highlight_parent_id;
+	};
 }

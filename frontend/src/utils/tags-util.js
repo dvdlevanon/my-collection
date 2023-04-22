@@ -4,6 +4,7 @@ export default class TagsUtil {
 	static directoriesTag;
 	static dailyMixTag;
 	static highlightsTag;
+	static specTag;
 
 	static initSpecialTags(specialTags) {
 		for (let i = 0; i < specialTags.length; i++) {
@@ -13,13 +14,16 @@ export default class TagsUtil {
 			} else if (specialTags[i].title === 'DailyMix') {
 				// automix.go
 				TagsUtil.dailyMixTag = specialTags[i];
+			} else if (specialTags[i].title === 'Spec') {
+				// spectagger.go
+				TagsUtil.specTag = specialTags[i];
 			} else if (specialTags[i].title === 'Highlights') {
 				// highlights.go
 				TagsUtil.highlightsTag = specialTags[i];
 			}
 		}
 
-		if (!TagsUtil.directoriesTag || !TagsUtil.dailyMixTag || !TagsUtil.highlightsTag) {
+		if (!TagsUtil.directoriesTag || !TagsUtil.dailyMixTag || !TagsUtil.highlightsTag || !TagsUtil.specTag) {
 			console.log('Missing mandatory special tags');
 		}
 	}
@@ -36,20 +40,33 @@ export default class TagsUtil {
 		return tagId === TagsUtil.highlightsTag.id;
 	}
 
+	static isSpecCategory(tagId) {
+		return tagId === TagsUtil.specTag.id;
+	}
+
 	static isSpecialCategory(tagId) {
 		return (
 			TagsUtil.isDirectoriesCategory(tagId) ||
 			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isSpecCategory(tagId) ||
 			TagsUtil.isHighlightsCategory(tagId)
 		);
 	}
 
 	static allowToAddToCategory(tagId) {
-		return !(TagsUtil.isDirectoriesCategory(tagId) || TagsUtil.isDailymixCategory(tagId));
+		return !(
+			TagsUtil.isDirectoriesCategory(tagId) ||
+			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isSpecCategory(tagId)
+		);
 	}
 
 	static allowToSetImageToCategory(tagId) {
-		return !(TagsUtil.isDirectoriesCategory(tagId) || TagsUtil.isDailymixCategory(tagId));
+		return !(
+			TagsUtil.isDirectoriesCategory(tagId) ||
+			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isSpecCategory(tagId)
+		);
 	}
 
 	static getCategories(tags) {
@@ -124,5 +141,9 @@ export default class TagsUtil {
 
 	static sortByTitle = (tags) => {
 		return tags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
+	};
+
+	static itemsCount = (tag) => {
+		return tag.items ? tag.items.length : 0;
 	};
 }

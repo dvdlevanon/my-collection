@@ -1,5 +1,6 @@
 import { Typography } from '@mui/material';
 import React from 'react';
+import TagsUtil from '../../utils/tags-util';
 
 function TagTitle({ tag }) {
 	return (
@@ -12,7 +13,7 @@ function TagTitle({ tag }) {
 			variant="caption"
 			textAlign={'start'}
 		>
-			{tag.title}
+			{tag.title + ' (' + TagsUtil.itemsCount(tag) + ')'}
 		</Typography>
 	);
 }

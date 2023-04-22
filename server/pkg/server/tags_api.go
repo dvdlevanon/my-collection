@@ -8,6 +8,7 @@ import (
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/spectagger"
 	"net/http"
 	"strconv"
 
@@ -103,6 +104,7 @@ func (s *Server) getSpecialTags(c *gin.Context) {
 	tags, err := s.db.GetTagsWithoutChildren(
 		directories.GetDirectoriesTagId(),
 		automix.GetDailymixTagId(),
+		spectagger.GetSpecTagId(),
 		items.GetHighlightsTagId())
 
 	if s.handleError(c, err) {

@@ -19,8 +19,6 @@ function Item({
 	titleSx,
 	withItemTitleMenu,
 	itemLinkBuilder,
-	withoutTitle,
-	withoutDuration,
 	onConvertAudio,
 	onConvertVideo,
 }) {
@@ -137,7 +135,7 @@ function Item({
 							borderRadius: '10px',
 						}}
 					/>
-					{!withoutDuration && (
+					{!ItemsUtil.isHighlight(item) && (
 						<Typography
 							variant="caption"
 							sx={{
@@ -223,8 +221,8 @@ function Item({
 					</Box>
 				)}
 			</Link>
-			{!withoutTitle && direction === 'column' && getTitleComponent()}
-			{!withoutTitle && direction !== 'column' && (
+			{!ItemsUtil.isHighlight(item) && direction === 'column' && getTitleComponent()}
+			{!ItemsUtil.isHighlight(item) && direction !== 'column' && (
 				<Link component={RouterLink} reloadDocument to={itemLinkBuilder(item)} color="bright.text">
 					{getTitleComponent()}
 				</Link>

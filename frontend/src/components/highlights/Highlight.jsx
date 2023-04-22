@@ -25,8 +25,6 @@ function Highlight({ item, itemWidth, highlighted }) {
 					itemWidth={itemWidth}
 					itemHeight={AspectRatioUtil.calcHeight(itemWidth, AspectRatioUtil.asepctRatio16_9)}
 					showOffests={true}
-					withoutTitle={true}
-					withoutDuration={true}
 					itemLinkBuilder={(item) => {
 						return '/spa/item/' + item.id;
 					}}

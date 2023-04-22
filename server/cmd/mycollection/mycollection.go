@@ -10,6 +10,7 @@ import (
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
+	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
 	"my-collection/server/pkg/utils"
 	"path/filepath"
@@ -81,6 +82,12 @@ func run() error {
 		return err
 	}
 	go automix.Run()
+
+	spectagger, err := spectagger.New(db, db, db)
+	if err != nil {
+		return err
+	}
+	go spectagger.Run()
 
 	return server.New(db, storage, fsManager, processor).Run(*listenAddress)
 }

@@ -27,7 +27,9 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 			setSelectedAnnotations(
 				selectedAnnotations.filter((selected) => {
 					return (
-						selected.id == 'none' || availableAnnotations.some((annotation) => selected.id == annotation.id)
+						selected.id == 'none' ||
+						selected.id == 'no-image' ||
+						availableAnnotations.some((annotation) => selected.id == annotation.id)
 					);
 				})
 			);
@@ -76,6 +78,11 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 				return true;
 			}
 
+			let isNoImageSelected = selectedAnnotations.some((annotation) => annotation.id == 'no-image');
+			if (isNoImageSelected) {
+				return !TagsUtil.hasImage(cur);
+			}
+
 			if (!cur.tags_annotations) {
 				let isNoneSelected = selectedAnnotations.some((annotation) => annotation.id == 'none');
 				return isNoneSelected;
@@ -109,8 +116,16 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 			return filteredTags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
 		} else if (sortBy == 'title-desc') {
 			return filteredTags.sort((a, b) => (a.title > b.title ? -1 : a.title < b.title ? 1 : 0));
+		} else if (sortBy == 'items-count') {
+			return filteredTags.sort((a, b) =>
+				TagsUtil.itemsCount(a) > TagsUtil.itemsCount(b)
+					? -1
+					: TagsUtil.itemsCount(a) < TagsUtil.itemsCount(b)
+					? 1
+					: 0
+			);
 		} else {
-			return filterTags;
+			return filteredTags;
 		}
 	};
 
@@ -127,6 +142,10 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 			{
 				id: 'none',
 				title: 'None',
+			},
+			{
+				id: 'no-image',
+				title: 'No Image',
 			},
 			...availableAnnotations,
 		];

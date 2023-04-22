@@ -1,5 +1,5 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Chip, Stack } from '@mui/material';
+import { Box, Chip, Stack, Typography } from '@mui/material';
 import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useParams } from 'react-router-dom';
@@ -197,6 +197,13 @@ function ItemPage() {
 								sx={{ '& .MuiChip-label': { padding: '5px' } }}
 							/>
 						</Stack>
+						<Typography variant="body2" color="bright.darker2" padding="0px 10px">
+							Resolution: {itemQuery.data.width} * {itemQuery.data.height}
+							<br />
+							Video Codec: {itemQuery.data.video_codec}
+							<br />
+							Audio Codec: {itemQuery.data.audio_codec}
+						</Typography>
 						<AttachTagDialog
 							open={addTagMode}
 							item={itemQuery.data}
