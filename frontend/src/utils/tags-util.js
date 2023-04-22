@@ -82,7 +82,12 @@ export default class TagsUtil {
 	}
 
 	static normalizeTagTitle(rawTitle) {
-		let title = rawTitle
+		let regex = /\b[A-Z]{2,}\b/g;
+		let noConsequensiveUpperCaser = rawTitle.replace(regex, function (match) {
+			return match.toLowerCase();
+		});
+
+		let title = noConsequensiveUpperCaser
 			.replaceAll('-', ' ')
 			.replaceAll('_', ' ')
 			.replaceAll('.', ' ')
@@ -98,7 +103,12 @@ export default class TagsUtil {
 			title = title.replaceAll('  ', ' ');
 		}
 
+		if (!title) {
+			return '';
+		}
+
 		const words = title.split(' ');
+
 		for (let i = 0; i < words.length; i++) {
 			words[i] = words[i][0].toUpperCase() + words[i].substr(1);
 		}
