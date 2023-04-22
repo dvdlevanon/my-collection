@@ -13,8 +13,8 @@ func refreshItemMetadata(irw model.ItemReaderWriter, id uint64) error {
 		return err
 	}
 
-	if items.IsSubItem(item) {
-		if err := updateSubItemMetadata(irw, item); err != nil {
+	if items.IsSubItem(item) || items.IsHighlight(item) {
+		if err := updateNonMainItemMetadata(irw, item); err != nil {
 			return err
 		}
 	} else {
@@ -26,7 +26,7 @@ func refreshItemMetadata(irw model.ItemReaderWriter, id uint64) error {
 	return irw.UpdateItem(item)
 }
 
-func updateSubItemMetadata(ir model.ItemReader, item *model.Item) error {
+func updateNonMainItemMetadata(ir model.ItemReader, item *model.Item) error {
 	item.DurationSeconds = item.EndPosition - item.StartPosition
 
 	mainItem, err := ir.GetItem(item.MainItemId)

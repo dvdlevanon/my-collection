@@ -5,14 +5,25 @@ import ImageIcon from '@mui/icons-material/Image';
 import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
+import HighlightIcon from '@mui/icons-material/Stars';
 import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import Client from '../../utils/client';
+import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
 
-function Player({ url, setMainCover, startPosition, initialEndPosition, splitVideo, allowToSplit, suggestedItems }) {
+function Player({
+	url,
+	setMainCover,
+	startPosition,
+	initialEndPosition,
+	splitVideo,
+	makeHighlight,
+	allowToSplit,
+	suggestedItems,
+}) {
 	let [showControls, setShowControls] = useState(true);
 	let [showVolume, setShowVolume] = useState(false);
 	let [showSchedule, setShowSchedule] = useState(false);
@@ -24,6 +35,7 @@ function Player({ url, setMainCover, startPosition, initialEndPosition, splitVid
 	let [duration, setDuration] = useState(initialEndPosition - startPosition);
 	let [hideControlsTimerId, setHideControlsTimerId] = useState(0);
 	let [playerWidth, setPlayerWidth] = useState(0);
+	let [startHighlightSecond, setStartHighlightSecond] = useState(-1);
 	let videoElement = useRef();
 	let playerElement = useRef();
 
@@ -190,6 +202,15 @@ function Player({ url, setMainCover, startPosition, initialEndPosition, splitVid
 					onBackgroundDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
 				/>
 			)}
+			{startHighlightSecond !== -1 && (
+				<HighlightControls
+					onCancel={() => setStartHighlightSecond(-1)}
+					onDone={() => {
+						makeHighlight(startHighlightSecond, videoElement.current.currentTime);
+						setStartHighlightSecond(-1);
+					}}
+				/>
+			)}
 			<Fade in={showControls}>
 				<Stack
 					onMouseEnter={() => onMouseEnter()}
@@ -254,6 +275,9 @@ function Player({ url, setMainCover, startPosition, initialEndPosition, splitVid
 								onClick={() => splitVideo(videoElement.current.currentTime)}
 							>
 								<SplitIcon />
+							</IconButton>
+							<IconButton onClick={() => setStartHighlightSecond(videoElement.current.currentTime)}>
+								<HighlightIcon />
 							</IconButton>
 							{(!fullScreen && (
 								<Tooltip title="Full screen">

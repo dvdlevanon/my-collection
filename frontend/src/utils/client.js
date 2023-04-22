@@ -129,6 +129,12 @@ export default class Client {
 		});
 	};
 
+	static makeHighlight = async (itemId, startSecond, endSecond) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/make-highlight?start=${startSecond}&end=${endSecond}`, {
+			method: 'POST',
+		});
+	};
+
 	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',

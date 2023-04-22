@@ -29,12 +29,12 @@ function Item({
 		item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0
 	);
 
-	const previewMode = () => {
-		return preferPreview && item.preview_url != '';
+	const shouldShowPreview = () => {
+		return preferPreview && ItemsUtil.hasPreview(item);
 	};
 
 	const mouseMove = (e) => {
-		if (previewMode() || !item.covers) {
+		if (shouldShowPreview() || !item.covers) {
 			return;
 		}
 
@@ -51,7 +51,7 @@ function Item({
 	};
 
 	const mouseLeave = (e) => {
-		if (previewMode()) {
+		if (shouldShowPreview()) {
 			setShowPreview(false);
 		} else {
 			setMouseEnterMillis(0);
@@ -61,7 +61,7 @@ function Item({
 	};
 
 	const mouseEnter = (e) => {
-		if (previewMode()) {
+		if (shouldShowPreview()) {
 			setShowPreview(true);
 		} else {
 			setMouseEnterMillis(Math.floor(Date.now()));
@@ -175,7 +175,7 @@ function Item({
 						})}
 					</Stack>
 				)}
-				{previewMode() && showPreview && item.preview_url && (
+				{shouldShowPreview() && showPreview && (
 					<Box
 						flexGrow={1}
 						padding="10px"
@@ -197,11 +197,24 @@ function Item({
 							autoPlay={true}
 							loop={true}
 							controls={false}
+							onLoadedMetadata={(e) => {
+								if (item.preview_mode === PREVIEW_FROM_START_POSITION) {
+									e.target.currentTime = item.start_position;
+								}
+							}}
+							onTimeUpdate={(e) => {
+								if (
+									item.preview_mode === PREVIEW_FROM_START_POSITION &&
+									e.target.currentTime > item.end_position
+								) {
+									e.target.currentTime = item.start_position;
+								}
+							}}
 							sx={{
 								borderRadius: '10px',
 							}}
 						>
-							<source src={Client.buildFileUrl(item.preview_url)} />
+							<source src={Client.buildFileUrl(ItemsUtil.getPreview(item))} />
 						</Box>
 					</Box>
 				)}

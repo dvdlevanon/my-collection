@@ -28,7 +28,7 @@ func refreshItemCovers(irw model.ItemReaderWriter, uploader model.StorageUploade
 }
 
 func getDurationForItem(item *model.Item, videoFile string) (float64, error) {
-	if items.IsSubItem(item) {
+	if items.IsSubItem(item) || items.IsHighlight(item) {
 		return item.DurationSeconds, nil
 	}
 
@@ -59,7 +59,7 @@ func refreshItemCover(irw model.ItemReaderWriter, uploader model.StorageUploader
 	}
 
 	startOffset := 0.0
-	if items.IsSubItem(item) {
+	if items.IsSubItem(item) || items.IsHighlight(item) {
 		startOffset = item.StartPosition
 	}
 

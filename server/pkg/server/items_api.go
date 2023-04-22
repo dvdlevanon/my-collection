@@ -148,7 +148,7 @@ func (s *Server) splitItem(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("Splitting item %d at %d", itemId, second)
+	logger.Infof("Splitting item %d at %f", itemId, second)
 	changedItems, err := items.Split(s.db, itemId, second)
 	if s.handleError(c, err) {
 		return
@@ -160,6 +160,34 @@ func (s *Server) splitItem(c *gin.Context) {
 		s.processor.EnqueueItemPreview(item.Id)
 	}
 
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) makeHighlight(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	startSecond, err := strconv.ParseFloat(c.Query("start"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	endSecond, err := strconv.ParseFloat(c.Query("end"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Making highlight for item %d from %f to %f", itemId, startSecond, endSecond)
+	highlightItem, err := items.MakeHighlight(s.db, itemId, startSecond, endSecond)
+	if s.handleError(c, err) {
+		return
+	}
+
+	s.processor.EnqueueItemVideoMetadata(highlightItem.Id)
+	s.processor.EnqueueItemCovers(highlightItem.Id)
+	s.processor.EnqueueItemPreview(highlightItem.Id)
 	c.Status(http.StatusOK)
 }
 

@@ -12,6 +12,8 @@ import (
 
 var logger = logging.MustGetLogger("items")
 
+const PREVIEW_FROM_START_POSITION = "start-position" //items-util.js
+
 func FileExists(item model.Item) bool {
 	path := relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
 	_, err := os.Stat(path)

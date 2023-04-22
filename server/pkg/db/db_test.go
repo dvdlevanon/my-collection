@@ -470,6 +470,30 @@ func TestSubItems(t *testing.T) {
 	assert.Equal(t, "test", mainItem.SubItems[0].Covers[0].Url)
 }
 
+func TestHighlights(t *testing.T) {
+	db, err := setupNewDb(t, "highlights.sqlite")
+	assert.NoError(t, err)
+	item := &model.Item{Title: "main", Origin: "origin", DurationSeconds: 100}
+	hl1 := &model.Item{Title: "hl1", Origin: "origin", StartPosition: 0, EndPosition: 50}
+	hl2 := &model.Item{Title: "hl2", Origin: "origin", StartPosition: 50, EndPosition: 100}
+	assert.NoError(t, db.CreateOrUpdateItem(item))
+	assert.NoError(t, db.CreateOrUpdateItem(hl1))
+	assert.NoError(t, db.CreateOrUpdateItem(hl2))
+	item.Highlights = append(item.Highlights, hl1, hl2)
+	assert.NoError(t, db.UpdateItem(item))
+	hl1.Covers = append(hl1.Covers, model.Cover{Url: "test"})
+	hl2.Covers = append(hl1.Covers, model.Cover{Url: "test"})
+	assert.NoError(t, db.UpdateItem(hl1))
+	assert.NoError(t, db.UpdateItem(hl2))
+	mainItem, err := db.GetItem(item.Id)
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(mainItem.Highlights))
+	assert.Equal(t, mainItem.Id, *hl1.MainItemId)
+	assert.Equal(t, mainItem.Id, *hl2.MainItemId)
+	assert.Equal(t, 1, len(mainItem.Highlights[0].Covers))
+	assert.Equal(t, "test", mainItem.Highlights[0].Covers[0].Url)
+}
+
 // Fail because of https://github.com/go-gorm/sqlite/issues/134
 //
 // func TestReuseId(t *testing.T) {

@@ -16,6 +16,10 @@ func refreshItemPreview(irw model.ItemReaderWriter, uploader model.StorageUpload
 		return err
 	}
 
+	if item.PreviewMode == items.PREVIEW_FROM_START_POSITION {
+		return nil
+	}
+
 	logger.Infof("Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
 		item.Id, item.Url, previewSceneCount, previewSceneDuration)
 
@@ -62,7 +66,7 @@ func getPreviewParts(uploader model.StorageUploader, item *model.Item,
 	result := make([]string, 0)
 	for i := 1; i <= int(previewSceneCount); i++ {
 		startOffset := 0.0
-		if items.IsSubItem(item) {
+		if items.IsSubItem(item) || items.IsHighlight(item) {
 			startOffset = item.StartPosition
 		}
 

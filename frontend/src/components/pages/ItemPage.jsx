@@ -8,6 +8,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
 import ConfirmationDialog from '../dialogs/ConfirmationDialog';
+import Highlights from '../highlights/Highlights';
 import ItemTitle from '../items-viewer/ItemTitle';
 import Player from '../player/Player';
 import SubItems from '../sub-items/SubItems';
@@ -96,6 +97,12 @@ function ItemPage() {
 		closeSplitVideoDialog();
 	};
 
+	const makeHighlight = (startSecond, endSecond) => {
+		Client.makeHighlight(itemQuery.data.id, startSecond, endSecond).then(() => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
+	};
+
 	const calcHeight = () => {
 		let result = (windowHeight / 10) * 7;
 
@@ -114,6 +121,10 @@ function ItemPage() {
 
 	const shouldShowSubItems = () => {
 		return itemQuery.data.main_item || itemQuery.data.sub_items;
+	};
+
+	const shouldShowHighlights = () => {
+		return itemQuery.data.highlight_parent_id || itemQuery.data.highlights;
 	};
 
 	return (
@@ -146,6 +157,7 @@ function ItemPage() {
 								setShowSplitVideoConfirmationDialog(true);
 								setSplitVideoSecond(splitSecond);
 							}}
+							makeHighlight={makeHighlight}
 							startPosition={itemQuery.data.start_position || 0}
 							initialEndPosition={itemQuery.data.end_position || 0}
 						/>
@@ -193,6 +205,9 @@ function ItemPage() {
 			</Box>
 			<Stack maxWidth={500}>
 				{itemQuery.isSuccess && shouldShowSubItems() && <SubItems item={itemQuery.data} />}
+			</Stack>
+			<Stack maxWidth={500}>
+				{itemQuery.isSuccess && shouldShowHighlights() && <Highlights item={itemQuery.data} />}
 			</Stack>
 			{showSplitVideoConfirmationDialog && (
 				<ConfirmationDialog
