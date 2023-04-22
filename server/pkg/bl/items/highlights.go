@@ -5,7 +5,23 @@ import (
 	"my-collection/server/pkg/model"
 )
 
-func buildHighlight(item *model.Item, startPosition float64, endPosition float64) *model.Item {
+var highlightsTag = &model.Tag{
+	Title:    "Highlights", // tags-utils.js
+	ParentID: nil,
+}
+
+func InitHighlights(trw model.TagReaderWriter) error {
+	var err error
+	highlightsTag, err = trw.GetTag(highlightsTag)
+	if err != nil {
+		if err := trw.CreateOrUpdateTag(highlightsTag); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func buildHighlight(item *model.Item, startPosition float64, endPosition float64, highlightId uint64) *model.Item {
 	return &model.Item{
 		Title:           item.Title,
 		Origin:          fmt.Sprintf("%s-%f-%f", item.Origin, startPosition, endPosition),
@@ -19,16 +35,17 @@ func buildHighlight(item *model.Item, startPosition float64, endPosition float64
 		AudioCodecName:  item.AudioCodecName,
 		LastModified:    item.LastModified,
 		PreviewMode:     PREVIEW_FROM_START_POSITION,
+		Tags:            []*model.Tag{{Id: highlightId}},
 	}
 }
 
-func MakeHighlight(irw model.ItemReaderWriter, itemId uint64, startPosition float64, endPosition float64) (*model.Item, error) {
+func MakeHighlight(irw model.ItemReaderWriter, itemId uint64, startPosition float64, endPosition float64, highlightId uint64) (*model.Item, error) {
 	item, err := irw.GetItem(itemId)
 	if err != nil {
 		return nil, err
 	}
 
-	highlight := buildHighlight(item, startPosition, endPosition)
+	highlight := buildHighlight(item, startPosition, endPosition, highlightId)
 	if err := irw.CreateOrUpdateItem(highlight); err != nil {
 		return nil, err
 	}
@@ -43,4 +60,8 @@ func MakeHighlight(irw model.ItemReaderWriter, itemId uint64, startPosition floa
 
 func IsHighlight(item *model.Item) bool {
 	return item.HighlightParentItemId != nil
+}
+
+func GetHighlightsTagId() uint64 {
+	return highlightsTag.Id
 }

@@ -3,6 +3,7 @@ import Client from './client';
 export default class TagsUtil {
 	static directoriesTag;
 	static dailyMixTag;
+	static highlightsTag;
 
 	static initSpecialTags(specialTags) {
 		for (let i = 0; i < specialTags.length; i++) {
@@ -12,10 +13,13 @@ export default class TagsUtil {
 			} else if (specialTags[i].title === 'DailyMix') {
 				// automix.go
 				TagsUtil.dailyMixTag = specialTags[i];
+			} else if (specialTags[i].title === 'Highlights') {
+				// highlights.go
+				TagsUtil.highlightsTag = specialTags[i];
 			}
 		}
 
-		if (!TagsUtil.directoriesTag || !TagsUtil.dailyMixTag) {
+		if (!TagsUtil.directoriesTag || !TagsUtil.dailyMixTag || !TagsUtil.highlightsTag) {
 			console.log('Missing mandatory special tags');
 		}
 	}
@@ -28,8 +32,24 @@ export default class TagsUtil {
 		return tagId === TagsUtil.dailyMixTag.id;
 	}
 
+	static isHighlightsCategory(tagId) {
+		return tagId === TagsUtil.highlightsTag.id;
+	}
+
 	static isSpecialCategory(tagId) {
-		return TagsUtil.isDirectoriesCategory(tagId) || TagsUtil.isDailymixCategory(tagId);
+		return (
+			TagsUtil.isDirectoriesCategory(tagId) ||
+			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isHighlightsCategory(tagId)
+		);
+	}
+
+	static allowToAddToCategory(tagId) {
+		return !(TagsUtil.isDirectoriesCategory(tagId) || TagsUtil.isDailymixCategory(tagId));
+	}
+
+	static allowToSetImageToCategory(tagId) {
+		return !(TagsUtil.isDirectoriesCategory(tagId) || TagsUtil.isDailymixCategory(tagId));
 	}
 
 	static getCategories(tags) {
@@ -100,5 +120,9 @@ export default class TagsUtil {
 		}
 
 		return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
+	};
+
+	static sortByTitle = (tags) => {
+		return tags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
 	};
 }

@@ -179,8 +179,13 @@ func (s *Server) makeHighlight(c *gin.Context) {
 		return
 	}
 
+	highlightId, err := strconv.ParseUint(c.Query("highlight-id"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
 	logger.Infof("Making highlight for item %d from %f to %f", itemId, startSecond, endSecond)
-	highlightItem, err := items.MakeHighlight(s.db, itemId, startSecond, endSecond)
+	highlightItem, err := items.MakeHighlight(s.db, itemId, startSecond, endSecond, highlightId)
 	if s.handleError(c, err) {
 		return
 	}

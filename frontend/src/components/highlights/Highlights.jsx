@@ -21,7 +21,13 @@ function Highlights({ item }) {
 		<>
 			{mainItemQuery.isSuccess && (
 				<Stack flexDirection="column" gap="10px">
-					<Highlight item={mainItemQuery.data} itemWidth={200} highlighted={mainItemQuery.data == item.id} />
+					{mainItemQuery.data.id !== item.id && (
+						<Highlight
+							item={mainItemQuery.data}
+							itemWidth={200}
+							highlighted={mainItemQuery.data == item.id}
+						/>
+					)}
 					{mainItemQuery.data.highlights.map((highlight) => {
 						return (
 							<Highlight

@@ -51,14 +51,14 @@ function TagsTopBar({
 						maxHeight: '44px',
 					}}
 				>
-					{!TagsUtil.isDirectoriesCategory(parentId) && (
+					{TagsUtil.allowToSetImageToCategory(parentId) && (
 						<Tooltip title="Set images from directory">
 							<IconButton onClick={() => setShowImagesFromDirectory(true)}>
 								<ImageIcon />
 							</IconButton>
 						</Tooltip>
 					)}
-					{!TagsUtil.isDirectoriesCategory(parentId) && (
+					{TagsUtil.allowToAddToCategory(parentId) && (
 						<Tooltip title="Add new tag">
 							<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
 								<AddIcon />

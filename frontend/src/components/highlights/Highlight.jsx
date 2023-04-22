@@ -24,14 +24,9 @@ function Highlight({ item, itemWidth, highlighted }) {
 					preferPreview={true}
 					itemWidth={itemWidth}
 					itemHeight={AspectRatioUtil.calcHeight(itemWidth, AspectRatioUtil.asepctRatio16_9)}
-					direction="row"
 					showOffests={true}
-					titleSx={{
-						whiteSpace: 'normal',
-						lineHeight: '1.5em',
-						maxHeight: '3em',
-						textAlign: 'start',
-					}}
+					withoutTitle={true}
+					withoutDuration={true}
 					itemLinkBuilder={(item) => {
 						return '/spa/item/' + item.id;
 					}}

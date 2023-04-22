@@ -97,8 +97,8 @@ function ItemPage() {
 		closeSplitVideoDialog();
 	};
 
-	const makeHighlight = (startSecond, endSecond) => {
-		Client.makeHighlight(itemQuery.data.id, startSecond, endSecond).then(() => {
+	const makeHighlight = (startSecond, endSecond, highlightId) => {
+		Client.makeHighlight(itemQuery.data.id, startSecond, endSecond, highlightId).then(() => {
 			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
 		});
 	};
@@ -137,6 +137,9 @@ function ItemPage() {
 				gap: '10px',
 			}}
 		>
+			<Stack maxWidth={500}>
+				{itemQuery.isSuccess && shouldShowHighlights() && <Highlights item={itemQuery.data} />}
+			</Stack>
 			<Box
 				sx={{
 					display: 'flex',
@@ -177,8 +180,8 @@ function ItemPage() {
 						<Stack flexDirection="row" gap="10px">
 							<TagChips
 								flexDirection="column"
-								tags={(itemQuery.data.tags || []).filter(
-									(cur) => !TagsUtil.isSpecialCategory(cur.parentId)
+								tags={(itemQuery.data.tags || []).filter((cur) =>
+									TagsUtil.allowToAddToCategory(cur.parentId)
 								)}
 								linkable={true}
 								onDelete={onTagRemoved}
@@ -205,9 +208,6 @@ function ItemPage() {
 			</Box>
 			<Stack maxWidth={500}>
 				{itemQuery.isSuccess && shouldShowSubItems() && <SubItems item={itemQuery.data} />}
-			</Stack>
-			<Stack maxWidth={500}>
-				{itemQuery.isSuccess && shouldShowHighlights() && <Highlights item={itemQuery.data} />}
 			</Stack>
 			{showSplitVideoConfirmationDialog && (
 				<ConfirmationDialog

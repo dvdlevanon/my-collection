@@ -5,6 +5,7 @@ import (
 	"io"
 	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/directories"
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
 	"net/http"
@@ -99,7 +100,11 @@ func (s *Server) getTags(c *gin.Context) {
 }
 
 func (s *Server) getSpecialTags(c *gin.Context) {
-	tags, err := s.db.GetTagsWithoutChildren(directories.GetDirectoriesTagId(), automix.GetDailymixTagId())
+	tags, err := s.db.GetTagsWithoutChildren(
+		directories.GetDirectoriesTagId(),
+		automix.GetDailymixTagId(),
+		items.GetHighlightsTagId())
+
 	if s.handleError(c, err) {
 		return
 	}

@@ -205,8 +205,8 @@ function Player({
 			{startHighlightSecond !== -1 && (
 				<HighlightControls
 					onCancel={() => setStartHighlightSecond(-1)}
-					onDone={() => {
-						makeHighlight(startHighlightSecond, videoElement.current.currentTime);
+					onDone={(highlightId) => {
+						makeHighlight(startHighlightSecond, videoElement.current.currentTime, highlightId);
 						setStartHighlightSecond(-1);
 					}}
 				/>

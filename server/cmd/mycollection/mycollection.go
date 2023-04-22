@@ -4,6 +4,7 @@ import (
 	"flag"
 	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/directories"
+	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fssync"
 	processor "my-collection/server/pkg/processor"
@@ -63,6 +64,9 @@ func run() error {
 	processor.Pause()
 	go processor.Run()
 
+	if err := items.InitHighlights(db); err != nil {
+		return err
+	}
 	if err := directories.Init(db); err != nil {
 		return err
 	}

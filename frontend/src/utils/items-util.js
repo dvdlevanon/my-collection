@@ -14,11 +14,11 @@ export default class ItemsUtil {
 	};
 
 	static hasPreview = (item) => {
-		return item.preview_mode === PREVIEW_FROM_START_POSITION || item.preview_url;
+		return item.preview_mode === ItemsUtil.PREVIEW_FROM_START_POSITION || item.preview_url;
 	};
 
 	static getPreview = (item) => {
-		if (item.preview_mode === PREVIEW_FROM_START_POSITION) {
+		if (item.preview_mode === ItemsUtil.PREVIEW_FROM_START_POSITION) {
 			return item.url;
 		} else {
 			return item.preview_url;

@@ -59,7 +59,7 @@ function TagPicker({
 			{tagsQuery.isSuccess && (
 				<Categories
 					categories={TagsUtil.getCategories(tagsQuery.data).filter(
-						(cur) => showSpecialCategories || !TagsUtil.isSpecialCategory(cur.id)
+						(cur) => showSpecialCategories || TagsUtil.allowToAddToCategory(cur.id)
 					)}
 					onCategoryClicked={onCategoryClicked}
 					selectedCategoryId={selectedCategoryId}

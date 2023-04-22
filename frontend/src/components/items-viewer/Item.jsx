@@ -19,6 +19,8 @@ function Item({
 	titleSx,
 	withItemTitleMenu,
 	itemLinkBuilder,
+	withoutTitle,
+	withoutDuration,
 	onConvertAudio,
 	onConvertVideo,
 }) {
@@ -40,7 +42,7 @@ function Item({
 
 		let nowMillis = Math.floor(Date.now());
 
-		if (mouseEnterMillis == 0 || mouseEnterMillis > nowMillis - 250) {
+		if (mouseEnterMillis === 0 || mouseEnterMillis > nowMillis - 250) {
 			return;
 		}
 
@@ -83,7 +85,7 @@ function Item({
 					variant="caption"
 					withTooltip={true}
 					withMenu={withItemTitleMenu}
-					preventDefault={direction == 'column' ? true : false}
+					preventDefault={direction === 'column' ? true : false}
 					onTagAdded={() => console.log('unsupported adding tag')}
 					onTitleChanged={() => console.log('unsupported changing title')}
 					sx={{
@@ -102,7 +104,7 @@ function Item({
 		<Stack
 			flexDirection={direction}
 			sx={{
-				maxWidth: direction == 'column' ? itemWidth : 'unset',
+				maxWidth: direction === 'column' ? itemWidth : 'unset',
 			}}
 		>
 			<Link
@@ -135,22 +137,24 @@ function Item({
 							borderRadius: '10px',
 						}}
 					/>
-					<Typography
-						variant="caption"
-						sx={{
-							position: 'absolute',
-							backgroundColor: 'black',
-							color: 'white',
-							right: '3px',
-							bottom: '10px',
-							borderRadius: '5px',
-							opacity: 0.9,
-							padding: '0px 2px',
-							zIndex: 100,
-						}}
-					>
-						{TimeUtil.formatDuration(item.duration_seconds)}
-					</Typography>
+					{!withoutDuration && (
+						<Typography
+							variant="caption"
+							sx={{
+								position: 'absolute',
+								backgroundColor: 'black',
+								color: 'white',
+								right: '3px',
+								bottom: '10px',
+								borderRadius: '5px',
+								opacity: 0.9,
+								padding: '0px 2px',
+								zIndex: 100,
+							}}
+						>
+							{TimeUtil.formatDuration(item.duration_seconds)}
+						</Typography>
+					)}
 				</Box>
 				{showCoverNavigator && item.covers && item.covers.length > 1 && (
 					<Stack
@@ -169,7 +173,7 @@ function Item({
 									key={cover.id}
 									item={item}
 									cover={cover}
-									isHighlighted={coverNumber == index}
+									isHighlighted={coverNumber === index}
 								/>
 							);
 						})}
@@ -198,13 +202,13 @@ function Item({
 							loop={true}
 							controls={false}
 							onLoadedMetadata={(e) => {
-								if (item.preview_mode === PREVIEW_FROM_START_POSITION) {
+								if (item.preview_mode === ItemsUtil.PREVIEW_FROM_START_POSITION) {
 									e.target.currentTime = item.start_position;
 								}
 							}}
 							onTimeUpdate={(e) => {
 								if (
-									item.preview_mode === PREVIEW_FROM_START_POSITION &&
+									item.preview_mode === ItemsUtil.PREVIEW_FROM_START_POSITION &&
 									e.target.currentTime > item.end_position
 								) {
 									e.target.currentTime = item.start_position;
@@ -219,8 +223,8 @@ function Item({
 					</Box>
 				)}
 			</Link>
-			{direction == 'column' && getTitleComponent()}
-			{direction != 'column' && (
+			{!withoutTitle && direction === 'column' && getTitleComponent()}
+			{!withoutTitle && direction !== 'column' && (
 				<Link component={RouterLink} reloadDocument to={itemLinkBuilder(item)} color="bright.text">
 					{getTitleComponent()}
 				</Link>

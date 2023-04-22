@@ -1,6 +1,6 @@
-import { Button, Link, Stack } from '@mui/material';
+import { Button, Divider, Link, Stack } from '@mui/material';
 import { Box } from '@mui/system';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
 import seedrandom from 'seedrandom';
@@ -15,7 +15,7 @@ import TagsTopBar from './TagsTopBar';
 function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
-	const [sortBy, setSortBy] = useState(TagsUtil.isSpecialCategory(parent.id) ? 'title-asc' : 'random');
+	const [sortBy, setSortBy] = useState(parent.default_sorting);
 	const [tit, setTit] = useState(null);
 	const [prefixFilter, setPrefixFilter] = useState('');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
@@ -41,6 +41,10 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 			}
 		},
 	});
+
+	useEffect(() => {
+		setSortBy(parent.default_sorting);
+	}, [parent]);
 
 	const filterTagsBySearch = (tags) => {
 		let filteredTags = tags;
@@ -166,6 +170,7 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 				tagSize={tagSize}
 				onZoomChanged={(offset) => setTagSize(tagSize + offset)}
 			/>
+			<Divider />
 			<Box
 				sx={{
 					display: 'flex',

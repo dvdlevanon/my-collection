@@ -1,4 +1,4 @@
-import { Link, Stack } from '@mui/material';
+import { Chip, Link, Stack } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
@@ -63,6 +63,7 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 			onMouseEnter={() => setOptionsHidden(false)}
 			onMouseLeave={() => setOptionsHidden(true)}
 			position="relative"
+			margin={parent.display_style !== 'banner' ? 'unset' : '50px'}
 		>
 			<Link
 				component={RouterLink}
@@ -73,21 +74,37 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 					overflow: 'hidden',
 				}}
 			>
-				<TagImage
-					tag={tag}
-					selectedTit={selectedTit}
-					onClick={(e) => {
-						e.preventDefault();
-						onTagClicked(tag);
-					}}
-					imgSx={{
-						overflow: parent.display_style !== 'banner' ? 'visible' : 'hidden',
-						objectFit: parent.display_style !== 'banner' ? 'auto' : 'contain',
-					}}
-				/>
+				{(parent.display_style === 'chip' && (
+					<Chip
+						label={tag.title}
+						variant="outlined"
+						onClick={(e) => {
+							e.preventDefault();
+							onTagClicked(tag);
+						}}
+						sx={{
+							cursor: 'pointer',
+							fontSize: '20px',
+							padding: '20px 25px',
+						}}
+					/>
+				)) || (
+					<TagImage
+						tag={tag}
+						selectedTit={selectedTit}
+						onClick={(e) => {
+							e.preventDefault();
+							onTagClicked(tag);
+						}}
+						imgSx={{
+							overflow: parent.display_style !== 'banner' ? 'visible' : 'hidden',
+							objectFit: parent.display_style !== 'banner' ? 'auto' : 'contain',
+						}}
+					/>
+				)}
 			</Link>
-			{parent.display_style !== 'banner' && <TagTitle tag={tag} />}
-			{optionsComponents()}
+			{parent.display_style !== 'banner' && parent.display_style !== 'chip' && <TagTitle tag={tag} />}
+			{parent.display_style !== 'chip' && optionsComponents()}
 		</Stack>
 	);
 }
