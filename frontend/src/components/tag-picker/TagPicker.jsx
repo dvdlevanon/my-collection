@@ -8,7 +8,7 @@ import Categories from './Categories';
 import Tags from './Tags';
 
 function TagPicker({
-	size,
+	origin,
 	onTagSelected,
 	onDropDownToggled,
 	initialTagSize,
@@ -17,6 +17,7 @@ function TagPicker({
 	tagLinkBuilder,
 }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const titsQuery = useQuery(ReactQueryUtil.TAG_IMAGE_TYPES_KEY, Client.getTagImageTypes);
 
 	let [selectedCategoryId, setSelectedCategoryId] = useState(initialSelectedCategoryId);
 
@@ -65,9 +66,11 @@ function TagPicker({
 					selectedCategoryId={selectedCategoryId}
 				/>
 			)}
-			{tagsQuery.isSuccess && selectedCategoryId > 0 && (
+			{tagsQuery.isSuccess && titsQuery.isSuccess && selectedCategoryId > 0 && (
 				<Tags
+					origin={origin}
 					tags={getChildrenTags(selectedCategoryId)}
+					tits={titsQuery.data}
 					parent={tagsQuery.data.find((cur) => cur.id == selectedCategoryId)}
 					initialTagSize={initialTagSize}
 					tagLinkBuilder={tagLinkBuilder}

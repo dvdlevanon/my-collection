@@ -18,6 +18,7 @@ function TagsTopBar({
 	setSelectedAnnotations,
 	setSearchTerm,
 	setAddTagDialogOpened,
+	tits,
 	tit,
 	setTit,
 	sortBy,
@@ -65,7 +66,7 @@ function TagsTopBar({
 							</IconButton>
 						</Tooltip>
 					)}
-					<TagImageTypeSelector tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
+					<TagImageTypeSelector tits={tits} tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
 					<TextField
 						variant="outlined"
 						autoFocus

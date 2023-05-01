@@ -488,8 +488,8 @@ func TestHighlights(t *testing.T) {
 	mainItem, err := db.GetItem(item.Id)
 	assert.NoError(t, err)
 	assert.Equal(t, 2, len(mainItem.Highlights))
-	assert.Equal(t, mainItem.Id, *hl1.MainItemId)
-	assert.Equal(t, mainItem.Id, *hl2.MainItemId)
+	assert.Equal(t, mainItem.Id, *hl1.HighlightParentItemId)
+	assert.Equal(t, mainItem.Id, *hl2.HighlightParentItemId)
 	assert.Equal(t, 1, len(mainItem.Highlights[0].Covers))
 	assert.Equal(t, "test", mainItem.Highlights[0].Covers[0].Url)
 }

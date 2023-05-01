@@ -77,6 +77,22 @@ func (s *Server) getItem(c *gin.Context) {
 	c.JSON(http.StatusOK, item)
 }
 
+func (s *Server) deleteItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	errs := items.RemoveItemAndItsAssociations(s.db, itemId)
+	if len(errs) > 0 {
+		if s.handleError(c, errs[0]) {
+			return
+		}
+	}
+
+	c.Status(http.StatusOK)
+}
+
 func (s *Server) getItemLocation(c *gin.Context) {
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if s.handleError(c, err) {

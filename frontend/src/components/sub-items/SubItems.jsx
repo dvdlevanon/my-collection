@@ -5,7 +5,7 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import SubItem from './SubItem';
 
-function SubItems({ item }) {
+function SubItems({ item, onDeleteItem }) {
 	const mainItemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(item.main_item || item.id),
 		queryFn: () => {
@@ -39,6 +39,7 @@ function SubItems({ item }) {
 								item={subItem}
 								itemWidth={200}
 								highlighted={subItem.id == item.id}
+								onDeleteItem={onDeleteItem}
 							/>
 						);
 					})}

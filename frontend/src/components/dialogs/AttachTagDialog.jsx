@@ -42,6 +42,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 			</DialogTitle>
 			<DialogContent>
 				<TagPicker
+					origin="attach-dialog"
 					initialSelectedCategoryId={3}
 					showSpecialCategories={false}
 					initialTagSize={350}

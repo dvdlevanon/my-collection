@@ -29,6 +29,7 @@ function Gallery({ previewMode }) {
 			<Stack>
 				{tagsQuery.isSuccess && (
 					<TagPicker
+						origin="gallery"
 						initialTagSize={650}
 						showSpecialCategories={true}
 						onTagSelected={onTagActivated}

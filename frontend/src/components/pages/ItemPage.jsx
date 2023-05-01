@@ -85,6 +85,12 @@ function ItemPage() {
 		});
 	};
 
+	const onDeleteItem = (item) => {
+		Client.deleteItem(item.id).then(() => {
+			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+		});
+	};
+
 	const closeSplitVideoDialog = () => {
 		setSplitVideoSecond(0);
 		setShowSplitVideoConfirmationDialog(false);
@@ -214,7 +220,9 @@ function ItemPage() {
 				)}
 			</Box>
 			<Stack maxWidth={500}>
-				{itemQuery.isSuccess && shouldShowSubItems() && <SubItems item={itemQuery.data} />}
+				{itemQuery.isSuccess && shouldShowSubItems() && (
+					<SubItems item={itemQuery.data} onDeleteItem={onDeleteItem} />
+				)}
 			</Stack>
 			{showSplitVideoConfirmationDialog && (
 				<ConfirmationDialog

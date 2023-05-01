@@ -12,11 +12,11 @@ import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
 import TagsTopBar from './TagsTopBar';
 
-function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
+function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState(parent.default_sorting);
-	const [tit, setTit] = useState(null);
+	const [tit, setTit] = useState(tits[0]);
 	const [prefixFilter, setPrefixFilter] = useState('');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const [tagSize, setTagSize] = useState(initialTagSize);
@@ -41,12 +41,46 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 				var defaultTagAnnotation = month + '-' + year;
 				setSelectedAnnotations(availableAnnotations.filter((cur) => cur.title == defaultTagAnnotation));
 			}
+
+			let lastSelectedAnnotations = localStorage.getItem(buildStorageKey('selected-annotations'));
+			if (lastSelectedAnnotations) {
+				lastSelectedAnnotations = lastSelectedAnnotations.split(',').map((cur) => cur.trim());
+				setSelectedAnnotations(
+					availableAnnotations.filter((availableAnnoation) => {
+						return lastSelectedAnnotations.some((cur) => cur == availableAnnoation.id);
+					})
+				);
+			}
 		},
 	});
 
 	useEffect(() => {
-		setSortBy(parent.default_sorting);
-	}, [parent]);
+		let lastTit = localStorage.getItem(buildStorageKey('tit'));
+		if (lastTit) {
+			setTit(tits.find((cur) => cur.id == lastTit));
+		}
+
+		let lastTagSize = localStorage.getItem(buildStorageKey('tag-size'));
+		if (lastTagSize) {
+			setTagSize(parseInt(lastTagSize));
+		}
+
+		let lastSortBy = localStorage.getItem(buildStorageKey('sort-by'));
+		if (lastSortBy) {
+			setSortBy(lastSortBy);
+		} else {
+			setSortBy(parent.default_sorting);
+		}
+
+		let lastPrefixFilter = localStorage.getItem(buildStorageKey('prefix-filter'));
+		if (lastPrefixFilter) {
+			setPrefixFilter(lastPrefixFilter);
+		}
+	}, [origin, parent]);
+
+	const buildStorageKey = (name) => {
+		return 'tags-' + origin + '-' + parent.id + '-' + name;
+	};
 
 	const filterTagsBySearch = (tags) => {
 		let filteredTags = tags;
@@ -152,20 +186,23 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 	};
 
 	const calculateTagSize = () => {
+		let result = {};
 		if (parent.display_style === 'portrait') {
-			return { width: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9), height: tagSize };
+			result = { width: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9), height: tagSize };
 		} else if (parent.display_style === 'landscape') {
-			return { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
+			result = { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
 		} else if (parent.display_style == 'icon') {
-			return { width: tagSize / 4, height: tagSize / 4 };
+			result = { width: tagSize / 4, height: tagSize / 4 };
 		} else if (parent.display_style === 'banner') {
-			return { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
+			result = { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
 		} else if (parent.display_style === 'chip') {
-			return { width: 'auto', height: 'auto' };
+			result = { width: 'auto', height: 'auto' };
 		} else {
 			console.log('unsupported display style ' + parent.display_style);
-			return { width: 'auto', height: 'auto' };
+			result = { width: 'auto', height: 'auto' };
 		}
+
+		return result;
 	};
 
 	return (
@@ -179,15 +216,35 @@ function Tags({ tags, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
 				}
 				setAddTagDialogOpened={setAddTagDialogOpened}
 				selectedAnnotations={selectedAnnotations}
-				setSelectedAnnotations={setSelectedAnnotations}
+				setSelectedAnnotations={(selectedAnnotations) => {
+					setSelectedAnnotations(selectedAnnotations);
+					localStorage.setItem(
+						buildStorageKey('selected-annotations'),
+						selectedAnnotations.map((cur) => cur.id)
+					);
+				}}
+				tits={tits}
 				tit={tit}
-				setTit={setTit}
+				setTit={(tit) => {
+					localStorage.setItem(buildStorageKey('tit'), tit.id);
+					setTit(tit);
+				}}
 				sortBy={sortBy}
-				setSortBy={setSortBy}
+				setSortBy={(sortBy) => {
+					localStorage.setItem(buildStorageKey('sort-by'), sortBy);
+					setSortBy(sortBy);
+				}}
 				prefixFilter={prefixFilter}
-				setPrefixFilter={setPrefixFilter}
+				setPrefixFilter={(prefixFilter) => {
+					localStorage.setItem(buildStorageKey('prefix-filter'), prefixFilter);
+					setPrefixFilter(prefixFilter);
+				}}
 				tagSize={tagSize}
-				onZoomChanged={(offset) => setTagSize(tagSize + offset)}
+				onZoomChanged={(offset) => {
+					let newTagSize = parseInt(tagSize) + parseInt(offset);
+					setTagSize(newTagSize);
+					localStorage.setItem(buildStorageKey('tag-size'), newTagSize);
+				}}
 			/>
 			<Divider />
 			<Box

@@ -123,6 +123,12 @@ export default class Client {
 		});
 	};
 
+	static deleteItem = async (itemId) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}`, {
+			method: 'DELETE',
+		});
+	};
+
 	static splitItem = async (itemId, second) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}/split?second=${second}`, {
 			method: 'POST',

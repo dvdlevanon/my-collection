@@ -91,9 +91,9 @@ func HasSingleTag(item *model.Item, tag *model.Tag) bool {
 	return len(item.Tags) == 1 && item.Tags[0].Id == tag.Id
 }
 
-func RemoveItemAndItsAssociations(iw model.ItemWriter, item *model.Item) []error {
+func RemoveItemAndItsAssociations(iw model.ItemWriter, itemId uint64) []error {
 	errors := make([]error, 0)
-	if err := iw.RemoveItem(item.Id); err != nil {
+	if err := iw.RemoveItem(itemId); err != nil {
 		errors = append(errors, err)
 	}
 

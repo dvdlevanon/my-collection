@@ -17,22 +17,22 @@ function TagSortSelector({ sortBy, onSortChanged }) {
 					}
 				}}
 			>
-				<Tooltip title="Do not sort">
+				<Tooltip title="Do not sort" value="random">
 					<ToggleButton value="random">
 						<Icon path={mdiShuffle} size={1} />
 					</ToggleButton>
 				</Tooltip>
-				<Tooltip title="Sort by title asc">
+				<Tooltip title="Sort by title asc" value="title-asc">
 					<ToggleButton value="title-asc">
 						<Icon path={mdiSortAscending} size={1} />
 					</ToggleButton>
 				</Tooltip>
-				<Tooltip title="Sort by title desc">
+				<Tooltip title="Sort by title desc" value="title-desc">
 					<ToggleButton value="title-desc">
 						<Icon path={mdiSortDescending} size={1} />
 					</ToggleButton>
 				</Tooltip>
-				<Tooltip title="Sort by items count">
+				<Tooltip title="Sort by items count" value="items-count">
 					<ToggleButton value="items-count">
 						<ItemsCountIcon />
 					</ToggleButton>

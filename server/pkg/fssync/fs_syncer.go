@@ -158,7 +158,7 @@ func removeItem(dig model.DirectoryItemsGetter, iw model.ItemWriter, file string
 	}
 
 	if item != nil {
-		return items.RemoveItemAndItsAssociations(iw, item)
+		return items.RemoveItemAndItsAssociations(iw, item.Id)
 	}
 
 	return []error{}
