@@ -176,8 +176,13 @@ func CreateOrUpdateDirectory(dw model.DirectoryWriter, directory *model.Director
 }
 
 func UpdatePath(dw model.DirectoryWriter, directory *model.Directory, newpath string) error {
+	oldPath := directory.Path
 	directory.Path = NormalizeDirectoryPath(newpath)
-	return dw.UpdateDirectory(directory)
+	if err := dw.CreateOrUpdateDirectory(directory); err != nil {
+		return err
+	}
+
+	return dw.RemoveDirectory(oldPath)
 }
 
 func StartDirectoryProcessing(dw model.DirectoryWriter, directory *model.Directory) error {

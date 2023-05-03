@@ -124,11 +124,11 @@ export default class TagsUtil {
 		return tag.images && tag.images.length > 0;
 	};
 
-	static getTagImageUrl = (tag, selectedTit) => {
+	static getTagImageUrl = (tag, selectedTit, noFallback) => {
 		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
-			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/directory/directory.png'));
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/directory/directory.png'));
 		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
-			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/dailymix/dailymix.png'));
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/dailymix/dailymix.png'));
 		}
 
 		if (selectedTit && tag.images) {
@@ -138,7 +138,7 @@ export default class TagsUtil {
 			}
 		}
 
-		if (tag.images) {
+		if (!noFallback && tag.images) {
 			for (let i = 0; i < tag.images.length; i++) {
 				if (tag.images[i].url) {
 					return Client.buildFileUrl(tag.images[i].url);
@@ -146,7 +146,7 @@ export default class TagsUtil {
 			}
 		}
 
-		return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image/none/1.jpg'));
+		return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/none/1.jpg'));
 	};
 
 	static sortByTitle = (tags) => {

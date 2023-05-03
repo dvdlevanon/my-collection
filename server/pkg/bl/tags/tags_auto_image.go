@@ -13,21 +13,26 @@ import (
 	"gorm.io/gorm"
 )
 
-func AutoImageChildren(storage *storage.Storage, tw model.TagWriter,
+func AutoImageChildren(storage *storage.Storage, trw model.TagReaderWriter,
 	titrw model.TagImageTypeReaderWriter, tag *model.Tag, directoryPath string) error {
 	dirs, err := os.ReadDir(directoryPath)
 	if err != nil {
 		return errors.Wrap(err, 0)
 	}
 
-	for _, dir := range dirs {
-		if !dir.IsDir() {
-			continue
+	for _, slimChildTag := range tag.Children {
+		childTag, err := trw.GetTag(slimChildTag.Id)
+		if err != nil {
+			logger.Errorf("Error getting tag %v - %t", slimChildTag, err)
 		}
 
-		for _, childTag := range tag.Children {
+		for _, dir := range dirs {
+			if !dir.IsDir() {
+				continue
+			}
+
 			imageTypePath := filepath.Join(directoryPath, dir.Name())
-			if err := autoImageTagType(storage, tw, titrw, childTag, imageTypePath, dir.Name()); err != nil {
+			if err := autoImageTagType(storage, trw, titrw, childTag, imageTypePath, dir.Name()); err != nil {
 				logger.Errorf("Error auto tagging %v from %s - %t", tag, imageTypePath, err)
 			}
 		}
@@ -46,10 +51,6 @@ func autoImageTagType(storage *storage.Storage, tw model.TagWriter,
 
 	if err := updateTagImageTypeIcon(storage, titrw, tit, directoryPath); err != nil {
 		return err
-	}
-
-	if imageExists(tag, tit) {
-		return nil
 	}
 
 	return autoImageTag(storage, tw, tag, directoryPath, tit)
@@ -134,11 +135,13 @@ func autoImageTag(storage *storage.Storage, tw model.TagWriter, tag *model.Tag,
 		return nil
 	}
 
-	tag.Images = append(tag.Images, &model.TagImage{
-		TagId:       tag.Id,
-		Url:         storage.GetStorageUrl(relativeFile),
-		ImageTypeId: tit.Id,
-	})
+	if !imageExists(tag, tit) {
+		tag.Images = append(tag.Images, &model.TagImage{
+			TagId:       tag.Id,
+			Url:         storage.GetStorageUrl(relativeFile),
+			ImageTypeId: tit.Id,
+		})
+	}
 
 	return tw.CreateOrUpdateTag(tag)
 }

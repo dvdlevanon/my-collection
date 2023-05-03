@@ -50,6 +50,17 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 						return lastSelectedAnnotations.some((cur) => cur == availableAnnoation.id);
 					})
 				);
+
+				if (lastSelectedAnnotations.some((cur) => cur == 'no-image'))
+					setSelectedAnnotations((selectedAnnotations) => {
+						let result = selectedAnnotations;
+						result.push({
+							id: 'no-image',
+							title: 'No Image',
+						});
+
+						return result;
+					});
 			}
 		},
 	});
