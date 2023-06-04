@@ -1,5 +1,5 @@
 import { Stack } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import GalleryFilters from './GalleryFilters';
 import ItemsList from './ItemsList';
@@ -10,6 +10,17 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
 	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
+
+	useEffect(() => {
+		let lastItemsWidth = localStorage.getItem('items-width');
+		if (lastItemsWidth) {
+			let lastItemsWidthInt = parseInt(lastItemsWidth);
+			setItemsSize({
+				width: lastItemsWidthInt,
+				height: AspectRatioUtil.calcHeight(lastItemsWidthInt, aspectRatio),
+			});
+		}
+	}, []);
 
 	const getSelectedTags = () => {
 		let selectedTagsIds = galleryUrlParams.getSelectedTags();
@@ -81,6 +92,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 
 	const onZoomChanged = (offset, aspectRatio) => {
 		let newWidth = itemsSize.width + offset;
+		localStorage.setItem('items-width', newWidth);
 		setItemsSize({ width: newWidth, height: AspectRatioUtil.calcHeight(newWidth, aspectRatio) });
 	};
 
