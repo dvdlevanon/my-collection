@@ -14,6 +14,8 @@ var logger = logging.MustGetLogger("items")
 
 const PREVIEW_FROM_START_POSITION = "start-position" //items-util.js
 
+type ItemsFilter func(item *model.Item) bool
+
 func FileExists(item model.Item) bool {
 	path := relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
 	_, err := os.Stat(path)
@@ -100,7 +102,7 @@ func RemoveItemAndItsAssociations(iw model.ItemWriter, itemId uint64) []error {
 	return errors
 }
 
-func GetRandomItems(ir model.ItemReader, count int) ([]*model.Item, error) {
+func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*model.Item, error) {
 	allItems, err := ir.GetAllItems()
 	if err != nil {
 		return nil, err
@@ -110,7 +112,7 @@ func GetRandomItems(ir model.ItemReader, count int) ([]*model.Item, error) {
 	for i := 0; i < count; i++ {
 		chosenItem := &((*allItems)[rand.Intn(len(*allItems))])
 
-		for ItemExists(randomItems, chosenItem) {
+		for ItemExists(randomItems, chosenItem) || !filter(chosenItem) {
 			chosenItem = &((*allItems)[rand.Intn(len(*allItems))])
 		}
 

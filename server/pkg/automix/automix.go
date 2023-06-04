@@ -63,7 +63,10 @@ func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
 		return err
 	}
 
-	randomItems, err := items.GetRandomItems(d.ir, d.dailyMixItemsCount)
+	randomItems, err := items.GetRandomItems(d.ir, d.dailyMixItemsCount, func(item *model.Item) bool {
+		return !items.IsHighlight(item)
+	})
+
 	if err != nil {
 		return err
 	}
