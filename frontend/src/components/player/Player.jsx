@@ -231,7 +231,7 @@ function Player({
 						value={currentTime}
 						valueLabelDisplay="auto"
 						valueLabelFormat={(number) => {
-							return formatSeconds(currentTime);
+							return formatSeconds(currentTime - startPosition);
 						}}
 						onChange={(e, newValue) => changeTime(newValue)}
 					/>
