@@ -26,7 +26,7 @@ func GetSuggestionsForItem(ir model.ItemReader, tr model.TagReader, itemId uint6
 
 	if len(relatedItems) < count {
 		randomItems, err := items.GetRandomItems(ir, count-len(relatedItems), func(item *model.Item) bool {
-			return !items.IsHighlight(item)
+			return !items.IsHighlight(item) && !items.IsSplittedItem(item)
 		})
 		if err != nil {
 			return nil, err
