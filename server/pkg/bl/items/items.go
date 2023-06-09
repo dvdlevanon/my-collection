@@ -89,6 +89,20 @@ func EnsureItemHaveTags(iw model.ItemWriter, item *model.Item, tags []*model.Tag
 	return nil
 }
 
+func EnsureItemMissingTags(iw model.ItemWriter, item *model.Item, tags []*model.Tag) error {
+	for _, tagToRemove := range tags {
+		for _, tag := range item.Tags {
+			if tag.Id == tagToRemove.Id {
+				if err := iw.RemoveTagFromItem(item.Id, tag.Id); err != nil {
+					return err
+				}
+			}
+		}
+	}
+
+	return nil
+}
+
 func HasSingleTag(item *model.Item, tag *model.Tag) bool {
 	return len(item.Tags) == 1 && item.Tags[0].Id == tag.Id
 }

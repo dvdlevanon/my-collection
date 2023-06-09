@@ -2,6 +2,8 @@ package spectagger
 
 import (
 	"fmt"
+	"my-collection/server/pkg/automix"
+	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tag_annotations"
 	"my-collection/server/pkg/bl/tags"
@@ -67,6 +69,11 @@ func (d *Spectagger) autoSpectag() error {
 		return err
 	}
 
+	categories, err := d.GetUserCategories()
+	if err != nil {
+		return err
+	}
+
 	tagTitleToId := make(map[string]uint64)
 
 	for _, item := range *allItems {
@@ -94,8 +101,25 @@ func (d *Spectagger) autoSpectag() error {
 			continue
 		}
 
-		if err := addTagsToItem(&tagTitleToId, d.trw, d.irw, &item, []*model.Tag{
-			resolutionTag, videoCodecTag, audioCodecTag, durationTag}); err != nil {
+		typeTag, err := getTypeTag(d.tarw, &item)
+		if err != nil {
+			utils.LogError(err)
+			continue
+		}
+
+		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(d.tarw, categories, &item)
+		if err != nil {
+			utils.LogError(err)
+			continue
+		}
+
+		tagsToAdd := append(categoryTagsToAdd, resolutionTag, videoCodecTag, audioCodecTag, durationTag, typeTag)
+		if err := addTagsToItem(&tagTitleToId, d.trw, d.irw, &item, tagsToAdd); err != nil {
+			utils.LogError(err)
+			continue
+		}
+
+		if err := removeTagsFromItem(&tagTitleToId, d.trw, d.irw, &item, categoryTagsToRemove); err != nil {
 			utils.LogError(err)
 			continue
 		}
@@ -104,9 +128,104 @@ func (d *Spectagger) autoSpectag() error {
 	return nil
 }
 
+func (d *Spectagger) GetUserCategories() (*[]model.Tag, error) {
+	categories, err := tags.GetCategories(d.trw)
+	if err != nil {
+		return nil, err
+	}
+
+	userCategories := make([]model.Tag, 0)
+	for _, category := range *categories {
+		if category.Id == directories.GetDirectoriesTagId() ||
+			category.Id == automix.GetDailymixTagId() ||
+			category.Id == GetSpecTagId() ||
+			category.Id == items.GetHighlightsTagId() {
+			continue
+		}
+
+		userCategories = append(userCategories, category)
+	}
+
+	return &userCategories, nil
+}
+
+func getCategoryTags(tarw model.TagAnnotationReaderWriter, categories *[]model.Tag,
+	item *model.Item) ([]*model.Tag, []*model.Tag) {
+	categoryTagsToAdd := make([]*model.Tag, 0)
+	categoryTagsToRemove := make([]*model.Tag, 0)
+
+	if items.IsHighlight(item) || items.IsSplittedItem(item) {
+		return categoryTagsToAdd, categoryTagsToRemove
+	}
+
+	categoriesExists := getCategoriesExists(categories, item)
+	for i, category := range *categories {
+		missing, err := getMissingFromCategoryTag(tarw, &category)
+		if err != nil {
+			utils.LogError(err)
+			continue
+		}
+
+		belong, err := getBelongToCategoryTag(tarw, &category)
+		if err != nil {
+			utils.LogError(err)
+			continue
+		}
+
+		if categoriesExists[i] {
+			categoryTagsToRemove = append(categoryTagsToRemove, missing)
+			categoryTagsToAdd = append(categoryTagsToAdd, belong)
+		} else {
+			categoryTagsToRemove = append(categoryTagsToRemove, belong)
+			categoryTagsToAdd = append(categoryTagsToAdd, missing)
+		}
+	}
+
+	return categoryTagsToAdd, categoryTagsToRemove
+}
+
+func getMissingFromCategoryTag(tarw model.TagAnnotationReaderWriter, tag *model.Tag) (*model.Tag, error) {
+	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Categories"})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Tag{
+		ParentID:    &specTag.Id,
+		Title:       fmt.Sprintf("Missing %s", tag.Title),
+		Annotations: []*model.TagAnnotation{ta},
+	}, nil
+}
+
+func getBelongToCategoryTag(tarw model.TagAnnotationReaderWriter, tag *model.Tag) (*model.Tag, error) {
+	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Categories"})
+	if err != nil {
+		return nil, err
+	}
+
+	return &model.Tag{
+		ParentID:    &specTag.Id,
+		Title:       fmt.Sprintf("Has %s", tag.Title),
+		Annotations: []*model.TagAnnotation{ta},
+	}, nil
+}
+
+func getCategoriesExists(categories *[]model.Tag, item *model.Item) []bool {
+	categoriesExists := make([]bool, len(*categories))
+	for _, tag := range item.Tags {
+		for i, category := range *categories {
+			if tags.IsBelongToCategory(tag, &category) {
+				categoriesExists[i] = true
+				break
+			}
+		}
+	}
+
+	return categoriesExists
+}
+
 func getResolutionTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Resolutions"})
-
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +239,6 @@ func getResolutionTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 
 func getVideoCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Video Codecs"})
-
 	if err != nil {
 		return nil, err
 	}
@@ -134,7 +252,6 @@ func getVideoCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 
 func getAudioCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Audio Codecs"})
-
 	if err != nil {
 		return nil, err
 	}
@@ -146,15 +263,37 @@ func getAudioCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 	}, nil
 }
 
-func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
-	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Duration"})
-
+func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Type"})
 	if err != nil {
 		return nil, err
 	}
 
 	title := ""
+	if items.IsSplittedItem(item) {
+		title = "Splitted"
+	} else if items.IsSubItem(item) {
+		title = "Sub Item"
+	} else if items.IsHighlight(item) {
+		title = "Hightlight"
+	} else {
+		title = "Regular"
+	}
 
+	return &model.Tag{
+		ParentID:    &specTag.Id,
+		Title:       title,
+		Annotations: []*model.TagAnnotation{ta},
+	}, nil
+}
+
+func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Duration"})
+	if err != nil {
+		return nil, err
+	}
+
+	title := ""
 	if item.DurationSeconds < (60 * 15) {
 		title = "< 15 mintues"
 	} else if item.DurationSeconds < (60 * 30) {
@@ -176,15 +315,15 @@ func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*mo
 	}, nil
 }
 
-func addTagsToItem(tagTitleToId *map[string]uint64, trw model.TagReaderWriter, irw model.ItemReaderWriter,
-	item *model.Item, unsavedTags []*model.Tag) error {
+func getTagsWithId(tagTitleToId *map[string]uint64, trw model.TagReaderWriter,
+	unsavedTags []*model.Tag) ([]*model.Tag, error) {
 	savedTags := make([]*model.Tag, 0)
 	for _, unsavedTag := range unsavedTags {
 		id, ok := (*tagTitleToId)[unsavedTag.Title]
 		if !ok {
 			tag, err := tags.GetOrCreateTag(trw, unsavedTag)
 			if err != nil {
-				return err
+				return nil, err
 			}
 			id = tag.Id
 			(*tagTitleToId)[unsavedTag.Title] = id
@@ -193,5 +332,33 @@ func addTagsToItem(tagTitleToId *map[string]uint64, trw model.TagReaderWriter, i
 		savedTags = append(savedTags, &model.Tag{Id: id})
 	}
 
+	return savedTags, nil
+}
+
+func addTagsToItem(tagTitleToId *map[string]uint64, trw model.TagReaderWriter, irw model.ItemReaderWriter,
+	item *model.Item, unsavedTags []*model.Tag) error {
+	if len(unsavedTags) == 0 {
+		return nil
+	}
+
+	savedTags, err := getTagsWithId(tagTitleToId, trw, unsavedTags)
+	if err != nil {
+		return err
+	}
+
 	return items.EnsureItemHaveTags(irw, item, savedTags)
+}
+
+func removeTagsFromItem(tagTitleToId *map[string]uint64, trw model.TagReaderWriter, irw model.ItemReaderWriter,
+	item *model.Item, unsavedTags []*model.Tag) error {
+	if len(unsavedTags) == 0 {
+		return nil
+	}
+
+	savedTags, err := getTagsWithId(tagTitleToId, trw, unsavedTags)
+	if err != nil {
+		return err
+	}
+
+	return items.EnsureItemMissingTags(irw, item, savedTags)
 }

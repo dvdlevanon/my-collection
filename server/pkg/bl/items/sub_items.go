@@ -109,3 +109,7 @@ func Split(irw model.ItemReaderWriter, itemId uint64, second float64) ([]*model.
 func IsSubItem(item *model.Item) bool {
 	return item.MainItemId != nil
 }
+
+func IsSplittedItem(item *model.Item) bool {
+	return len(item.SubItems) > 0
+}

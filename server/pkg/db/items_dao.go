@@ -48,7 +48,7 @@ func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {
 func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 	tagsPreloading := func(db *gorm.DB) *gorm.DB {
 		if includeTagIdsOnly {
-			return db.Select("ID")
+			return db.Select("ID", "ParentID")
 		} else {
 			return db
 		}

@@ -120,3 +120,11 @@ func GetFullTags(tr model.TagReader, tagIds []*model.Tag) (*[]model.Tag, error) 
 
 	return tr.GetTags(ids)
 }
+
+func GetCategories(tr model.TagReader) (*[]model.Tag, error) {
+	return tr.GetTags("parent_id is NULL")
+}
+
+func IsBelongToCategory(tag *model.Tag, category *model.Tag) bool {
+	return tag.ParentID != nil && *tag.ParentID == category.Id
+}
