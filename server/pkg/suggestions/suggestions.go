@@ -6,6 +6,7 @@ import (
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/spectagger"
 )
 
 func GetSuggestionsForItem(ir model.ItemReader, tr model.TagReader, itemId uint64, count int) ([]*model.Item, error) {
@@ -48,7 +49,7 @@ func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) 
 	relatedItems := make([]*model.Item, 0)
 
 	for _, tag := range *t {
-		if *tag.ParentID == automix.GetDailymixTagId() {
+		if *tag.ParentID == automix.GetDailymixTagId() || *tag.ParentID == spectagger.GetSpecTagId() {
 			continue
 		}
 
