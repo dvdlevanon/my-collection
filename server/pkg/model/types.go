@@ -44,6 +44,7 @@ func (t TaskType) String() string {
 type PushMessageType int
 
 const (
-	PUSH_PING = iota
+	_ = iota
+	PUSH_PING
 	PUSH_QUEUE_METADATA
 )

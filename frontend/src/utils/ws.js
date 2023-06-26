@@ -14,10 +14,10 @@ export default class Websocket {
 		Websocket.socket.addEventListener('message', (event) => {
 			let message = JSON.parse(event.data);
 
-			if (message.type == 1) {
+			if (message.type == 2) {
 				Websocket.queryClient.setQueryData(ReactQueryUtil.QUEUE_METADATA_KEY, message.payload);
-			} else if (message == 0) {
-				//ping
+			} else if (message.type == 1) {
+				// ping
 			}
 		});
 	};

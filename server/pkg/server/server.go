@@ -104,6 +104,7 @@ func (s *Server) init() {
 
 func (s *Server) Run(addr string) error {
 	logger.Infof("Starting server at address %s", addr)
+	go s.push.run()
 	return s.router.Run(addr)
 }
 
