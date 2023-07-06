@@ -27,7 +27,17 @@ function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder }) {
 	return (
 		<React.Fragment>
 			<div id="back-to-top-anchor" />
-			<Stack flexDirection="row" flexWrap="wrap" gap="20px" padding="20px">
+			<Stack
+				display="grid"
+				sx={{
+					display: 'grid',
+					gridTemplateColumns: 'repeat(auto-fill, ' + itemsSize.width + 'px)',
+					justifyContent: 'space-between',
+					gridGap: '20px',
+					padding: '20px',
+					overflow: 'auto',
+				}}
+			>
 				{items.map((item) => {
 					return (
 						<Item

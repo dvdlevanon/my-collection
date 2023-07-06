@@ -19,7 +19,7 @@ function PrefixFilter({ selectedChar, setSelectedChar }) {
 	};
 
 	return (
-		<Stack flexDirection="row" justifyContent="space-around" alignSelf="center" width="50%">
+		<Stack padding="3px" flexDirection="row" justifyContent="space-around" alignSelf="center" width="50%">
 			{Array.from(Array(englishLettersCount()).keys()).map((i) => {
 				return (
 					<Box

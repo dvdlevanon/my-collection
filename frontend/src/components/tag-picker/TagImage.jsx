@@ -18,7 +18,7 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 				cursor: 'pointer',
 				borderRadius: '10px',
 				'&:hover': {
-					filter: 'brightness(120%)',
+					filter: 'brightness(105%)',
 				},
 			}}
 		>

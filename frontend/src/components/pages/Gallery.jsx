@@ -25,8 +25,8 @@ function Gallery({ previewMode }) {
 	};
 
 	return (
-		<Stack flexGrow={1} padding="10px">
-			<Stack>
+		<Stack flexGrow={1} padding="10px" overflow="hidden">
+			<Stack overflow="hidden" minHeight="40px">
 				{tagsQuery.isSuccess && (
 					<TagPicker
 						origin="gallery"
@@ -42,7 +42,7 @@ function Gallery({ previewMode }) {
 				)}
 			</Stack>
 			<Divider />
-			<Stack padding="10px">
+			<Stack padding="10px" overflow="hidden">
 				{!tagsDropDownOpened && (
 					<ItemsView
 						tagsQuery={tagsQuery}

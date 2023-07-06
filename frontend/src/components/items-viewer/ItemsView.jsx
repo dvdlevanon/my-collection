@@ -97,7 +97,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	};
 
 	return (
-		<Stack padding="10px">
+		<Stack padding="10px" overflow="hidden">
 			<Stack flexDirection="row" gap="10px">
 				<ItemsViewControls
 					itemsSize={itemsSize}

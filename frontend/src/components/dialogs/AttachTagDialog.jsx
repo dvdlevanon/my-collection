@@ -40,7 +40,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 					<CloseIcon />
 				</IconButton>
 			</DialogTitle>
-			<DialogContent>
+			<DialogContent sx={{ overflow: 'hidden' }}>
 				<TagPicker
 					origin="attach-dialog"
 					initialSelectedCategoryId={3}

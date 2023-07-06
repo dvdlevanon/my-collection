@@ -51,7 +51,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 					})
 				);
 
-				if (lastSelectedAnnotations.some((cur) => cur == 'no-image'))
+				if (lastSelectedAnnotations.some((cur) => cur == 'no-image')) {
 					setSelectedAnnotations((selectedAnnotations) => {
 						let result = selectedAnnotations;
 						result.push({
@@ -61,6 +61,19 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 
 						return result;
 					});
+				}
+
+				if (lastSelectedAnnotations.some((cur) => cur == 'none')) {
+					setSelectedAnnotations((selectedAnnotations) => {
+						let result = selectedAnnotations;
+						result.push({
+							id: 'none',
+							title: 'None',
+						});
+
+						return result;
+					});
+				}
 			}
 		},
 	});
@@ -217,7 +230,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	};
 
 	return (
-		<Stack width={'100%'} height={'100%'} flexGrow={1} backgroundColor="dark.lighter">
+		<Stack width={'100%'} height={'100%'} flexGrow={1} overflow="hidden" backgroundColor="dark.lighter">
 			<TagsTopBar
 				parentId={parent.id}
 				setSearchTerm={setSearchTerm}
@@ -260,11 +273,12 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 			<Divider />
 			<Box
 				sx={{
-					display: 'flex',
-					flexDirection: 'row',
+					display: 'grid',
+					gridTemplateColumns: 'repeat(auto-fill, ' + calculateTagSize().width + 'px)',
+					justifyContent: 'space-between',
+					gridGap: '10px',
 					padding: '10px',
-					gap: '10px',
-					flexWrap: 'wrap',
+					overflow: 'auto',
 				}}
 			>
 				{filterTags().map((tag) => {
