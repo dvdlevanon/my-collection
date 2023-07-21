@@ -25,24 +25,22 @@ function Gallery({ previewMode }) {
 	};
 
 	return (
-		<Stack flexGrow={1} padding="10px" overflow="hidden">
-			<Stack overflow="hidden" minHeight="40px">
-				{tagsQuery.isSuccess && (
-					<TagPicker
-						origin="gallery"
-						initialTagSize={650}
-						showSpecialCategories={true}
-						onTagSelected={onTagActivated}
-						onDropDownToggled={(state) => setTagsDropDownOpened(state)}
-						initialSelectedCategoryId={0}
-						tagLinkBuilder={(tag) => {
-							return '/?' + galleryUrlParams.buildActivateTagUrl(tag.id);
-						}}
-					/>
-				)}
-			</Stack>
+		<Stack className="gallery" flexGrow={1} padding="10px" overflow="hidden">
+			{tagsQuery.isSuccess && (
+				<TagPicker
+					origin="gallery"
+					initialTagSize={650}
+					showSpecialCategories={true}
+					onTagSelected={onTagActivated}
+					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
+					initialSelectedCategoryId={0}
+					tagLinkBuilder={(tag) => {
+						return '/?' + galleryUrlParams.buildActivateTagUrl(tag.id);
+					}}
+				/>
+			)}
 			<Divider />
-			<Stack padding="10px" overflow="hidden">
+			<Stack className="gallery_item" padding="10px" overflow="hidden" height="100%">
 				{!tagsDropDownOpened && (
 					<ItemsView
 						tagsQuery={tagsQuery}

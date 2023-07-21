@@ -56,7 +56,7 @@ function TagPicker({
 	};
 
 	return (
-		<Stack height={selectedCategoryId > 0 ? '100%' : 'auto'}>
+		<Stack className="tags_picker" height={selectedCategoryId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && (
 				<Categories
 					categories={TagsUtil.getCategories(tagsQuery.data).filter(
