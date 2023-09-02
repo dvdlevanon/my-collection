@@ -1,67 +1,67 @@
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Fab, Fade, Stack, useScrollTrigger } from '@mui/material';
 import { Box } from '@mui/system';
 import React from 'react';
+import { AutoSizer, Grid } from 'react-virtualized';
 import Item from './Item';
 
 function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder }) {
-	const trigger = useScrollTrigger({
-		disableHysteresis: true,
-		threshold: 100,
-	});
-
-	const handleClick = (event) => {
-		const anchor = document.querySelector('#back-to-top-anchor');
-
-		if (anchor) {
-			anchor.scrollIntoView({
-				block: 'center',
-			});
-		}
-	};
-
 	const onConvertVideo = (item) => {};
 
 	const onConvertAudio = (item) => {};
 
+	const calcColumnsCount = (width) => {
+		return Math.floor(width / (itemsSize.width + 20));
+	};
+
+	const cellRenderer = (width) => {
+		return ({ columnIndex, key, rowIndex, style }) => {
+			let itemIndex = rowIndex * calcColumnsCount(width) + columnIndex;
+			if (itemIndex >= items.length) {
+				return <div key={key}></div>;
+			}
+
+			let item = items[itemIndex];
+			return (
+				<Box
+					key={item.id}
+					style={style}
+					sx={{
+						padding: '20px',
+						width: itemsSize.width,
+						height: itemsSize.height,
+					}}
+				>
+					<Item
+						key={item.id}
+						item={item}
+						preferPreview={previewMode}
+						onConvertAudio={onConvertAudio}
+						onConvertVideo={onConvertVideo}
+						itemWidth={itemsSize.width}
+						itemHeight={itemsSize.height}
+						direction="column"
+						itemLinkBuilder={itemLinkBuilder}
+						withItemTitleMenu={false}
+					/>
+				</Box>
+			);
+		};
+	};
+
 	return (
 		<React.Fragment>
-			<div id="back-to-top-anchor" />
-			<Stack
-				display="grid"
-				sx={{
-					display: 'grid',
-					gridTemplateColumns: 'repeat(auto-fill, ' + itemsSize.width + 'px)',
-					justifyContent: 'space-between',
-					gridGap: '20px',
-					padding: '20px',
-					overflow: 'auto',
-				}}
-			>
-				{items.map((item) => {
-					return (
-						<Item
-							key={item.id}
-							item={item}
-							preferPreview={previewMode}
-							onConvertAudio={onConvertAudio}
-							onConvertVideo={onConvertVideo}
-							itemWidth={itemsSize.width}
-							itemHeight={itemsSize.height}
-							direction="column"
-							itemLinkBuilder={itemLinkBuilder}
-							withItemTitleMenu={false}
-						/>
-					);
-				})}
-			</Stack>
-			<Fade in={trigger}>
-				<Box onClick={handleClick} role="presentation" sx={{ position: 'fixed', bottom: 16, right: 16 }}>
-					<Fab size="small" aria-label="scroll back to top">
-						<KeyboardArrowUpIcon />
-					</Fab>
-				</Box>
-			</Fade>
+			<AutoSizer>
+				{({ height, width }) => (
+					<Grid
+						cellRenderer={cellRenderer(width)}
+						columnCount={calcColumnsCount(width)}
+						rowCount={Math.floor(items.length / calcColumnsCount(width) + 1)}
+						columnWidth={itemsSize.width + 40}
+						rowHeight={itemsSize.height + 100}
+						height={height}
+						width={width}
+					/>
+				)}
+			</AutoSizer>
 		</React.Fragment>
 	);
 }

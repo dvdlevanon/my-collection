@@ -133,7 +133,7 @@ function Item({
 							objectFit: 'contain',
 							cursor: 'pointer',
 							borderRadius: '10px',
-							boxShadow: item.main_cover_second ? '0 2px 4px 0 rgba(13, 147, 82, 0.6)' : 'none',
+							boxShadow: item.main_cover_second ? '0 2px 4px 0 rgba(255, 68, 0, 0.6)' : 'none',
 						}}
 					/>
 					{!ItemsUtil.isHighlight(item) && (

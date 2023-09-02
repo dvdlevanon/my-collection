@@ -9,9 +9,10 @@ const queryClient = new QueryClient();
 Websocket.initialize(queryClient);
 
 root.render(
-	<React.StrictMode>
-		<QueryClientProvider client={queryClient}>
-			<App />
-		</QueryClientProvider>
-	</React.StrictMode>
+	// This break react-virtualized for some reason
+	// <React.StrictMode>
+	<QueryClientProvider client={queryClient}>
+		<App />
+	</QueryClientProvider>
+	// </React.StrictMode>
 );
