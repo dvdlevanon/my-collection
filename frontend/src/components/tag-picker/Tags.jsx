@@ -170,30 +170,28 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		});
 	};
 
-	const filterTags = () => {
-		let filteredTags = filterByPrefix(filterTagsByAnnotations(filterTagsBySearch(tags)));
-
+	const sortTags = (tags) => {
 		if (sortBy == 'random') {
 			let epochDay = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
 			let randomTags = [];
 			let rand = seedrandom(epochDay);
 
-			for (let i = 0; i < filteredTags.length; i++) {
-				let randomIndex = Math.floor(rand() * filteredTags.length);
+			for (let i = 0; i < tags.length; i++) {
+				let randomIndex = Math.floor(rand() * tags.length);
 				while (randomTags[randomIndex]) {
-					randomIndex = Math.floor(rand() * filteredTags.length);
+					randomIndex = Math.floor(rand() * tags.length);
 				}
 
-				randomTags[randomIndex] = filteredTags[i];
+				randomTags[randomIndex] = tags[i];
 			}
 
 			return randomTags;
 		} else if (sortBy == 'title-asc') {
-			return filteredTags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
+			return tags.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
 		} else if (sortBy == 'title-desc') {
-			return filteredTags.sort((a, b) => (a.title > b.title ? -1 : a.title < b.title ? 1 : 0));
+			return tags.sort((a, b) => (a.title > b.title ? -1 : a.title < b.title ? 1 : 0));
 		} else if (sortBy == 'items-count') {
-			return filteredTags.sort((a, b) =>
+			return tags.sort((a, b) =>
 				TagsUtil.itemsCount(a) > TagsUtil.itemsCount(b)
 					? -1
 					: TagsUtil.itemsCount(a) < TagsUtil.itemsCount(b)
@@ -201,8 +199,12 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 					: 0
 			);
 		} else {
-			return filteredTags;
+			return tags;
 		}
+	};
+
+	const filterTags = () => {
+		return filterByPrefix(filterTagsByAnnotations(filterTagsBySearch(tags)));
 	};
 
 	const getAvailableAnnotations = (availableAnnotations) => {
@@ -315,7 +317,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 						flexFlow: 'wrap',
 					}}
 				>
-					{filterTags().map((tag) => {
+					{sortTags(filterTags()).map((tag) => {
 						return (
 							<Tag
 								key={tag.id}

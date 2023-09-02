@@ -1,7 +1,9 @@
 import { Stack } from '@mui/material';
 import React, { useEffect, useState } from 'react';
+import seedrandom from 'seedrandom';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import GalleryFilters from './GalleryFilters';
+import ItemSortSelector from './ItemSortSelector';
 import ItemsList from './ItemsList';
 import ItemsViewControls from './ItemsViewControls';
 
@@ -10,6 +12,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	const [searchTerm, setSearchTerm] = useState('');
 	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
 	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
+	const [sortBy, setSortBy] = useState('random');
 
 	useEffect(() => {
 		let lastItemsWidth = localStorage.getItem('items-width');
@@ -19,6 +22,13 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 				width: lastItemsWidthInt,
 				height: AspectRatioUtil.calcHeight(lastItemsWidthInt, aspectRatio),
 			});
+		}
+
+		let lastSortBy = localStorage.getItem('items-sort-by');
+		if (lastSortBy) {
+			setSortBy(lastSortBy);
+		} else {
+			setSortBy('random');
 		}
 	}, []);
 
@@ -82,6 +92,39 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 		return result;
 	};
 
+	const sortItems = (items) => {
+		if (sortBy == 'random') {
+			let epochDay = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
+			let randomItems = [];
+			let rand = seedrandom(epochDay);
+
+			for (let i = 0; i < items.length; i++) {
+				let randomIndex = Math.floor(rand() * items.length);
+				while (randomItems[randomIndex]) {
+					randomIndex = Math.floor(rand() * items.length);
+				}
+
+				randomItems[randomIndex] = items[i];
+			}
+
+			return randomItems;
+		} else if (sortBy == 'title-asc') {
+			return items.sort((a, b) => (a.title > b.title ? 1 : a.title < b.title ? -1 : 0));
+		} else if (sortBy == 'title-desc') {
+			return items.sort((a, b) => (a.title > b.title ? -1 : a.title < b.title ? 1 : 0));
+		} else if (sortBy == 'duration-desc') {
+			return items.sort((a, b) =>
+				a.duration_seconds > b.duration_seconds ? 1 : a.duration_seconds < b.duration_seconds ? -1 : 0
+			);
+		} else if (sortBy == 'duration-asc' || sortBy == 'duration') {
+			return items.sort((a, b) =>
+				a.duration_seconds > b.duration_seconds ? -1 : a.duration_seconds < b.duration_seconds ? 1 : 0
+			);
+		} else {
+			return items;
+		}
+	};
+
 	const onTagDeactivated = (tag) => {
 		galleryUrlParams.deactivateTag(tag.id);
 	};
@@ -96,6 +139,19 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 		setItemsSize({ width: newWidth, height: AspectRatioUtil.calcHeight(newWidth, aspectRatio) });
 	};
 
+	const onSortChanged = (newSortBy) => {
+		if (newSortBy == 'duration' && sortBy.startsWith('duration')) {
+			newSortBy = sortBy == 'duration-desc' ? 'duration-asc' : 'duration-desc';
+		}
+
+		if (sortBy == newSortBy) {
+			return;
+		}
+
+		localStorage.setItem('items-sort-by', newSortBy);
+		setSortBy(newSortBy);
+	};
+
 	return (
 		<Stack padding="10px" overflow="hidden" height="100%">
 			<Stack flexDirection="row" gap="10px">
@@ -108,6 +164,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 						onZoomChanged(0, newAspectRatio);
 					}}
 				/>
+				<ItemSortSelector sortBy={sortBy} onSortChanged={onSortChanged} />
 				{tagsQuery.isSuccess && (
 					<GalleryFilters
 						conditionType={conditionType}
@@ -125,7 +182,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 			{tagsQuery.isSuccess && itemsQuery.isSuccess && (
 				<ItemsList
 					itemsSize={itemsSize}
-					items={getFilteredItems(getSelectedTags(), searchTerm)}
+					items={sortItems(getFilteredItems(getSelectedTags(), searchTerm))}
 					previewMode={previewMode}
 					itemLinkBuilder={(item) => {
 						return '/spa/item/' + item.id + '?' + galleryUrlParams.getUrlParamsString();
