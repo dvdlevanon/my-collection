@@ -13,7 +13,7 @@ import AddTagDialog from '../dialogs/AddTagDialog';
 import Tag from './Tag';
 import TagsTopBar from './TagsTopBar';
 
-function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTagClicked }) {
+function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTagClicked, setHideCategories }) {
 	const [addTagDialogOpened, setAddTagDialogOpened] = useState(false);
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState(parent.default_sorting);
@@ -249,6 +249,10 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		return result;
 	};
 
+	const onScroll = (e) => {
+		setHideCategories(e.target.scrollTop > 120);
+	};
+
 	return (
 		<Stack
 			className="tags_and_filters"
@@ -304,6 +308,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 				sx={{
 					overflow: 'auto',
 				}}
+				onScroll={onScroll}
 			>
 				<div id="back-to-top-tags-anchor" sx={{ display: 'none' }} />
 				<Box

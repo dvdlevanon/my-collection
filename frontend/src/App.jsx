@@ -46,10 +46,8 @@ function App() {
 		onSuccess: (specialTags) => TagsUtil.initSpecialTags(specialTags),
 	});
 
-	let [previewMode, setPreviewMode] = useState(true);
-	const onPreviewModeChange = (previewMode) => {
-		setPreviewMode(previewMode);
-	};
+	const [hideTopBar, setHideTopBar] = useState(false);
+	const [previewMode, setPreviewMode] = useState(true);
 
 	return (
 		<React.Fragment>
@@ -57,10 +55,13 @@ function App() {
 				<ThemeProvider theme={theme}>
 					<CssBaseline />
 					<BrowserRouter>
-						<TopBar previewMode={previewMode} onPreviewModeChange={onPreviewModeChange} />
+						{!hideTopBar && <TopBar previewMode={previewMode} onPreviewModeChange={setPreviewMode} />}
 						{specialTagsQuery.isSuccess && (
 							<Routes>
-								<Route index element={<Gallery previewMode={previewMode} />} />
+								<Route
+									index
+									element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
+								/>
 								<Route path="/spa/item/:itemId" element={<ItemPage />} />
 								<Route path="/spa/manage-directories" element={<ManageDirectories />} />
 							</Routes>

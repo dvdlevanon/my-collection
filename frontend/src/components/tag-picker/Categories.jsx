@@ -15,7 +15,7 @@ function Categories({ categories, onCategoryClicked, selectedCategoryId }) {
 	};
 
 	return (
-		<Stack flexDirection="row" alignItems="center" gap="10px">
+		<Stack padding="10px" flexDirection="row" alignItems="center" gap="10px">
 			<Tooltip title="Add Category">
 				<IconButton size="small" onClick={() => setAddCategoryDialogOpened(true)}>
 					<AddIcon sx={{ fontSize: '20px' }} />

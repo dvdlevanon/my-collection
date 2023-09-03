@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Collapse, Stack } from '@mui/material';
 import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../utils/client';
@@ -15,11 +15,13 @@ function TagPicker({
 	initialSelectedCategoryId,
 	showSpecialCategories,
 	tagLinkBuilder,
+	setHideTopBar,
 }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const titsQuery = useQuery(ReactQueryUtil.TAG_IMAGE_TYPES_KEY, Client.getTagImageTypes);
 
 	let [selectedCategoryId, setSelectedCategoryId] = useState(initialSelectedCategoryId);
+	let [hideCategories, setHideCategories] = useState(false);
 
 	const getChildrenTags = (selectedId) => {
 		let category = tagsQuery.data.find((cur) => {
@@ -58,13 +60,17 @@ function TagPicker({
 	return (
 		<Stack className="tags_picker" height={selectedCategoryId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && (
-				<Categories
-					categories={TagsUtil.getCategories(tagsQuery.data).filter(
-						(cur) => showSpecialCategories || TagsUtil.allowToAddToCategory(cur.id)
-					)}
-					onCategoryClicked={onCategoryClicked}
-					selectedCategoryId={selectedCategoryId}
-				/>
+				<Collapse in={!hideCategories}>
+					<Stack>
+						<Categories
+							categories={TagsUtil.getCategories(tagsQuery.data).filter(
+								(cur) => showSpecialCategories || TagsUtil.allowToAddToCategory(cur.id)
+							)}
+							onCategoryClicked={onCategoryClicked}
+							selectedCategoryId={selectedCategoryId}
+						/>
+					</Stack>
+				</Collapse>
 			)}
 			{tagsQuery.isSuccess && titsQuery.isSuccess && selectedCategoryId > 0 && (
 				<Tags
@@ -75,6 +81,10 @@ function TagPicker({
 					initialTagSize={initialTagSize}
 					tagLinkBuilder={tagLinkBuilder}
 					onTagClicked={tagSelectedHandler}
+					setHideCategories={(value) => {
+						setHideTopBar(value);
+						setHideCategories(value);
+					}}
 				/>
 			)}
 		</Stack>

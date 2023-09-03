@@ -8,7 +8,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import ItemsView from '../items-viewer/ItemsView';
 import TagPicker from '../tag-picker/TagPicker';
 
-function Gallery({ previewMode }) {
+function Gallery({ previewMode, setHideTopBar }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
 	const [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
@@ -25,7 +25,7 @@ function Gallery({ previewMode }) {
 	};
 
 	return (
-		<Stack className="gallery" flexGrow={1} padding="10px" overflow="hidden">
+		<Stack className="gallery" flexGrow={1} overflow="hidden">
 			{tagsQuery.isSuccess && (
 				<TagPicker
 					origin="gallery"
@@ -34,6 +34,7 @@ function Gallery({ previewMode }) {
 					onTagSelected={onTagActivated}
 					onDropDownToggled={(state) => setTagsDropDownOpened(state)}
 					initialSelectedCategoryId={0}
+					setHideTopBar={setHideTopBar}
 					tagLinkBuilder={(tag) => {
 						return '/?' + galleryUrlParams.buildActivateTagUrl(tag.id);
 					}}
