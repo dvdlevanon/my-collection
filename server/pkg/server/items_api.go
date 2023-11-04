@@ -173,7 +173,7 @@ func (s *Server) splitItem(c *gin.Context) {
 	for _, item := range changedItems {
 		s.processor.EnqueueItemVideoMetadata(item.Id)
 		s.processor.EnqueueItemCovers(item.Id)
-		s.processor.EnqueueItemPreview(item.Id)
+		// s.processor.EnqueueItemPreview(item.Id)
 	}
 
 	c.Status(http.StatusOK)

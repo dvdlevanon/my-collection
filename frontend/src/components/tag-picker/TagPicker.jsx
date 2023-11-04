@@ -54,6 +54,8 @@ function TagPicker({
 	const tagSelectedHandler = (tag) => {
 		setSelectedCategoryId(0);
 		onDropDownToggled(false);
+		setHideTopBar(false);
+		setHideCategories(false);
 		onTagSelected(tag);
 	};
 

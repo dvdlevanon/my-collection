@@ -49,6 +49,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 					onTagSelected={onTagAdded}
 					onDropDownToggled={() => {}}
 					tagLinkBuilder={(tag) => '/?' + GalleryUrlParams.buildUrlParams(tag.id)}
+					setHideTopBar={() => {}}
 				/>
 			</DialogContent>
 		</Dialog>
