@@ -41,7 +41,7 @@ function Gallery({ previewMode, setHideTopBar }) {
 				/>
 			)}
 			<Divider />
-			<Stack className="gallery_item" padding="10px" overflow="hidden" height="100%">
+			<Stack className="gallery_item" overflow="hidden" height="100%">
 				{!tagsDropDownOpened && (
 					<ItemsView
 						tagsQuery={tagsQuery}

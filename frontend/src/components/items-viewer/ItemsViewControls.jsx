@@ -6,7 +6,7 @@ import AspectRatioUtil from '../../utils/aspect-ratio-util';
 
 function ItemsViewControls({ itemsSize, onZoomChanged, aspectRatio, onAspectRatioChanged }) {
 	return (
-		<Stack flexDirection="row" gap="10px">
+		<Stack flexDirection="row" gap="10px" padding="10px">
 			<Stack justifyContent="center" alignContent="center">
 				<ToggleButtonGroup
 					size="small"

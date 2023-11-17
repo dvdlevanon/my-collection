@@ -1,4 +1,4 @@
-import { Stack } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import seedrandom from 'seedrandom';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
@@ -153,8 +153,8 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	};
 
 	return (
-		<Stack padding="10px" overflow="hidden" height="100%">
-			<Stack flexDirection="row" gap="10px">
+		<Stack overflow="hidden" height="100%">
+			<Stack flexDirection="row" gap="10px" padding="0px 0px 3px 0px">
 				<ItemsViewControls
 					itemsSize={itemsSize}
 					onZoomChanged={(offest) => onZoomChanged(offest, aspectRatio)}
@@ -179,16 +179,18 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 					/>
 				)}
 			</Stack>
-			{tagsQuery.isSuccess && itemsQuery.isSuccess && (
-				<ItemsList
-					itemsSize={itemsSize}
-					items={sortItems(getFilteredItems(getSelectedTags(), searchTerm))}
-					previewMode={previewMode}
-					itemLinkBuilder={(item) => {
-						return '/spa/item/' + item.id + '?' + galleryUrlParams.getUrlParamsString();
-					}}
-				/>
-			)}
+			<Box width="100%" height="100%">
+				{tagsQuery.isSuccess && itemsQuery.isSuccess && (
+					<ItemsList
+						itemsSize={itemsSize}
+						items={sortItems(getFilteredItems(getSelectedTags(), searchTerm))}
+						previewMode={previewMode}
+						itemLinkBuilder={(item) => {
+							return '/spa/item/' + item.id + '?' + galleryUrlParams.getUrlParamsString();
+						}}
+					/>
+				)}
+			</Box>
 		</Stack>
 	);
 }
