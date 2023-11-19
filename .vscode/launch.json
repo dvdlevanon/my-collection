@@ -10,6 +10,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/server/cmd/mycollection",
+            "args": ["--root-directory", "/mnt/usb1"]
         },
         {
             "name": "fstester",
@@ -17,6 +18,7 @@
             "request": "launch",
             "mode": "auto",
             "program": "${workspaceFolder}/server/cmd/fstester",
+            "args": ["--root-directory", "/mnt/usb1"]
         }
     ]
 }

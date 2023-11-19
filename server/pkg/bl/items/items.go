@@ -7,6 +7,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/go-errors/errors"
+
 	"github.com/op/go-logging"
 )
 
@@ -114,6 +116,25 @@ func RemoveItemAndItsAssociations(iw model.ItemWriter, itemId uint64) []error {
 	}
 
 	return errors
+}
+
+func DeleteRealFile(ir model.ItemReader, itemId uint64) error {
+	item, err := ir.GetItem(itemId)
+	if err != nil {
+		return err
+	}
+
+	if IsSubItem(item) {
+		return errors.Errorf("Deletion of subitem is forbidden")
+	}
+
+	if IsHighlight(item) {
+		return errors.Errorf("Deletion of highlight is forbidden")
+	}
+
+	file := relativasor.GetAbsoluteFile(item.Url)
+	logger.Infof("About to delete real file %s", file)
+	return os.Remove(file)
 }
 
 func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*model.Item, error) {

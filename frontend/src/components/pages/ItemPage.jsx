@@ -1,8 +1,9 @@
 import AddIcon from '@mui/icons-material/Add';
-import { Box, Chip, Stack, Typography } from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
@@ -39,6 +40,7 @@ function ItemPage() {
 	const [addTagMode, setAddTagMode] = useState(false);
 	const [windowWidth, windowHeight] = useWindowSize();
 	const [showSplitVideoConfirmationDialog, setShowSplitVideoConfirmationDialog] = useState(false);
+	const [showDeleteItemConfirmationDialog, setShowDeleteItemConfirmationDialog] = useState(false);
 	const [splitVideoSecond, setSplitVideoSecond] = useState(0);
 	const itemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(itemId),
@@ -47,6 +49,7 @@ function ItemPage() {
 			document.title = item.title;
 		},
 	});
+	const navigate = useNavigate();
 
 	const onAddTag = () => {
 		setAddTagMode(true);
@@ -85,9 +88,13 @@ function ItemPage() {
 		});
 	};
 
-	const onDeleteItem = (item) => {
-		Client.deleteItem(item.id).then(() => {
-			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+	const onDeleteItem = (item, deleteRealFile) => {
+		Client.deleteItem(item.id, deleteRealFile).then(() => {
+			if (deleteRealFile) {
+				navigate('/');
+			} else {
+				queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
+			}
 		});
 	};
 
@@ -183,7 +190,7 @@ function ItemPage() {
 							withTooltip={false}
 							withMenu={true}
 						/>
-						<Stack flexDirection="row" gap="10px">
+						<Stack flexDirection="row" gap="10px" alignItems="center">
 							<TagChips
 								flexDirection="column"
 								tags={(itemQuery.data.tags || []).filter((cur) =>
@@ -202,6 +209,13 @@ function ItemPage() {
 								onClick={onAddTag}
 								sx={{ '& .MuiChip-label': { padding: '5px' } }}
 							/>
+							<Stack width="100%" alignItems="flex-end">
+								<Tooltip title="Delete this item">
+									<IconButton onClick={() => setShowDeleteItemConfirmationDialog(true)}>
+										<DeleteIcon />
+									</IconButton>
+								</Tooltip>
+							</Stack>
 						</Stack>
 						<Typography variant="body2" color="bright.darker2" padding="0px 10px">
 							Resolution: {itemQuery.data.width} * {itemQuery.data.height}
@@ -221,7 +235,7 @@ function ItemPage() {
 			</Box>
 			<Stack maxWidth={500}>
 				{itemQuery.isSuccess && shouldShowSubItems() && (
-					<SubItems item={itemQuery.data} onDeleteItem={onDeleteItem} />
+					<SubItems item={itemQuery.data} onDeleteItem={(item) => onDeleteItem(item, false)} />
 				)}
 			</Stack>
 			{showSplitVideoConfirmationDialog && (
@@ -231,6 +245,15 @@ function ItemPage() {
 					actionButtonTitle="Split"
 					onCancel={closeSplitVideoDialog}
 					onConfirm={splitItem}
+				/>
+			)}
+			{showDeleteItemConfirmationDialog && (
+				<ConfirmationDialog
+					title="Delete Item"
+					text={'Are you sure you want to delete ' + itemQuery.data.title + '?'}
+					actionButtonTitle="Delete"
+					onCancel={() => setShowDeleteItemConfirmationDialog(false)}
+					onConfirm={() => onDeleteItem(itemQuery.data, true)}
 				/>
 			)}
 		</Box>

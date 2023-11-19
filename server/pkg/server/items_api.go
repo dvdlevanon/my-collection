@@ -83,6 +83,17 @@ func (s *Server) deleteItem(c *gin.Context) {
 		return
 	}
 
+	deleteRealItem, err := strconv.ParseBool(c.Query("deleteRealFile"))
+	if s.handleError(c, err) {
+		return
+	}
+
+	if deleteRealItem {
+		if s.handleError(c, items.DeleteRealFile(s.db, itemId)) {
+			return
+		}
+	}
+
 	errs := items.RemoveItemAndItsAssociations(s.db, itemId)
 	if len(errs) > 0 {
 		if s.handleError(c, errs[0]) {
