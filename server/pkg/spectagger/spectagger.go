@@ -101,7 +101,7 @@ func (d *Spectagger) autoSpectag() error {
 			continue
 		}
 
-		typeTag, err := getTypeTag(d.tarw, &item)
+		typeTag, typeToRemove, err := getTypeTag(d.tarw, &item)
 		if err != nil {
 			utils.LogError(err)
 			continue
@@ -119,7 +119,12 @@ func (d *Spectagger) autoSpectag() error {
 			continue
 		}
 
-		if err := removeTagsFromItem(&tagTitleToId, d.trw, d.irw, &item, categoryTagsToRemove); err != nil {
+		tagsToRemove := categoryTagsToRemove
+		if typeToRemove != nil {
+			tagsToRemove = append(tagsToRemove, typeToRemove)
+		}
+
+		if err := removeTagsFromItem(&tagTitleToId, d.trw, d.irw, &item, tagsToRemove); err != nil {
 			utils.LogError(err)
 			continue
 		}
@@ -263,19 +268,29 @@ func getAudioCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 	}, nil
 }
 
-func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, *model.Tag, error) {
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Type"})
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
+
+	regularTag := &model.Tag{
+		ParentID:    &specTag.Id,
+		Title:       "Regular",
+		Annotations: []*model.TagAnnotation{ta},
+	}
+	var tagToRemove *model.Tag
 
 	title := ""
 	if items.IsSplittedItem(item) {
 		title = "Splitted"
+		tagToRemove = regularTag
 	} else if items.IsSubItem(item) {
 		title = "Sub Item"
+		tagToRemove = regularTag
 	} else if items.IsHighlight(item) {
 		title = "Hightlight"
+		tagToRemove = regularTag
 	} else {
 		title = "Regular"
 	}
@@ -284,7 +299,7 @@ func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.
 		ParentID:    &specTag.Id,
 		Title:       title,
 		Annotations: []*model.TagAnnotation{ta},
-	}, nil
+	}, tagToRemove, nil
 }
 
 func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
@@ -304,8 +319,10 @@ func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*mo
 		title = "45-60 mintues"
 	} else if item.DurationSeconds < (60 * 90) {
 		title = "60-90 mintues"
+	} else if item.DurationSeconds < (60 * 120) {
+		title = "90-120 mintues"
 	} else {
-		title = "> 90 minutes"
+		title = "> 120 minutes"
 	}
 
 	return &model.Tag{

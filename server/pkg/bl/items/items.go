@@ -134,7 +134,11 @@ func DeleteRealFile(ir model.ItemReader, itemId uint64) error {
 
 	file := relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("About to delete real file %s", file)
-	return os.Remove(file)
+	if err := os.Remove(file); err != nil {
+		logger.Warningf("Unable to delete file %s, %s", file, err)
+	}
+
+	return nil
 }
 
 func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*model.Item, error) {
