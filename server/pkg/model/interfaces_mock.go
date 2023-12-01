@@ -425,6 +425,20 @@ func (mr *MockTagWriterMockRecorder) RemoveTag(tagId interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockTagWriter)(nil).RemoveTag), tagId)
 }
 
+// RemoveTagImageFromTag mocks base method.
+func (m *MockTagWriter) RemoveTagImageFromTag(tagId, imageId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTagImageFromTag", tagId, imageId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTagImageFromTag indicates an expected call of RemoveTagImageFromTag.
+func (mr *MockTagWriterMockRecorder) RemoveTagImageFromTag(tagId, imageId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagImageFromTag", reflect.TypeOf((*MockTagWriter)(nil).RemoveTagImageFromTag), tagId, imageId)
+}
+
 // UpdateTag mocks base method.
 func (m *MockTagWriter) UpdateTag(tag *Tag) error {
 	m.ctrl.T.Helper()
@@ -541,6 +555,20 @@ func (m *MockTagReaderWriter) RemoveTag(tagId uint64) error {
 func (mr *MockTagReaderWriterMockRecorder) RemoveTag(tagId interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockTagReaderWriter)(nil).RemoveTag), tagId)
+}
+
+// RemoveTagImageFromTag mocks base method.
+func (m *MockTagReaderWriter) RemoveTagImageFromTag(tagId, imageId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTagImageFromTag", tagId, imageId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTagImageFromTag indicates an expected call of RemoveTagImageFromTag.
+func (mr *MockTagReaderWriterMockRecorder) RemoveTagImageFromTag(tagId, imageId interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagImageFromTag", reflect.TypeOf((*MockTagReaderWriter)(nil).RemoveTagImageFromTag), tagId, imageId)
 }
 
 // UpdateTag mocks base method.

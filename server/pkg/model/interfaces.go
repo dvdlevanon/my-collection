@@ -32,6 +32,7 @@ type TagWriter interface {
 	CreateOrUpdateTag(tag *Tag) error
 	UpdateTag(tag *Tag) error
 	RemoveTag(tagId uint64) error
+	RemoveTagImageFromTag(tagId uint64, imageId uint64) error
 }
 
 type TagReaderWriter interface {

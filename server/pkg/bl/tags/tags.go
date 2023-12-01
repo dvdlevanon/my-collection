@@ -128,3 +128,22 @@ func GetCategories(tr model.TagReader) (*[]model.Tag, error) {
 func IsBelongToCategory(tag *model.Tag, category *model.Tag) bool {
 	return tag.ParentID != nil && *tag.ParentID == category.Id
 }
+
+func RemoveTagImages(trw model.TagReaderWriter, tagId uint64, titId uint64) error {
+	tag, err := trw.GetTag(tagId)
+	if err != nil {
+		return err
+	}
+
+	for _, image := range tag.Images {
+		if image.ImageTypeId != titId {
+			continue
+		}
+
+		if err := trw.RemoveTagImageFromTag(tagId, image.Id); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}

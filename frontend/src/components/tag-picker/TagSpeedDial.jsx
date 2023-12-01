@@ -1,12 +1,32 @@
 import AddLink from '@mui/icons-material/AddLink';
-import { default as RemoveIcon } from '@mui/icons-material/Close';
 import CopyIcon from '@mui/icons-material/ContentCopy';
+import { default as RemoveIcon } from '@mui/icons-material/Delete';
 import ImageIcon from '@mui/icons-material/Image';
 import OptionsIcon from '@mui/icons-material/Tune';
 import { SpeedDial, SpeedDialAction } from '@mui/material';
 import React from 'react';
+import { useQuery } from 'react-query';
+import Client from '../../utils/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 
 function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClicked, onManageImageClicked }) {
+	const tagCustomCommandsQuery = useQuery(ReactQueryUtil.tagCustomCommands(tag.parentId), () =>
+		Client.getTagCustomCommands(tag.parentId)
+	);
+
+	const handleCustomCommand = (e, command) => {
+		e.preventDefault();
+		e.stopPropagation();
+
+		if (command.type == 'search web') {
+			let url = command.arg.replace('${tag_title}', tag.title).replace(' ', '+');
+			window.open(url, '_newtab');
+			onManageImageClicked();
+		} else {
+			console.log('Unknown command type ' + command.type);
+		}
+	};
+
 	return (
 		<>
 			{!hidden && (
@@ -67,6 +87,19 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 							onRemoveTagClicked();
 						}}
 					/>
+					{tagCustomCommandsQuery.isSuccess &&
+						tagCustomCommandsQuery.data.map((command) => {
+							return (
+								<SpeedDialAction
+									key={command.id}
+									tooltipTitle={command.tooltip}
+									icon={
+										<img src={command.icon} alt="icon" style={{ width: '24px', height: '24px' }} />
+									}
+									onClick={(e) => handleCustomCommand(e, command)}
+								/>
+							);
+						})}
 				</SpeedDial>
 			)}
 		</>

@@ -1,7 +1,9 @@
 package utils
 
 import (
+	"io"
 	"math"
+	"net/http"
 	"os"
 	"strings"
 
@@ -42,4 +44,21 @@ func IsVideo(trustFileExtenssion bool, path string) bool {
 	}
 
 	return filetype.IsVideo(header)
+}
+
+func DownloadFile(url string, targetFile string) error {
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	out, err := os.Create(targetFile)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+
+	_, err = io.Copy(out, resp.Body)
+	return err
 }

@@ -143,3 +143,31 @@ func (s *Server) autoImage(c *gin.Context) {
 
 	c.JSON(http.StatusOK, tag)
 }
+
+func (s *Server) getAllTagCustomCommands(c *gin.Context) {
+	commands, err := s.db.GetAllTagCustomCommands()
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Get tags custom commands return %d commands", len(*commands))
+	c.JSON(http.StatusOK, commands)
+}
+
+func (s *Server) removeTagImageFromTag(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	titId, err := strconv.ParseUint(c.Param("tit"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	if s.handleError(c, tags.RemoveTagImages(s.db, tagId, titId)) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}

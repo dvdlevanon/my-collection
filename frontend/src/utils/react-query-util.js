@@ -10,6 +10,10 @@ export default class ReactQueryUtil {
 		return ['available-annotations', { id: tagId }];
 	};
 
+	static tagCustomCommands = (tagId) => {
+		return ['tag-custom-commands', { id: tagId }];
+	};
+
 	static itemKey = (itemId) => {
 		return ['items', { id: itemId }];
 	};

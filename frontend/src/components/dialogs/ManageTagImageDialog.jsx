@@ -1,7 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
 import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
@@ -16,7 +16,11 @@ function ManageTagImageDialog({ tag, onClose }) {
 		queryKey: ReactQueryUtil.TAG_IMAGE_TYPES_KEY,
 		queryFn: Client.getTagImageTypes,
 		onSuccess: (tits) => {
-			if (!tit) {
+			let lastTit = localStorage.getItem('manage_tag_image_last_tit');
+
+			if (lastTit) {
+				setTit(titsQuery.data.find((cur) => cur.id == lastTit));
+			} else if (!tit) {
 				setTit(tits[0]);
 			}
 		},
@@ -24,8 +28,31 @@ function ManageTagImageDialog({ tag, onClose }) {
 
 	const fileDialog = useRef(null);
 
-	const imageFromUrlClicked = (e) => {
+	useEffect(() => {
+		let lastTit = localStorage.getItem('manage_tag_image_last_tit');
+		if (lastTit && titsQuery.isSuccess) {
+			setTit(titsQuery.data.find((cur) => cur.id == lastTit));
+		}
+	});
+
+	const imageFromClipboardClicked = async (e) => {
 		e.stopPropagation();
+		const imageUrl = await navigator.clipboard.readText();
+		if (!imageUrl.startsWith('http')) {
+			alert('Invalid clipboard data ' + imageUrl);
+			return;
+		}
+
+		if (TagsUtil.hasTagImage(tag, tit)) {
+			alert('Remove current image first');
+			return;
+		}
+
+		let fileName = TagsUtil.tagTitleToFileName(tag.title) + '.' + imageUrl.split('.').pop();
+
+		Client.uploadFileFromUrl(`tags-image-types/${tag.id}/${tit.id}/${fileName}`, imageUrl, (fileUrl) => {
+			updateTagImage(tag, tit, fileUrl.url);
+		});
 	};
 
 	const changeTagImageClicked = (e) => {
@@ -42,6 +69,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 		let updatedTag = { ...tag };
 		updatedTag.images = updatedTag.images || [];
 		updatedTag.images.push({ url: fileUrl, tag_id: tag.id, imageType: tit.id });
+
 		Client.saveTag(updatedTag).then(() => {
 			setUpdatedTag(updatedTag);
 			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
@@ -60,9 +88,19 @@ function ManageTagImageDialog({ tag, onClose }) {
 
 	const removeTagImageClicked = (e) => {
 		e.stopPropagation();
-		// Client.saveTag({ ...tag, imageUrl: 'none' }).then(() => {
-		// 	queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
-		// });
+
+		if (!TagsUtil.hasTagImage(tag, tit)) {
+			alert('No image to remove');
+			return;
+		}
+
+		Client.removeTagImageFromTag(tag.id, tit.id).then(() => {
+			let updatedTag = { ...tag };
+			updatedTag.images = updatedTag.images || [];
+			updatedTag.images = updatedTag.images.filter((image) => image.imageType !== tit.id);
+			setUpdatedTag(updatedTag);
+			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
+		});
 	};
 
 	return (
@@ -82,7 +120,14 @@ function ManageTagImageDialog({ tag, onClose }) {
 				<Stack flexDirection="row" gap="20px">
 					<Typography variant="h6">Set Image for {updatedTag.title}</Typography>
 					{titsQuery.isSuccess && (
-						<TagImageTypeSelector tits={titsQuery.data} tit={tit} onTitChanged={setTit} />
+						<TagImageTypeSelector
+							tits={titsQuery.data}
+							tit={tit}
+							onTitChanged={(tit) => {
+								localStorage.setItem('manage_tag_image_last_tit', tit.id);
+								setTit(tit);
+							}}
+						/>
 					)}
 				</Stack>
 				<IconButton
@@ -173,11 +218,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 						disabled={!TagsUtil.hasImage(updatedTag)}
 						variant="outlined"
 						onClick={(e) => {
-							if (!TagsUtil.hasImage(updatedTag)) {
-								return;
-							}
 							removeTagImageClicked(e);
-							onClose();
 						}}
 					>
 						Remove Image
@@ -192,11 +233,11 @@ function ManageTagImageDialog({ tag, onClose }) {
 					</Button>
 					<Button
 						onClick={(e) => {
-							imageFromUrlClicked(e);
+							imageFromClipboardClicked(e);
 						}}
 						variant="outlined"
 					>
-						Image From URL
+						Image From Clipboard
 					</Button>
 				</Box>
 				<Box

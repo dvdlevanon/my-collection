@@ -144,6 +144,13 @@ export default class Client {
 		);
 	};
 
+	static removeTagImageFromTag = async (tagId, titId) => {
+		console.log(`${Client.apiUrl}/tags/${tagId}/tit/${titId}`);
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/tit/${titId}`, {
+			method: 'DELETE',
+		});
+	};
+
 	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',
@@ -152,6 +159,10 @@ export default class Client {
 
 	static getAvailableAnnotations = async (tagId) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/available-annotations`).then((response) => response.json());
+	};
+
+	static getTagCustomCommands = async (tagId) => {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/tag-custom-commands`).then((response) => response.json());
 	};
 
 	static getTagImageTypes = async () => {
@@ -169,6 +180,19 @@ export default class Client {
 		fetch(`${Client.apiUrl}/items/${itemId}/remove-tag/${tagId}`, {
 			method: 'POST',
 		}).then(successCallback);
+	}
+
+	static uploadFileFromUrl(storagePath, fileUrl, successCallback) {
+		fetch(
+			`${Client.apiUrl}/upload-file-from-url?url=${encodeURIComponent(fileUrl)}&path=${encodeURIComponent(
+				storagePath
+			)}`,
+			{
+				method: 'POST',
+			}
+		)
+			.then((response) => response.json())
+			.then((fileUrl) => successCallback(fileUrl));
 	}
 
 	static uploadFile(storagePath, file, successCallback) {

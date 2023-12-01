@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"path/filepath"
 
@@ -31,6 +32,21 @@ func (s *Server) uploadFile(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, model.FileUrl{Url: s.storage.GetStorageUrl(relativeFile)})
+}
+
+func (s *Server) uploadFileFromUrl(c *gin.Context) {
+	url := c.Query("url")
+	path := c.Query("path")
+	storageFile, err := s.storage.GetFileForWriting(path)
+	if s.handleError(c, err) {
+		return
+	}
+
+	if s.handleError(c, utils.DownloadFile(url, storageFile)) {
+		return
+	}
+
+	c.JSON(http.StatusOK, model.FileUrl{Url: s.storage.GetStorageUrl(path)})
 }
 
 func (s *Server) getFile(c *gin.Context) {

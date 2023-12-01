@@ -79,3 +79,7 @@ func (d *Database) GetTags(conds ...interface{}) (*[]model.Tag, error) {
 func (d *Database) GetAllTags() (*[]model.Tag, error) {
 	return d.GetTags()
 }
+
+func (d *Database) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
+	return d.deleteAssociation(model.Tag{Id: tagId}, model.TagImage{Id: imageId}, "Images")
+}

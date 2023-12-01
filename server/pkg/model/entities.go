@@ -101,3 +101,13 @@ type PushMessage struct {
 	MessageType PushMessageType `json:"type,omitempty"`
 	Payload     interface{}     `json:"payload,omitempty"`
 }
+
+type TagCustomCommand struct {
+	Id      uint64 `json:"id,omitempty"`
+	Title   string `json:"title,omitempty"`
+	TagId   uint64 `json:"tagId,omitempty"`
+	Type    string `json:"type,omitempty"`
+	Arg     string `json:"arg,omitempty"`
+	Tooltip string `json:"tooltip,omitempty"`
+	Icon    string `json:"icon,omitempty"`
+}

@@ -81,6 +81,10 @@ export default class TagsUtil {
 		return result;
 	}
 
+	static tagTitleToFileName(title) {
+		return title.toLowerCase().replaceAll(' ', '-');
+	}
+
 	static normalizeTagTitle(rawTitle) {
 		let regex = /\b[A-Z]{2,}\b/g;
 		let noConsequensiveUpperCaser = rawTitle.replace(regex, function (match) {
@@ -122,6 +126,23 @@ export default class TagsUtil {
 		}
 
 		return tag.images && tag.images.length > 0;
+	};
+
+	static hasTagImage = (tag, tit) => {
+		if (TagsUtil.isDirectoriesCategory(tag.parentId)) {
+			return true;
+		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
+			return true;
+		}
+
+		if (tit && tag.images) {
+			let selectedImage = tag.images.find((image) => image.imageType === tit.id);
+			if (selectedImage && selectedImage.url) {
+				return true;
+			}
+		}
+
+		return false;
 	};
 
 	static getTagImageUrl = (tag, selectedTit, noFallback) => {

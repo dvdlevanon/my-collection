@@ -494,6 +494,36 @@ func TestHighlights(t *testing.T) {
 	assert.Equal(t, "test", mainItem.Highlights[0].Covers[0].Url)
 }
 
+func TestTagCustomCommands(t *testing.T) {
+	db, err := setupNewDb(t, "tags-custom-commands.sqlite")
+	assert.NoError(t, err)
+
+	command1 := model.TagCustomCommand{
+		Title:   "command1",
+		Type:    "command1-type",
+		Arg:     "command1-arg",
+		Tooltip: "command1-tooltip",
+		Icon:    "command1-icon",
+		TagId:   1234,
+	}
+
+	command2 := model.TagCustomCommand{
+		Title:   "command2",
+		Type:    "command2-type",
+		Arg:     "command2-arg",
+		Tooltip: "command2-tooltip",
+		Icon:    "command2-icon",
+		TagId:   2345,
+	}
+
+	assert.NoError(t, db.CreateOrUpdateTagCustomCommand(&command1))
+	assert.NoError(t, db.CreateOrUpdateTagCustomCommand(&command2))
+
+	commands, err := db.GetAllTagCustomCommands()
+	assert.NoError(t, err)
+	assert.Equal(t, 2, len(*commands))
+}
+
 // Fail because of https://github.com/go-gorm/sqlite/issues/134
 //
 // func TestReuseId(t *testing.T) {

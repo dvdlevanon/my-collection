@@ -67,6 +67,8 @@ func (s *Server) init() {
 	api.GET("/tags/:tag", s.getTag)
 	api.DELETE("/tags/:tag", s.removeTag)
 	api.POST("/tags/:tag/auto-image", s.autoImage)
+	api.GET("/tags/:tag/tag-custom-commands", s.getAllTagCustomCommands)
+	api.DELETE("/tags/:tag/tit/:tit", s.removeTagImageFromTag)
 
 	api.GET("/directories", s.getDirectories)
 	api.POST("/directories", s.createOrUpdateDirectory)
@@ -83,6 +85,7 @@ func (s *Server) init() {
 	api.GET("/items/refresh-video-metadata", s.refreshItemsVideoMetadata)
 	api.GET("/file/*path", s.getFile)
 	api.POST("/upload-file", s.uploadFile)
+	api.POST("/upload-file-from-url", s.uploadFileFromUrl)
 	api.GET("/export-metadata.json", s.exportMetadata)
 
 	api.GET("/queue/metadata", s.getQueueMetadata)
