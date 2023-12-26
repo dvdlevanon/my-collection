@@ -69,9 +69,9 @@ function Player({
 		if (e.key == ' ') {
 			togglePlay();
 		} else if (e.key == 'ArrowLeft') {
-			setRelativeTime(-10);
+			setRelativeTime(e.ctrlKey ? -60 : -10);
 		} else if (e.key == 'ArrowRight') {
-			setRelativeTime(10);
+			setRelativeTime(e.ctrlKey ? 60 : 10);
 		}
 	};
 

@@ -56,22 +56,21 @@ function SubItem({ item, itemWidth, highlighted, onDeleteItem }) {
 						<DeleteIcon />
 					</IconButton>
 				)}
-				{showConfirmDialog && (
-					<ConfirmationDialog
-						title="Delete Item"
-						text={'Are you sure you want to delete ' + item.title}
-						actionButtonTitle="Delete"
-						onCancel={() => {
-							setShowConfirmDialog(false);
-							setShowDelete(false);
-						}}
-						onConfirm={() => {
-							setShowConfirmDialog(false);
-							setShowDelete(false);
-							onDeleteItem(item);
-						}}
-					/>
-				)}
+				<ConfirmationDialog
+					open={showConfirmDialog}
+					title="Delete Item"
+					text={'Are you sure you want to delete ' + item.title}
+					actionButtonTitle="Delete"
+					onCancel={() => {
+						setShowConfirmDialog(false);
+						setShowDelete(false);
+					}}
+					onConfirm={() => {
+						setShowConfirmDialog(false);
+						setShowDelete(false);
+						onDeleteItem(item);
+					}}
+				/>
 			</Box>
 		</Stack>
 	);

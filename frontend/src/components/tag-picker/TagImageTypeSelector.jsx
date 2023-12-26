@@ -2,9 +2,10 @@ import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import React from 'react';
 import Client from '../../utils/client';
 
-function TagImageTypeSelector({ tits, tit, onTitChanged }) {
+function TagImageTypeSelector({ disabled, tits, tit, onTitChanged }) {
 	return (
 		<ToggleButtonGroup
+			disabled={disabled}
 			size="small"
 			exclusive
 			value={tit}

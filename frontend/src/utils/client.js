@@ -1,7 +1,7 @@
 export default class Client {
-	static baseUrl = 'localhost:8080';
-	static apiUrl = `http://${Client.baseUrl}/api`;
-	static websocketUrl = `ws://${Client.baseUrl}/api/ws`;
+	static baseUrl = window.location.hostname + (window.location.port ? ':' + window.location.port : '');
+	static apiUrl = process.env.REACT_APP_API_URL || `http://${Client.baseUrl}/api`;
+	static websocketUrl = process.env.REACT_APP_WEBSOCKET_URL || `ws://${Client.baseUrl}/api/ws`;
 
 	static getSpecialTags = async () => {
 		return await fetch(`${Client.apiUrl}/special-tags`).then((response) => response.json());

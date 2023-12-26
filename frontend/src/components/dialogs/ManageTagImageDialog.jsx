@@ -1,17 +1,25 @@
+import CancelIcon from '@mui/icons-material/Cancel';
 import CloseIcon from '@mui/icons-material/Close';
-import NoImageIcon from '@mui/icons-material/HideImage';
+import DoneIcon from '@mui/icons-material/Done';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
+import 'react-image-crop/dist/ReactCrop.css';
 import { useQuery, useQueryClient } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
+import CroppableImage from '../croppable-image/CroppableImage';
 import TagImageTypeSelector from '../tag-picker/TagImageTypeSelector';
+import Thumbnail from '../thumbnail/Thumbnail';
 
-function ManageTagImageDialog({ tag, onClose }) {
+function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 	const queryClient = useQueryClient();
 	const [tit, setTit] = useState(null);
 	const [updatedTag, setUpdatedTag] = useState(tag);
+	const [thumbnailMode, setThumbnailMode] = useState(autoThumbnailMode);
+	const [thumbnailCrop, setThumbnailCrop] = useState(null);
+	const [image, setImage] = useState(null);
+	const fileDialog = useRef(null);
 	const titsQuery = useQuery({
 		queryKey: ReactQueryUtil.TAG_IMAGE_TYPES_KEY,
 		queryFn: Client.getTagImageTypes,
@@ -19,14 +27,12 @@ function ManageTagImageDialog({ tag, onClose }) {
 			let lastTit = localStorage.getItem('manage_tag_image_last_tit');
 
 			if (lastTit) {
-				setTit(titsQuery.data.find((cur) => cur.id == lastTit));
+				setTit(tits.find((cur) => cur.id == lastTit));
 			} else if (!tit) {
 				setTit(tits[0]);
 			}
 		},
 	});
-
-	const fileDialog = useRef(null);
 
 	useEffect(() => {
 		let lastTit = localStorage.getItem('manage_tag_image_last_tit');
@@ -103,6 +109,69 @@ function ManageTagImageDialog({ tag, onClose }) {
 		});
 	};
 
+	const getThumnailModeButtons = (e) => {
+		return (
+			<>
+				<IconButton
+					onClick={(e) => {
+						let thumbnail = thumbnailCrop;
+						setThumbnailMode(false);
+						setThumbnailCrop(null);
+					}}
+				>
+					<DoneIcon />
+				</IconButton>
+				<IconButton
+					onClick={(e) => {
+						setThumbnailMode(false);
+						setThumbnailCrop(null);
+					}}
+				>
+					<CancelIcon />
+				</IconButton>
+			</>
+		);
+	};
+
+	const getRegularButtons = (e) => {
+		return (
+			<>
+				<Button
+					disabled={!TagsUtil.hasImage(updatedTag)}
+					variant="outlined"
+					onClick={(e) => {
+						removeTagImageClicked(e);
+					}}
+				>
+					Remove Image
+				</Button>
+				<Button
+					onClick={(e) => {
+						changeTagImageClicked(e);
+					}}
+					variant="outlined"
+				>
+					Upload Image
+				</Button>
+				<Button
+					onClick={(e) => {
+						imageFromClipboardClicked(e);
+					}}
+					variant="outlined"
+				>
+					Image From Clipboard
+				</Button>
+				<Button
+					variant="outlined"
+					onClick={(e) => {
+						setThumbnailMode(true);
+					}}
+				>
+					Set Thumbnail
+				</Button>
+			</>
+		);
+	};
 	return (
 		<Dialog
 			onClose={(e, reason) => {
@@ -121,6 +190,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 					<Typography variant="h6">Set Image for {updatedTag.title}</Typography>
 					{titsQuery.isSuccess && (
 						<TagImageTypeSelector
+							disabled={thumbnailMode}
 							tits={titsQuery.data}
 							tit={tit}
 							onTitChanged={(tit) => {
@@ -156,53 +226,29 @@ function ManageTagImageDialog({ tag, onClose }) {
 			>
 				<Box
 					sx={{
-						position: 'relative',
-						display: 'flex',
-						justifyContent: 'center',
-						objectFit: 'contain',
-						overflow: 'hidden',
-						borderRadius: '5px',
+						width: '100%',
 						height: '100%',
+						overflow: 'hidden',
 					}}
 				>
-					<Box></Box>
-					<Box
+					<Stack
+						flexDirection="row"
+						gap="10px"
 						sx={{
-							borderRadius: '5px',
-							objectFit: 'contain',
-							overflow: 'hidden',
+							width: '100%',
+							height: '100%',
+							justifyContent: 'center',
 						}}
-						component="img"
-						src={TagsUtil.getTagImageUrl(updatedTag, tit, true)}
-						alt={updatedTag.title}
-						loading="lazy"
-					/>
-					{!TagsUtil.hasImage(updatedTag) && (
-						<Box
-							sx={{
-								position: 'absolute',
-								'&:hover': {
-									filter: 'brightness(120%)',
-								},
-								width: '100px',
-								height: '100px',
-								left: 0,
-								right: 0,
-								top: 0,
-								bottom: 0,
-								margin: 'auto',
-								display: 'flex',
-								flexDirection: 'column',
-							}}
-						>
-							<NoImageIcon
-								color="dark"
-								sx={{
-									fontSize: '100px',
-								}}
-							/>
-						</Box>
-					)}
+					>
+						<CroppableImage
+							imageUrl={TagsUtil.getTagImageUrl(updatedTag, tit, true)}
+							imageTitle={updatedTag.title}
+							cropMode={thumbnailMode}
+							onCropChange={setThumbnailCrop}
+							onImageLoaded={setImage}
+						/>
+						<Thumbnail image={image} crop={thumbnailCrop} />
+					</Stack>
 				</Box>
 				<Box
 					sx={{
@@ -214,31 +260,7 @@ function ManageTagImageDialog({ tag, onClose }) {
 					}}
 					onClick={(e) => e.stopPropagation()}
 				>
-					<Button
-						disabled={!TagsUtil.hasImage(updatedTag)}
-						variant="outlined"
-						onClick={(e) => {
-							removeTagImageClicked(e);
-						}}
-					>
-						Remove Image
-					</Button>
-					<Button
-						onClick={(e) => {
-							changeTagImageClicked(e);
-						}}
-						variant="outlined"
-					>
-						Upload Image
-					</Button>
-					<Button
-						onClick={(e) => {
-							imageFromClipboardClicked(e);
-						}}
-						variant="outlined"
-					>
-						Image From Clipboard
-					</Button>
+					{thumbnailMode ? getThumnailModeButtons() : getRegularButtons()}
 				</Box>
 				<Box
 					component="input"

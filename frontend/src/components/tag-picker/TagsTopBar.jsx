@@ -66,7 +66,12 @@ function TagsTopBar({
 							</IconButton>
 						</Tooltip>
 					)}
-					<TagImageTypeSelector tits={tits} tit={tit} onTitChanged={(newTit) => setTit(newTit)} />
+					<TagImageTypeSelector
+						disabled={false}
+						tits={tits}
+						tit={tit}
+						onTitChanged={(newTit) => setTit(newTit)}
+					/>
 					<TextField
 						variant="outlined"
 						autoFocus

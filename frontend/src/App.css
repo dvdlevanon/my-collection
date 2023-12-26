@@ -94,3 +94,10 @@ body,
 a:link {
 	text-decoration: none;
 }
+
+.ReactCrop__child-wrapper {
+	display: flex;
+	height: 100%;
+	width: 100%;
+	justify-content: center;
+}

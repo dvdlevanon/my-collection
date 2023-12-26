@@ -9,10 +9,12 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
 import ConfirmationDialog from '../dialogs/ConfirmationDialog';
+import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import Highlights from '../highlights/Highlights';
 import ItemTitle from '../items-viewer/ItemTitle';
 import Player from '../player/Player';
 import SubItems from '../sub-items/SubItems';
+import TagThumbnails from '../tag-thumbnail/TagThumbnails';
 import TagChips from '../tags-chip/TagChips';
 
 function useWindowSize() {
@@ -41,6 +43,7 @@ function ItemPage() {
 	const [windowWidth, windowHeight] = useWindowSize();
 	const [showSplitVideoConfirmationDialog, setShowSplitVideoConfirmationDialog] = useState(false);
 	const [showDeleteItemConfirmationDialog, setShowDeleteItemConfirmationDialog] = useState(false);
+	const [editThumbnailTag, setEditThumbnailTag] = useState(null);
 	const [splitVideoSecond, setSplitVideoSecond] = useState(0);
 	const itemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(itemId),
@@ -96,6 +99,10 @@ function ItemPage() {
 				queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
 			}
 		});
+	};
+
+	const onEditThumbnail = (tag) => {
+		setEditThumbnailTag(tag);
 	};
 
 	const closeSplitVideoDialog = () => {
@@ -191,14 +198,21 @@ function ItemPage() {
 							withMenu={true}
 						/>
 						<Stack flexDirection="row" gap="10px" alignItems="center">
-							<TagChips
-								flexDirection="column"
+							<TagThumbnails
 								tags={(itemQuery.data.tags || []).filter((cur) =>
-									TagsUtil.allowToAddToCategory(cur.parentId)
+									TagsUtil.showAsThumbnail(cur.parentId)
+								)}
+								onTagRemoved={onTagRemoved}
+								onEditThumbnail={onEditThumbnail}
+							></TagThumbnails>
+							<TagChips
+								tags={(itemQuery.data.tags || []).filter(
+									(cur) =>
+										TagsUtil.allowToAddToCategory(cur.parentId) &&
+										!TagsUtil.showAsThumbnail(cur.parentId)
 								)}
 								linkable={true}
 								onDelete={onTagRemoved}
-								onClick={() => {}}
 								tagHighlightedPredicate={() => {
 									return true;
 								}}
@@ -238,22 +252,29 @@ function ItemPage() {
 					<SubItems item={itemQuery.data} onDeleteItem={(item) => onDeleteItem(item, false)} />
 				)}
 			</Stack>
-			{showSplitVideoConfirmationDialog && (
+			<ConfirmationDialog
+				open={showSplitVideoConfirmationDialog}
+				title="Split Video"
+				text={'Are you sure you want to split the video at second ' + splitVideoSecond + '?'}
+				actionButtonTitle="Split"
+				onCancel={closeSplitVideoDialog}
+				onConfirm={splitItem}
+			/>
+			{itemQuery.isSuccess && (
 				<ConfirmationDialog
-					title="Split Video"
-					text={'Are you sure you want to split the video at second ' + splitVideoSecond + '?'}
-					actionButtonTitle="Split"
-					onCancel={closeSplitVideoDialog}
-					onConfirm={splitItem}
-				/>
-			)}
-			{showDeleteItemConfirmationDialog && (
-				<ConfirmationDialog
+					open={showDeleteItemConfirmationDialog}
 					title="Delete Item"
 					text={'Are you sure you want to delete ' + itemQuery.data.title + '?'}
 					actionButtonTitle="Delete"
 					onCancel={() => setShowDeleteItemConfirmationDialog(false)}
 					onConfirm={() => onDeleteItem(itemQuery.data, true)}
+				/>
+			)}
+			{editThumbnailTag != null && (
+				<ManageTagImageDialog
+					tag={editThumbnailTag}
+					autoThumbnailMode={true}
+					onClose={() => setEditThumbnailTag(null)}
 				/>
 			)}
 		</Box>

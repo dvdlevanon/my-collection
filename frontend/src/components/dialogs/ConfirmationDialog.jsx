@@ -2,16 +2,16 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import React from 'react';
 
-function ConfirmationDialog({ title, text, actionButtonTitle, onConfirm, onCancel }) {
+function ConfirmationDialog({ open, title, text, actionButtonTitle, onConfirm, onCancel }) {
 	return (
 		<Dialog
+			open={open}
 			onClose={(e, reason) => {
 				e.stopPropagation();
 				if (reason == 'backdropClick' || reason == 'escapeKeyDown') {
 					onCancel();
 				}
 			}}
-			open={true}
 		>
 			<DialogTitle>
 				{title}

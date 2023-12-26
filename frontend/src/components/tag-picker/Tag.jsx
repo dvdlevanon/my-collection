@@ -49,7 +49,11 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 				)}
 				{removeTagDialogOpened && <RemoveTagDialog tag={tag} onClose={() => setRemoveTagDialogOpened(false)} />}
 				{manageTagImageOpened && (
-					<ManageTagImageDialog tag={tag} onClose={() => setManageTagImageOpened(false)} />
+					<ManageTagImageDialog
+						tag={tag}
+						autoThumbnailMode={false}
+						onClose={() => setManageTagImageOpened(false)}
+					/>
 				)}
 			</>
 		);

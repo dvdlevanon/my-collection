@@ -50,7 +50,7 @@ func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 		if includeTagIdsOnly {
 			return db.Select("ID", "ParentID")
 		} else {
-			return db
+			return db.Preload("Images")
 		}
 	}
 
