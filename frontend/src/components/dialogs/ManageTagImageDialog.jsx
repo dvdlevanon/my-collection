@@ -82,6 +82,22 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 		});
 	};
 
+	const updateImageThumbnail = (tag, tit, thumbnail) => {
+		let updatedTag = { ...tag };
+		let image = updatedTag.images.find((image) => image.imageType === tit.id);
+		image.thumbnail_rect = {
+			x: Math.floor(thumbnail.x),
+			y: Math.floor(thumbnail.y),
+			width: Math.floor(thumbnail.width),
+			height: Math.floor(thumbnail.height),
+		};
+
+		Client.updateTagImage(tag.id, image).then(() => {
+			setUpdatedTag(updatedTag);
+			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
+		});
+	};
+
 	const imageSelected = (e) => {
 		if (fileDialog.current.files.length !== 1) {
 			return;
@@ -114,7 +130,7 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 			<>
 				<IconButton
 					onClick={(e) => {
-						let thumbnail = thumbnailCrop;
+						updateImageThumbnail(tag, tit, thumbnailCrop);
 						setThumbnailMode(false);
 						setThumbnailCrop(null);
 					}}
@@ -136,6 +152,14 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 	const getRegularButtons = (e) => {
 		return (
 			<>
+				<Button
+					variant="outlined"
+					onClick={(e) => {
+						updateImageThumbnail(tag, tit, { x: 0, y: 0, height: 0, width: 0 });
+					}}
+				>
+					Remove Thumbnail
+				</Button>
 				<Button
 					disabled={!TagsUtil.hasImage(updatedTag)}
 					variant="outlined"
@@ -247,7 +271,12 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 							onCropChange={setThumbnailCrop}
 							onImageLoaded={setImage}
 						/>
-						<Thumbnail image={image} crop={thumbnailCrop} />
+						<Thumbnail
+							imageUrl={TagsUtil.getTagImageUrl(updatedTag, tit, true)}
+							image={thumbnailMode ? image : null}
+							crop={thumbnailMode ? thumbnailCrop : TagsUtil.getTagImageThumbnailRect(updatedTag, tit)}
+							title={thumbnailMode ? '' : 'Thum- bnail'}
+						/>
 					</Stack>
 				</Box>
 				<Box

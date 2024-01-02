@@ -4,8 +4,10 @@ import ThumbnailIcon from '@mui/icons-material/Face3';
 import { Box, Divider, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link, Link as RouterLink } from 'react-router-dom';
+import seedrandom from 'seedrandom';
+import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
-import TagsUtil from '../../utils/tags-util';
+import Thumbnail from '../thumbnail/Thumbnail';
 
 function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
@@ -22,21 +24,41 @@ function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 		setMenuAchrosEl(null);
 	};
 
+	const getRandomImage = (images) => {
+		let epochDay = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
+		let rand = seedrandom(epochDay + tag.id);
+		let randomIndex = Math.floor(rand() * images.length);
+		return images[randomIndex];
+	};
+
+	const getThumbnailCompnent = () => {
+		if (!tag.images) {
+			return <Thumbnail title={tag.title} />;
+		}
+
+		let imagesWithThumbnails = tag.images.filter((image) => {
+			return image.thumbnail_rect && image.thumbnail_rect.height != 0;
+		});
+
+		if (imagesWithThumbnails.length == 0) {
+			return <Thumbnail title={tag.title} />;
+		}
+
+		let image = getRandomImage(imagesWithThumbnails);
+		return <Thumbnail crop={image.thumbnail_rect} imageUrl={Client.buildFileUrl(image.url)} />;
+	};
+
 	return (
 		<>
 			<Tooltip title={tag.title}>
 				<Box
-					width="70px"
-					height="70px"
-					component="img"
-					src={TagsUtil.getTagImageUrl(tag, null, false)}
-					alt={tag.title}
-					loading="lazy"
 					onClick={onClick}
 					sx={{
 						cursor: 'pointer',
 					}}
-				></Box>
+				>
+					{getThumbnailCompnent()}
+				</Box>
 			</Tooltip>
 			<Menu
 				open={menuAchrosEl != null}

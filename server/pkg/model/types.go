@@ -1,6 +1,12 @@
 package model
 
-import "fmt"
+import (
+	"database/sql/driver"
+	"encoding/json"
+	"fmt"
+
+	"github.com/go-errors/errors"
+)
 
 type TaskType int
 
@@ -48,3 +54,23 @@ const (
 	PUSH_PING
 	PUSH_QUEUE_METADATA
 )
+
+type Rect struct {
+	X int `json:"x"`
+	Y int `json:"y"`
+	H int `json:"height"`
+	W int `json:"width"`
+}
+
+func (t Rect) Value() (driver.Value, error) {
+	return json.Marshal(t)
+}
+
+func (t *Rect) Scan(value interface{}) error {
+	b, ok := value.([]byte)
+	if !ok {
+		return errors.Errorf("type assertion to []byte failed %v", value)
+	}
+
+	return json.Unmarshal(b, &t)
+}

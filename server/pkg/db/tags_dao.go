@@ -83,3 +83,7 @@ func (d *Database) GetAllTags() (*[]model.Tag, error) {
 func (d *Database) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
 	return d.deleteAssociation(model.Tag{Id: tagId}, model.TagImage{Id: imageId}, "Images")
 }
+
+func (d *Database) UpdateTagImage(image *model.TagImage) error {
+	return d.update(image)
+}

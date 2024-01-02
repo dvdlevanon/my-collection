@@ -30,7 +30,7 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 	}, [imageHolderRef.current]);
 
 	const calculateImageSize = (width, height) => {
-		if (!imageRef.current) {
+		if (!imageRef.current || imageRef.current.naturalHeight === 0) {
 			return;
 		}
 

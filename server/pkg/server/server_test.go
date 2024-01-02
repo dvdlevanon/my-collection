@@ -264,3 +264,48 @@ func TestDirectories(t *testing.T) {
 	assert.Empty(t, returnedDirectory.Tags[0].Title)
 	assert.Equal(t, uint64(1), returnedDirectory.Tags[0].Id)
 }
+
+func TestUpdateTagImage(t *testing.T) {
+	server := setupNewServer(t, "update-tag-image-test.sqlite")
+	tag := model.Tag{
+		Title:  "title1",
+		Images: []*model.TagImage{{Url: "some/url"}},
+	}
+	payload, err := json.Marshal(tag)
+	assert.NoError(t, err)
+	req := httptest.NewRequest("POST", "/api/tags", bytes.NewReader(payload))
+	resp := httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	returnedId := model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedId)
+	assert.NoError(t, err)
+	assert.Equal(t, returnedId.Id, uint64(1))
+
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", returnedId.Id), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	returnedTag := model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &returnedTag)
+	assert.NoError(t, err)
+
+	returnedTag.Images[0].ThumbnailRect = model.Rect{X: 100, Y: 150, H: 200, W: 400}
+	payload, err = json.Marshal(returnedTag.Images[0])
+	assert.NoError(t, err)
+	path := fmt.Sprintf("/api/tags/%d/images/%d", returnedId.Id, returnedTag.Images[0].Id)
+	req = httptest.NewRequest("POST", path, bytes.NewReader(payload))
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, http.StatusOK, resp.Code)
+
+	req = httptest.NewRequest("GET", fmt.Sprintf("/api/tags/%d", returnedId.Id), nil)
+	resp = httptest.NewRecorder()
+	server.router.ServeHTTP(resp, req)
+	assert.Equal(t, resp.Code, http.StatusOK)
+	tagAfterUpdate := model.Tag{}
+	err = json.Unmarshal(resp.Body.Bytes(), &tagAfterUpdate)
+	assert.NoError(t, err)
+
+	assert.Equal(t, 100, tagAfterUpdate.Images[0].ThumbnailRect.X)
+}

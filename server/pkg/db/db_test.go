@@ -494,6 +494,43 @@ func TestHighlights(t *testing.T) {
 	assert.Equal(t, "test", mainItem.Highlights[0].Covers[0].Url)
 }
 
+func TestTagImageThumbnail(t *testing.T) {
+	db, err := setupNewDb(t, "tag-image-thumbnail.sqlite")
+	assert.NoError(t, err)
+
+	tag := model.Tag{
+		Title: "test",
+		Images: []*model.TagImage{{
+			Url: "some/url",
+			ThumbnailRect: model.Rect{
+				X: 100,
+				Y: 101,
+				W: 102,
+				H: 103,
+			},
+		}},
+	}
+
+	assert.NoError(t, db.CreateOrUpdateTag(&tag))
+	fromDb, err := db.GetTag("title = ?", tag.Title)
+	assert.NoError(t, err)
+	assert.Equal(t, tag.Title, fromDb.Title)
+	assert.Equal(t, len(tag.Images), len(fromDb.Images))
+	assert.Equal(t, 1, len(fromDb.Images))
+	assert.Equal(t, tag.Images[0].Url, fromDb.Images[0].Url)
+	assert.Equal(t, 100, fromDb.Images[0].ThumbnailRect.X)
+	assert.Equal(t, 101, fromDb.Images[0].ThumbnailRect.Y)
+	assert.Equal(t, 102, fromDb.Images[0].ThumbnailRect.W)
+	assert.Equal(t, 103, fromDb.Images[0].ThumbnailRect.H)
+
+	fromDb.Images[0].ThumbnailRect.H = 104
+	assert.NoError(t, db.UpdateTagImage(fromDb.Images[0]))
+
+	fromDb2, err := db.GetTag("title = ?", tag.Title)
+	assert.NoError(t, err)
+	assert.Equal(t, 104, fromDb2.Images[0].ThumbnailRect.H)
+}
+
 func TestTagCustomCommands(t *testing.T) {
 	db, err := setupNewDb(t, "tags-custom-commands.sqlite")
 	assert.NoError(t, err)

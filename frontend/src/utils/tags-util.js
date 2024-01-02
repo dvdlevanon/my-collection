@@ -53,6 +53,10 @@ export default class TagsUtil {
 		);
 	}
 
+	static showAsThumbnail(tagId) {
+		return tagId == 3; // todo: load from backend
+	}
+
 	static allowToAddToCategory(tagId) {
 		return !(
 			TagsUtil.isDirectoriesCategory(tagId) ||
@@ -143,6 +147,22 @@ export default class TagsUtil {
 		}
 
 		return false;
+	};
+
+	static getTagImageThumbnailRect = (tag, selectedTit) => {
+		if (selectedTit && tag.images) {
+			let selectedImage = tag.images.find((image) => image.imageType === selectedTit.id);
+			if (selectedImage) {
+				return selectedImage.thumbnail_rect;
+			}
+		}
+
+		return {
+			x: 0,
+			y: 0,
+			width: 200,
+			height: 200,
+		};
 	};
 
 	static getTagImageUrl = (tag, selectedTit, noFallback) => {

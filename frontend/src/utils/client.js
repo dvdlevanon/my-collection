@@ -145,7 +145,6 @@ export default class Client {
 	};
 
 	static removeTagImageFromTag = async (tagId, titId) => {
-		console.log(`${Client.apiUrl}/tags/${tagId}/tit/${titId}`);
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/tit/${titId}`, {
 			method: 'DELETE',
 		});
@@ -154,6 +153,13 @@ export default class Client {
 	static removeAnnotationFromTag = async ({ tagId, annotationId }) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/annotations/${annotationId}`, {
 			method: 'DELETE',
+		});
+	};
+
+	static updateTagImage = async (tagId, image) => {
+		return await fetch(`${Client.apiUrl}/tags/${tagId}/images/${image.id}`, {
+			method: 'POST',
+			body: JSON.stringify(image),
 		});
 	};
 

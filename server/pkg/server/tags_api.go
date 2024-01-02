@@ -171,3 +171,41 @@ func (s *Server) removeTagImageFromTag(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) updateTagImage(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	imageId, err := strconv.ParseUint(c.Param("image"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	body, err := io.ReadAll(c.Request.Body)
+	if s.handleError(c, err) {
+		return
+	}
+
+	var image model.TagImage
+	if s.handleError(c, json.Unmarshal(body, &image)) {
+		return
+	}
+
+	if image.Id != imageId {
+		s.handleError(c, errors.Errorf("Mismatch IDs %d != %d", image.Id, imageId))
+		return
+	}
+
+	if image.TagId != tagId {
+		s.handleError(c, errors.Errorf("Mismatch IDs %d != %d", image.TagId, tagId))
+		return
+	}
+
+	if s.handleError(c, s.db.UpdateTagImage(&image)) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
