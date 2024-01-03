@@ -17,6 +17,7 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 					onClose(e);
 				}
 			}}
+			disableEnforceFocus
 			open={open}
 			fullWidth={true}
 			maxWidth={'xl'}

@@ -101,3 +101,28 @@ a:link {
 	width: 100%;
 	justify-content: center;
 }
+
+.simple-keyboard.dark {
+	background-color: rgba(0, 0, 0, 1);
+	border-radius: 0;
+	border-bottom-right-radius: 5px;
+	border-bottom-left-radius: 5px;
+}
+
+.simple-keyboard.dark .hg-button {
+	height: 50px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background: rgba(50, 50, 50, 1);
+	color: white;
+}
+
+.simple-keyboard.dark .hg-button:active {
+	background: #1c4995;
+	color: white;
+}
+
+#root .simple-keyboard.dark + .simple-keyboard-preview {
+	background: #1c4995;
+}

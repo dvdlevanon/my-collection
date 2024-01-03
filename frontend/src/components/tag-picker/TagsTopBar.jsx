@@ -1,10 +1,11 @@
 import AddIcon from '@mui/icons-material/Add';
 import ImageIcon from '@mui/icons-material/PermMedia';
-import { Box, IconButton, Stack, TextField, Tooltip } from '@mui/material';
+import { Box, IconButton, Stack, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
 import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';
+import TextFieldWithKeyboard from '../text-field-with-keyboard/TextFieldWithKeyboard';
 import PrefixFilter from './PrefixFilter';
 import TagImageTypeSelector from './TagImageTypeSelector';
 import TagSortSelector from './TagSortSelector';
@@ -72,17 +73,17 @@ function TagsTopBar({
 						tit={tit}
 						onTitChanged={(newTit) => setTit(newTit)}
 					/>
-					<TextField
+					<TextFieldWithKeyboard
 						variant="outlined"
 						autoFocus
 						label="Search for tags..."
 						type="search"
 						size="small"
-						onChange={(e) => setSearchTerm(e.target.value)}
+						onChange={(value) => setSearchTerm(value)}
 						sx={{
 							minWidth: '200px',
 						}}
-					></TextField>
+					></TextFieldWithKeyboard>
 					<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
 					<TagViewControls tagSize={tagSize} onZoomChanged={onZoomChanged} />
 				</Stack>

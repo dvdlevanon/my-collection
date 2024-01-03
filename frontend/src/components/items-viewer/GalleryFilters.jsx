@@ -1,6 +1,7 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { IconButton, Paper, Stack, TextField, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
+import { IconButton, Paper, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import TagChips from '../tags-chip/TagChips';
+import TextFieldWithKeyboard from '../text-field-with-keyboard/TextFieldWithKeyboard';
 
 function GalleryFilters({
 	activeTags,
@@ -15,15 +16,15 @@ function GalleryFilters({
 }) {
 	return (
 		<Stack flexDirection="row" gap="10px" alignItems="center">
-			<TextField
+			<TextFieldWithKeyboard
 				variant="outlined"
 				autoFocus
 				label="Search..."
 				type="search"
 				size="small"
-				onChange={(e) => setSearchTerm(e.target.value)}
+				onChange={(value) => setSearchTerm(value)}
 				value={searchTerm}
-			></TextField>
+			></TextFieldWithKeyboard>
 			{activeTags.length > 0 && (
 				<Paper
 					variant="outlined"

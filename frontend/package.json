@@ -22,6 +22,7 @@
 		"react-query": "^3.39.3",
 		"react-router-dom": "^6.6.1",
 		"react-scripts": "5.0.1",
+		"react-simple-keyboard": "^3.7.59",
 		"react-virtualized": "^9.22.5",
 		"seedrandom": "^3.0.5",
 		"styled-components": "^5.3.6",
