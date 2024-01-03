@@ -7,10 +7,14 @@ import (
 	"github.com/go-errors/errors"
 )
 
+func buildSubItemOrigin(origin string, startPosition float64, endPosition float64) string {
+	return fmt.Sprintf("%s-%f-%f", origin, startPosition, endPosition)
+}
+
 func buildSubItem(item *model.Item, startPosition float64, endPosition float64) *model.Item {
 	return &model.Item{
 		Title:           item.Title,
-		Origin:          fmt.Sprintf("%s-%f-%f", item.Origin, startPosition, endPosition),
+		Origin:          buildSubItemOrigin(item.Origin, startPosition, endPosition),
 		Url:             item.Url,
 		StartPosition:   startPosition,
 		EndPosition:     endPosition,

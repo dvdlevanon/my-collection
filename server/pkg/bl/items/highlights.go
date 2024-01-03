@@ -22,10 +22,14 @@ func InitHighlights(trw model.TagReaderWriter) error {
 	return nil
 }
 
+func buildHighlightUrl(origin string, startPosition float64, endPosition float64) string {
+	return fmt.Sprintf("%s-%f-%f", origin, startPosition, endPosition)
+}
+
 func buildHighlight(item *model.Item, startPosition float64, endPosition float64, highlightId uint64) *model.Item {
 	return &model.Item{
 		Title:           item.Title,
-		Origin:          fmt.Sprintf("%s-%f-%f", item.Origin, startPosition, endPosition),
+		Origin:          buildHighlightUrl(item.Origin, startPosition, endPosition),
 		Url:             item.Url,
 		StartPosition:   startPosition,
 		EndPosition:     endPosition,

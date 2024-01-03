@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"my-collection/server/pkg/model"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -18,7 +19,7 @@ func setupNewDb(t *testing.T, filename string) (*Database, error) {
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	return New("", dbpath)
+	return New(filepath.Join("", dbpath))
 }
 
 func TestItem(t *testing.T) {

@@ -289,7 +289,7 @@ func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, 
 	}
 
 	for _, item := range *belongingItems {
-		if err := items.UpdateFileLocation(irw, &item, dirpath, filepath.Join(item.Origin, item.Title)); err != nil {
+		if err := items.UpdateFileLocation(irw, &item, dirpath, filepath.Join(item.Origin, item.Title), ""); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -361,7 +361,7 @@ func moveFile(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 	}
 
 	dstDirpath := directories.NormalizeDirectoryPath(filepath.Dir(dst))
-	if err := items.UpdateFileLocation(irw, item, dstDirpath, dst); err != nil {
+	if err := items.UpdateFileLocation(irw, item, dstDirpath, dst, ""); err != nil {
 		return err
 	}
 

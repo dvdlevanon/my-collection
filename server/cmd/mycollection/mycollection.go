@@ -48,7 +48,7 @@ func run() error {
 
 	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(relativasor.GetRootDirectory(), "db.sqlite")
+	db, err := db.New(filepath.Join(relativasor.GetRootDirectory(), "db.sqlite"))
 	if err != nil {
 		return err
 	}

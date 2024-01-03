@@ -43,11 +43,27 @@ func BuildItemFromPath(origin string, path string, flmg model.FileLastModifiedGe
 	}, nil
 }
 
-func UpdateFileLocation(iw model.ItemWriter, item *model.Item, origin string, path string) error {
+func UpdateFileLocation(iw model.ItemWriter, item *model.Item, origin string, path string, url string) error {
 	title := TitleFromFileName(path)
 	item.Origin = origin
 	item.Title = title
-	item.Url = filepath.Join(origin, title)
+
+	if url == "" {
+		item.Url = filepath.Join(origin, title)
+	} else {
+		item.Url = url
+	}
+
+	for _, highlight := range item.Highlights {
+		highlightOrigin := buildHighlightUrl(origin, highlight.StartPosition, highlight.EndPosition)
+		UpdateFileLocation(iw, highlight, highlightOrigin, path, item.Url)
+	}
+
+	for _, subitem := range item.SubItems {
+		subitemOrigin := buildSubItemOrigin(origin, subitem.StartPosition, subitem.EndPosition)
+		UpdateFileLocation(iw, subitem, subitemOrigin, path, item.Url)
+	}
+
 	return iw.UpdateItem(item)
 }
 

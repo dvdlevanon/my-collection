@@ -19,6 +19,14 @@
             "mode": "auto",
             "program": "${workspaceFolder}/server/cmd/fstester",
             "args": ["--root-directory", "/mnt/usb1"]
+        },
+        {
+            "name": "datacheck",
+            "type": "go",
+            "request": "launch",
+            "mode": "auto",
+            "program": "${workspaceFolder}/server/cmd/datacheck",
+            "args": ["--db-file", "/mnt/usb1/db.sqlite"]
         }
     ]
 }

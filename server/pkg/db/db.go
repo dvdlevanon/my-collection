@@ -4,7 +4,6 @@ import (
 	"log"
 	"my-collection/server/pkg/model"
 	"os"
-	"path/filepath"
 	"time"
 
 	"github.com/go-errors/errors"
@@ -22,8 +21,7 @@ type Database struct {
 	db *gorm.DB
 }
 
-func New(rootDirectory string, filename string) (*Database, error) {
-	actualpath := filepath.Join(rootDirectory, filename)
+func New(dbfile string) (*Database, error) {
 	newLogger := gormlogger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		gormlogger.Config{
@@ -33,7 +31,7 @@ func New(rootDirectory string, filename string) (*Database, error) {
 			Colorful:                  false,             // Disable color
 		},
 	)
-	db, err := gorm.Open(sqlite.Open(actualpath), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(dbfile), &gorm.Config{
 		Logger: newLogger,
 	})
 
@@ -77,7 +75,7 @@ func New(rootDirectory string, filename string) (*Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
-	logger.Infof("DB initialized with db file: %s", actualpath)
+	logger.Infof("DB initialized with db file: %s", dbfile)
 
 	return &Database{
 		db: db,

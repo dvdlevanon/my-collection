@@ -10,6 +10,7 @@ import (
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/utils"
 	"net/http"
+	"path/filepath"
 	"time"
 
 	"github.com/op/go-logging"
@@ -44,7 +45,7 @@ func run() error {
 
 	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(relativasor.GetRootDirectory(), "test.sqlite")
+	db, err := db.New(filepath.Join(relativasor.GetRootDirectory(), "test.sqlite"))
 	if err != nil {
 		return err
 	}

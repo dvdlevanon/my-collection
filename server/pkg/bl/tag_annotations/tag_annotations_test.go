@@ -5,6 +5,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -16,7 +17,7 @@ func setupNewDb(t *testing.T, filename string) *db.Database {
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	db, err := db.New("", dbpath)
+	db, err := db.New(filepath.Join("", dbpath))
 	assert.NoError(t, err)
 	return db
 }
