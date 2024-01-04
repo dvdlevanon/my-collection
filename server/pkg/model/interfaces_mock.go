@@ -1410,42 +1410,43 @@ func (mr *MockDirectoryConcreteTagsGetterMockRecorder) GetConcreteTags(path inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConcreteTags", reflect.TypeOf((*MockDirectoryConcreteTagsGetter)(nil).GetConcreteTags), path)
 }
 
-// MockFileLastModifiedGetter is a mock of FileLastModifiedGetter interface.
-type MockFileLastModifiedGetter struct {
+// MockFileMetadataGetter is a mock of FileMetadataGetter interface.
+type MockFileMetadataGetter struct {
 	ctrl     *gomock.Controller
-	recorder *MockFileLastModifiedGetterMockRecorder
+	recorder *MockFileMetadataGetterMockRecorder
 }
 
-// MockFileLastModifiedGetterMockRecorder is the mock recorder for MockFileLastModifiedGetter.
-type MockFileLastModifiedGetterMockRecorder struct {
-	mock *MockFileLastModifiedGetter
+// MockFileMetadataGetterMockRecorder is the mock recorder for MockFileMetadataGetter.
+type MockFileMetadataGetterMockRecorder struct {
+	mock *MockFileMetadataGetter
 }
 
-// NewMockFileLastModifiedGetter creates a new mock instance.
-func NewMockFileLastModifiedGetter(ctrl *gomock.Controller) *MockFileLastModifiedGetter {
-	mock := &MockFileLastModifiedGetter{ctrl: ctrl}
-	mock.recorder = &MockFileLastModifiedGetterMockRecorder{mock}
+// NewMockFileMetadataGetter creates a new mock instance.
+func NewMockFileMetadataGetter(ctrl *gomock.Controller) *MockFileMetadataGetter {
+	mock := &MockFileMetadataGetter{ctrl: ctrl}
+	mock.recorder = &MockFileMetadataGetterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockFileLastModifiedGetter) EXPECT() *MockFileLastModifiedGetterMockRecorder {
+func (m *MockFileMetadataGetter) EXPECT() *MockFileMetadataGetterMockRecorder {
 	return m.recorder
 }
 
-// GetLastModified mocks base method.
-func (m *MockFileLastModifiedGetter) GetLastModified(f string) (int64, error) {
+// GetFileMetadata mocks base method.
+func (m *MockFileMetadataGetter) GetFileMetadata(f string) (int64, int64, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetLastModified", f)
+	ret := m.ctrl.Call(m, "GetFileMetadata", f)
 	ret0, _ := ret[0].(int64)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(int64)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
-// GetLastModified indicates an expected call of GetLastModified.
-func (mr *MockFileLastModifiedGetterMockRecorder) GetLastModified(f interface{}) *gomock.Call {
+// GetFileMetadata indicates an expected call of GetFileMetadata.
+func (mr *MockFileMetadataGetterMockRecorder) GetFileMetadata(f interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetLastModified", reflect.TypeOf((*MockFileLastModifiedGetter)(nil).GetLastModified), f)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetFileMetadata", reflect.TypeOf((*MockFileMetadataGetter)(nil).GetFileMetadata), f)
 }
 
 // MockDirectoryChangedCallback is a mock of DirectoryChangedCallback interface.

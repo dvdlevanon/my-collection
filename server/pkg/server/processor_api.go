@@ -46,3 +46,11 @@ func (s *Server) refreshItemsVideoMetadata(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) refreshItemsFileMetadata(c *gin.Context) {
+	if s.handleError(c, s.processor.EnqueueAllItemsFileMetadata()) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}

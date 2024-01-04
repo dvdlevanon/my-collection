@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Box, Chip, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -11,9 +11,11 @@ import AttachTagDialog from '../dialogs/AttachTagDialog';
 import ConfirmationDialog from '../dialogs/ConfirmationDialog';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import Highlights from '../highlights/Highlights';
+import ItemMetadataViewer from '../item-metadata-viewer/ItemMetadataViewer';
 import ItemTitle from '../items-viewer/ItemTitle';
 import Player from '../player/Player';
 import SubItems from '../sub-items/SubItems';
+import TagBanner from '../tag-banner/TagBanner';
 import TagThumbnails from '../tag-thumbnail/TagThumbnails';
 import TagChips from '../tags-chip/TagChips';
 
@@ -39,7 +41,8 @@ function ItemPage() {
 		staleTime: Infinity,
 		cacheTime: Infinity,
 	});
-	const [addTagMode, setAddTagMode] = useState(false);
+	const [showAddTagDialog, setShowAddTagDialog] = useState(false);
+	const [addTagDialogCategory, setAddTagDialogCategory] = useState(0);
 	const [windowWidth, windowHeight] = useWindowSize();
 	const [showSplitVideoConfirmationDialog, setShowSplitVideoConfirmationDialog] = useState(false);
 	const [showDeleteItemConfirmationDialog, setShowDeleteItemConfirmationDialog] = useState(false);
@@ -54,10 +57,6 @@ function ItemPage() {
 	});
 	const navigate = useNavigate();
 
-	const onAddTag = () => {
-		setAddTagMode(true);
-	};
-
 	const onTitleChanged = (newTitle) => {
 		if (!newTitle) {
 			return;
@@ -69,7 +68,7 @@ function ItemPage() {
 	};
 
 	const onTagAdded = (tag) => {
-		setAddTagMode(false);
+		closeAddTagDialog();
 
 		let tags = itemQuery.data.tags || [];
 		tags.push(tag);
@@ -123,6 +122,11 @@ function ItemPage() {
 		});
 	};
 
+	const closeAddTagDialog = () => {
+		setShowAddTagDialog(false);
+		setAddTagDialogCategory(0);
+	};
+
 	const calcHeight = () => {
 		let result = (windowHeight / 10) * 7;
 
@@ -145,6 +149,59 @@ function ItemPage() {
 
 	const shouldShowHighlights = () => {
 		return itemQuery.data.highlight_parent_id || itemQuery.data.highlights;
+	};
+
+	const getTagBannerComponent = () => {
+		let banner = (itemQuery.data.tags || []).filter((cur) => TagsUtil.showAsBanner(cur.parentId)) || [];
+
+		return (
+			<TagBanner
+				tag={banner.length > 0 ? banner[0] : null}
+				onTagRemoved={onTagRemoved}
+				onTagEdit={(tag) => {
+					let bannerId = TagsUtil.getBannerCategoryId();
+					setAddTagDialogCategory(bannerId);
+					setShowAddTagDialog(true);
+				}}
+			></TagBanner>
+		);
+	};
+
+	const getTagThumbnailsComponent = () => {
+		let thumbnails = (itemQuery.data.tags || []).filter((cur) => TagsUtil.showAsThumbnail(cur.parentId));
+
+		if (!thumbnails) {
+			return;
+		}
+
+		return (
+			<TagThumbnails
+				tags={thumbnails}
+				onTagRemoved={onTagRemoved}
+				onEditThumbnail={onEditThumbnail}
+			></TagThumbnails>
+		);
+	};
+
+	const getTagChipsComponent = () => {
+		let chips = (itemQuery.data.tags || []).filter((cur) => {
+			return (
+				TagsUtil.allowToAddToCategory(cur.parentId) &&
+				!TagsUtil.showAsThumbnail(cur.parentId) &&
+				!TagsUtil.showAsBanner(cur.parentId)
+			);
+		});
+
+		return (
+			<TagChips
+				tags={chips}
+				linkable={true}
+				onDelete={onTagRemoved}
+				tagHighlightedPredicate={() => {
+					return true;
+				}}
+			></TagChips>
+		);
 	};
 
 	return (
@@ -198,29 +255,12 @@ function ItemPage() {
 							withMenu={true}
 						/>
 						<Stack flexDirection="row" gap="10px" alignItems="center">
-							<TagThumbnails
-								tags={(itemQuery.data.tags || []).filter((cur) =>
-									TagsUtil.showAsThumbnail(cur.parentId)
-								)}
-								onTagRemoved={onTagRemoved}
-								onEditThumbnail={onEditThumbnail}
-							></TagThumbnails>
-							<TagChips
-								tags={(itemQuery.data.tags || []).filter(
-									(cur) =>
-										TagsUtil.allowToAddToCategory(cur.parentId) &&
-										!TagsUtil.showAsThumbnail(cur.parentId)
-								)}
-								linkable={true}
-								onDelete={onTagRemoved}
-								tagHighlightedPredicate={() => {
-									return true;
-								}}
-							></TagChips>
+							{getTagThumbnailsComponent()}
+							{getTagChipsComponent()}
 							<Chip
 								color="secondary"
 								icon={<AddIcon />}
-								onClick={onAddTag}
+								onClick={() => setShowAddTagDialog(true)}
 								sx={{ '& .MuiChip-label': { padding: '5px' } }}
 							/>
 							<Stack width="100%" alignItems="flex-end">
@@ -231,19 +271,10 @@ function ItemPage() {
 								</Tooltip>
 							</Stack>
 						</Stack>
-						<Typography variant="body2" color="bright.darker2" padding="0px 10px">
-							Resolution: {itemQuery.data.width} * {itemQuery.data.height}
-							<br />
-							Video Codec: {itemQuery.data.video_codec}
-							<br />
-							Audio Codec: {itemQuery.data.audio_codec}
-						</Typography>
-						<AttachTagDialog
-							open={addTagMode}
-							item={itemQuery.data}
-							onTagAdded={onTagAdded}
-							onClose={(e) => setAddTagMode(false)}
-						/>
+						<Stack flexDirection="row">
+							{getTagBannerComponent()}
+							<ItemMetadataViewer item={itemQuery.data} />
+						</Stack>
 					</Stack>
 				)}
 			</Box>
@@ -277,6 +308,16 @@ function ItemPage() {
 					onClose={() => setEditThumbnailTag(null)}
 				/>
 			)}
+			<AttachTagDialog
+				open={showAddTagDialog}
+				item={itemQuery.data || {}}
+				onTagAdded={onTagAdded}
+				onClose={(e) => {
+					closeAddTagDialog();
+				}}
+				singleCategoryMode={addTagDialogCategory != 0}
+				initialSelectedCategoryId={addTagDialogCategory != 0 ? addTagDialogCategory : 3}
+			/>
 		</Box>
 	);
 }

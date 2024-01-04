@@ -1,5 +1,6 @@
 export default class ReactQueryUtil {
 	static SPECIAL_TAGS_KEY = ['special-tags'];
+	static CATEGORIES_KEY = ['categories'];
 	static TAGS_KEY = ['tags'];
 	static ITEMS_KEY = ['items'];
 	static QUEUE_METADATA_KEY = ['queue-metadata'];

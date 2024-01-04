@@ -15,6 +15,7 @@ function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 	const [menuY, setMenuY] = useState(0);
 
 	const onClick = (e) => {
+		e.preventDefault();
 		setMenuX(e.clientX);
 		setMenuY(e.clientY);
 		setMenuAchrosEl(e.target);
@@ -51,14 +52,16 @@ function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 	return (
 		<>
 			<Tooltip title={tag.title}>
-				<Box
-					onClick={onClick}
-					sx={{
-						cursor: 'pointer',
-					}}
-				>
-					{getThumbnailCompnent()}
-				</Box>
+				<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
+					<Box
+						onContextMenu={onClick}
+						sx={{
+							cursor: 'pointer',
+						}}
+					>
+						{getThumbnailCompnent()}
+					</Box>
+				</Link>
 			</Tooltip>
 			<Menu
 				open={menuAchrosEl != null}
@@ -85,16 +88,16 @@ function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 						Set Thumbnail
 					</Typography>
 				</MenuItem>
-				<MenuItem onClick={closeMenu}>
-					<ListItemIcon>
-						<GalleryIcon />
-					</ListItemIcon>
-					<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
+				<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
+					<MenuItem onClick={closeMenu}>
+						<ListItemIcon>
+							<GalleryIcon />
+						</ListItemIcon>
 						<Typography variant="h6" color="white">
 							Open in Gallery
 						</Typography>
-					</Link>
-				</MenuItem>
+					</MenuItem>
+				</Link>
 				<Divider />
 				<MenuItem
 					onClick={() => {

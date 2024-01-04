@@ -7,6 +7,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/special-tags`).then((response) => response.json());
 	};
 
+	static getCategories = async () => {
+		return await fetch(`${Client.apiUrl}/categories`).then((response) => response.json());
+	};
+
 	static getTags = async () => {
 		return await fetch(`${Client.apiUrl}/tags`).then((response) => response.json());
 	};
@@ -215,15 +219,19 @@ export default class Client {
 	}
 
 	static refreshCovers(force) {
-		fetch(`${Client.apiUrl}/items/refresh-covers?force=${force}`);
+		fetch(`${Client.apiUrl}/items/refresh-covers?force=${force}`, { method: 'POST' });
 	}
 
 	static refreshPreview(force) {
-		fetch(`${Client.apiUrl}/items/refresh-preview?force=${force}`);
+		fetch(`${Client.apiUrl}/items/refresh-preview?force=${force}`, { method: 'POST' });
 	}
 
 	static refreshVideoMetadata(force) {
-		fetch(`${Client.apiUrl}/items/refresh-video-metadata?force=${force}`);
+		fetch(`${Client.apiUrl}/items/refresh-video-metadata?force=${force}`, { method: 'POST' });
+	}
+
+	static refreshFileMetadata(force) {
+		fetch(`${Client.apiUrl}/items/refresh-file-metadata`, { method: 'POST' });
 	}
 
 	static getExportMetadataUrl() {

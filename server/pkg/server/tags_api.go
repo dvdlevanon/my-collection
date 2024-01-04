@@ -100,6 +100,16 @@ func (s *Server) getTags(c *gin.Context) {
 	c.JSON(http.StatusOK, tags)
 }
 
+func (s *Server) getCategories(c *gin.Context) {
+	categories, err := tags.GetCategories(s.db)
+	if s.handleError(c, err) {
+		return
+	}
+
+	logger.Infof("Get categories return %d tags", len(*categories))
+	c.JSON(http.StatusOK, categories)
+}
+
 func (s *Server) getSpecialTags(c *gin.Context) {
 	tags, err := s.db.GetTagsWithoutChildren(
 		directories.GetDirectoriesTagId(),
@@ -111,7 +121,7 @@ func (s *Server) getSpecialTags(c *gin.Context) {
 		return
 	}
 
-	logger.Infof("Get tags return %d tags", len(*tags))
+	logger.Infof("Get special tags return %d tags", len(*tags))
 	c.JSON(http.StatusOK, tags)
 }
 

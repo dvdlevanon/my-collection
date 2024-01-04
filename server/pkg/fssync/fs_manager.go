@@ -69,13 +69,13 @@ func (f *FsManager) GetConcreteTags(path string) ([]*model.Tag, error) {
 	return tags.GetOrCreateTags(f.db, directories.BuildDirectoryTags(directory))
 }
 
-func (f *FsManager) GetLastModified(path string) (int64, error) {
+func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
 	file, err := os.Stat(path)
 	if err != nil {
-		return 0, errors.Wrap(err, 1)
+		return 0, 0, errors.Wrap(err, 1)
 	}
 
-	return file.ModTime().UnixMilli(), nil
+	return file.ModTime().UnixMilli(), file.Size(), nil
 }
 
 func (f *FsManager) Sync() error {

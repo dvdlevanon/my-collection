@@ -27,10 +27,12 @@ type Processor interface {
 	EnqueueAllItemsPreview(force bool) error
 	EnqueueAllItemsCovers(force bool) error
 	EnqueueAllItemsVideoMetadata(force bool) error
+	EnqueueAllItemsFileMetadata() error
 	EnqueueItemPreview(id uint64)
 	EnqueueItemCovers(id uint64)
 	EnqueueMainCover(id uint64, second float64)
 	EnqueueItemVideoMetadata(id uint64)
+	EnqueueItemFileMetadata(id uint64)
 	IsPaused() bool
 	IsAutomaticProcessing() bool
 	Pause()
@@ -45,9 +47,11 @@ func (d *ProcessorMock) Run()                                            {}
 func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error          { return nil }
 func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error         { return nil }
 func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error   { return nil }
+func (d *ProcessorMock) EnqueueAllItemsFileMetadata() error              { return nil }
 func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)              {}
 func (d *ProcessorMock) EnqueueItemPreview(id uint64)                    {}
 func (d *ProcessorMock) EnqueueItemCovers(id uint64)                     {}
+func (d *ProcessorMock) EnqueueItemFileMetadata(id uint64)               {}
 func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)      {}
 func (d *ProcessorMock) IsAutomaticProcessing() bool                     { return false }
 func (d *ProcessorMock) IsPaused() bool                                  { return false }
@@ -206,6 +210,8 @@ func (p *itemProcessorImpl) processTask(t *model.Task) error {
 		return refreshItemPreview(p.db, p.storage, p.previewSceneCount, p.previewSceneDuration, t.IdParam)
 	case model.REFRESH_METADATA_TASK:
 		return refreshItemMetadata(p.db, t.IdParam)
+	case model.REFRESH_FILE_TASK:
+		return refreshFileMetadata(p.db, t.IdParam)
 	default:
 		return fmt.Errorf("unknown task %+v", t)
 	}

@@ -36,6 +36,7 @@ type Item struct {
 	Title                 string  `json:"title,omitempty" gorm:"uniqueIndex:title_and_dir_idx"`
 	Origin                string  `json:"origin,omitempty" gorm:"uniqueIndex:title_and_dir_idx"`
 	DurationSeconds       float64 `json:"duration_seconds,omitempty"`
+	FileSize              int64   `json:"file_size,omitempty"`
 	Width                 int     `json:"width,omitempty"`
 	Height                int     `json:"height,omitempty"`
 	VideoCodecName        string  `json:"video_codec,omitempty"`
@@ -43,7 +44,7 @@ type Item struct {
 	Url                   string  `json:"url,omitempty"`
 	PreviewUrl            string  `json:"preview_url,omitempty"`
 	PreviewMode           string  `json:"preview_mode,omitempty"`
-	LastModified          int64   `json:"lastModified,omitempty"`
+	LastModified          int64   `json:"last_modified,omitempty"`
 	Covers                []Cover `json:"covers,omitempty"`
 	MainCoverUrl          *string `json:"main_cover_url,omitempty"`
 	MainCoverSecond       float64 `json:"main_cover_second,omitempty"`

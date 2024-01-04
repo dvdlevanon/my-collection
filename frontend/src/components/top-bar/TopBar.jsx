@@ -148,6 +148,14 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					>
 						Force Refresh Video Metadata
 					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.refreshFileMetadata();
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Refresh File Metadata
+					</MenuItem>
 				</Menu>
 				<FormControlLabel
 					label="Use Previews"

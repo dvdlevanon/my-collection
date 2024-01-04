@@ -10,7 +10,9 @@ function TagChip({ tag, linkable, onClick, onDelete, tagHighlightedPredicate }) 
 				label={tag.title}
 				onClick={(e) => {
 					e.stopPropagation();
-					onClick(tag);
+					if (onClick) {
+						onClick(tag);
+					}
 				}}
 				onDelete={(e) => {
 					e.preventDefault();

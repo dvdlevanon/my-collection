@@ -29,7 +29,7 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 					...imgSx,
 				}}
 				component="img"
-				src={TagsUtil.getTagImageUrl(tag, selectedTit)}
+				src={TagsUtil.getTagImageUrl(tag, selectedTit, false)}
 				alt={tag.title}
 				loading="lazy"
 			/>

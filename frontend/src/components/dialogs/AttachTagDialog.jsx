@@ -7,7 +7,7 @@ import GalleryUrlParams from '../../utils/gallery-url-params';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagPicker from '../tag-picker/TagPicker';
 
-function AttachTagDialog({ open, item, onTagAdded, onClose }) {
+function AttachTagDialog({ open, item, onTagAdded, onClose, singleCategoryMode, initialSelectedCategoryId }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 
 	return (
@@ -44,7 +44,8 @@ function AttachTagDialog({ open, item, onTagAdded, onClose }) {
 			<DialogContent sx={{ overflow: 'hidden' }}>
 				<TagPicker
 					origin="attach-dialog"
-					initialSelectedCategoryId={3}
+					initialSelectedCategoryId={initialSelectedCategoryId}
+					singleCategoryMode={singleCategoryMode}
 					showSpecialCategories={false}
 					initialTagSize={350}
 					onTagSelected={onTagAdded}

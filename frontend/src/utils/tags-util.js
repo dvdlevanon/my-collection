@@ -5,6 +5,11 @@ export default class TagsUtil {
 	static dailyMixTag;
 	static highlightsTag;
 	static specTag;
+	static categories = [];
+
+	static initCategories(categories) {
+		TagsUtil.categories = categories;
+	}
 
 	static initSpecialTags(specialTags) {
 		for (let i = 0; i < specialTags.length; i++) {
@@ -54,7 +59,29 @@ export default class TagsUtil {
 	}
 
 	static showAsThumbnail(tagId) {
-		return tagId == 3; // todo: load from backend
+		if (!TagsUtil.categories) {
+			return false;
+		}
+
+		let category = TagsUtil.categories.find((cur) => cur.id == tagId);
+		return category.display_style === 'portrait';
+	}
+
+	static showAsBanner(tagId) {
+		if (!TagsUtil.categories) {
+			return false;
+		}
+
+		let category = TagsUtil.categories.find((cur) => cur.id == tagId);
+		return category.display_style === 'banner';
+	}
+
+	static getBannerCategoryId() {
+		if (!TagsUtil.categories) {
+			return 0;
+		}
+
+		return TagsUtil.categories.find((cur) => cur.display_style === 'banner').id;
 	}
 
 	static allowToAddToCategory(tagId) {
@@ -163,6 +190,10 @@ export default class TagsUtil {
 			width: 200,
 			height: 200,
 		};
+	};
+
+	static getNoBannerImageUrl = () => {
+		return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/banner/1.jpg'));
 	};
 
 	static getTagImageUrl = (tag, selectedTit, noFallback) => {

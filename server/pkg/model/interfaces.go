@@ -103,8 +103,8 @@ type DirectoryConcreteTagsGetter interface {
 	GetConcreteTags(path string) ([]*Tag, error)
 }
 
-type FileLastModifiedGetter interface {
-	GetLastModified(f string) (int64, error)
+type FileMetadataGetter interface {
+	GetFileMetadata(f string) (int64, int64, error)
 }
 
 type DirectoryChangedCallback interface {

@@ -28,8 +28,8 @@ func TitleFromFileName(path string) string {
 	return filepath.Base(path)
 }
 
-func BuildItemFromPath(origin string, path string, flmg model.FileLastModifiedGetter) (*model.Item, error) {
-	lastModified, err := flmg.GetLastModified(path)
+func BuildItemFromPath(origin string, path string, fmdg model.FileMetadataGetter) (*model.Item, error) {
+	lastModified, fileSize, err := fmdg.GetFileMetadata(path)
 	if err != nil {
 		return nil, err
 	}
@@ -40,6 +40,7 @@ func BuildItemFromPath(origin string, path string, flmg model.FileLastModifiedGe
 		Origin:       origin,
 		Url:          filepath.Join(origin, title),
 		LastModified: lastModified,
+		FileSize:     fileSize,
 	}, nil
 }
 
@@ -177,9 +178,9 @@ func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*mode
 	return randomItems, nil
 }
 
-func IsModified(item *model.Item, flmg model.FileLastModifiedGetter) (bool, error) {
+func IsModified(item *model.Item, fmg model.FileMetadataGetter) (bool, error) {
 	path := relativasor.GetAbsoluteFile(filepath.Join(item.Origin, item.Title))
-	lastModified, err := flmg.GetLastModified(path)
+	lastModified, _, err := fmg.GetFileMetadata(path)
 	if err != nil {
 		return false, err
 	}

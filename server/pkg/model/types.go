@@ -14,6 +14,7 @@ const (
 	REFRESH_COVER_TASK = iota
 	REFRESH_PREVIEW_TASK
 	REFRESH_METADATA_TASK
+	REFRESH_FILE_TASK
 	SET_MAIN_COVER
 )
 
@@ -25,6 +26,8 @@ func (t TaskType) ToDescription(title string) string {
 		return fmt.Sprintf("Generating preview for %s", title)
 	case REFRESH_METADATA_TASK:
 		return fmt.Sprintf("Reading metadata for %s", title)
+	case REFRESH_FILE_TASK:
+		return fmt.Sprintf("Reading file metadata for %s", title)
 	case SET_MAIN_COVER:
 		return fmt.Sprintf("Setting main cover for %s", title)
 	default:
@@ -40,6 +43,8 @@ func (t TaskType) String() string {
 		return "preview"
 	case REFRESH_METADATA_TASK:
 		return "metadata"
+	case REFRESH_FILE_TASK:
+		return "file-metadata"
 	case SET_MAIN_COVER:
 		return "main-cover"
 	default:

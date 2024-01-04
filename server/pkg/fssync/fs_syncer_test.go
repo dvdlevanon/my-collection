@@ -79,7 +79,7 @@ func TestAddNewFiles(t *testing.T) {
 	iw := model.NewMockItemWriter(ctrl)
 	digs := model.NewMockDirectoryItemsGetterSetter(ctrl)
 	dctg := model.NewMockDirectoryConcreteTagsGetter(ctrl)
-	flmg := model.NewMockFileLastModifiedGetter(ctrl)
+	fmg := model.NewMockFileMetadataGetter(ctrl)
 
 	relativasor.Init("/root/dir")
 
@@ -92,20 +92,20 @@ func TestAddNewFiles(t *testing.T) {
 	digs.EXPECT().GetBelongingItem("some/deep/deep/deep", "file").Return(nil, nil)
 	concreteTags2 := []*model.Tag{{Title: "concrete1"}, {Title: "concrete2"}}
 	dctg.EXPECT().GetConcreteTags("some/deep/deep/deep").Return(concreteTags2, nil)
-	flmg.EXPECT().GetLastModified("/root/dir/some/deep/deep/deep/file").Return(int64(7657657), nil)
+	fmg.EXPECT().GetFileMetadata("/root/dir/some/deep/deep/deep/file").Return(int64(7657657), int64(0), nil)
 	digs.EXPECT().AddBelongingItem(&model.Item{Title: "file", Origin: "some/deep/deep/deep", Url: "some/deep/deep/deep/file", LastModified: 7657657, Tags: concreteTags2}).Return(nil)
 
 	digs.EXPECT().GetBelongingItem("/absolute", "path").Return(nil, nil)
 	dctg.EXPECT().GetConcreteTags("/absolute").Return([]*model.Tag{}, nil)
-	flmg.EXPECT().GetLastModified("/absolute/path").Return(int64(7567657), nil)
+	fmg.EXPECT().GetFileMetadata("/absolute/path").Return(int64(7567657), int64(0), nil)
 	digs.EXPECT().AddBelongingItem(&model.Item{Title: "path", Origin: "/absolute", Url: "/absolute/path", LastModified: 7567657, Tags: make([]*model.Tag, 0)}).Return(nil)
 
 	digs.EXPECT().GetBelongingItem("some", "file").Return(nil, nil)
 	dctg.EXPECT().GetConcreteTags("some").Return([]*model.Tag{}, nil)
-	flmg.EXPECT().GetLastModified("/root/dir/some/file").Return(int64(9876532), nil)
+	fmg.EXPECT().GetFileMetadata("/root/dir/some/file").Return(int64(9876532), int64(0), nil)
 	digs.EXPECT().AddBelongingItem(&model.Item{Title: "file", Origin: "some", Url: "some/file", LastModified: 9876532, Tags: make([]*model.Tag, 0)}).Return(nil)
 
-	errs := addNewFiles(iw, digs, dctg, flmg, []directorytree.Change{
+	errs := addNewFiles(iw, digs, dctg, fmg, []directorytree.Change{
 		{Path1: "new/file"},
 		{Path1: "some/deep/deep/deep/file"},
 		{Path1: "/absolute/path"},

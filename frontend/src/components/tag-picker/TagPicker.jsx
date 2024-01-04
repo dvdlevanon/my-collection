@@ -16,6 +16,7 @@ function TagPicker({
 	showSpecialCategories,
 	tagLinkBuilder,
 	setHideTopBar,
+	singleCategoryMode,
 }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const titsQuery = useQuery(ReactQueryUtil.TAG_IMAGE_TYPES_KEY, Client.getTagImageTypes);
@@ -61,7 +62,7 @@ function TagPicker({
 
 	return (
 		<Stack className="tags_picker" height={selectedCategoryId > 0 ? '100%' : 'auto'}>
-			{tagsQuery.isSuccess && (
+			{tagsQuery.isSuccess && !singleCategoryMode && (
 				<Collapse in={!hideCategories}>
 					<Stack>
 						<Categories

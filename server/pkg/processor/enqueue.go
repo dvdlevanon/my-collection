@@ -29,13 +29,13 @@ func (p *itemProcessorImpl) enqueue(t *model.Task) {
 	}
 }
 
-func (p itemProcessorImpl) GetLastModified(path string) (int64, error) {
+func (p itemProcessorImpl) GetFileMetadata(path string) (int64, int64, error) {
 	file, err := os.Stat(path)
 	if err != nil {
-		return 0, errors.Wrap(err, 1)
+		return 0, 0, errors.Wrap(err, 1)
 	}
 
-	return file.ModTime().UnixMilli(), nil
+	return file.ModTime().UnixMilli(), file.Size(), nil
 }
 
 func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata(force bool) error {
@@ -106,4 +106,21 @@ func (p itemProcessorImpl) EnqueueMainCover(id uint64, second float64) {
 
 func (p itemProcessorImpl) EnqueueItemCovers(id uint64) {
 	p.enqueue(&model.Task{TaskType: model.REFRESH_COVER_TASK, IdParam: id})
+}
+
+func (p itemProcessorImpl) EnqueueAllItemsFileMetadata() error {
+	allItems, err := p.db.GetAllItems()
+	if err != nil {
+		return err
+	}
+
+	for _, item := range *allItems {
+		p.EnqueueItemFileMetadata(item.Id)
+	}
+
+	return nil
+}
+
+func (p itemProcessorImpl) EnqueueItemFileMetadata(id uint64) {
+	p.enqueue(&model.Task{TaskType: model.REFRESH_FILE_TASK, IdParam: id})
 }

@@ -18,12 +18,17 @@ function TagSpeedDial({ tag, hidden, onManageAttributesClicked, onRemoveTagClick
 		e.preventDefault();
 		e.stopPropagation();
 
-		if (command.type == 'search web') {
-			let url = command.arg.replace('${tag_title}', tag.title).replace(' ', '+');
-			window.open(url, '_newtab');
-			onManageImageClicked();
-		} else {
-			console.log('Unknown command type ' + command.type);
+		let commands = command.type.split(',');
+
+		for (let i = 0; i < commands.length; i++) {
+			if (commands[i] == 'search web') {
+				let url = command.arg.replace('${tag_title}', tag.title).replace(' ', '+');
+				window.open(url, '_newtab');
+			} else if (commands[i] == 'open-manage-tag-image-dialog') {
+				onManageImageClicked();
+			} else {
+				console.log('Unknown command type ' + command.type);
+			}
 		}
 	};
 

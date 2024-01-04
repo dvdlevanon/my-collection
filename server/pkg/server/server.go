@@ -5,6 +5,7 @@ import (
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/storage"
+	"my-collection/server/pkg/utils"
 	"net/http"
 
 	"github.com/gin-contrib/cors"
@@ -62,6 +63,7 @@ func (s *Server) init() {
 
 	api.GET("/tags", s.getTags)
 	api.GET("/special-tags", s.getSpecialTags)
+	api.GET("/categories", s.getCategories)
 	api.POST("/tags", s.createTag)
 	api.POST("/tags/:tag", s.updateTag)
 	api.GET("/tags/:tag", s.getTag)
@@ -81,9 +83,10 @@ func (s *Server) init() {
 	api.DELETE("/tags/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)
 	api.GET("/tags/:tag/available-annotations", s.getTagAvailableAnnotations)
 
-	api.GET("/items/refresh-covers", s.refreshItemsCovers)
-	api.GET("/items/refresh-preview", s.refreshItemsPreview)
-	api.GET("/items/refresh-video-metadata", s.refreshItemsVideoMetadata)
+	api.POST("/items/refresh-covers", s.refreshItemsCovers)
+	api.POST("/items/refresh-preview", s.refreshItemsPreview)
+	api.POST("/items/refresh-video-metadata", s.refreshItemsVideoMetadata)
+	api.POST("/items/refresh-file-metadata", s.refreshItemsFileMetadata)
 	api.GET("/file/*path", s.getFile)
 	api.POST("/upload-file", s.uploadFile)
 	api.POST("/upload-file-from-url", s.uploadFileFromUrl)
@@ -122,6 +125,7 @@ func (s *Server) handleError(c *gin.Context, err error) bool {
 		httpError = http.StatusNotFound
 	}
 
+	utils.LogError(err)
 	c.AbortWithError(httpError, err)
 	return true
 }

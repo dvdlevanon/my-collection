@@ -46,6 +46,12 @@ function App() {
 		onSuccess: (specialTags) => TagsUtil.initSpecialTags(specialTags),
 	});
 
+	const categoriesQuery = useQuery({
+		queryKey: ReactQueryUtil.CATEGORIES_KEY,
+		queryFn: Client.getCategories,
+		onSuccess: (categories) => TagsUtil.initCategories(categories),
+	});
+
 	const [hideTopBar, setHideTopBar] = useState(false);
 	const [previewMode, setPreviewMode] = useState(true);
 

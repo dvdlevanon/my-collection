@@ -53,7 +53,7 @@ func (f *fsSyncer) hasFsChanges() bool {
 }
 
 func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
-	dctg model.DirectoryConcreteTagsGetter, flmg model.FileLastModifiedGetter) []error {
+	dctg model.DirectoryConcreteTagsGetter, fmg model.FileMetadataGetter) []error {
 
 	// TODO:
 	// > remove moved dirs and files from stale dirs and items
@@ -75,7 +75,7 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
 		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
 		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
-		errs = append(errs, addNewFiles(db, digs, dctg, flmg, f.diff.AddedFiles)...)
+		errs = append(errs, addNewFiles(db, digs, dctg, fmg, f.diff.AddedFiles)...)
 	}
 
 	errs = append(errs, syncConcreteTags(db, db, db, dctg)...)
@@ -203,7 +203,7 @@ func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []director
 }
 
 func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
-	flmg model.FileLastModifiedGetter, addedFiles []directorytree.Change) []error {
+	fmg model.FileMetadataGetter, addedFiles []directorytree.Change) []error {
 	errs := make([]error, 0)
 	for _, change := range addedFiles {
 		dirpath := directories.NormalizeDirectoryPath(filepath.Dir(change.Path1))
@@ -213,7 +213,7 @@ func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dct
 			continue
 		}
 
-		if err := handleFile(iw, digs, dctg, flmg, item, dirpath, change.Path1); err != nil {
+		if err := handleFile(iw, digs, dctg, fmg, item, dirpath, change.Path1); err != nil {
 			errs = append(errs, err)
 		}
 	}
@@ -222,7 +222,7 @@ func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dct
 }
 
 func handleFile(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
-	flmg model.FileLastModifiedGetter, item *model.Item, dirpath string, path string) error {
+	fmg model.FileMetadataGetter, item *model.Item, dirpath string, path string) error {
 	concreteTags, err := dctg.GetConcreteTags(dirpath)
 	if err != nil {
 		return err
@@ -231,13 +231,13 @@ func handleFile(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg
 	if item != nil {
 		return items.EnsureItemHaveTags(iw, item, concreteTags)
 	} else {
-		return handleNewFile(digs, flmg, dirpath, path, concreteTags)
+		return handleNewFile(digs, fmg, dirpath, path, concreteTags)
 	}
 }
 
-func handleNewFile(digs model.DirectoryItemsGetterSetter, flmg model.FileLastModifiedGetter,
+func handleNewFile(digs model.DirectoryItemsGetterSetter, fmg model.FileMetadataGetter,
 	dirpath string, path string, concreteTags []*model.Tag) error {
-	item, err := items.BuildItemFromPath(dirpath, relativasor.GetAbsoluteFile(path), flmg)
+	item, err := items.BuildItemFromPath(dirpath, relativasor.GetAbsoluteFile(path), fmg)
 	if err != nil {
 		return err
 	}
