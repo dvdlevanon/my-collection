@@ -7,6 +7,7 @@ import (
 	"my-collection/server/pkg/storage"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/go-errors/errors"
 	cp "github.com/otiai10/copy"
@@ -139,6 +140,7 @@ func autoImageTag(storage *storage.Storage, tw model.TagWriter, tag *model.Tag,
 		tag.Images = append(tag.Images, &model.TagImage{
 			TagId:       tag.Id,
 			Url:         storage.GetStorageUrl(relativeFile),
+			ImageNonce:  time.Now().UnixNano(),
 			ImageTypeId: tit.Id,
 		})
 	}

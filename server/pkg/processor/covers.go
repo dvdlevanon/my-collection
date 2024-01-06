@@ -6,6 +6,7 @@ import (
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"time"
 
 	"k8s.io/utils/pointer"
 )
@@ -99,5 +100,6 @@ func refreshMainCover(irw model.ItemReaderWriter, uploader model.StorageUploader
 
 	item.MainCoverSecond = second
 	item.MainCoverUrl = pointer.String(uploader.GetStorageUrl(relativeFile))
+	item.MainCoverNonce = time.Now().UnixNano()
 	return irw.UpdateItem(item)
 }

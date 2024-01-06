@@ -238,8 +238,12 @@ export default class Client {
 		return `${Client.apiUrl}/export-metadata.json`;
 	}
 
-	static buildFileUrl(storagePath) {
-		return `${Client.apiUrl}/file/${encodeURIComponent(storagePath)}`;
+	static buildFileUrl(storagePath, nonce) {
+		if (nonce) {
+			return `${Client.apiUrl}/file/${encodeURIComponent(storagePath)}?nonce=${nonce}`;
+		} else {
+			return `${Client.apiUrl}/file/${encodeURIComponent(storagePath)}`;
+		}
 	}
 
 	static buildInternalStoragePath(storagePath) {

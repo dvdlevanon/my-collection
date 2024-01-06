@@ -206,14 +206,14 @@ export default class TagsUtil {
 		if (selectedTit && tag.images) {
 			let selectedImage = tag.images.find((image) => image.imageType === selectedTit.id);
 			if (selectedImage && selectedImage.url) {
-				return Client.buildFileUrl(selectedImage.url);
+				return Client.buildFileUrl(selectedImage.url, selectedImage.image_nonce);
 			}
 		}
 
 		if (!noFallback && tag.images) {
 			for (let i = 0; i < tag.images.length; i++) {
 				if (tag.images[i].url) {
-					return Client.buildFileUrl(tag.images[i].url);
+					return Client.buildFileUrl(tag.images[i].url, tag.images[i].image_nonce);
 				}
 			}
 		}

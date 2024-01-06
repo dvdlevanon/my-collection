@@ -29,6 +29,7 @@ type TagImage struct {
 	TagId         uint64 `json:"tagId,omitempty"`
 	ImageTypeId   uint64 `json:"imageType,omitempty"`
 	ThumbnailRect Rect   `json:"thumbnail_rect,omitempty" gorm:"type:json"`
+	ImageNonce    int64  `json:"image_nonce,omitempty"`
 }
 
 type Item struct {
@@ -48,6 +49,7 @@ type Item struct {
 	Covers                []Cover `json:"covers,omitempty"`
 	MainCoverUrl          *string `json:"main_cover_url,omitempty"`
 	MainCoverSecond       float64 `json:"main_cover_second,omitempty"`
+	MainCoverNonce        int64   `json:"main_cover_nonce,omitempty"`
 	Tags                  []*Tag  `json:"tags,omitempty" gorm:"many2many:tag_items;"`
 	StartPosition         float64 `json:"start_position,omitempty"`
 	EndPosition           float64 `json:"end_position,omitempty"`

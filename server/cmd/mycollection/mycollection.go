@@ -62,7 +62,7 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	processor.Pause()
+	processor.Continue()
 	go processor.Run()
 
 	if err := items.InitHighlights(db); err != nil {

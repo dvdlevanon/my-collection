@@ -55,9 +55,9 @@ func (t TaskType) String() string {
 type PushMessageType int
 
 const (
-	_ = iota
-	PUSH_PING
-	PUSH_QUEUE_METADATA
+	// values in ws.js
+	PUSH_PING           = 1
+	PUSH_QUEUE_METADATA = 2
 )
 
 type Rect struct {

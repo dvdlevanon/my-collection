@@ -78,7 +78,7 @@ func (p *push) run() {
 
 func (p *push) writeToAll(m *model.PushMessage) {
 	for _, socket := range p.sockets {
-		err := socket.WriteJSON(model.PushMessage{MessageType: model.PUSH_PING})
+		err := socket.WriteJSON(m)
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == "write: broken pipe" {
 				p.removeAndClose(socket)
