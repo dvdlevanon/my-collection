@@ -2,7 +2,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import React, { useRef } from 'react';
 
-function ChooseDirectoryDialog({ title, onChange, onClose }) {
+function ChooseDirectoryDialog({ open, title, onChange, onClose }) {
 	const directoryFullPath = useRef(null);
 
 	const addDirectory = () => {
@@ -22,7 +22,7 @@ function ChooseDirectoryDialog({ title, onChange, onClose }) {
 					onClose();
 				}
 			}}
-			open={true}
+			open={open}
 			fullWidth={true}
 			maxWidth={'sm'}
 		>

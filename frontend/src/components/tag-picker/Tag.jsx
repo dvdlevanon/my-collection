@@ -31,9 +31,8 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 	const optionsComponents = () => {
 		return (
 			<>
-				{attachMenuAttributes === null && (
+				{attachMenuAttributes === null && !optionsHidden && (
 					<TagSpeedDial
-						hidden={optionsHidden}
 						tag={tag}
 						onManageImageClicked={() => setManageTagImageOpened(true)}
 						onManageAttributesClicked={onManageAttributesClicked}

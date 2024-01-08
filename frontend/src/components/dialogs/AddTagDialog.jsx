@@ -7,7 +7,7 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import CategoriesChooser from '../categories-chooser/CategoriesChooser';
 
-function AddTagDialog({ parentId, verb, onTagAdded, onClose, shouldSelectParent, initialText }) {
+function AddTagDialog({ open, parentId, verb, onTagAdded, onClose, shouldSelectParent, initialText }) {
 	const unknownCategoryId = -1;
 	const queryClient = useQueryClient();
 	const newTagName = useRef(null);
@@ -50,7 +50,7 @@ function AddTagDialog({ parentId, verb, onTagAdded, onClose, shouldSelectParent,
 					onClose();
 				}
 			}}
-			open={true}
+			open={open}
 		>
 			<DialogTitle variant="h6">
 				Add {verb}

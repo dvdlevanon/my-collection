@@ -185,20 +185,19 @@ function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, onTit
 					</MenuItem>
 				</Menu>
 			)}
-			{addTagDialogOpened && (
-				<AddTagDialog
-					parentId={null}
-					verb="Tag"
-					initialText={TagsUtil.normalizeTagTitle(selectedText)}
-					shouldSelectParent={true}
-					onClose={() => setAddTagDialogOpened(false)}
-					onTagAdded={(newTag) => {
-						if (onTagAdded) {
-							onTagAdded(newTag);
-						}
-					}}
-				/>
-			)}
+			<AddTagDialog
+				open={addTagDialogOpened}
+				parentId={null}
+				verb="Tag"
+				initialText={TagsUtil.normalizeTagTitle(selectedText)}
+				shouldSelectParent={true}
+				onClose={() => setAddTagDialogOpened(false)}
+				onTagAdded={(newTag) => {
+					if (onTagAdded) {
+						onTagAdded(newTag);
+					}
+				}}
+			/>
 		</>
 	);
 }

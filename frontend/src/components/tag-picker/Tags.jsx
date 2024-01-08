@@ -253,15 +253,8 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		setHideCategories(e.target.scrollTop > 120);
 	};
 
-	return (
-		<Stack
-			className="tags_and_filters"
-			width={'100%'}
-			height={'100%'}
-			flexGrow={1}
-			overflow="hidden"
-			backgroundColor="dark.lighter"
-		>
+	const getTagsTopBarComponent = () => {
+		return (
 			<TagsTopBar
 				parentId={parent.id}
 				setSearchTerm={setSearchTerm}
@@ -301,18 +294,44 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 					localStorage.setItem(buildStorageKey('tag-size'), newTagSize);
 				}}
 			/>
-			<Divider />
-			<Box
-				className="tagsHolder"
-				ref={tagsEl}
+		);
+	};
+
+	const getNoDirectoriesFoundComponent = () => {
+		if (!TagsUtil.isDirectoriesCategory(parent.id)) {
+			return null;
+		}
+
+		if (tags.length > 0) {
+			return null;
+		}
+
+		return (
+			<Stack
+				direction="row"
+				gap="10px"
+				justifyContent="center"
+				alignItems="center"
 				sx={{
-					overflow: 'auto',
+					width: '100%',
+					height: '100%',
 				}}
-				onScroll={onScroll}
 			>
+				No diretories found
+				<Link component={RouterLink} to="spa/manage-directories">
+					<Button variant="outlined">Manage Directories</Button>
+				</Link>
+			</Stack>
+		);
+	};
+
+	return (
+		<Stack width={'100%'} height={'100%'} flexGrow={1} overflow="hidden" backgroundColor="dark.lighter">
+			{getTagsTopBarComponent()}
+			<Divider />
+			<Box ref={tagsEl} overflow="auto" onScroll={onScroll}>
 				<div id="back-to-top-tags-anchor" sx={{ display: 'none' }} />
 				<Box
-					className="tags"
 					sx={{
 						display: parent.display_style === 'chip' ? 'flex' : 'grid',
 						gridTemplateColumns: 'repeat(auto-fill, ' + calculateTagSize().width + 'px)',
@@ -335,28 +354,15 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 							/>
 						);
 					})}
-					{TagsUtil.isSpecialCategory(parent.id) && tags.length == 0 && (
-						<Stack
-							direction="row"
-							gap="10px"
-							justifyContent="center"
-							alignItems="center"
-							sx={{
-								width: '100%',
-								height: '100%',
-							}}
-						>
-							No diretories found
-							<Link component={RouterLink} to="spa/manage-directories">
-								<Button variant="outlined">Manage Directories</Button>
-							</Link>
-						</Stack>
-					)}
+					{getNoDirectoriesFoundComponent()}
 				</Box>
 			</Box>
-			{addTagDialogOpened && (
-				<AddTagDialog parentId={parent.id} verb="Tag" onClose={() => setAddTagDialogOpened(false)} />
-			)}
+			<AddTagDialog
+				open={addTagDialogOpened}
+				parentId={parent.id}
+				verb="Tag"
+				onClose={() => setAddTagDialogOpened(false)}
+			/>
 			<Fade in={trigger}>
 				<Box onClick={backToTopClicked} role="presentation" sx={{ position: 'fixed', bottom: 16, right: 16 }}>
 					<Fab size="small" aria-label="scroll back to top">

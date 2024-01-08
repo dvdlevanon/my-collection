@@ -32,9 +32,12 @@ function Categories({ categories, onCategoryClicked, selectedCategoryId }) {
 				);
 			})}
 			{categories.length == 0 && <div>Add a category</div>}
-			{addCategoryDialogOpened && (
-				<AddTagDialog parentId={null} verb="Category" onClose={() => setAddCategoryDialogOpened(false)} />
-			)}
+			<AddTagDialog
+				open={addCategoryDialogOpened}
+				parentId={null}
+				verb="Category"
+				onClose={() => setAddCategoryDialogOpened(false)}
+			/>
 		</Stack>
 	);
 }

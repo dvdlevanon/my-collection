@@ -1,6 +1,6 @@
 import AddIcon from '@mui/icons-material/Add';
 import ImageIcon from '@mui/icons-material/PermMedia';
-import { Box, IconButton, Stack, Tooltip } from '@mui/material';
+import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
 import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
@@ -48,6 +48,7 @@ function TagsTopBar({
 				<Stack
 					sx={{
 						display: 'flex',
+						width: '100%',
 						flexDirection: 'row',
 						gap: '10px',
 						maxHeight: '44px',
@@ -86,23 +87,23 @@ function TagsTopBar({
 					></TextFieldWithKeyboard>
 					<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
 					<TagViewControls tagSize={tagSize} onZoomChanged={onZoomChanged} />
+					<Divider orientation="vertical" />
+					<PrefixFilter selectedChar={prefixFilter} setSelectedChar={setPrefixFilter} />
 				</Stack>
-				<TagsAnnotations
-					annotations={annotations}
-					selectedAnnotations={selectedAnnotations}
-					setSelectedAnnotations={setSelectedAnnotations}
-				/>
-				{showImagesFromDirectory && (
-					<ChooseDirectoryDialog
-						title="Set images from directory"
-						onChange={imageDirectoryChoosen}
-						onClose={() => {
-							setShowImagesFromDirectory(false);
-						}}
-					/>
-				)}
 			</Box>
-			<PrefixFilter selectedChar={prefixFilter} setSelectedChar={setPrefixFilter} />
+			<TagsAnnotations
+				annotations={annotations}
+				selectedAnnotations={selectedAnnotations}
+				setSelectedAnnotations={setSelectedAnnotations}
+			/>
+			<ChooseDirectoryDialog
+				open={showImagesFromDirectory}
+				title="Set images from directory"
+				onChange={imageDirectoryChoosen}
+				onClose={() => {
+					setShowImagesFromDirectory(false);
+				}}
+			/>
 		</Stack>
 	);
 }

@@ -103,9 +103,12 @@ function DirectoryRow({ directory }) {
 					/>
 				</TableCell>
 			</TableRow>
-			{addCategoryDialogOpened && (
-				<AddTagDialog parentId={null} verb="Category" onClose={() => setAddCategoryDialogOpened(false)} />
-			)}
+			<AddTagDialog
+				open={addCategoryDialogOpened}
+				parentId={null}
+				verb="Category"
+				onClose={() => setAddCategoryDialogOpened(false)}
+			/>
 		</>
 	);
 }

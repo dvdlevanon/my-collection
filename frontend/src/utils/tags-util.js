@@ -121,10 +121,18 @@ export default class TagsUtil {
 	}
 
 	static tagTitleToFileName(title) {
+		if (!title) {
+			return '';
+		}
+
 		return title.toLowerCase().replaceAll(' ', '-');
 	}
 
 	static normalizeTagTitle(rawTitle) {
+		if (!rawTitle) {
+			return '';
+		}
+
 		let regex = /\b[A-Z]{2,}\b/g;
 		let noConsequensiveUpperCaser = rawTitle.replace(regex, function (match) {
 			return match.toLowerCase();
