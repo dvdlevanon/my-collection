@@ -1,6 +1,4 @@
-import CancelIcon from '@mui/icons-material/Cancel';
 import CloseIcon from '@mui/icons-material/Close';
-import DoneIcon from '@mui/icons-material/Done';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
@@ -74,7 +72,12 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 
 		let updatedTag = { ...tag };
 		updatedTag.images = updatedTag.images || [];
-		updatedTag.images.push({ url: fileUrl, tag_id: tag.id, imageType: tit.id });
+		updatedTag.images.push({
+			url: fileUrl,
+			image_nonce: Date.now(),
+			tag_id: tag.id,
+			imageType: tit.id,
+		});
 
 		Client.saveTag(updatedTag).then(() => {
 			setUpdatedTag(updatedTag);
@@ -123,30 +126,6 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 			setUpdatedTag(updatedTag);
 			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
 		});
-	};
-
-	const getThumnailModeButtons = (e) => {
-		return (
-			<>
-				<IconButton
-					onClick={(e) => {
-						updateImageThumbnail(tag, tit, thumbnailCrop);
-						setThumbnailMode(false);
-						setThumbnailCrop(null);
-					}}
-				>
-					<DoneIcon />
-				</IconButton>
-				<IconButton
-					onClick={(e) => {
-						setThumbnailMode(false);
-						setThumbnailCrop(null);
-					}}
-				>
-					<CancelIcon />
-				</IconButton>
-			</>
-		);
 	};
 
 	const getRegularButtons = (e) => {
@@ -270,6 +249,15 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 							cropMode={thumbnailMode}
 							onCropChange={setThumbnailCrop}
 							onImageLoaded={setImage}
+							onCropCanceled={() => {
+								setThumbnailMode(false);
+								setThumbnailCrop(null);
+							}}
+							onCropDone={() => {
+								updateImageThumbnail(tag, tit, thumbnailCrop);
+								setThumbnailMode(false);
+								setThumbnailCrop(null);
+							}}
 						/>
 						<Thumbnail
 							imageUrl={TagsUtil.getTagImageUrl(updatedTag, tit, true)}
@@ -289,7 +277,7 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 					}}
 					onClick={(e) => e.stopPropagation()}
 				>
-					{thumbnailMode ? getThumnailModeButtons() : getRegularButtons()}
+					{!thumbnailMode && getRegularButtons()}
 				</Box>
 				<Box
 					component="input"

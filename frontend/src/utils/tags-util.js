@@ -64,6 +64,10 @@ export default class TagsUtil {
 		}
 
 		let category = TagsUtil.categories.find((cur) => cur.id == tagId);
+		if (!category) {
+			return false;
+		}
+
 		return category.display_style === 'portrait';
 	}
 
@@ -73,6 +77,10 @@ export default class TagsUtil {
 		}
 
 		let category = TagsUtil.categories.find((cur) => cur.id == tagId);
+		if (!category) {
+			return false;
+		}
+
 		return category.display_style === 'banner';
 	}
 

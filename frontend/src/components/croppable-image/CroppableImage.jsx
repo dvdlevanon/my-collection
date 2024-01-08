@@ -1,9 +1,13 @@
+import CancelIcon from '@mui/icons-material/Cancel';
+import DoneIcon from '@mui/icons-material/Done';
 import NoImageIcon from '@mui/icons-material/HideImage';
-import { Box } from '@mui/material';
+import TextDecrease from '@mui/icons-material/TextDecrease';
+import TextIncrease from '@mui/icons-material/TextIncrease';
+import { Box, Divider, IconButton, Stack } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactCrop from 'react-image-crop';
 
-function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageLoaded }) {
+function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageLoaded, onCropDone, onCropCanceled }) {
 	const [initialCrop, setInitialCrop] = useState(true);
 	const [crop, setCrop] = useState(null);
 	const [imageDimenssion, setImageDimenssion] = useState(null);
@@ -121,50 +125,82 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 		});
 	};
 
+	const changeCropSize = (offset) => {
+		if (crop && crop.width - offset > 0) {
+			setCrop({ ...crop, width: crop.width - offset, height: crop.height - offset });
+		}
+	};
+
 	return (
-		<Box
-			ref={imageHolderRef}
+		<Stack
+			flexDirection="column"
 			sx={{
-				display: 'flex',
-				height: '100%',
 				width: '100%',
+				height: '100%',
 				gap: '10px',
-				justifyContent: 'center',
 			}}
 		>
-			{(cropMode && (
-				<ReactCrop aspect={1} crop={crop} onChange={cropChanged}>
-					{getImageComponent()}
-				</ReactCrop>
-			)) ||
-				getImageComponent()}
-			{!imageUrl && (
-				<Box
-					sx={{
-						position: 'absolute',
-						'&:hover': {
-							filter: 'brightness(120%)',
-						},
-						width: '100px',
-						height: '100px',
-						left: 0,
-						right: 0,
-						top: 0,
-						bottom: 0,
-						margin: 'auto',
-						display: 'flex',
-						flexDirection: 'column',
-					}}
-				>
-					<NoImageIcon
-						color="dark"
+			<Box
+				ref={imageHolderRef}
+				sx={{
+					display: 'flex',
+					height: cropMode ? 'calc(100% - 100px)' : '100%',
+					width: '100%',
+					gap: '10px',
+					justifyContent: 'center',
+				}}
+			>
+				{(cropMode && (
+					<ReactCrop aspect={1} crop={crop} onChange={cropChanged}>
+						{getImageComponent()}
+					</ReactCrop>
+				)) ||
+					getImageComponent()}
+				{!imageUrl && (
+					<Box
 						sx={{
-							fontSize: '100px',
+							position: 'absolute',
+							'&:hover': {
+								filter: 'brightness(120%)',
+							},
+							width: '100px',
+							height: '100px',
+							left: 0,
+							right: 0,
+							top: 0,
+							bottom: 0,
+							margin: 'auto',
+							display: 'flex',
+							flexDirection: 'column',
 						}}
-					/>
-				</Box>
+					>
+						<NoImageIcon
+							color="dark"
+							sx={{
+								fontSize: '100px',
+							}}
+						/>
+					</Box>
+				)}
+			</Box>
+			{cropMode && (
+				<Stack flexDirection="row" justifyContent="center" gap="30px">
+					<IconButton onClick={(e) => changeCropSize(-30)}>
+						<TextIncrease sx={{ fontSize: '50px' }} />
+					</IconButton>
+					<IconButton onClick={(e) => changeCropSize(30)}>
+						<TextDecrease sx={{ fontSize: '50px' }} />
+					</IconButton>
+					<Divider orientation="vertical" />
+					<IconButton onClick={onCropDone}>
+						<DoneIcon sx={{ fontSize: '50px' }} />
+					</IconButton>
+					<IconButton onClick={onCropCanceled}>
+						<CancelIcon sx={{ fontSize: '50px' }} />
+					</IconButton>
+				</Stack>
 			)}
-		</Box>
+		</Stack>
 	);
 }
 
