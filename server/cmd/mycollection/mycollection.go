@@ -24,7 +24,7 @@ var logger = logging.MustGetLogger("mycollection")
 var (
 	help          = flag.Bool("help", false, "Print help")
 	rootDirectory = flag.String("root-directory", "", "Server root directory")
-	listenAddress = flag.String("address", ":8080", "Server listen address")
+	listenAddress = flag.String("address", ":6969", "Server listen address")
 )
 
 func filesFilter(path string) bool {
