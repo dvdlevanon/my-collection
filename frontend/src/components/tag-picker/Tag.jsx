@@ -4,9 +4,9 @@ import { Link as RouterLink } from 'react-router-dom';
 import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
+import TagContextMenu from '../tag-context-menu/TagContextMenu';
 import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagImage from './TagImage';
-import TagSpeedDial from './TagSpeedDial';
 import TagTitle from './TagTitle';
 
 function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClicked }) {
@@ -14,6 +14,7 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 	const [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	const [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
 	const [manageTagImageOpened, setManageTagImageOpened] = useState(false);
+	const [tagMenuProps, setTagMenuProps] = useState(null);
 
 	const onManageAttributesClicked = (e) => {
 		e.stopPropagation();
@@ -31,14 +32,6 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 	const optionsComponents = () => {
 		return (
 			<>
-				{attachMenuAttributes === null && !optionsHidden && (
-					<TagSpeedDial
-						tag={tag}
-						onManageImageClicked={() => setManageTagImageOpened(true)}
-						onManageAttributesClicked={onManageAttributesClicked}
-						onRemoveTagClicked={() => setRemoveTagDialogOpened(true)}
-					/>
-				)}
 				{attachMenuAttributes !== null && (
 					<TagAttachAnnotationMenu
 						tag={tag}
@@ -105,6 +98,15 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 			margin={parent.display_style !== 'banner' ? 'unset' : '50px'}
 		>
 			<Link
+				onContextMenu={(e) => {
+					e.preventDefault();
+					e.preventDefault();
+					setTagMenuProps({
+						anchor: e.target,
+						left: e.clientX,
+						top: e.clientY,
+					});
+				}}
 				component={RouterLink}
 				to={tagLinkBuilder(tag)}
 				sx={{
@@ -116,7 +118,18 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 				{(parent.display_style === 'chip' && tagChipComponent()) || tagImageComponent()}
 			</Link>
 			{parent.display_style !== 'banner' && parent.display_style !== 'chip' && <TagTitle tag={tag} />}
-			{parent.display_style !== 'chip' && optionsComponents()}
+			{optionsComponents()}
+			{tagMenuProps != null && (
+				<TagContextMenu
+					tag={tag}
+					menuAnchorEl={tagMenuProps.anchor}
+					menuPosition={{ top: tagMenuProps.top, left: tagMenuProps.left }}
+					onClose={() => setTagMenuProps(null)}
+					onManageAttributesClicked={onManageAttributesClicked}
+					onManageImageClicked={setManageTagImageOpened}
+					onRemoveTagClicked={() => setRemoveTagDialogOpened(true)}
+				/>
+			)}
 		</Stack>
 	);
 }
