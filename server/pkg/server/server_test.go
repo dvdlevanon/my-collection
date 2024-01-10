@@ -8,6 +8,7 @@ import (
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
 	"net/http"
 	"net/http/httptest"
@@ -38,7 +39,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	dcc := model.NewMockDirectoryChangedCallback(ctrl)
 	dcc.EXPECT().DirectoryChanged(gomock.Any()).AnyTimes()
 
-	return New(db, storage, dcc, &processor.ProcessorMock{})
+	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

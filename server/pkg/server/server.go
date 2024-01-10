@@ -4,6 +4,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
 	"my-collection/server/pkg/utils"
 	"net/http"
@@ -19,23 +20,26 @@ import (
 var logger = logging.MustGetLogger("server")
 
 type Server struct {
-	router    *gin.Engine
-	db        *db.Database
-	storage   *storage.Storage
-	processor processor.Processor
-	dcc       model.DirectoryChangedCallback
-	push      *push
+	router     *gin.Engine
+	db         *db.Database
+	storage    *storage.Storage
+	processor  processor.Processor
+	spectagger *spectagger.Spectagger
+	dcc        model.DirectoryChangedCallback
+	push       *push
 }
 
-func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback, processor processor.Processor) *Server {
+func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback,
+	processor processor.Processor, spectagger *spectagger.Spectagger) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
-		router:    gin.New(),
-		db:        db,
-		storage:   storage,
-		dcc:       dcc,
-		processor: processor,
+		router:     gin.New(),
+		db:         db,
+		storage:    storage,
+		dcc:        dcc,
+		processor:  processor,
+		spectagger: spectagger,
 	}
 
 	server.push = newPush(processor, server)
@@ -97,6 +101,8 @@ func (s *Server) init() {
 	api.POST("/queue/continue", s.queueContinue)
 	api.POST("/queue/pause", s.queuePause)
 	api.POST("/queue/clear-finished", s.clearFinishedTasks)
+
+	api.POST("/spectagger/run", s.runSpecTagger)
 
 	api.GET("/tag-image-types", s.getTagImageTypes)
 

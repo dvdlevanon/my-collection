@@ -89,7 +89,7 @@ func run() error {
 	}
 	go spectagger.Run()
 
-	return server.New(db, storage, fsManager, processor).Run(*listenAddress)
+	return server.New(db, storage, fsManager, processor, spectagger).Run(*listenAddress)
 }
 
 func main() {

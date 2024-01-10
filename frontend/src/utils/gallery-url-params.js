@@ -54,9 +54,9 @@ export default class GalleryUrlParams {
 		this.updateActiveTagsString(updatedTags);
 	}
 
-	activateTag(tagId) {
+	activateTag(tagId, keepSelection) {
 		let tagsStatus = this.getTags();
-		let updatedTags = tagsStatus.map((tag) => this.tagToString(tag.id, false));
+		let updatedTags = tagsStatus.map((tag) => this.tagToString(tag.id, keepSelection ? tag.selected : false));
 		updatedTags.push(this.tagToString(tagId, true));
 		this.updateActiveTagsString(updatedTags);
 	}
@@ -78,6 +78,17 @@ export default class GalleryUrlParams {
 
 	deactivateAllTags() {
 		this.updateActiveTagsString([]);
+	}
+
+	getConditionType() {
+		let parsed = queryString.parse(this.searchParams.toString());
+		return parsed['condition-type'] || '||';
+	}
+
+	setConditionType(conditionType) {
+		let parsed = queryString.parse(this.searchParams.toString());
+		parsed['condition-type'] = conditionType;
+		this.setSearchParams(parsed);
 	}
 
 	updateActiveTagsString(activeTags) {

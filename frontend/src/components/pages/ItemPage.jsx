@@ -12,7 +12,7 @@ import ConfirmationDialog from '../dialogs/ConfirmationDialog';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import Highlights from '../highlights/Highlights';
 import ItemMetadataViewer from '../item-metadata-viewer/ItemMetadataViewer';
-import ItemTitle from '../items-viewer/ItemTitle';
+import ItemTitle from '../item-title/ItemTitle';
 import Player from '../player/Player';
 import SubItems from '../sub-items/SubItems';
 import TagBanner from '../tag-banner/TagBanner';
@@ -179,6 +179,8 @@ function ItemPage() {
 				tags={thumbnails}
 				onTagRemoved={onTagRemoved}
 				onEditThumbnail={onEditThumbnail}
+				withRemoveOption={true}
+				onTagClicked={null}
 			></TagThumbnails>
 		);
 	};

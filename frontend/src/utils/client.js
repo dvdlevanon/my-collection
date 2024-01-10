@@ -234,6 +234,10 @@ export default class Client {
 		fetch(`${Client.apiUrl}/items/refresh-file-metadata`, { method: 'POST' });
 	}
 
+	static runSpectagger() {
+		fetch(`${Client.apiUrl}/spectagger/run`, { method: 'POST' });
+	}
+
 	static getExportMetadataUrl() {
 		return `${Client.apiUrl}/export-metadata.json`;
 	}

@@ -1,18 +1,23 @@
-import { Box, Stack } from '@mui/material';
+import { Box, Fade, Stack } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import seedrandom from 'seedrandom';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
+import TagsUtil from '../../utils/tags-util';
+import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
+import TagThumbnails from '../tag-thumbnail/TagThumbnails';
 import GalleryFilters from './GalleryFilters';
 import ItemSortSelector from './ItemSortSelector';
 import ItemsList from './ItemsList';
 import ItemsViewControls from './ItemsViewControls';
 
 function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
-	const [conditionType, setConditionType] = useState('||');
+	const [conditionType, setConditionType] = useState(galleryUrlParams.getConditionType());
 	const [searchTerm, setSearchTerm] = useState('');
 	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
 	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
 	const [sortBy, setSortBy] = useState('random');
+	const [editThumbnailTag, setEditThumbnailTag] = useState(null);
+	const [showThumbnails, setShowThumbnails] = useState(true);
 
 	useEffect(() => {
 		let lastItemsWidth = localStorage.getItem('items-width');
@@ -125,6 +130,34 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 		}
 	};
 
+	const getAvailableThumbnailTags = (items) => {
+		let tags = [];
+		let selectedTags = getSelectedTags();
+
+		for (let i = 0; i < items.length; i++) {
+			for (let j = 0; j < items[i].tags.length; j++) {
+				let tag = items[i].tags[j];
+				if (!TagsUtil.showAsThumbnail(tag.parentId)) {
+					continue;
+				}
+
+				if (selectedTags.some((cur) => tag.id == cur.id)) {
+					continue;
+				}
+
+				tags[tag.id] = tag;
+			}
+		}
+
+		let result = [];
+
+		for (let i = 0; i < Object.keys(tags).length; i++) {
+			result.push(tags[Object.keys(tags)[i]]);
+		}
+
+		return result.sort((a, b) => (a.parentId > b.parentId ? 1 : a.parentId < b.parentId ? 1 : 0));
+	};
+
 	const onTagDeactivated = (tag) => {
 		galleryUrlParams.deactivateTag(tag.id);
 	};
@@ -152,6 +185,11 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 		setSortBy(newSortBy);
 	};
 
+	const updateConditionType = (type) => {
+		galleryUrlParams.setConditionType(type);
+		setConditionType(type);
+	};
+
 	return (
 		<Stack overflow="hidden" height="100%">
 			<Stack flexDirection="row" gap="10px" padding="0px 0px 3px 0px">
@@ -168,7 +206,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 				{tagsQuery.isSuccess && (
 					<GalleryFilters
 						conditionType={conditionType}
-						setConditionType={setConditionType}
+						setConditionType={updateConditionType}
 						activeTags={getActiveTags()}
 						selectedTags={getSelectedTags()}
 						onTagClick={onTagClick}
@@ -179,6 +217,21 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 					/>
 				)}
 			</Stack>
+			{tagsQuery.isSuccess && itemsQuery.isSuccess && (
+				<Fade in={showThumbnails} unmountOnExit={true}>
+					<Box overflow="auto">
+						<TagThumbnails
+							tags={getAvailableThumbnailTags(getFilteredItems(getSelectedTags(), searchTerm))}
+							onEditThumbnail={(tag) => setEditThumbnailTag(tag)}
+							onTagClicked={(tag) => {
+								updateConditionType('&&');
+								galleryUrlParams.activateTag(tag.id, true);
+							}}
+							additionSx={{ flexFlow: 'wrap' }}
+						/>
+					</Box>
+				</Fade>
+			)}
 			<Box width="100%" height="100%">
 				{tagsQuery.isSuccess && itemsQuery.isSuccess && (
 					<ItemsList
@@ -188,9 +241,22 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 						itemLinkBuilder={(item) => {
 							return '/spa/item/' + item.id + '?' + galleryUrlParams.getUrlParamsString();
 						}}
+						onScroll={(e) => {
+							if (!e) {
+								return;
+							}
+							setShowThumbnails(e.scrollTop < 10);
+						}}
 					/>
 				)}
 			</Box>
+			{editThumbnailTag != null && (
+				<ManageTagImageDialog
+					tag={editThumbnailTag}
+					autoThumbnailMode={true}
+					onClose={() => setEditThumbnailTag(null)}
+				/>
+			)}
 		</Stack>
 	);
 }

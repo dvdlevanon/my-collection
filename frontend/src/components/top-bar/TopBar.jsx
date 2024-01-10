@@ -156,6 +156,14 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					>
 						Refresh File Metadata
 					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.runSpectagger();
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Run spectagger
+					</MenuItem>
 				</Menu>
 				<FormControlLabel
 					label="Use Previews"

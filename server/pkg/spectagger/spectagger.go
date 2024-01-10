@@ -39,28 +39,41 @@ func New(trw model.TagReaderWriter, irw model.ItemReaderWriter,
 	}
 
 	return &Spectagger{
-		trw:  trw,
-		irw:  irw,
-		tarw: tarw,
+		trw:            trw,
+		irw:            irw,
+		tarw:           tarw,
+		triggerChannel: make(chan bool),
 	}, nil
 }
 
 type Spectagger struct {
-	trw  model.TagReaderWriter
-	irw  model.ItemReaderWriter
-	tarw model.TagAnnotationReaderWriter
+	trw            model.TagReaderWriter
+	irw            model.ItemReaderWriter
+	tarw           model.TagAnnotationReaderWriter
+	triggerChannel chan bool
+}
+
+func (d *Spectagger) Trigger() {
+	d.triggerChannel <- true
 }
 
 func (d *Spectagger) Run() {
 	for {
-		time.Sleep(1 * time.Minute)
-		logger.Infof("Spectagger started")
-		if err := d.autoSpectag(); err != nil {
-			utils.LogError(err)
+		select {
+		case <-d.triggerChannel:
+			d.runSpectagger()
+		case <-time.After(1 * time.Minute):
+			d.runSpectagger()
 		}
-		logger.Infof("Spectagger finished")
-		time.Sleep(1 * time.Hour)
 	}
+}
+
+func (d *Spectagger) runSpectagger() {
+	logger.Infof("Spectagger started")
+	if err := d.autoSpectag(); err != nil {
+		utils.LogError(err)
+	}
+	logger.Infof("Spectagger finished")
 }
 
 func (d *Spectagger) autoSpectag() error {

@@ -4,10 +4,10 @@ import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
 import ItemsUtil from '../../utils/items-util';
 import TimeUtil from '../../utils/time-utils';
+import ItemTitle from '../item-title/ItemTitle';
 import ItemBadges from './ItemBadges';
 import ItemCoverIndicator from './ItemCoverIndicator';
 import ItemOffests from './ItemOffests';
-import ItemTitle from './ItemTitle';
 
 function Item({
 	item,

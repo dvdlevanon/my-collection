@@ -77,7 +77,7 @@ func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
 
 func (d *Database) GetItems(conds ...interface{}) (*[]model.Item, error) {
 	var items []model.Item
-	err := d.handleError(d.getItemModel(true).Find(&items, conds...).Error)
+	err := d.handleError(d.getItemModel(false).Find(&items, conds...).Error)
 	return &items, err
 }
 

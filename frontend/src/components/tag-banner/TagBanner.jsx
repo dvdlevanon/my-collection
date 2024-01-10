@@ -10,6 +10,30 @@ import TagsUtil from '../../utils/tags-util';
 function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 	const [showButtons, setShowButtons] = useState(false);
 
+	const removeUrlParams = (url) => {
+		const indexOfQuestionMark = url.indexOf('?');
+
+		if (indexOfQuestionMark === -1) {
+			return url;
+		}
+
+		return url.substring(0, indexOfQuestionMark);
+	};
+
+	const getBackgroundColor = () => {
+		if (tag == null) {
+			return 'auto';
+		}
+
+		let url = removeUrlParams(TagsUtil.getTagImageUrl(tag, null, false));
+
+		if (url.endsWith('.png') || url.endsWith('.svg')) {
+			return '#555';
+		} else {
+			return 'auto';
+		}
+	};
+
 	const getBannerComponent = () => {
 		return (
 			<Box
@@ -71,6 +95,7 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 						borderRadius: '5px',
 						border: '1px solid white',
 						padding: '10px',
+						backgroundColor: getBackgroundColor(),
 					}}
 					component="img"
 					src={tag == null ? TagsUtil.getNoBannerImageUrl() : TagsUtil.getTagImageUrl(tag, null, false)}

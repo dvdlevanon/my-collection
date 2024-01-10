@@ -9,7 +9,7 @@ import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
 import Thumbnail from '../thumbnail/Thumbnail';
 
-function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
+function TagThumbnail({ tag, onTagClicked, onTagRemoved, onEditThumbnail, withRemoveOption }) {
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(0);
 	const [menuY, setMenuY] = useState(0);
@@ -49,20 +49,34 @@ function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 		return <Thumbnail crop={image.thumbnail_rect} imageUrl={Client.buildFileUrl(image.url)} />;
 	};
 
+	const getThumbnailCompnentWrapper = () => {
+		return (
+			<Tooltip title={tag.title}>
+				<Box
+					onContextMenu={onClick}
+					onClick={() => {
+						if (onTagClicked) {
+							onTagClicked(tag);
+						}
+					}}
+					sx={{
+						cursor: 'pointer',
+					}}
+				>
+					{getThumbnailCompnent()}
+				</Box>
+			</Tooltip>
+		);
+	};
+
 	return (
 		<>
-			<Tooltip title={tag.title}>
+			{onTagClicked == null && (
 				<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
-					<Box
-						onContextMenu={onClick}
-						sx={{
-							cursor: 'pointer',
-						}}
-					>
-						{getThumbnailCompnent()}
-					</Box>
+					{getThumbnailCompnentWrapper()}
 				</Link>
-			</Tooltip>
+			)}
+			{onTagClicked != null && getThumbnailCompnentWrapper()}
 			<Menu
 				open={menuAchrosEl != null}
 				anchorEl={menuAchrosEl}
@@ -98,20 +112,22 @@ function TagThumbnail({ tag, onTagRemoved, onEditThumbnail }) {
 						</Typography>
 					</MenuItem>
 				</Link>
-				<Divider />
-				<MenuItem
-					onClick={() => {
-						onTagRemoved(tag);
-						closeMenu();
-					}}
-				>
-					<ListItemIcon>
-						<DeleteIcon />
-					</ListItemIcon>
-					<Typography variant="h6" color="white">
-						Remove
-					</Typography>
-				</MenuItem>
+				{withRemoveOption && <Divider />}
+				{withRemoveOption && (
+					<MenuItem
+						onClick={() => {
+							onTagRemoved(tag);
+							closeMenu();
+						}}
+					>
+						<ListItemIcon>
+							<DeleteIcon />
+						</ListItemIcon>
+						<Typography variant="h6" color="white">
+							Remove
+						</Typography>
+					</MenuItem>
+				)}
 			</Menu>
 		</>
 	);

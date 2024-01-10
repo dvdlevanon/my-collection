@@ -3,7 +3,7 @@ import React from 'react';
 import { AutoSizer, Grid } from 'react-virtualized';
 import Item from './Item';
 
-function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder }) {
+function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder, onScroll }) {
 	const onConvertVideo = (item) => {};
 
 	const onConvertAudio = (item) => {};
@@ -59,6 +59,7 @@ function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder }) {
 						rowHeight={itemsSize.height + 100}
 						height={height}
 						width={width}
+						onScroll={onScroll}
 					/>
 				)}
 			</AutoSizer>
