@@ -1,9 +1,11 @@
+import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField } from '@mui/material';
 import React, { useRef } from 'react';
 
 function ChooseDirectoryDialog({ open, title, onChange, onClose }) {
 	const directoryFullPath = useRef(null);
+	const theme = useTheme();
 
 	const addDirectory = () => {
 		if (!directoryFullPath.current.value) {
@@ -31,26 +33,26 @@ function ChooseDirectoryDialog({ open, title, onChange, onClose }) {
 				<IconButton
 					sx={{
 						position: 'absolute',
-						top: '0px',
-						right: '0px',
-						margin: '10px',
+						top: '0',
+						right: '0',
+						margin: theme.spacing(1),
 					}}
 					onClick={onClose}
 				>
-					<CloseIcon />
+					<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</DialogTitle>
 			<DialogContent
 				sx={{
 					display: 'flex',
-					gap: '10px',
+					gap: theme.spacing(1),
 				}}
 			>
 				<Box
 					sx={{
 						display: 'flex',
 						flexDirection: 'column',
-						gap: '10px',
+						gap: theme.spacing(1),
 						width: '100%',
 					}}
 				>
@@ -58,7 +60,7 @@ function ChooseDirectoryDialog({ open, title, onChange, onClose }) {
 						sx={{
 							display: 'flex',
 							flexDirection: 'row',
-							gap: '10px',
+							gap: theme.spacing(1),
 						}}
 					>
 						<TextField

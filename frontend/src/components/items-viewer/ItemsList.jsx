@@ -1,9 +1,12 @@
+import { useTheme } from '@emotion/react';
 import { Box } from '@mui/system';
 import React from 'react';
 import { AutoSizer, Grid } from 'react-virtualized';
 import Item from './Item';
 
 function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder, onScroll }) {
+	const theme = useTheme();
+
 	const onConvertVideo = (item) => {};
 
 	const onConvertAudio = (item) => {};
@@ -25,7 +28,7 @@ function ItemsList({ itemsSize, items, previewMode, itemLinkBuilder, onScroll })
 					key={item.id}
 					style={style}
 					sx={{
-						padding: '20px',
+						padding: theme.spacing(2),
 						width: itemsSize.width,
 						height: itemsSize.height,
 					}}

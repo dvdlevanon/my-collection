@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
@@ -12,6 +13,7 @@ function AddTagDialog({ open, parentId, verb, onTagAdded, onClose, shouldSelectP
 	const queryClient = useQueryClient();
 	const newTagName = useRef(null);
 	const [selectedCategory, setSelectedCategory] = useState(-1);
+	const theme = useTheme();
 
 	const addTag = (e) => {
 		if (!newTagName.current.value) {
@@ -57,20 +59,20 @@ function AddTagDialog({ open, parentId, verb, onTagAdded, onClose, shouldSelectP
 				<IconButton
 					sx={{
 						position: 'absolute',
-						top: '0px',
-						right: '0px',
-						margin: '10px',
+						top: '0',
+						right: '0',
+						margin: theme.spacing(1),
 					}}
 					onClick={() => onClose()}
 				>
-					<CloseIcon />
+					<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</DialogTitle>
 			<DialogContent
 				sx={{
 					display: 'flex',
 					flexDirection: 'column',
-					gap: '10px',
+					gap: theme.spacing(1),
 				}}
 			>
 				{shouldSelectParent && (
@@ -84,7 +86,7 @@ function AddTagDialog({ open, parentId, verb, onTagAdded, onClose, shouldSelectP
 						}}
 					/>
 				)}
-				<Stack flexDirection="row" gap="10px">
+				<Stack flexDirection="row" gap={theme.spacing(1)}>
 					<TextField
 						autoFocus
 						onKeyDown={(e) => {
@@ -99,7 +101,7 @@ function AddTagDialog({ open, parentId, verb, onTagAdded, onClose, shouldSelectP
 					></TextField>
 					<Tooltip title="Add">
 						<IconButton onClick={(e) => addTag(e)} sx={{ alignSelf: 'center' }}>
-							<AddIcon />
+							<AddIcon sx={{ fontSize: theme.iconSize(1) }} />
 						</IconButton>
 					</Tooltip>
 				</Stack>

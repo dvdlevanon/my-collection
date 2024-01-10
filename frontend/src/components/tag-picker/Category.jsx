@@ -1,12 +1,15 @@
+import { useTheme } from '@emotion/react';
 import { Link } from '@mui/material';
 import { Box } from '@mui/system';
 
 function Category({ isHighlighted, category, onClick }) {
+	const theme = useTheme();
+
 	return (
 		<Box
 			backgroundColor={isHighlighted ? 'dark.lighter' : 'auto'}
 			sx={{
-				padding: '0px 10px',
+				padding: theme.multiSpacing(0, 1),
 				height: '100%',
 			}}
 		>

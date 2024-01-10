@@ -1,7 +1,10 @@
+import { useTheme } from '@emotion/react';
 import { Box, Stack } from '@mui/material';
 import React from 'react';
 
 function PrefixFilter({ selectedChar, setSelectedChar }) {
+	const theme = useTheme();
+
 	const numberToChar = (num) => {
 		return String.fromCharCode(num + 'A'.charCodeAt(0));
 	};
@@ -19,7 +22,13 @@ function PrefixFilter({ selectedChar, setSelectedChar }) {
 	};
 
 	return (
-		<Stack padding="3px" flexDirection="row" justifyContent="space-around" alignSelf="center" width="50%">
+		<Stack
+			padding={theme.spacing(0.3)}
+			flexDirection="row"
+			justifyContent="space-around"
+			alignSelf="center"
+			width="50%"
+		>
 			{Array.from(Array(englishLettersCount()).keys()).map((i) => {
 				return (
 					<Box

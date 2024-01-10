@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import VolumeMuteIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
@@ -5,10 +6,11 @@ import { Fade, IconButton, Slider, Stack, Tooltip } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 
 function VolumeControls({ showVolume, setShowVolume, getVideoVolume, setVideoVolume }) {
-	let [volume, setVolume] = useState(0);
+	const [volume, setVolume] = useState(0);
+	const theme = useTheme();
 
 	useEffect(() => {
-		volume = parseFloat(localStorage.getItem('volume') || 0.3);
+		let volume = parseFloat(localStorage.getItem('volume') || 0.3);
 		changeVolume(volume);
 	}, []);
 
@@ -33,12 +35,18 @@ function VolumeControls({ showVolume, setShowVolume, getVideoVolume, setVideoVol
 			display="flex"
 			flexDirection="row"
 			alignItems="center"
-			gap="20px"
+			gap={theme.spacing(2)}
 			onMouseEnter={(e) => setShowVolume(true)}
 		>
 			<Tooltip title={volume == 0 ? 'Unmute' : 'Mute'}>
 				<IconButton onClick={toggleMute}>
-					{volume == 0 ? <VolumeMuteIcon /> : volume < 0.5 ? <VolumeDownIcon /> : <VolumeUpIcon />}
+					{volume == 0 ? (
+						<VolumeMuteIcon sx={{ fontSize: theme.iconSize(1) }} />
+					) : volume < 0.5 ? (
+						<VolumeDownIcon sx={{ fontSize: theme.iconSize(1) }} />
+					) : (
+						<VolumeUpIcon sx={{ fontSize: theme.iconSize(1) }} />
+					)}
 				</IconButton>
 			</Tooltip>
 			{showVolume && (

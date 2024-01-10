@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import { IconButton, Stack, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
@@ -7,6 +8,7 @@ import Category from './Category';
 
 function Categories({ categories, onCategoryClicked, selectedCategoryId }) {
 	const [addCategoryDialogOpened, setAddCategoryDialogOpened] = useState(false);
+	const theme = useTheme();
 
 	const sortedCategories = () => {
 		return categories.sort((cat1, cat2) => {
@@ -15,10 +17,10 @@ function Categories({ categories, onCategoryClicked, selectedCategoryId }) {
 	};
 
 	return (
-		<Stack padding="10px" flexDirection="row" alignItems="center" gap="10px">
+		<Stack padding={theme.spacing(1)} flexDirection="row" alignItems="center" gap={theme.spacing(1)}>
 			<Tooltip title="Add Category">
 				<IconButton size="small" onClick={() => setAddCategoryDialogOpened(true)}>
-					<AddIcon sx={{ fontSize: '20px' }} />
+					<AddIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</Tooltip>
 			{sortedCategories().map((category) => {

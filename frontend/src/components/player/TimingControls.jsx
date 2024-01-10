@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import LeftIcon from '@mui/icons-material/NavigateBefore';
 import RightIcon from '@mui/icons-material/NavigateNext';
 import TimingIcon from '@mui/icons-material/Schedule';
@@ -5,8 +6,9 @@ import { Fade, IconButton, Stack, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
 
 function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
-	let [changeTimerId, setChangeTimerId] = useState(0);
-	let [pressStartedAt, setPressStartedAt] = useState(0);
+	const [changeTimerId, setChangeTimerId] = useState(0);
+	const [pressStartedAt, setPressStartedAt] = useState(0);
+	const theme = useTheme();
 
 	const onMouseDown = (offset) => {
 		setRelativeTime(offset);
@@ -43,7 +45,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 			display="flex"
 			flexDirection="row"
 			alignItems="center"
-			gap="20px"
+			gap={theme.spacing(2)}
 			onMouseEnter={(e) => setShowSchedule(true)}
 		>
 			{showSchedule && (
@@ -56,7 +58,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<LeftIcon sx={{ fontSize: '20px' }} />
+								<LeftIcon sx={{ fontSize: theme.iconSize(0.7) }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="-10s">
@@ -66,7 +68,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<LeftIcon sx={{ fontSize: '25px' }} />
+								<LeftIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="-30s">
@@ -76,7 +78,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<LeftIcon sx={{ fontSize: '30px' }} />
+								<LeftIcon sx={{ fontSize: theme.iconSize(1.3) }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="+30s">
@@ -86,7 +88,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<RightIcon sx={{ fontSize: '30px' }} />
+								<RightIcon sx={{ fontSize: theme.iconSize(1.3) }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="+10s">
@@ -96,7 +98,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<RightIcon sx={{ fontSize: '25px' }} />
+								<RightIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 						</Tooltip>
 						<Tooltip title="+1s">
@@ -106,7 +108,7 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 								onMouseUp={onMouseUp}
 								onMouseLeave={onMouseLeave}
 							>
-								<RightIcon sx={{ fontSize: '20px' }} />
+								<RightIcon sx={{ fontSize: theme.iconSize(0.7) }} />
 							</IconButton>
 						</Tooltip>
 					</Stack>

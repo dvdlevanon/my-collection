@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import KeyboardIcon from '@mui/icons-material/Keyboard';
 import { Box, ClickAwayListener, InputAdornment, Popper, TextField } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
@@ -7,9 +8,10 @@ import 'react-simple-keyboard/build/css/index.css';
 function TextFieldWithKeyboard(props) {
 	const [showKeyboard, setShowKeyboard] = useState(false);
 	const [layoutName, setLayoutName] = useState('default');
+	const [text, setText] = useState('');
 	const textEl = useRef(null);
 	const keyboard = useRef(null);
-	const [text, setText] = useState('');
+	const theme = useTheme();
 
 	useEffect(() => {
 		if (keyboard.current) {
@@ -48,7 +50,7 @@ function TextFieldWithKeyboard(props) {
 							}}
 							onClick={() => setShowKeyboard(!showKeyboard)}
 						>
-							<KeyboardIcon />
+							<KeyboardIcon sx={{ fontSize: theme.iconSize(1) }} />
 						</InputAdornment>
 					),
 				}}

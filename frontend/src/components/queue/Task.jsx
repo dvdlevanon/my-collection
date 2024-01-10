@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import DoneIcon from '@mui/icons-material/Done';
 import PendingIcon from '@mui/icons-material/Pending';
 import { Box, CircularProgress, Tooltip, Typography } from '@mui/material';
@@ -8,6 +9,7 @@ import TimeUtil from '../../utils/time-utils';
 
 function Task({ task }) {
 	const [ignored, forceUpdate] = useReducer((x) => x + 1, 0);
+	const theme = useTheme();
 
 	useEffect(() => {
 		setInterval(forceUpdate, 1000);
@@ -16,20 +18,20 @@ function Task({ task }) {
 	return (
 		<Box>
 			{(!Boolean(task) && 'No Tasks') || (
-				<Stack flexDirection="row" gap="10px" alignItems="center">
+				<Stack flexDirection="row" gap={theme.spacing(1)} alignItems="center">
 					{TasksUtil.isProcessing(task) && (
 						<Tooltip title="Processing">
-							<CircularProgress color="bright" size="25px" />
+							<CircularProgress color="bright" size={theme.iconSize(1)} />
 						</Tooltip>
 					)}
 					{TasksUtil.isDone(task) && (
 						<Tooltip title="Done">
-							<DoneIcon />
+							<DoneIcon sx={{ fontSize: theme.iconSize(1) }} />
 						</Tooltip>
 					)}
 					{TasksUtil.isPending(task) && (
 						<Tooltip title="Pending">
-							<PendingIcon color="bright" size="25px" />
+							<PendingIcon color="bright" size={theme.iconSize(1)} />
 						</Tooltip>
 					)}
 					<Stack flexDirection="column">

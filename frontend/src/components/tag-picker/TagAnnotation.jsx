@@ -1,19 +1,22 @@
+import { useTheme } from '@emotion/react';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Box, IconButton, Typography } from '@mui/material';
 import React from 'react';
 
 function TagAnnotation({ annotation, selected, onClick, onRemoveClicked }) {
+	const theme = useTheme();
+
 	return (
 		<Box
 			bgcolor={selected ? 'primary.dark' : 'gray'}
 			color="primary.contrastText"
 			sx={{
-				margin: '10px',
-				padding: '0px 10px',
+				margin: theme.spacing(1),
+				padding: theme.multiSpacing(0, 1),
 				display: 'flex',
 				cursor: 'pointer',
 			}}
-			borderRadius="10px"
+			borderRadius={theme.spacing(1)}
 			onClick={(e) => {
 				if (onClick) {
 					onClick(e, annotation);
@@ -28,7 +31,7 @@ function TagAnnotation({ annotation, selected, onClick, onRemoveClicked }) {
 			</Box>
 			{onRemoveClicked && (
 				<IconButton onClick={(e) => onRemoveClicked(e, annotation)} size="small">
-					<ClearIcon sx={{ fontSize: '15px' }} />
+					<ClearIcon sx={{ fontSize: theme.iconSize(0.8) }} />
 				</IconButton>
 			)}
 		</Box>

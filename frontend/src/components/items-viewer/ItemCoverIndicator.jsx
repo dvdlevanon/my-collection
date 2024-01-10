@@ -1,14 +1,16 @@
+import { useTheme } from '@emotion/react';
 import { Box } from '@mui/material';
 import React, { useState } from 'react';
 
 function ItemCoverIndicator({ item, cover, isHighlighted }) {
-	let [optionsHidden, setOptionsHidden] = useState(true);
+	const theme = useTheme();
+	const [optionsHidden, setOptionsHidden] = useState(true);
 
 	return (
 		<Box
 			sx={{
-				borderRadius: '3px',
-				height: '2px',
+				borderRadius: theme.spacing(0.3),
+				height: theme.spacing(0.2),
 				width: '100%',
 				backgroundColor: isHighlighted ? '#d00' : '#500',
 			}}

@@ -1,8 +1,11 @@
+import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import React from 'react';
 
 function ConfirmationDialog({ open, title, text, actionButtonTitle, onConfirm, onCancel }) {
+	const theme = useTheme();
+
 	return (
 		<Dialog
 			open={open}
@@ -18,16 +21,16 @@ function ConfirmationDialog({ open, title, text, actionButtonTitle, onConfirm, o
 				<IconButton
 					sx={{
 						position: 'absolute',
-						top: '0px',
-						right: '0px',
-						margin: '10px',
+						top: '0',
+						right: '0',
+						margin: theme.spacing(1),
 					}}
 					onClick={(e) => {
 						e.stopPropagation();
 						onCancel();
 					}}
 				>
-					<CloseIcon />
+					<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</DialogTitle>
 			<DialogContent>

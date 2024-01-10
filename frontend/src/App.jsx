@@ -13,6 +13,8 @@ import ReactQueryUtil from './utils/react-query-util';
 import TagsUtil from './utils/tags-util';
 
 const theme = createTheme({
+	spacing: 10,
+	baseSpacing: 10,
 	palette: {
 		mode: 'dark',
 		primary: {
@@ -37,7 +39,32 @@ const theme = createTheme({
 	typography: {
 		fontSize: 16,
 	},
+	iconBaseSize: 25,
+	borderBaseSize: 1,
 });
+
+theme.multiSpacing = (...values) => {
+	return values
+		.map((value) => {
+			return theme.spacing(value);
+		})
+		.join(' ');
+};
+
+theme.iconSize = (factor) => {
+	let val = theme.iconBaseSize * factor;
+	return val + 'px';
+};
+
+theme.border = (factor, style, color) => {
+	let val = theme.borderBaseSize * factor;
+	return val + 'px ' + style + ' ' + color;
+};
+
+theme.fontSize = (factor) => {
+	let val = theme.typography.fontSize * factor;
+	return val + 'px ';
+};
 
 function App() {
 	const specialTagsQuery = useQuery({

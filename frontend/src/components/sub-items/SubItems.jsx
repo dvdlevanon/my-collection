@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { Stack } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
@@ -6,6 +7,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import SubItem from './SubItem';
 
 function SubItems({ item, onDeleteItem }) {
+	const theme = useTheme();
 	const mainItemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(item.main_item || item.id),
 		queryFn: () => {
@@ -30,7 +32,7 @@ function SubItems({ item, onDeleteItem }) {
 	return (
 		<>
 			{mainItemQuery.isSuccess && (
-				<Stack flexDirection="column" gap="10px">
+				<Stack flexDirection="column" gap={theme.spacing(1)}>
 					<SubItem item={mainItemQuery.data} itemWidth={200} highlighted={mainItemQuery.data.id == item.id} />
 					{sortedSubItems().map((subItem) => {
 						return (

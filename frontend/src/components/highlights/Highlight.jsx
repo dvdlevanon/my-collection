@@ -1,17 +1,20 @@
+import { useTheme } from '@emotion/react';
 import { Box, Stack } from '@mui/material';
 import React from 'react';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import Item from '../items-viewer/Item';
 
 function Highlight({ item, itemWidth, highlighted }) {
+	const theme = useTheme();
+
 	return (
 		<Stack
 			flexDirection="row"
-			gap="10px"
-			padding="10px"
+			gap={theme.spacing(1)}
+			padding={theme.spacing(1)}
+			borderRadius={theme.spacing(1)}
 			sx={{
 				cursor: 'pointer',
-				borderRadius: '10px',
 				backgroundColor: highlighted ? 'dark.lighter2' : 'unset',
 				'&:hover': {
 					backgroundColor: 'dark.lighter',

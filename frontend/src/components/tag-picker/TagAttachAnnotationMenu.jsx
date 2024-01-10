@@ -1,6 +1,7 @@
+import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
-import { Divider, IconButton, Popover, TextField, Typography } from '@mui/material';
+import { Divider, IconButton, Popover, Stack, TextField, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import React, { useRef } from 'react';
 import { useMutation, useQuery, useQueryClient } from 'react-query';
@@ -13,6 +14,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 	const newAnnotationName = useRef(null);
 	const addAnnotationToTagMutation = useMutation(Client.addAnnotationToTag);
 	const removeAnnotationFromTagMutation = useMutation(Client.removeAnnotationFromTag);
+	const theme = useTheme();
 	const availableAnnotationsQuery = useQuery(ReactQueryUtil.availableAnnotationsKey(tag.parentId), () =>
 		Client.getAvailableAnnotations(tag.parentId)
 	);
@@ -120,9 +122,9 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 				sx: {
 					display: 'flex',
 					maxWidth: '400px',
-					gap: '10px',
+					gap: theme.spacing(1),
 					flexDirection: 'column',
-					padding: '10px',
+					padding: theme.spacing(1),
 				},
 				onClick: (e) => {
 					e.preventDefault();
@@ -138,12 +140,12 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 					}}
 					sx={{
 						display: 'flex',
-						gap: '10px',
+						gap: theme.spacing(1),
 						alignItems: 'center',
 					}}
 				>
 					<IconButton onClick={handleClose}>
-						<CloseIcon />
+						<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</IconButton>
 					<Typography
 						variant="body1"
@@ -157,13 +159,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 					</Typography>
 				</Box>
 				<Divider />
-				<Box
-					sx={{
-						display: 'flex',
-						flexDirection: 'row',
-						flexWrap: 'wrap',
-					}}
-				>
+				<Stack flexDirection="row" flexWrap="wrap">
 					{getAnnotations(true).map((annotation) => {
 						return (
 							<TagAnnotation
@@ -184,11 +180,11 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 							/>
 						);
 					})}
-				</Box>
+				</Stack>
 				<Box
 					sx={{
 						display: 'flex',
-						gap: '10px',
+						gap: theme.spacing(1),
 						justifyContent: 'center',
 						alignItems: 'center',
 					}}
@@ -212,7 +208,7 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 						}}
 					></TextField>
 					<IconButton onClick={(e) => addNewAnnotation(e)} sx={{ alignSelf: 'center' }}>
-						<AddIcon />
+						<AddIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</IconButton>
 				</Box>
 			</Box>

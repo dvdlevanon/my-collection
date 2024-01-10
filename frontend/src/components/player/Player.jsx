@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import SplitIcon from '@mui/icons-material/ContentCut';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
@@ -24,20 +25,21 @@ function Player({
 	allowToSplit,
 	suggestedItems,
 }) {
-	let [showControls, setShowControls] = useState(true);
-	let [showVolume, setShowVolume] = useState(false);
-	let [showSchedule, setShowSchedule] = useState(false);
-	let [isPlaying, setIsPlaying] = useState(true);
-	let [currentTime, setCurrentTime] = useState(startPosition);
-	let [endPosition, setEndPosition] = useState(initialEndPosition);
-	let [fullScreen, setFullScreen] = useState(false);
-	let [showSuggestions, setShowSuggestions] = useState(false);
-	let [duration, setDuration] = useState(initialEndPosition - startPosition);
-	let [hideControlsTimerId, setHideControlsTimerId] = useState(0);
-	let [playerWidth, setPlayerWidth] = useState(0);
-	let [startHighlightSecond, setStartHighlightSecond] = useState(-1);
-	let videoElement = useRef();
-	let playerElement = useRef();
+	const [showControls, setShowControls] = useState(true);
+	const [showVolume, setShowVolume] = useState(false);
+	const [showSchedule, setShowSchedule] = useState(false);
+	const [isPlaying, setIsPlaying] = useState(true);
+	const [currentTime, setCurrentTime] = useState(startPosition);
+	const [endPosition, setEndPosition] = useState(initialEndPosition);
+	const [fullScreen, setFullScreen] = useState(false);
+	const [showSuggestions, setShowSuggestions] = useState(false);
+	const [duration, setDuration] = useState(initialEndPosition - startPosition);
+	const [hideControlsTimerId, setHideControlsTimerId] = useState(0);
+	const [playerWidth, setPlayerWidth] = useState(0);
+	const [startHighlightSecond, setStartHighlightSecond] = useState(-1);
+	const videoElement = useRef();
+	const playerElement = useRef();
+	const theme = useTheme();
 
 	useLayoutEffect(() => {
 		function updateSize() {
@@ -216,7 +218,7 @@ function Player({
 					onMouseEnter={() => onMouseEnter()}
 					sx={{
 						position: 'absolute',
-						padding: '10px',
+						padding: theme.spacing(1),
 						bottom: -1,
 						left: 0,
 						right: 0,
@@ -235,19 +237,19 @@ function Player({
 						}}
 						onChange={(e, newValue) => changeTime(newValue)}
 					/>
-					<Stack
-						sx={{
-							flexDirection: 'row',
-							alignItems: 'center',
-							gap: '20px',
-						}}
-					>
+					<Stack flexDirection="row" alignItems="center" gap={theme.spacing(2)}>
 						<Tooltip title={isPlaying ? 'Pause' : 'Play'}>
-							<IconButton onClick={togglePlay}>{isPlaying ? <PauseIcon /> : <PlayIcon />}</IconButton>
+							<IconButton onClick={togglePlay}>
+								{isPlaying ? (
+									<PauseIcon sx={{ fontSize: theme.iconSize(1) }} />
+								) : (
+									<PlayIcon sx={{ fontSize: theme.iconSize(1) }} />
+								)}
+							</IconButton>
 						</Tooltip>
 						<Tooltip title={showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}>
 							<IconButton onClick={() => setShowSuggestions(!showSuggestions)}>
-								{<PlayNextIcon />}
+								{<PlayNextIcon sx={{ fontSize: theme.iconSize(1) }} />}
 							</IconButton>
 						</Tooltip>
 						<VolumeControls
@@ -268,27 +270,27 @@ function Player({
 								setShowSchedule={setShowSchedule}
 							/>
 							<IconButton onClick={() => setMainCover(videoElement.current.currentTime)}>
-								<ImageIcon />
+								<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 							<IconButton
 								disabled={!allowToSplit()}
 								onClick={() => splitVideo(videoElement.current.currentTime)}
 							>
-								<SplitIcon />
+								<SplitIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 							<IconButton onClick={() => setStartHighlightSecond(videoElement.current.currentTime)}>
-								<HighlightIcon />
+								<HighlightIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 							{(!fullScreen && (
 								<Tooltip title="Full screen">
 									<IconButton onClick={enterFullScreen}>
-										<FullscreenIcon />
+										<FullscreenIcon sx={{ fontSize: theme.iconSize(1) }} />
 									</IconButton>
 								</Tooltip>
 							)) || (
 								<Tooltip title="Exit full screen">
 									<IconButton onClick={exitFullScreen}>
-										<FullscreenExitIcon />
+										<FullscreenExitIcon sx={{ fontSize: theme.iconSize(1) }} />
 									</IconButton>
 								</Tooltip>
 							)}

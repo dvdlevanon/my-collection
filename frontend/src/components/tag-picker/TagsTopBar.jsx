@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import ImageIcon from '@mui/icons-material/PermMedia';
 import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material';
@@ -29,7 +30,8 @@ function TagsTopBar({
 	tagSize,
 	onZoomChanged,
 }) {
-	let [showImagesFromDirectory, setShowImagesFromDirectory] = useState(false);
+	const theme = useTheme();
+	const [showImagesFromDirectory, setShowImagesFromDirectory] = useState(false);
 
 	const imageDirectoryChoosen = (directoryPath, doneCallback) => {
 		Client.imageDirectoryChoosen(parentId, directoryPath).then(doneCallback);
@@ -41,8 +43,8 @@ function TagsTopBar({
 				sx={{
 					display: 'flex',
 					flexDirection: 'row',
-					padding: '10px',
-					gap: '10px',
+					padding: theme.spacing(1),
+					gap: theme.spacing(1),
 				}}
 			>
 				<Stack
@@ -50,21 +52,20 @@ function TagsTopBar({
 						display: 'flex',
 						width: '100%',
 						flexDirection: 'row',
-						gap: '10px',
-						maxHeight: '44px',
+						gap: theme.spacing(1),
 					}}
 				>
 					{TagsUtil.allowToSetImageToCategory(parentId) && (
 						<Tooltip title="Set images from directory">
 							<IconButton onClick={() => setShowImagesFromDirectory(true)}>
-								<ImageIcon />
+								<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 						</Tooltip>
 					)}
 					{TagsUtil.allowToAddToCategory(parentId) && (
 						<Tooltip title="Add new tag">
 							<IconButton size="small" onClick={() => setAddTagDialogOpened(true)}>
-								<AddIcon />
+								<AddIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 						</Tooltip>
 					)}
@@ -81,9 +82,6 @@ function TagsTopBar({
 						type="search"
 						size="small"
 						onChange={(value) => setSearchTerm(value)}
-						sx={{
-							minWidth: '200px',
-						}}
 					></TextFieldWithKeyboard>
 					<TagSortSelector sortBy={sortBy} onSortChanged={(newSort) => setSortBy(newSort)} />
 					<TagViewControls tagSize={tagSize} onZoomChanged={onZoomChanged} />

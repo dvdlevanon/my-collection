@@ -1,9 +1,12 @@
+import { useTheme } from '@emotion/react';
 import NoImageIcon from '@mui/icons-material/HideImage';
 import { Box } from '@mui/material';
 import React from 'react';
 import TagsUtil from '../../utils/tags-util';
 
 function TagImage({ tag, selectedTit, onClick, imgSx }) {
+	const theme = useTheme();
+
 	return (
 		<Box
 			onClick={onClick}
@@ -16,7 +19,7 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 				height: '100%',
 				width: '100%',
 				cursor: 'pointer',
-				borderRadius: '10px',
+				borderRadius: theme.spacing(1),
 				'&:hover': {
 					filter: 'brightness(105%)',
 				},
@@ -24,7 +27,7 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 		>
 			<Box
 				sx={{
-					borderRadius: '5px',
+					borderRadius: theme.spacing(0.5),
 					overflow: 'hidden',
 					...imgSx,
 				}}
@@ -40,6 +43,7 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 						position: 'absolute',
 						width: '40%',
 						height: '100%',
+						fontSize: theme.iconSize(1),
 					}}
 				/>
 			)}

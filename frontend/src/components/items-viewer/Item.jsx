@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { Box, Link, Stack, Typography } from '@mui/material';
 import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -22,10 +23,11 @@ function Item({
 	onConvertAudio,
 	onConvertVideo,
 }) {
-	let [mouseEnterMillis, setMouseEnterMillis] = useState(0);
-	let [showCoverNavigator, setShowCoverNavigator] = useState(false);
-	let [showPreview, setShowPreview] = useState(false);
-	let [coverNumber, setCoverNumber] = useState(
+	const [mouseEnterMillis, setMouseEnterMillis] = useState(0);
+	const [showCoverNavigator, setShowCoverNavigator] = useState(false);
+	const [showPreview, setShowPreview] = useState(false);
+	const theme = useTheme();
+	const [coverNumber, setCoverNumber] = useState(
 		item.covers && item.covers.length > 0 ? Math.floor(item.covers.length / 2) : 0
 	);
 
@@ -70,14 +72,7 @@ function Item({
 
 	const getTitleComponent = () => {
 		return (
-			<Box
-				sx={{
-					display: 'flex',
-					flexDirection: 'column',
-					padding: '10px',
-					gap: '10px',
-				}}
-			>
+			<Stack flexDirection="column" padding={theme.spacing(1)} gap={theme.spacing(1)}>
 				<ItemTitle
 					item={item}
 					variant="caption"
@@ -94,7 +89,7 @@ function Item({
 					}}
 				/>
 				{showOffests && item.main_item && <ItemOffests item={item} />}
-			</Box>
+			</Stack>
 		);
 	};
 
@@ -132,7 +127,7 @@ function Item({
 							height: itemHeight,
 							objectFit: 'contain',
 							cursor: 'pointer',
-							borderRadius: '10px',
+							borderRadius: theme.spacing(1),
 							boxShadow: item.main_cover_second ? '0 2px 4px 0 rgba(255, 68, 0, 0.6)' : 'none',
 						}}
 					/>
@@ -143,11 +138,11 @@ function Item({
 								position: 'absolute',
 								backgroundColor: 'black',
 								color: 'white',
-								right: '3px',
-								bottom: '10px',
-								borderRadius: '5px',
+								right: theme.spacing(0.3),
+								bottom: theme.spacing(1),
+								borderRadius: theme.spacing(0.5),
 								opacity: 0.9,
-								padding: '0px 2px',
+								padding: theme.multiSpacing(0, 0.2),
 								zIndex: 100,
 							}}
 						>
@@ -159,9 +154,9 @@ function Item({
 					<Stack
 						flexDirection="row"
 						sx={{
-							bottom: '0px',
-							left: '0px',
-							gap: '2px',
+							bottom: '0',
+							left: '0',
+							gap: theme.spacing(0.5),
 							position: 'absolute',
 							width: '100%',
 						}}
@@ -181,10 +176,8 @@ function Item({
 				{shouldShowPreview() && showPreview && (
 					<Box
 						flexGrow={1}
-						padding="10px"
 						sx={{
 							position: 'absolute',
-							padding: '0px',
 							width: itemWidth,
 							height: itemHeight,
 							objectFit: 'contain',
@@ -214,7 +207,7 @@ function Item({
 								}
 							}}
 							sx={{
-								borderRadius: '10px',
+								borderRadius: theme.spacing(1),
 							}}
 						>
 							<source src={Client.buildFileUrl(ItemsUtil.getPreview(item))} />

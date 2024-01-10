@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { Chip, Link, Stack } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -15,6 +16,7 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 	const [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
 	const [manageTagImageOpened, setManageTagImageOpened] = useState(false);
 	const [tagMenuProps, setTagMenuProps] = useState(null);
+	const theme = useTheme();
 
 	const onManageAttributesClicked = (e) => {
 		e.stopPropagation();
@@ -62,8 +64,8 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 				}}
 				sx={{
 					cursor: 'pointer',
-					fontSize: '20px',
-					padding: '20px 25px',
+					fontSize: theme.fontSize(1.3),
+					padding: theme.multiSpacing(2, 2.5),
 				}}
 			></Chip>
 		);

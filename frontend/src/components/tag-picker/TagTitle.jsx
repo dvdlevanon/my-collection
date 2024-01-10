@@ -1,12 +1,15 @@
+import { useTheme } from '@emotion/react';
 import { Typography } from '@mui/material';
 import React from 'react';
 import TagsUtil from '../../utils/tags-util';
 
 function TagTitle({ tag }) {
+	const theme = useTheme();
+
 	return (
 		<Typography
 			sx={{
-				padding: '10px',
+				padding: theme.spacing(1),
 				textAlign: 'center',
 			}}
 			noWrap

@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import GalleryIcon from '@mui/icons-material/Collections';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ThumbnailIcon from '@mui/icons-material/Face3';
@@ -10,6 +11,7 @@ import GalleryUrlParams from '../../utils/gallery-url-params';
 import Thumbnail from '../thumbnail/Thumbnail';
 
 function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail, withRemoveOption }) {
+	const theme = useTheme();
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(0);
 	const [menuY, setMenuY] = useState(0);
@@ -96,7 +98,7 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail
 					}}
 				>
 					<ListItemIcon>
-						<ThumbnailIcon />
+						<ThumbnailIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</ListItemIcon>
 					<Typography variant="h6" color="white">
 						Set Thumbnail
@@ -105,7 +107,7 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail
 				<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
 					<MenuItem onClick={closeMenu}>
 						<ListItemIcon>
-							<GalleryIcon />
+							<GalleryIcon sx={{ fontSize: theme.iconSize(1) }} />
 						</ListItemIcon>
 						<Typography variant="h6" color="white">
 							Open in Gallery
@@ -121,7 +123,7 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail
 						}}
 					>
 						<ListItemIcon>
-							<DeleteIcon />
+							<DeleteIcon sx={{ fontSize: theme.iconSize(1) }} />
 						</ListItemIcon>
 						<Typography variant="h6" color="white">
 							Remove

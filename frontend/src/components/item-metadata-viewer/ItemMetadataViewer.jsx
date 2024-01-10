@@ -1,11 +1,14 @@
+import { useTheme } from '@emotion/react';
 import { Typography } from '@mui/material';
 import React from 'react';
 import BytesUtil from '../../utils/bytes-util';
 import TimeUtil from '../../utils/time-utils';
 
 function ItemMetadataViewer({ item }) {
+	const theme = useTheme();
+
 	return (
-		<Typography variant="body2" color="bright.darker2" padding="0px 10px">
+		<Typography variant="body2" color="bright.darker2" padding={theme.multiSpacing(0, 1)}>
 			File Size: {BytesUtil.formatBytes(item.file_size, 2)}
 			<br />
 			Last Modified: {TimeUtil.formatEpochToDate(item.last_modified)}

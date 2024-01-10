@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import AddLink from '@mui/icons-material/AddLink';
 import CopyIcon from '@mui/icons-material/ContentCopy';
 import { default as RemoveIcon } from '@mui/icons-material/Delete';
@@ -17,6 +18,7 @@ function TagContextMenu({
 	onManageAttributesClicked,
 	onRemoveTagClicked,
 }) {
+	const theme = useTheme();
 	const tagCustomCommandsQuery = useQuery(ReactQueryUtil.tagCustomCommands(tag.parentId), () =>
 		Client.getTagCustomCommands(tag.parentId)
 	);
@@ -61,25 +63,25 @@ function TagContextMenu({
 				}}
 			>
 				<ListItemIcon>
-					<CopyIcon />
+					<CopyIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</ListItemIcon>
 				Copy Title
 			</MenuItem>
 			<MenuItem onClick={(e) => closeEndCall(e, onManageImageClicked)}>
 				<ListItemIcon>
-					<ImageIcon />
+					<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</ListItemIcon>
 				Image Options...
 			</MenuItem>
 			<MenuItem onClick={(e) => closeEndCall(e, onManageAttributesClicked)}>
 				<ListItemIcon>
-					<AddLink />
+					<AddLink sx={{ fontSize: theme.iconSize(1) }} />
 				</ListItemIcon>
 				Manage annotations
 			</MenuItem>
 			<MenuItem onClick={(e) => closeEndCall(e, onRemoveTagClicked)}>
 				<ListItemIcon>
-					<RemoveIcon />
+					<RemoveIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</ListItemIcon>
 				Remove
 			</MenuItem>
@@ -96,7 +98,13 @@ function TagContextMenu({
 							}}
 						>
 							<ListItemIcon>
-								{<img src={command.icon} alt="icon" style={{ width: '24px', height: '24px' }} />}
+								{
+									<img
+										src={command.icon}
+										alt="icon"
+										style={{ width: theme.iconSize(1), height: theme.iconSize(1) }}
+									/>
+								}
 							</ListItemIcon>
 							{command.tooltip}
 						</MenuItem>

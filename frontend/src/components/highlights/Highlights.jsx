@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { Stack } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
@@ -6,6 +7,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import Highlight from './Highlight';
 
 function Highlights({ item }) {
+	const theme = useTheme();
 	const mainItemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(item.highlight_parent_id || item.id),
 		queryFn: () => {
@@ -20,7 +22,7 @@ function Highlights({ item }) {
 	return (
 		<>
 			{mainItemQuery.isSuccess && (
-				<Stack flexDirection="column" gap="10px">
+				<Stack flexDirection="column" gap={theme.spacing(1)}>
 					{mainItemQuery.data.id !== item.id && (
 						<Highlight
 							item={mainItemQuery.data}

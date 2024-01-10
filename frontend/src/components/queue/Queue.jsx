@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import ClearAllIcon from '@mui/icons-material/ClearAll';
 import CloseIcon from '@mui/icons-material/Close';
 import PauseIcon from '@mui/icons-material/Pause';
@@ -23,6 +24,9 @@ import Task from './Task';
 
 function Queue({ onClose }) {
 	const queryClient = useQueryClient();
+	const [tasksPage, setTasksPage] = React.useState(1);
+	const [tasksPageSize, setTasksPageSize] = React.useState(10);
+	const theme = useTheme();
 	const queueMetadataQuery = useQuery({
 		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
 		queryFn: Client.getQueueMetadata,
@@ -34,8 +38,6 @@ function Queue({ onClose }) {
 			queryClient.refetchQueries(ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize));
 		},
 	});
-	const [tasksPage, setTasksPage] = React.useState(1);
-	const [tasksPageSize, setTasksPageSize] = React.useState(10);
 	const tasksQuery = useQuery({
 		queryKey: ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize),
 		queryFn: () => Client.getTasks(tasksPage, tasksPageSize),
@@ -58,34 +60,36 @@ function Queue({ onClose }) {
 		<Paper
 			elevation={3}
 			sx={{
-				padding: '10px',
+				padding: theme.spacing(1),
 			}}
 		>
 			<Stack flexDirection="column">
 				<Stack flexDirection="row" alignItems="center">
 					{(queueMetadataQuery.isSuccess && (
-						<Typography variant="body1" sx={{ paddingRight: '40px', flexGrow: '1' }}>
+						<Typography variant="body1" sx={{ paddingRight: theme.spacing(4), flexGrow: '1' }}>
 							{queueMetadataQuery.data.size} Tasks
 						</Typography>
 					)) || (
 						<Box flexGrow={1}>
-							<CircularProgress color="bright" size="25px" />
+							<CircularProgress color="bright" size={theme.iconSize(1)} />
 						</Box>
 					)}
 					{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size > 0 && (
 						<Tooltip title="Clear finished tasks">
 							<IconButton onClick={onClearDoneTasks}>
-								<ClearAllIcon />
+								<ClearAllIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</IconButton>
 						</Tooltip>
 					)}
 					{queueMetadataQuery.isSuccess && (
 						<IconButton onClick={toggleProcessing}>
-							{(queueMetadataQuery.data.paused && <PlayIcon />) || <PauseIcon />}
+							{(queueMetadataQuery.data.paused && <PlayIcon sx={{ fontSize: theme.iconSize(1) }} />) || (
+								<PauseIcon sx={{ fontSize: theme.iconSize(1) }} />
+							)}
 						</IconButton>
 					)}
 					<IconButton onClick={onClose}>
-						<CloseIcon />
+						<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</IconButton>
 				</Stack>
 				<Divider />

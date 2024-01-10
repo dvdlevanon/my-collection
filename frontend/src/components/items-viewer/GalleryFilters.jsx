@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { IconButton, Paper, Stack, ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
 import TagChips from '../tags-chip/TagChips';
@@ -14,8 +15,10 @@ function GalleryFilters({
 	setSearchTerm,
 	galleryUrlParams,
 }) {
+	const theme = useTheme();
+
 	return (
-		<Stack flexDirection="row" gap="10px" alignItems="center">
+		<Stack flexDirection="row" gap={theme.spacing(1)} alignItems="center">
 			<TextFieldWithKeyboard
 				variant="outlined"
 				autoFocus
@@ -30,8 +33,8 @@ function GalleryFilters({
 					variant="outlined"
 					sx={{
 						display: 'flex',
-						gap: '10px',
-						padding: '0px 0px 0px 0px',
+						gap: theme.spacing(1),
+						padding: '0',
 					}}
 				>
 					<Tooltip title="Remove all filters">
@@ -40,7 +43,7 @@ function GalleryFilters({
 								galleryUrlParams.deactivateAllTags();
 							}}
 						>
-							<CloseIcon sx={{ fontSize: '25px' }} />
+							<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 						</IconButton>
 					</Tooltip>
 					<TagChips

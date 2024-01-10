@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import QueueIcon from '@mui/icons-material/List';
 import {
 	AppBar,
@@ -26,6 +27,7 @@ import Queue from '../queue/Queue';
 function TopBar({ previewMode, onPreviewModeChange }) {
 	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
 	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getStats);
+	const theme = useTheme();
 
 	const statsQuery = useQuery({
 		queryKey: ReactQueryUtil.STATS_KEY,
@@ -47,7 +49,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 		<AppBar position="static">
 			<Toolbar
 				sx={{
-					gap: '20px',
+					gap: theme.spacing(2),
 					alignItems: 'center',
 					alignContent: 'center',
 					verticalAlign: 'center',
@@ -70,7 +72,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 								onClick={(e) => setQueueEl(e.currentTarget)}
 							>
 								<Badge badgeContent={queueMetadataQuery.data.unfinishedTasks || null} color="primary">
-									<QueueIcon />
+									<QueueIcon sx={{ fontSize: theme.iconSize(1) }} />
 								</Badge>
 							</IconButton>
 						</span>
@@ -174,7 +176,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}
 				/>
 				{queueMetadataQuery.isSuccess && (
-					<Stack flexDirection="row" gap="10px" justifyContent="center" alignItems="center">
+					<Stack flexDirection="row" gap={theme.spacing(1)} justifyContent="center" alignItems="center">
 						<Stack flexDirection="column">
 							<Typography variant="caption">Tags: {queueMetadataQuery.data.tags_count}</Typography>
 							<Typography variant="caption">Items: {queueMetadataQuery.data.items_count}</Typography>

@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
@@ -18,6 +19,7 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 	const [thumbnailCrop, setThumbnailCrop] = useState(null);
 	const [image, setImage] = useState(null);
 	const fileDialog = useRef(null);
+	const theme = useTheme();
 	const titsQuery = useQuery({
 		queryKey: ReactQueryUtil.TAG_IMAGE_TYPES_KEY,
 		queryFn: Client.getTagImageTypes,
@@ -189,7 +191,7 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 			PaperProps={{ sx: { maxHeight: '80vh', minHeight: '80vh', height: '80vh' } }}
 		>
 			<DialogTitle onClick={(e) => e.stopPropagation()}>
-				<Stack flexDirection="row" gap="20px">
+				<Stack flexDirection="row" gap={theme.spacing(2)}>
 					<Typography variant="h6">Set Image for {updatedTag.title}</Typography>
 					{titsQuery.isSuccess && (
 						<TagImageTypeSelector
@@ -206,24 +208,24 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 				<IconButton
 					sx={{
 						position: 'absolute',
-						top: '0px',
-						right: '0px',
-						margin: '10px',
+						top: '0',
+						right: '0',
+						margin: theme.spacing(1),
 					}}
 					onClick={(e) => {
 						e.stopPropagation();
 						onClose();
 					}}
 				>
-					<CloseIcon />
+					<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</DialogTitle>
 			<DialogContent
 				sx={{
 					display: 'flex',
 					flexDirection: 'column',
-					gap: '5px',
-					padding: '5px',
+					gap: theme.spacing(0.5),
+					padding: theme.spacing(0.5),
 				}}
 				onClick={(e) => e.stopPropagation()}
 			>
@@ -236,7 +238,7 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 				>
 					<Stack
 						flexDirection="row"
-						gap="10px"
+						gap={theme.spacing(1)}
 						sx={{
 							width: '100%',
 							height: '100%',
@@ -272,8 +274,8 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 						display: 'flex',
 						flexDirection: 'row',
 						justifyContent: 'center',
-						gap: '10px',
-						padding: '10px',
+						gap: theme.spacing(1),
+						padding: theme.spacing(1),
 					}}
 					onClick={(e) => e.stopPropagation()}
 				>

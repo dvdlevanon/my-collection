@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
 import NoImageIcon from '@mui/icons-material/HideImage';
@@ -9,6 +10,7 @@ import TagsUtil from '../../utils/tags-util';
 
 function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 	const [showButtons, setShowButtons] = useState(false);
+	const theme = useTheme();
 
 	const removeUrlParams = (url) => {
 		const indexOfQuestionMark = url.indexOf('?');
@@ -51,50 +53,58 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 				{showButtons && (
 					<Stack
 						flexDirection="row"
-						gap="5px"
+						gap={theme.spacing(0.5)}
 						sx={{
 							position: 'absolute',
-							left: '0px',
-							top: '0px',
-							padding: '5px',
+							left: '0',
+							top: '0',
+							padding: theme.spacing(0.5),
 						}}
 					>
 						{tag && (
 							<IconButton
-								sx={{ border: '1px solid gray', width: '35px', height: '35px' }}
+								sx={{
+									border: theme.border(1, 'solid', 'gray'),
+									width: theme.iconSize(1.4),
+									height: theme.iconSize(1.4),
+								}}
 								onClick={(e) => {
 									e.stopPropagation();
 									e.preventDefault();
 									onTagRemoved(tag);
 								}}
 							>
-								<DeleteIcon sx={{ width: '20px', height: '20px' }} />
+								<DeleteIcon sx={{ width: theme.iconSize(0.9), height: theme.iconSize(0.9) }} />
 							</IconButton>
 						)}
 						<IconButton
-							sx={{ border: '1px solid gray', width: '35px', height: '35px' }}
+							sx={{
+								border: theme.border(1, 'solid', 'gray'),
+								width: theme.iconSize(1.4),
+								height: theme.iconSize(1.4),
+							}}
 							onClick={(e) => {
 								e.stopPropagation();
 								e.preventDefault();
 								onTagEdit(tag);
 							}}
 						>
-							<EditIcon sx={{ width: '20px', height: '20px' }} />
+							<EditIcon sx={{ width: theme.iconSize(0.9), height: theme.iconSize(0.9) }} />
 						</IconButton>
 					</Stack>
 				)}
 				<Box
 					sx={{
-						borderRadius: '5px',
+						borderRadius: theme.spacing(0.5),
 						overflow: 'hidden',
-						width: '150px',
-						minWidth: '150px',
-						maxHeight: '120px',
-						height: '120px',
+						width: theme.iconSize(6),
+						minWidth: theme.iconSize(6),
+						maxHeight: theme.iconSize(5),
+						height: theme.iconSize(5),
 						objectFit: 'contain',
-						borderRadius: '5px',
-						border: '1px solid white',
-						padding: '10px',
+						borderRadius: theme.spacing(0.5),
+						border: theme.border(1, 'solid', 'white'),
+						padding: theme.spacing(1),
 						backgroundColor: getBackgroundColor(),
 					}}
 					component="img"

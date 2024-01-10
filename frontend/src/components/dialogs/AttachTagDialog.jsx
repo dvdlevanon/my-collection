@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
 import React from 'react';
@@ -9,6 +10,7 @@ import TagPicker from '../tag-picker/TagPicker';
 
 function AttachTagDialog({ open, item, onTagAdded, onClose, singleCategoryMode, initialSelectedCategoryId }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const theme = useTheme();
 
 	return (
 		<Dialog
@@ -32,13 +34,13 @@ function AttachTagDialog({ open, item, onTagAdded, onClose, singleCategoryMode, 
 				<IconButton
 					sx={{
 						position: 'absolute',
-						top: '0px',
-						right: '0px',
-						margin: '10px',
+						top: '0',
+						right: '0',
+						margin: theme.spacing(1),
 					}}
 					onClick={onClose}
 				>
-					<CloseIcon />
+					<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</DialogTitle>
 			<DialogContent sx={{ overflow: 'hidden' }}>

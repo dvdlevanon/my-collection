@@ -1,8 +1,10 @@
+import { useTheme } from '@emotion/react';
 import { Box } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 
 function Thumbnail({ image, imageUrl, title, crop }) {
 	const thumbnailCanvasId = useRef(null);
+	const theme = useTheme();
 
 	useEffect(() => {
 		if (thumbnailCanvasId.current == null) {
@@ -26,7 +28,7 @@ function Thumbnail({ image, imageUrl, title, crop }) {
 			}
 		} else if (title) {
 			ctx.fillStyle = '#ffffff';
-			ctx.font = '15px DejaVu';
+			ctx.font = theme.fontSize(0.9) + ' DejaVu';
 			wrapText(ctx, title.toUpperCase(), thumbnailCanvasId.current.width, thumbnailCanvasId.current.height);
 		}
 	}, [crop, image, imageUrl, title]);
@@ -57,10 +59,10 @@ function Thumbnail({ image, imageUrl, title, crop }) {
 	return (
 		<Box
 			sx={{
-				border: 'white 1px solid',
-				borderRadius: '5px',
-				width: '80px',
-				height: '80px',
+				border: theme.border(1, 'solid', 'white'),
+				borderRadius: theme.spacing(0.5),
+				width: theme.iconSize(3),
+				height: theme.iconSize(3),
 			}}
 			component="canvas"
 			ref={thumbnailCanvasId}

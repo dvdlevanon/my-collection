@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { Box, Fade, Stack } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import seedrandom from 'seedrandom';
@@ -18,6 +19,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	const [sortBy, setSortBy] = useState('random');
 	const [editThumbnailTag, setEditThumbnailTag] = useState(null);
 	const [showThumbnails, setShowThumbnails] = useState(true);
+	const theme = useTheme();
 
 	useEffect(() => {
 		let lastItemsWidth = localStorage.getItem('items-width');
@@ -192,7 +194,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 
 	return (
 		<Stack overflow="hidden" height="100%">
-			<Stack flexDirection="row" gap="10px" padding="0px 0px 3px 0px">
+			<Stack flexDirection="row" gap={theme.spacing(1)} padding={theme.multiSpacing(0, 0, 0.3, 0)}>
 				<ItemsViewControls
 					itemsSize={itemsSize}
 					onZoomChanged={(offest) => onZoomChanged(offest, aspectRatio)}

@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, IconButton, Stack } from '@mui/material';
 import React, { useState } from 'react';
@@ -8,15 +9,16 @@ import Item from '../items-viewer/Item';
 function SubItem({ item, itemWidth, highlighted, onDeleteItem }) {
 	const [showDelete, setShowDelete] = useState(false);
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+	const theme = useTheme();
 
 	return (
 		<Stack
 			flexDirection="row"
-			gap="10px"
-			padding="10px"
+			gap={theme.spacing(1)}
+			padding={theme.spacing(1)}
 			sx={{
 				cursor: 'pointer',
-				borderRadius: '10px',
+				borderRadius: theme.spacing(1),
 				backgroundColor: highlighted ? 'dark.lighter2' : 'unset',
 				'&:hover': {
 					backgroundColor: 'dark.lighter',
@@ -49,11 +51,11 @@ function SubItem({ item, itemWidth, highlighted, onDeleteItem }) {
 						}}
 						sx={{
 							position: 'absolute',
-							bottom: '5px',
-							right: '5px',
+							bottom: theme.spacing(0.5),
+							right: theme.spacing(0.5),
 						}}
 					>
-						<DeleteIcon />
+						<DeleteIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</IconButton>
 				)}
 				<ConfirmationDialog

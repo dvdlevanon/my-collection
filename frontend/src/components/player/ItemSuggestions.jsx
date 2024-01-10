@@ -1,9 +1,11 @@
+import { useTheme } from '@emotion/react';
 import { Box, Grid, Stack } from '@mui/material';
 import React from 'react';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import Item from '../items-viewer/Item';
 
 function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroundDoubleClick }) {
+	const theme = useTheme();
 	const getItemSize = () => {
 		let itemWidth = width / 5;
 		return {
@@ -19,10 +21,10 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 			onDoubleClick={onBackgroundDoubleClick}
 			sx={{
 				position: 'absolute',
-				left: 50,
-				top: 50,
-				right: 50,
-				bottom: 100,
+				left: theme.spacing(5),
+				top: theme.spacing(5),
+				right: theme.spacing(5),
+				bottom: theme.spacing(10),
 			}}
 		>
 			<Grid container height="100%" width="100%">
@@ -37,9 +39,7 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 								alignItems="center"
 								onClick={onBackgroundClick}
 								onDoubleClick={onBackgroundDoubleClick}
-								sx={{
-									padding: '10px',
-								}}
+								padding={theme.spacing(1)}
 							>
 								<Box
 									display="flex"
@@ -47,10 +47,10 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 									alignItems="center"
 									onClick={onBackgroundClick}
 									onDoubleClick={onBackgroundDoubleClick}
+									padding={theme.spacing(1)}
 									sx={{
-										padding: '10px',
 										background: 'rgba(0, 0, 0, 0.4)',
-										borderRadius: '10px',
+										borderRadius: theme.spacing(1),
 									}}
 								>
 									<Item

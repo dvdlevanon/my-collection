@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DoneIcon from '@mui/icons-material/Done';
 import NoImageIcon from '@mui/icons-material/HideImage';
@@ -14,6 +15,7 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 	const [originalImageDimenssion, setOriginalImageDimenssion] = useState(null);
 	const imageHolderRef = useRef(null);
 	const imageRef = useRef(null);
+	const theme = useTheme();
 
 	useEffect(() => {
 		const handleResize = (entries) => {
@@ -68,7 +70,7 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 		return (
 			<Box
 				sx={{
-					borderRadius: '5px',
+					borderRadius: theme.spacing(0.5),
 					objectFit: 'contain',
 					overflow: 'hidden',
 					height: imageDimenssion ? imageDimenssion.height : 'auto',
@@ -137,16 +139,16 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 			sx={{
 				width: '100%',
 				height: '100%',
-				gap: '10px',
+				gap: theme.spacing(1),
 			}}
 		>
 			<Box
 				ref={imageHolderRef}
 				sx={{
 					display: 'flex',
-					height: cropMode ? 'calc(100% - 100px)' : '100%',
+					height: cropMode ? 'calc(100% - ' + theme.iconSize(4) + ')' : '100%',
 					width: '100%',
-					gap: '10px',
+					gap: theme.spacing(1),
 					justifyContent: 'center',
 				}}
 			>
@@ -163,8 +165,8 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 							'&:hover': {
 								filter: 'brightness(120%)',
 							},
-							width: '100px',
-							height: '100px',
+							width: theme.iconSize(4),
+							height: theme.iconSize(4),
 							left: 0,
 							right: 0,
 							top: 0,
@@ -177,26 +179,26 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 						<NoImageIcon
 							color="dark"
 							sx={{
-								fontSize: '100px',
+								fontSize: theme.iconSize(4),
 							}}
 						/>
 					</Box>
 				)}
 			</Box>
 			{cropMode && (
-				<Stack flexDirection="row" justifyContent="center" gap="30px">
+				<Stack flexDirection="row" justifyContent="center" gap={theme.spacing(3)}>
 					<IconButton onClick={(e) => changeCropSize(-30)}>
-						<TextIncrease sx={{ fontSize: '50px' }} />
+						<TextIncrease sx={{ fontSize: theme.iconSize(2) }} />
 					</IconButton>
 					<IconButton onClick={(e) => changeCropSize(30)}>
-						<TextDecrease sx={{ fontSize: '50px' }} />
+						<TextDecrease sx={{ fontSize: theme.iconSize(2) }} />
 					</IconButton>
 					<Divider orientation="vertical" />
 					<IconButton onClick={onCropDone}>
-						<DoneIcon sx={{ fontSize: '50px' }} />
+						<DoneIcon sx={{ fontSize: theme.iconSize(2) }} />
 					</IconButton>
 					<IconButton onClick={onCropCanceled}>
-						<CancelIcon sx={{ fontSize: '50px' }} />
+						<CancelIcon sx={{ fontSize: theme.iconSize(2) }} />
 					</IconButton>
 				</Stack>
 			)}

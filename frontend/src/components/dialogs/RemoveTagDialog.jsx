@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Typography } from '@mui/material';
 import React from 'react';
@@ -7,6 +8,7 @@ import ReactQueryUtil from '../../utils/react-query-util';
 
 function RemoveTagDialog({ tag, onClose }) {
 	const queryClient = useQueryClient();
+	const theme = useTheme();
 	const removeTagClicked = (e) => {
 		Client.removeTag(tag.id).then(() => {
 			queryClient.refetchQueries({ queryKey: ReactQueryUtil.TAGS_KEY });
@@ -28,16 +30,16 @@ function RemoveTagDialog({ tag, onClose }) {
 				<IconButton
 					sx={{
 						position: 'absolute',
-						top: '0px',
-						right: '0px',
-						margin: '10px',
+						top: '0',
+						right: '0',
+						margin: theme.spacing(1),
 					}}
 					onClick={(e) => {
 						e.stopPropagation();
 						onClose();
 					}}
 				>
-					<CloseIcon />
+					<CloseIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</IconButton>
 			</DialogTitle>
 			<DialogContent>

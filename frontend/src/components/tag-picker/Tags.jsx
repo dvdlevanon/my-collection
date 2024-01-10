@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
 import { Button, Divider, Fab, Fade, Link, Stack, useScrollTrigger } from '@mui/material';
 import { Box } from '@mui/system';
@@ -22,6 +23,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const [tagSize, setTagSize] = useState(initialTagSize);
 	const tagsEl = useRef(null);
+	const theme = useTheme();
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parent.id),
 		queryFn: () => Client.getAvailableAnnotations(parent.id),
@@ -309,7 +311,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		return (
 			<Stack
 				direction="row"
-				gap="10px"
+				gap={theme.spacing(1)}
 				justifyContent="center"
 				alignItems="center"
 				sx={{
@@ -336,8 +338,8 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 						display: parent.display_style === 'chip' ? 'flex' : 'grid',
 						gridTemplateColumns: 'repeat(auto-fill, ' + calculateTagSize().width + 'px)',
 						justifyContent: parent.display_style === 'chip' ? 'flex-start' : 'space-between',
-						gridGap: '10px',
-						padding: '10px',
+						gridGap: theme.spacing(1),
+						padding: theme.spacing(1),
 						flexFlow: 'wrap',
 					}}
 				>
@@ -366,7 +368,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 			<Fade in={trigger}>
 				<Box onClick={backToTopClicked} role="presentation" sx={{ position: 'fixed', bottom: 16, right: 16 }}>
 					<Fab size="small" aria-label="scroll back to top">
-						<KeyboardArrowUpIcon />
+						<KeyboardArrowUpIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</Fab>
 				</Box>
 			</Fade>

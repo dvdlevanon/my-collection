@@ -1,5 +1,6 @@
+import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
-import { Fab, Typography } from '@mui/material';
+import { Fab, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -10,7 +11,8 @@ import DirectoriesTable from '../directories-table/DirectoriesTable';
 
 function ManageDirectories() {
 	const queryClient = useQueryClient();
-	let [showAddDirectoryDialog, setShowAddDirectoryDialog] = useState(false);
+	const [showAddDirectoryDialog, setShowAddDirectoryDialog] = useState(false);
+	const theme = useTheme();
 
 	const addDirectory = (directoryPath, doneCallback) => {
 		Client.addOrUpdateDirectory({ path: directoryPath }).then(() => {
@@ -19,21 +21,8 @@ function ManageDirectories() {
 	};
 
 	return (
-		<Box
-			sx={{
-				height: '95%',
-				padding: '20px',
-				position: 'relative',
-				display: 'flex',
-				flexDirection: 'column',
-			}}
-		>
-			<Typography
-				sx={{
-					padding: '0px 0px 15px 0px',
-				}}
-				variant="h6"
-			>
+		<Stack height="95%" padding={theme.spacing(1)} position="relative" flexDirection="column">
+			<Typography padding={theme.multiSpacing(0, 0, 1.5, 0)} variant="h6">
 				Manage Directories
 			</Typography>
 			<Box
@@ -48,13 +37,13 @@ function ManageDirectories() {
 			<Fab
 				sx={{
 					position: 'absolute',
-					bottom: '30px',
-					right: '50px',
+					bottom: theme.spacing(3),
+					right: theme.spacing(5),
 				}}
 				color="primary"
 				onClick={() => setShowAddDirectoryDialog(true)}
 			>
-				<AddIcon />
+				<AddIcon sx={{ fontSize: theme.iconSize(1) }} />
 			</Fab>
 			{showAddDirectoryDialog && (
 				<ChooseDirectoryDialog
@@ -66,7 +55,7 @@ function ManageDirectories() {
 					}}
 				/>
 			)}
-		</Box>
+		</Stack>
 	);
 }
 

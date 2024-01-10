@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { Box, Chip, IconButton, Stack, Tooltip } from '@mui/material';
@@ -35,12 +36,6 @@ function useWindowSize() {
 function ItemPage() {
 	const queryClient = useQueryClient();
 	const { itemId } = useParams();
-	const suggestedQuery = useQuery({
-		queryKey: ReactQueryUtil.suggestedItemsKey(itemId),
-		queryFn: () => Client.getSuggestedItems(itemId),
-		staleTime: Infinity,
-		cacheTime: Infinity,
-	});
 	const [showAddTagDialog, setShowAddTagDialog] = useState(false);
 	const [addTagDialogCategory, setAddTagDialogCategory] = useState(0);
 	const [windowWidth, windowHeight] = useWindowSize();
@@ -48,6 +43,14 @@ function ItemPage() {
 	const [showDeleteItemConfirmationDialog, setShowDeleteItemConfirmationDialog] = useState(false);
 	const [editThumbnailTag, setEditThumbnailTag] = useState(null);
 	const [splitVideoSecond, setSplitVideoSecond] = useState(0);
+	const navigate = useNavigate();
+	const theme = useTheme();
+	const suggestedQuery = useQuery({
+		queryKey: ReactQueryUtil.suggestedItemsKey(itemId),
+		queryFn: () => Client.getSuggestedItems(itemId),
+		staleTime: Infinity,
+		cacheTime: Infinity,
+	});
 	const itemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(itemId),
 		queryFn: () => Client.getItem(itemId),
@@ -55,7 +58,6 @@ function ItemPage() {
 			document.title = item.title;
 		},
 	});
-	const navigate = useNavigate();
 
 	const onTitleChanged = (newTitle) => {
 		if (!newTitle) {
@@ -211,9 +213,9 @@ function ItemPage() {
 			sx={{
 				display: 'flex',
 				flexDirection: 'row',
-				padding: '30px 50px',
+				padding: theme.multiSpacing(3, 5),
 				justifyContent: 'center',
-				gap: '10px',
+				gap: theme.spacing(1),
 			}}
 		>
 			<Stack maxWidth={500}>
@@ -227,7 +229,13 @@ function ItemPage() {
 				}}
 			>
 				{itemQuery.isSuccess && suggestedQuery.isSuccess && (
-					<Stack flexGrow={1} flexDirection="column" gap="20px" height={calcHeight()} width={calcWidth()}>
+					<Stack
+						flexGrow={1}
+						flexDirection="column"
+						gap={theme.spacing(2)}
+						height={calcHeight()}
+						width={calcWidth()}
+					>
 						<Player
 							url={itemQuery.data.url}
 							suggestedItems={suggestedQuery.data}
@@ -256,19 +264,19 @@ function ItemPage() {
 							withTooltip={false}
 							withMenu={true}
 						/>
-						<Stack flexDirection="row" gap="10px" alignItems="center">
+						<Stack flexDirection="row" gap={theme.spacing(1)} alignItems="center">
 							{getTagThumbnailsComponent()}
 							{getTagChipsComponent()}
 							<Chip
 								color="secondary"
-								icon={<AddIcon />}
+								icon={<AddIcon sx={{ fontSize: theme.iconSize(1) }} />}
 								onClick={() => setShowAddTagDialog(true)}
-								sx={{ '& .MuiChip-label': { padding: '5px' } }}
+								sx={{ '& .MuiChip-label': { padding: theme.spacing(0.5) } }}
 							/>
 							<Stack width="100%" alignItems="flex-end">
 								<Tooltip title="Delete this item">
 									<IconButton onClick={() => setShowDeleteItemConfirmationDialog(true)}>
-										<DeleteIcon />
+										<DeleteIcon sx={{ fontSize: theme.iconSize(1) }} />
 									</IconButton>
 								</Tooltip>
 							</Stack>
