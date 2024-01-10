@@ -23,6 +23,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/queue/metadata`).then((response) => response.json());
 	};
 
+	static getStats = async () => {
+		return await fetch(`${Client.apiUrl}/stats`).then((response) => response.json());
+	};
+
 	static getTasks = async (page, pageSize) => {
 		return await fetch(`${Client.apiUrl}/queue/tasks?page=${page}&pageSize=${pageSize}`).then((response) =>
 			response.json()

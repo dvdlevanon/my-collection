@@ -10,6 +10,7 @@ import {
 	Menu,
 	MenuItem,
 	Popover,
+	Stack,
 	Toolbar,
 	Tooltip,
 	Typography,
@@ -19,12 +20,15 @@ import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
+import TimeUtil from '../../utils/time-utils';
 import Queue from '../queue/Queue';
 
 function TopBar({ previewMode, onPreviewModeChange }) {
 	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
-	const queueMetadataQuery = useQuery({
-		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
+	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getStats);
+
+	const statsQuery = useQuery({
+		queryKey: ReactQueryUtil.STATS_KEY,
 		queryFn: Client.getQueueMetadata,
 		onSuccess: (queueMetadata) => {
 			if (queueMetadata.size == 0) {
@@ -169,6 +173,17 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					label="Use Previews"
 					control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}
 				/>
+				{queueMetadataQuery.isSuccess && (
+					<Stack flexDirection="row" gap="10px" justifyContent="center" alignItems="center">
+						<Stack flexDirection="column">
+							<Typography variant="caption">Tags: {queueMetadataQuery.data.tags_count}</Typography>
+							<Typography variant="caption">Items: {queueMetadataQuery.data.items_count}</Typography>
+						</Stack>
+						<Typography variant="caption">
+							Total Duration: {TimeUtil.msToTime(queueMetadataQuery.data.total_duration_seconds * 1000)}{' '}
+						</Typography>
+					</Stack>
+				)}
 			</Toolbar>
 		</AppBar>
 	);

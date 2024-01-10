@@ -1,6 +1,6 @@
 import KeyboardIcon from '@mui/icons-material/Keyboard';
-import { Box, InputAdornment, Popper, TextField } from '@mui/material';
-import React, { useRef, useState } from 'react';
+import { Box, ClickAwayListener, InputAdornment, Popper, TextField } from '@mui/material';
+import React, { useEffect, useRef, useState } from 'react';
 import Keyboard from 'react-simple-keyboard';
 import 'react-simple-keyboard/build/css/index.css';
 
@@ -8,9 +8,20 @@ function TextFieldWithKeyboard(props) {
 	const [showKeyboard, setShowKeyboard] = useState(false);
 	const [layoutName, setLayoutName] = useState('default');
 	const textEl = useRef(null);
+	const keyboard = useRef(null);
 	const [text, setText] = useState('');
 
+	useEffect(() => {
+		if (keyboard.current) {
+			keyboard.current.setInput(text);
+		}
+	}, [text, showKeyboard, keyboard.current]);
+
 	const onChange = (value) => {
+		if (value == text) {
+			return;
+		}
+
 		setText(value);
 		props.onChange(value);
 	};
@@ -49,13 +60,18 @@ function TextFieldWithKeyboard(props) {
 					zIndex: 10000,
 				}}
 			>
-				<Keyboard
-					theme={'hg-theme-default dark'}
-					layoutName={layoutName}
-					value={text}
-					onChange={onChange}
-					onKeyPress={onKeyPress}
-				/>
+				<ClickAwayListener onClickAway={(e) => setShowKeyboard(false)}>
+					<Box>
+						<Keyboard
+							keyboardRef={(r) => (keyboard.current = r)}
+							theme={'hg-theme-default dark'}
+							layoutName={layoutName}
+							value={text}
+							onChange={onChange}
+							onKeyPress={onKeyPress}
+						/>
+					</Box>
+				</ClickAwayListener>
 			</Popper>
 		</Box>
 	);

@@ -84,3 +84,18 @@ func (d *Database) GetItems(conds ...interface{}) (*[]model.Item, error) {
 func (d *Database) GetAllItems() (*[]model.Item, error) {
 	return d.GetItems()
 }
+
+func (d *Database) GetItemsCount() (int64, error) {
+	var count int64
+	err := d.handleError(d.db.Model(&model.Item{}).Count(&count).Error)
+	return count, err
+}
+
+func (d *Database) GetTotalDurationSeconds() (float64, error) {
+	var result struct {
+		Total float64
+	}
+
+	err := d.handleError(d.db.Model(&model.Item{}).Select("sum(duration_seconds) as total").Scan(&result).Error)
+	return result.Total, err
+}

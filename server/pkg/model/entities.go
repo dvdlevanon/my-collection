@@ -115,3 +115,9 @@ type TagCustomCommand struct {
 	Tooltip string `json:"tooltip,omitempty"`
 	Icon    string `json:"icon,omitempty"`
 }
+
+type Stats struct {
+	TagsCount            int64   `json:"tags_count,omitempty"`
+	ItemsCount           int64   `json:"items_count,omitempty"`
+	TotalDurationSeconds float64 `json:"total_duration_seconds,omitempty"`
+}

@@ -104,6 +104,8 @@ func (s *Server) init() {
 
 	api.POST("/spectagger/run", s.runSpecTagger)
 
+	api.GET("/stats", s.getStats)
+
 	api.GET("/tag-image-types", s.getTagImageTypes)
 
 	api.GET("/ws", s.push.websocket)

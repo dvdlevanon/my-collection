@@ -219,7 +219,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 			</Stack>
 			{tagsQuery.isSuccess && itemsQuery.isSuccess && (
 				<Fade in={showThumbnails} unmountOnExit={true}>
-					<Box overflow="auto">
+					<Box>
 						<TagThumbnails
 							tags={getAvailableThumbnailTags(getFilteredItems(getSelectedTags(), searchTerm))}
 							onEditThumbnail={(tag) => setEditThumbnailTag(tag)}
@@ -227,7 +227,7 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 								updateConditionType('&&');
 								galleryUrlParams.activateTag(tag.id, true);
 							}}
-							additionSx={{ flexFlow: 'wrap' }}
+							carouselMode={true}
 						/>
 					</Box>
 				</Fade>

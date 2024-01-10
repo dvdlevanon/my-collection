@@ -103,6 +103,7 @@ a:link {
 }
 
 .simple-keyboard.dark {
+	width: 800px;
 	background-color: rgba(0, 0, 0, 1);
 	border-radius: 0;
 	border-bottom-right-radius: 5px;

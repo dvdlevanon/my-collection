@@ -9,7 +9,7 @@ import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
 import Thumbnail from '../thumbnail/Thumbnail';
 
-function TagThumbnail({ tag, onTagClicked, onTagRemoved, onEditThumbnail, withRemoveOption }) {
+function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail, withRemoveOption }) {
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(0);
 	const [menuY, setMenuY] = useState(0);
@@ -71,12 +71,12 @@ function TagThumbnail({ tag, onTagClicked, onTagRemoved, onEditThumbnail, withRe
 
 	return (
 		<>
-			{onTagClicked == null && (
+			{isLink && (
 				<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
 					{getThumbnailCompnentWrapper()}
 				</Link>
 			)}
-			{onTagClicked != null && getThumbnailCompnentWrapper()}
+			{!isLink && getThumbnailCompnentWrapper()}
 			<Menu
 				open={menuAchrosEl != null}
 				anchorEl={menuAchrosEl}

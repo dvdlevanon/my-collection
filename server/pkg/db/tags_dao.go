@@ -87,3 +87,9 @@ func (d *Database) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
 func (d *Database) UpdateTagImage(image *model.TagImage) error {
 	return d.update(image)
 }
+
+func (d *Database) GetTagsCount() (int64, error) {
+	var count int64
+	err := d.handleError(d.db.Model(&model.Tag{}).Count(&count).Error)
+	return count, err
+}
