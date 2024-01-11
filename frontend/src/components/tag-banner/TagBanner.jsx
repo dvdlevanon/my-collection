@@ -22,20 +22,6 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 		return url.substring(0, indexOfQuestionMark);
 	};
 
-	const getBackgroundColor = () => {
-		if (tag == null) {
-			return 'auto';
-		}
-
-		let url = removeUrlParams(TagsUtil.getTagImageUrl(tag, null, false));
-
-		if (url.endsWith('.png') || url.endsWith('.svg')) {
-			return '#555';
-		} else {
-			return 'auto';
-		}
-	};
-
 	const getBannerComponent = () => {
 		return (
 			<Box
@@ -105,7 +91,6 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 						borderRadius: theme.spacing(0.5),
 						border: theme.border(1, 'solid', 'white'),
 						padding: theme.spacing(1),
-						backgroundColor: getBackgroundColor(),
 					}}
 					component="img"
 					src={tag == null ? TagsUtil.getNoBannerImageUrl() : TagsUtil.getTagImageUrl(tag, null, false)}

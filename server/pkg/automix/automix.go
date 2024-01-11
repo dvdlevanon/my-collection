@@ -64,7 +64,8 @@ func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
 	}
 
 	randomItems, err := items.GetRandomItems(d.ir, d.dailyMixItemsCount, func(item *model.Item) bool {
-		return !items.IsHighlight(item) && !items.IsSplittedItem(item)
+		isShortSubitem := items.IsSubItem(item) && item.DurationSeconds < 60*5
+		return !items.IsHighlight(item) && !items.IsSplittedItem(item) && !isShortSubitem
 	})
 
 	if err != nil {
