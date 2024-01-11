@@ -54,3 +54,17 @@ func (s *Server) refreshItemsFileMetadata(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) refreshItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	s.processor.EnqueueItemVideoMetadata(itemId)
+	s.processor.EnqueueItemCovers(itemId)
+	s.processor.EnqueueItemPreview(itemId)
+	s.processor.EnqueueItemFileMetadata(itemId)
+
+	c.Status(http.StatusOK)
+}

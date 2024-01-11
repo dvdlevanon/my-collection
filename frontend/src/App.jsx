@@ -1,4 +1,4 @@
-import { createTheme, CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material';
+import { CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material';
 import React, { useState } from 'react';
 import { useQuery } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
@@ -11,69 +11,16 @@ import TopBar from './components/top-bar/TopBar';
 import Client from './utils/client';
 import ReactQueryUtil from './utils/react-query-util';
 import TagsUtil from './utils/tags-util';
-
-const theme = createTheme({
-	spacing: 10,
-	baseSpacing: 10,
-	palette: {
-		mode: 'dark',
-		primary: {
-			main: '#ff4400',
-			light: '#ff8844',
-		},
-		secondary: {
-			main: '#0D9352',
-		},
-		bright: {
-			main: '#ffddcc',
-			darker: '#ddbbaa',
-			darker2: '#aaaaaa',
-			text: '#ffffff',
-		},
-		dark: {
-			main: '#121212',
-			lighter: '#222222',
-			lighter2: '#272727',
-		},
-	},
-	typography: {
-		fontSize: 16,
-	},
-	iconBaseSize: 25,
-	borderBaseSize: 1,
-});
-
-theme.multiSpacing = (...values) => {
-	return values
-		.map((value) => {
-			return theme.spacing(value);
-		})
-		.join(' ');
-};
-
-theme.iconSize = (factor) => {
-	let val = theme.iconBaseSize * factor;
-	return val + 'px';
-};
-
-theme.border = (factor, style, color) => {
-	let val = theme.borderBaseSize * factor;
-	return val + 'px ' + style + ' ' + color;
-};
-
-theme.fontSize = (factor) => {
-	let val = theme.typography.fontSize * factor;
-	return val + 'px ';
-};
+import ThemeUtil from './utils/theme-utils';
 
 function App() {
-	const specialTagsQuery = useQuery({
+	useQuery({
 		queryKey: ReactQueryUtil.SPECIAL_TAGS_KEY,
 		queryFn: Client.getSpecialTags,
 		onSuccess: (specialTags) => TagsUtil.initSpecialTags(specialTags),
 	});
 
-	const categoriesQuery = useQuery({
+	useQuery({
 		queryKey: ReactQueryUtil.CATEGORIES_KEY,
 		queryFn: Client.getCategories,
 		onSuccess: (categories) => TagsUtil.initCategories(categories),
@@ -85,20 +32,18 @@ function App() {
 	return (
 		<React.Fragment>
 			<StyledEngineProvider injectFirst>
-				<ThemeProvider theme={theme}>
-					<CssBaseline />
+				<ThemeProvider theme={ThemeUtil.createDarkTheme()}>
+					<CssBaseline enableColorScheme />
 					<BrowserRouter>
 						{!hideTopBar && <TopBar previewMode={previewMode} onPreviewModeChange={setPreviewMode} />}
-						{specialTagsQuery.isSuccess && (
-							<Routes>
-								<Route
-									index
-									element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
-								/>
-								<Route path="/spa/item/:itemId" element={<ItemPage />} />
-								<Route path="/spa/manage-directories" element={<ManageDirectories />} />
-							</Routes>
-						)}
+						<Routes>
+							<Route
+								index
+								element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
+							/>
+							<Route path="/spa/item/:itemId" element={<ItemPage />} />
+							<Route path="/spa/manage-directories" element={<ManageDirectories />} />
+						</Routes>
 					</BrowserRouter>
 					<ReactQueryDevtools initialIsOpen={false} />
 				</ThemeProvider>

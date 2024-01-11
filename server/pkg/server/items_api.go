@@ -184,6 +184,7 @@ func (s *Server) splitItem(c *gin.Context) {
 	for _, item := range changedItems {
 		s.processor.EnqueueItemVideoMetadata(item.Id)
 		s.processor.EnqueueItemCovers(item.Id)
+		s.processor.EnqueueItemFileMetadata(item.Id)
 		// s.processor.EnqueueItemPreview(item.Id)
 	}
 
@@ -220,6 +221,7 @@ func (s *Server) makeHighlight(c *gin.Context) {
 	s.processor.EnqueueItemVideoMetadata(highlightItem.Id)
 	s.processor.EnqueueItemCovers(highlightItem.Id)
 	s.processor.EnqueueItemPreview(highlightItem.Id)
+	s.processor.EnqueueItemFileMetadata(highlightItem.Id)
 	c.Status(http.StatusOK)
 }
 

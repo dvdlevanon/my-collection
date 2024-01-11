@@ -1,6 +1,7 @@
 import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ProcessIcon from '@mui/icons-material/Loop';
 import { Box, Chip, IconButton, Stack, Tooltip } from '@mui/material';
 import { useLayoutEffect, useState } from 'react';
 import { useQuery, useQueryClient } from 'react-query';
@@ -10,7 +11,6 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AttachTagDialog from '../dialogs/AttachTagDialog';
 import ConfirmationDialog from '../dialogs/ConfirmationDialog';
-import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import Highlights from '../highlights/Highlights';
 import ItemMetadataViewer from '../item-metadata-viewer/ItemMetadataViewer';
 import ItemTitle from '../item-title/ItemTitle';
@@ -41,7 +41,6 @@ function ItemPage() {
 	const [windowWidth, windowHeight] = useWindowSize();
 	const [showSplitVideoConfirmationDialog, setShowSplitVideoConfirmationDialog] = useState(false);
 	const [showDeleteItemConfirmationDialog, setShowDeleteItemConfirmationDialog] = useState(false);
-	const [editThumbnailTag, setEditThumbnailTag] = useState(null);
 	const [splitVideoSecond, setSplitVideoSecond] = useState(0);
 	const navigate = useNavigate();
 	const theme = useTheme();
@@ -102,8 +101,8 @@ function ItemPage() {
 		});
 	};
 
-	const onEditThumbnail = (tag) => {
-		setEditThumbnailTag(tag);
+	const processItem = (item) => {
+		Client.forceProcessItem(item.id);
 	};
 
 	const closeSplitVideoDialog = () => {
@@ -180,7 +179,6 @@ function ItemPage() {
 			<TagThumbnails
 				tags={thumbnails}
 				onTagRemoved={onTagRemoved}
-				onEditThumbnail={onEditThumbnail}
 				withRemoveOption={true}
 				onTagClicked={null}
 			></TagThumbnails>
@@ -273,7 +271,12 @@ function ItemPage() {
 								onClick={() => setShowAddTagDialog(true)}
 								sx={{ '& .MuiChip-label': { padding: theme.spacing(0.5) } }}
 							/>
-							<Stack width="100%" alignItems="flex-end">
+							<Stack width="100%" justifyContent="flex-end" flexDirection="row">
+								<Tooltip title="Process this item">
+									<IconButton onClick={() => processItem(itemQuery.data)}>
+										<ProcessIcon sx={{ fontSize: theme.iconSize(1) }} />
+									</IconButton>
+								</Tooltip>
 								<Tooltip title="Delete this item">
 									<IconButton onClick={() => setShowDeleteItemConfirmationDialog(true)}>
 										<DeleteIcon sx={{ fontSize: theme.iconSize(1) }} />
@@ -309,13 +312,6 @@ function ItemPage() {
 					actionButtonTitle="Delete"
 					onCancel={() => setShowDeleteItemConfirmationDialog(false)}
 					onConfirm={() => onDeleteItem(itemQuery.data, true)}
-				/>
-			)}
-			{editThumbnailTag != null && (
-				<ManageTagImageDialog
-					tag={editThumbnailTag}
-					autoThumbnailMode={true}
-					onClose={() => setEditThumbnailTag(null)}
 				/>
 			)}
 			<AttachTagDialog

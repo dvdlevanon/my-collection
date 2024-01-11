@@ -64,6 +64,7 @@ func (s *Server) init() {
 	api.POST("/items/:item/split", s.splitItem)
 	api.POST("/items/:item/make-highlight", s.makeHighlight)
 	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)
+	api.POST("/items/:item/process", s.refreshItem)
 
 	api.GET("/tags", s.getTags)
 	api.GET("/special-tags", s.getSpecialTags)

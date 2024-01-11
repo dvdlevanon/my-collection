@@ -2,11 +2,15 @@ import { useTheme } from '@emotion/react';
 import AddLink from '@mui/icons-material/AddLink';
 import CopyIcon from '@mui/icons-material/ContentCopy';
 import { default as RemoveIcon } from '@mui/icons-material/Delete';
+import ThumbnailIcon from '@mui/icons-material/Face3';
 import ImageIcon from '@mui/icons-material/Image';
+import GalleryIcon from '@mui/icons-material/OpenInNew';
 import { Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
+import { Link, Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
+import GalleryUrlParams from '../../utils/gallery-url-params';
 import ReactQueryUtil from '../../utils/react-query-util';
 
 function TagContextMenu({
@@ -17,6 +21,9 @@ function TagContextMenu({
 	onManageImageClicked,
 	onManageAttributesClicked,
 	onRemoveTagClicked,
+	onEditThumbnail,
+	withRemoveOption,
+	withManageAttributesClicked,
 }) {
 	const theme = useTheme();
 	const tagCustomCommandsQuery = useQuery(ReactQueryUtil.tagCustomCommands(tag.parentId), () =>
@@ -67,24 +74,46 @@ function TagContextMenu({
 				</ListItemIcon>
 				Copy Title
 			</MenuItem>
+			<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
+				<MenuItem onClick={onClose} sx={{ color: 'white' }}>
+					<ListItemIcon>
+						<GalleryIcon sx={{ fontSize: theme.iconSize(1) }} />
+					</ListItemIcon>
+					Open in Gallery
+				</MenuItem>
+			</Link>
 			<MenuItem onClick={(e) => closeEndCall(e, onManageImageClicked)}>
 				<ListItemIcon>
 					<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</ListItemIcon>
 				Image Options...
 			</MenuItem>
-			<MenuItem onClick={(e) => closeEndCall(e, onManageAttributesClicked)}>
+			<MenuItem
+				onClick={(e) => {
+					closeEndCall(e, onEditThumbnail);
+				}}
+			>
 				<ListItemIcon>
-					<AddLink sx={{ fontSize: theme.iconSize(1) }} />
+					<ThumbnailIcon sx={{ fontSize: theme.iconSize(1) }} />
 				</ListItemIcon>
-				Manage annotations
+				Set Thumbnail
 			</MenuItem>
-			<MenuItem onClick={(e) => closeEndCall(e, onRemoveTagClicked)}>
-				<ListItemIcon>
-					<RemoveIcon sx={{ fontSize: theme.iconSize(1) }} />
-				</ListItemIcon>
-				Remove
-			</MenuItem>
+			{withManageAttributesClicked && (
+				<MenuItem onClick={(e) => closeEndCall(e, onManageAttributesClicked)}>
+					<ListItemIcon>
+						<AddLink sx={{ fontSize: theme.iconSize(1) }} />
+					</ListItemIcon>
+					Manage annotations
+				</MenuItem>
+			)}
+			{withRemoveOption && (
+				<MenuItem onClick={(e) => closeEndCall(e, onRemoveTagClicked)}>
+					<ListItemIcon>
+						<RemoveIcon sx={{ fontSize: theme.iconSize(1) }} />
+					</ListItemIcon>
+					Remove
+				</MenuItem>
+			)}
 			{tagCustomCommandsQuery.isSuccess && tagCustomCommandsQuery.data.length > 0 && <Divider />}
 			{tagCustomCommandsQuery.isSuccess &&
 				tagCustomCommandsQuery.data.length > 0 &&

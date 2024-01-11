@@ -5,7 +5,7 @@ import Carousel from 'react-multi-carousel';
 import 'react-multi-carousel/lib/styles.css';
 import TagThumbnail from './TagThumbnail';
 
-function TagThumbnails({ tags, carouselMode, onTagClicked, onTagRemoved, onEditThumbnail, withRemoveOption }) {
+function TagThumbnails({ tags, carouselMode, onTagClicked, onTagRemoved, withRemoveOption }) {
 	const [duringDrag, setDuringDrag] = useState(false);
 	const theme = useTheme();
 
@@ -44,7 +44,6 @@ function TagThumbnails({ tags, carouselMode, onTagClicked, onTagRemoved, onEditT
 						}
 					}}
 					onTagRemoved={onTagRemoved}
-					onEditThumbnail={onEditThumbnail}
 					withRemoveOption={withRemoveOption}
 					isLink={onTagClicked == null}
 				/>

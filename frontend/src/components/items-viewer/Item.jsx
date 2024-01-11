@@ -128,7 +128,7 @@ function Item({
 							objectFit: 'contain',
 							cursor: 'pointer',
 							borderRadius: theme.spacing(1),
-							boxShadow: item.main_cover_second ? '0 2px 4px 0 rgba(255, 68, 0, 0.6)' : 'none',
+							boxShadow: item.main_cover_second ? '0 2px 4px 0 ' + theme.palette.secondary.main : 'none',
 						}}
 					/>
 					{!ItemsUtil.isHighlight(item) && (
@@ -195,7 +195,9 @@ function Item({
 							controls={false}
 							onLoadedMetadata={(e) => {
 								if (item.preview_mode === ItemsUtil.PREVIEW_FROM_START_POSITION) {
-									e.target.currentTime = item.start_position;
+									if (item.start_position) {
+										e.target.currentTime = item.start_position;
+									}
 								}
 							}}
 							onTimeUpdate={(e) => {

@@ -137,6 +137,12 @@ export default class Client {
 		});
 	};
 
+	static forceProcessItem = async (itemId) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/process`, {
+			method: 'POST',
+		});
+	};
+
 	static splitItem = async (itemId, second) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}/split?second=${second}`, {
 			method: 'POST',

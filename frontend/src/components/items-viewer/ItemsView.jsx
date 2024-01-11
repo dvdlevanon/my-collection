@@ -4,7 +4,6 @@ import React, { useEffect, useState } from 'react';
 import seedrandom from 'seedrandom';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import TagsUtil from '../../utils/tags-util';
-import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import TagThumbnails from '../tag-thumbnail/TagThumbnails';
 import GalleryFilters from './GalleryFilters';
 import ItemSortSelector from './ItemSortSelector';
@@ -17,7 +16,6 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 	const [aspectRatio, setAspectRatio] = useState(AspectRatioUtil.asepctRatio16_9);
 	const [itemsSize, setItemsSize] = useState({ width: 350, height: AspectRatioUtil.calcHeight(350, aspectRatio) });
 	const [sortBy, setSortBy] = useState('random');
-	const [editThumbnailTag, setEditThumbnailTag] = useState(null);
 	const [showThumbnails, setShowThumbnails] = useState(true);
 	const theme = useTheme();
 
@@ -224,7 +222,6 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 					<Box>
 						<TagThumbnails
 							tags={getAvailableThumbnailTags(getFilteredItems(getSelectedTags(), searchTerm))}
-							onEditThumbnail={(tag) => setEditThumbnailTag(tag)}
 							onTagClicked={(tag) => {
 								updateConditionType('&&');
 								galleryUrlParams.activateTag(tag.id, true);
@@ -252,13 +249,6 @@ function ItemsView({ previewMode, tagsQuery, itemsQuery, galleryUrlParams }) {
 					/>
 				)}
 			</Box>
-			{editThumbnailTag != null && (
-				<ManageTagImageDialog
-					tag={editThumbnailTag}
-					autoThumbnailMode={true}
-					onClose={() => setEditThumbnailTag(null)}
-				/>
-			)}
 		</Stack>
 	);
 }

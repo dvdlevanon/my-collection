@@ -11,16 +11,15 @@ import TagImage from './TagImage';
 import TagTitle from './TagTitle';
 
 function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClicked }) {
-	const [optionsHidden, setOptionsHidden] = useState(true);
-	const [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	const [removeTagDialogOpened, setRemoveTagDialogOpened] = useState(false);
+	const [attachMenuAttributes, setAttachMenuAttributes] = useState(null);
 	const [manageTagImageOpened, setManageTagImageOpened] = useState(false);
+	const [autoThumbnailMode, setAutoThumbnailMode] = useState(false);
 	const [tagMenuProps, setTagMenuProps] = useState(null);
 	const theme = useTheme();
 
 	const onManageAttributesClicked = (e) => {
 		e.stopPropagation();
-		setOptionsHidden(false);
 		setAttachMenuAttributes(
 			attachMenuAttributes === null
 				? {
@@ -45,7 +44,7 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 				{manageTagImageOpened && (
 					<ManageTagImageDialog
 						tag={tag}
-						autoThumbnailMode={false}
+						autoThumbnailMode={autoThumbnailMode}
 						onClose={() => setManageTagImageOpened(false)}
 					/>
 				)}
@@ -94,14 +93,11 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 			maxHeight={tagDimension.height}
 			width={parent.display_style !== 'banner' ? tagDimension.width : 'auto'}
 			height={parent.display_style !== 'banner' ? tagDimension.height : 'auto'}
-			onMouseEnter={() => setOptionsHidden(false)}
-			onMouseLeave={() => setOptionsHidden(true)}
 			position="relative"
 			margin={parent.display_style !== 'banner' ? 'unset' : '50px'}
 		>
 			<Link
 				onContextMenu={(e) => {
-					e.preventDefault();
 					e.preventDefault();
 					setTagMenuProps({
 						anchor: e.target,
@@ -128,8 +124,17 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 					menuPosition={{ top: tagMenuProps.top, left: tagMenuProps.left }}
 					onClose={() => setTagMenuProps(null)}
 					onManageAttributesClicked={onManageAttributesClicked}
-					onManageImageClicked={setManageTagImageOpened}
 					onRemoveTagClicked={() => setRemoveTagDialogOpened(true)}
+					withRemoveOption={true}
+					withManageAttributesClicked={true}
+					onManageImageClicked={() => {
+						setManageTagImageOpened(true);
+						setAutoThumbnailMode(false);
+					}}
+					onEditThumbnail={() => {
+						setManageTagImageOpened(true);
+						setAutoThumbnailMode(true);
+					}}
 				/>
 			)}
 		</Stack>

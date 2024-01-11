@@ -58,11 +58,19 @@ func (d *Spectagger) Trigger() {
 }
 
 func (d *Spectagger) Run() {
+	first := true
+
 	for {
 		select {
 		case <-d.triggerChannel:
 			d.runSpectagger()
 		case <-time.After(1 * time.Minute):
+			if first {
+				d.runSpectagger()
+			}
+
+			first = false
+		case <-time.After(60 * time.Minute):
 			d.runSpectagger()
 		}
 	}

@@ -1,31 +1,17 @@
-import { useTheme } from '@emotion/react';
-import GalleryIcon from '@mui/icons-material/Collections';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ThumbnailIcon from '@mui/icons-material/Face3';
-import { Box, Divider, ListItemIcon, Menu, MenuItem, Tooltip, Typography } from '@mui/material';
+import { Box, Tooltip } from '@mui/material';
 import { useState } from 'react';
 import { Link, Link as RouterLink } from 'react-router-dom';
 import seedrandom from 'seedrandom';
 import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
+import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
+import TagContextMenu from '../tag-context-menu/TagContextMenu';
 import Thumbnail from '../thumbnail/Thumbnail';
 
-function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail, withRemoveOption }) {
-	const theme = useTheme();
-	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
-	const [menuX, setMenuX] = useState(0);
-	const [menuY, setMenuY] = useState(0);
-
-	const onClick = (e) => {
-		e.preventDefault();
-		setMenuX(e.clientX);
-		setMenuY(e.clientY);
-		setMenuAchrosEl(e.target);
-	};
-
-	const closeMenu = () => {
-		setMenuAchrosEl(null);
-	};
+function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, withRemoveOption }) {
+	const [tagMenuProps, setTagMenuProps] = useState(null);
+	const [manageTagImageOpened, setManageTagImageOpened] = useState(false);
+	const [autoThumbnailMode, setAutoThumbnailMode] = useState(false);
 
 	const getRandomImage = (images) => {
 		let epochDay = Math.floor(Date.now() / 1000 / 60 / 60 / 24);
@@ -55,7 +41,14 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail
 		return (
 			<Tooltip title={tag.title}>
 				<Box
-					onContextMenu={onClick}
+					onContextMenu={(e) => {
+						e.preventDefault();
+						setTagMenuProps({
+							anchor: e.target,
+							left: e.clientX,
+							top: e.clientY,
+						});
+					}}
 					onClick={() => {
 						if (onTagClicked) {
 							onTagClicked(tag);
@@ -79,58 +72,33 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, onEditThumbnail
 				</Link>
 			)}
 			{!isLink && getThumbnailCompnentWrapper()}
-			<Menu
-				open={menuAchrosEl != null}
-				anchorEl={menuAchrosEl}
-				onClose={() => setMenuAchrosEl(null)}
-				anchorPosition={{ left: menuX, top: menuY }}
-				anchorReference="anchorPosition"
-			>
-				<MenuItem disabled>
-					<Typography variant="h5" color="white">
-						{tag.title}
-					</Typography>
-				</MenuItem>
-				<MenuItem
-					onClick={() => {
-						onEditThumbnail(tag);
-						closeMenu();
+			{tagMenuProps != null && (
+				<TagContextMenu
+					tag={tag}
+					menuAnchorEl={tagMenuProps.anchor}
+					menuPosition={{ top: tagMenuProps.top, left: tagMenuProps.left }}
+					onClose={() => setTagMenuProps(null)}
+					onManageAttributesClicked={null}
+					withManageAttributesClicked={false}
+					onRemoveTagClicked={() => onTagRemoved(tag)}
+					withRemoveOption={withRemoveOption}
+					onManageImageClicked={() => {
+						setManageTagImageOpened(true);
+						setAutoThumbnailMode(false);
 					}}
-				>
-					<ListItemIcon>
-						<ThumbnailIcon sx={{ fontSize: theme.iconSize(1) }} />
-					</ListItemIcon>
-					<Typography variant="h6" color="white">
-						Set Thumbnail
-					</Typography>
-				</MenuItem>
-				<Link target="_blank" component={RouterLink} to={'/?' + GalleryUrlParams.buildUrlParams(tag.id)}>
-					<MenuItem onClick={closeMenu}>
-						<ListItemIcon>
-							<GalleryIcon sx={{ fontSize: theme.iconSize(1) }} />
-						</ListItemIcon>
-						<Typography variant="h6" color="white">
-							Open in Gallery
-						</Typography>
-					</MenuItem>
-				</Link>
-				{withRemoveOption && <Divider />}
-				{withRemoveOption && (
-					<MenuItem
-						onClick={() => {
-							onTagRemoved(tag);
-							closeMenu();
-						}}
-					>
-						<ListItemIcon>
-							<DeleteIcon sx={{ fontSize: theme.iconSize(1) }} />
-						</ListItemIcon>
-						<Typography variant="h6" color="white">
-							Remove
-						</Typography>
-					</MenuItem>
-				)}
-			</Menu>
+					onEditThumbnail={() => {
+						setManageTagImageOpened(true);
+						setAutoThumbnailMode(true);
+					}}
+				/>
+			)}
+			{manageTagImageOpened && (
+				<ManageTagImageDialog
+					tag={tag}
+					autoThumbnailMode={autoThumbnailMode}
+					onClose={() => setManageTagImageOpened(false)}
+				/>
+			)}
 		</>
 	);
 }
