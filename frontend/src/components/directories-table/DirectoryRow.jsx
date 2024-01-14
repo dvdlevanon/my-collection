@@ -1,3 +1,4 @@
+import { useTheme } from '@emotion/react';
 import { TableCell, TableRow } from '@mui/material';
 import { useState } from 'react';
 import { useQueryClient } from 'react-query';
@@ -11,6 +12,7 @@ import DirectoryStatusCell from './DirectoryStatusCell';
 
 function DirectoryRow({ directory }) {
 	const queryClient = useQueryClient();
+	const theme = useTheme();
 	const [addCategoryDialogOpened, setAddCategoryDialogOpened] = useState(false);
 	const refetchDirectories = () => {
 		queryClient.refetchQueries({
@@ -78,7 +80,7 @@ function DirectoryRow({ directory }) {
 		<>
 			<TableRow
 				sx={{
-					backgroundColor: directory.excluded ? '#333' : 'main',
+					opacity: directory.excluded ? '0.5' : '1',
 				}}
 				key={directory.path}
 			>

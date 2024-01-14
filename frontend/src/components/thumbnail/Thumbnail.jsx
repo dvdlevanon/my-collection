@@ -27,7 +27,7 @@ function Thumbnail({ image, imageUrl, title, crop }) {
 				img.src = imageUrl;
 			}
 		} else if (title) {
-			ctx.fillStyle = '#ffffff';
+			ctx.fillStyle = theme.palette.text.primary;
 			ctx.font = theme.fontSize(0.9) + ' DejaVu';
 			wrapText(ctx, title.toUpperCase(), thumbnailCanvasId.current.width, thumbnailCanvasId.current.height);
 		}
@@ -59,7 +59,7 @@ function Thumbnail({ image, imageUrl, title, crop }) {
 	return (
 		<Box
 			sx={{
-				border: theme.border(1, 'solid', 'white'),
+				border: theme.border(1, 'solid', theme.palette.text.primary),
 				borderRadius: theme.spacing(0.5),
 				width: theme.iconSize(3),
 				height: theme.iconSize(3),

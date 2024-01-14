@@ -36,6 +36,34 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 				onMouseEnter={() => setShowButtons(true)}
 				onMouseLeave={() => setShowButtons(false)}
 			>
+				<Box
+					sx={{
+						overflow: 'hidden',
+						width: theme.iconSize(6),
+						minWidth: theme.iconSize(6),
+						maxHeight: theme.iconSize(5),
+						height: theme.iconSize(5),
+						objectFit: tag == null ? 'auto' : 'contain',
+						borderRadius: theme.spacing(0.5),
+						border: theme.border(1, 'solid', theme.palette.text.primary),
+						padding: tag == null ? '0px' : theme.spacing(1),
+					}}
+					component="img"
+					src={tag == null ? TagsUtil.getNoBannerImageUrl() : TagsUtil.getTagImageUrl(tag, null, false)}
+					alt={tag == null ? '' : tag.title}
+					loading="lazy"
+				/>
+				{tag == null && (
+					<NoImageIcon
+						sx={{
+							color: theme.palette.primary.light,
+							position: 'absolute',
+							width: '40%',
+							height: '100%',
+							fontSize: theme.iconSize(1),
+						}}
+					/>
+				)}
 				{showButtons && (
 					<Stack
 						flexDirection="row"
@@ -50,7 +78,7 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 						{tag && (
 							<IconButton
 								sx={{
-									border: theme.border(1, 'solid', 'gray'),
+									border: theme.border(1, 'solid', theme.palette.text.primary),
 									width: theme.iconSize(1.4),
 									height: theme.iconSize(1.4),
 								}}
@@ -64,8 +92,9 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 							</IconButton>
 						)}
 						<IconButton
+							color="secondary"
 							sx={{
-								border: theme.border(1, 'solid', 'gray'),
+								border: theme.border(1, 'solid', theme.palette.secondary.main),
 								width: theme.iconSize(1.4),
 								height: theme.iconSize(1.4),
 							}}
@@ -78,34 +107,6 @@ function TagBanner({ tag, onTagRemoved, onTagEdit }) {
 							<EditIcon sx={{ width: theme.iconSize(0.9), height: theme.iconSize(0.9) }} />
 						</IconButton>
 					</Stack>
-				)}
-				<Box
-					sx={{
-						borderRadius: theme.spacing(0.5),
-						overflow: 'hidden',
-						width: theme.iconSize(6),
-						minWidth: theme.iconSize(6),
-						maxHeight: theme.iconSize(5),
-						height: theme.iconSize(5),
-						objectFit: 'contain',
-						borderRadius: theme.spacing(0.5),
-						border: theme.border(1, 'solid', 'white'),
-						padding: theme.spacing(1),
-					}}
-					component="img"
-					src={tag == null ? TagsUtil.getNoBannerImageUrl() : TagsUtil.getTagImageUrl(tag, null, false)}
-					alt={tag == null ? '' : tag.title}
-					loading="lazy"
-				/>
-				{tag == null && (
-					<NoImageIcon
-						color="dark"
-						sx={{
-							position: 'absolute',
-							width: '40%',
-							height: '100%',
-						}}
-					/>
 				)}
 			</Box>
 		);

@@ -219,7 +219,12 @@ function Item({
 			</Link>
 			{!ItemsUtil.isHighlight(item) && direction === 'column' && getTitleComponent()}
 			{!ItemsUtil.isHighlight(item) && direction !== 'column' && (
-				<Link component={RouterLink} reloadDocument to={itemLinkBuilder(item)} color="bright.text">
+				<Link
+					component={RouterLink}
+					reloadDocument
+					to={itemLinkBuilder(item)}
+					color={theme.palette.text.primary}
+				>
 					{getTitleComponent()}
 				</Link>
 			)}

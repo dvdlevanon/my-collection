@@ -189,6 +189,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/tag-image-types`).then((response) => response.json());
 	};
 
+	static fetchTextFile = async (path) => {
+		return await fetch(path).then((response) => response.text());
+	};
+
 	static saveItem(item, successCallback) {
 		fetch(`${Client.apiUrl}/items/${item.id}`, {
 			method: 'POST',

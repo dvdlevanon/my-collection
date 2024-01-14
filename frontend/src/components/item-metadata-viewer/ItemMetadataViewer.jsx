@@ -8,7 +8,7 @@ function ItemMetadataViewer({ item }) {
 	const theme = useTheme();
 
 	return (
-		<Typography variant="body2" color="bright.darker2" padding={theme.multiSpacing(0, 1)}>
+		<Typography variant="body2" padding={theme.multiSpacing(0, 1)}>
 			File Size: {BytesUtil.formatBytes(item.file_size, 2)}
 			<br />
 			Last Modified: {TimeUtil.formatEpochToDate(item.last_modified)}

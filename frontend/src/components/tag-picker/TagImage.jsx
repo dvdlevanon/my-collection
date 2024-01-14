@@ -38,8 +38,8 @@ function TagImage({ tag, selectedTit, onClick, imgSx }) {
 			/>
 			{!TagsUtil.hasImage(tag) && (
 				<NoImageIcon
-					color="dark"
 					sx={{
+						color: theme.palette.primary.light,
 						position: 'absolute',
 						width: '40%',
 						height: '100%',

@@ -152,7 +152,7 @@ function Player({
 	};
 
 	return (
-		<Box
+		<Stack
 			display="flex"
 			ref={playerElement}
 			sx={{
@@ -163,6 +163,10 @@ function Player({
 			onMouseLeave={() => onMouseLeave()}
 		>
 			<Box
+				borderRadius={theme.spacing(2)}
+				sx={{
+					boxShadow: '3',
+				}}
 				component="video"
 				height="100%"
 				width="100%"
@@ -223,8 +227,12 @@ function Player({
 						left: 0,
 						right: 0,
 						flexDirection: 'column',
-						background: 'rgb(255,255,255)',
-						background: 'linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(0,0,0,1) 100%)',
+						background:
+							'linear-gradient(180deg, ' +
+							theme.palette.gradient.color1 +
+							'00 0%, ' +
+							theme.palette.gradient.color2 +
+							'FF 100%)',
 					}}
 				>
 					<Slider
@@ -298,7 +306,7 @@ function Player({
 					</Stack>
 				</Stack>
 			</Fade>
-		</Box>
+		</Stack>
 	);
 }
 

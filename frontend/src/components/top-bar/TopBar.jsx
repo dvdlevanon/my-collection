@@ -1,4 +1,3 @@
-import { useTheme } from '@emotion/react';
 import QueueIcon from '@mui/icons-material/List';
 import {
 	AppBar,
@@ -23,11 +22,11 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TimeUtil from '../../utils/time-utils';
 import Queue from '../queue/Queue';
+import ThemeSelector from '../theme-selector/ThemeSelector';
 
-function TopBar({ previewMode, onPreviewModeChange }) {
+function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
 	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getStats);
-	const theme = useTheme();
 
 	const statsQuery = useQuery({
 		queryKey: ReactQueryUtil.STATS_KEY,
@@ -55,7 +54,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					verticalAlign: 'center',
 				}}
 			>
-				<Link sx={{ flexGrow: 1 }} component={RouterLink} to={'/' + window.location.search}>
+				<Link color="inherit" sx={{ flexGrow: 1 }} component={RouterLink} to={'/' + window.location.search}>
 					<Typography variant="h5">My Collection</Typography>
 				</Link>
 				{queueMetadataQuery.isSuccess && (
@@ -71,7 +70,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 								disabled={queueMetadataQuery.data.size == 0}
 								onClick={(e) => setQueueEl(e.currentTarget)}
 							>
-								<Badge badgeContent={queueMetadataQuery.data.unfinishedTasks || null} color="primary">
+								<Badge badgeContent={queueMetadataQuery.data.unfinishedTasks || null}>
 									<QueueIcon sx={{ fontSize: theme.iconSize(1) }} />
 								</Badge>
 							</IconButton>
@@ -93,12 +92,12 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 					</Popover>
 				)}
 				<Link component={RouterLink} to="spa/manage-directories">
-					<Button variant="outlined">Manage Directories</Button>
+					<Button variant="contained">Manage Directories</Button>
 				</Link>
 				<Link href={Client.getExportMetadataUrl()} download>
-					<Button variant="outlined">Export metadata</Button>
+					<Button variant="contained">Export metadata</Button>
 				</Link>
-				<Button variant="outlined" onClick={(e) => setRefreshAnchorEl(e.currentTarget)}>
+				<Button variant="contained" onClick={(e) => setRefreshAnchorEl(e.currentTarget)}>
 					Refresh
 				</Button>
 				<Menu
@@ -186,6 +185,7 @@ function TopBar({ previewMode, onPreviewModeChange }) {
 						</Typography>
 					</Stack>
 				)}
+				<ThemeSelector theme={theme} setTheme={setTheme} />
 			</Toolbar>
 		</AppBar>
 	);

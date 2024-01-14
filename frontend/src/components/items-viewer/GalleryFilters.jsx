@@ -30,11 +30,12 @@ function GalleryFilters({
 			></TextFieldWithKeyboard>
 			{activeTags.length > 0 && (
 				<Paper
-					variant="outlined"
+					variant="elevation"
+					elevation={4}
 					sx={{
 						display: 'flex',
 						gap: theme.spacing(1),
-						padding: '0',
+						padding: theme.spacing(0),
 					}}
 				>
 					<Tooltip title="Remove all filters">

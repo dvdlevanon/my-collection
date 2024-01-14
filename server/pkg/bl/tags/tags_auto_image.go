@@ -154,7 +154,7 @@ func findExistingImage(tagTitle string, directory string) (string, error) {
 		filepath.Join(directory, directories.TagTitleToDirectory(tagTitle)),
 	}
 
-	possibleExtenssions := []string{"jpg", "png"}
+	possibleExtenssions := []string{"jpg", "png", "svg"}
 
 	for _, pathWithoutExt := range possiblePaths {
 		for _, ext := range possibleExtenssions {

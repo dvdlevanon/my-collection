@@ -1,5 +1,5 @@
-import { CssBaseline, StyledEngineProvider, ThemeProvider } from '@mui/material';
-import React, { useState } from 'react';
+import { CssBaseline, Stack, StyledEngineProvider, ThemeProvider } from '@mui/material';
+import React, { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
@@ -28,23 +28,57 @@ function App() {
 
 	const [hideTopBar, setHideTopBar] = useState(false);
 	const [previewMode, setPreviewMode] = useState(true);
+	const [theme, setTheme] = useState(ThemeUtil.createDarkOrangeTheme());
+
+	useEffect(() => {
+		let themeName = localStorage.getItem('theme');
+		if (themeName) {
+			let theme = ThemeUtil.themeByName(themeName);
+
+			if (theme) {
+				setTheme(ThemeUtil.themeByName(themeName));
+			}
+		}
+	});
 
 	return (
 		<React.Fragment>
 			<StyledEngineProvider injectFirst>
-				<ThemeProvider theme={ThemeUtil.createDarkTheme()}>
+				<ThemeProvider theme={theme}>
 					<CssBaseline enableColorScheme />
-					<BrowserRouter>
-						{!hideTopBar && <TopBar previewMode={previewMode} onPreviewModeChange={setPreviewMode} />}
-						<Routes>
-							<Route
-								index
-								element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
-							/>
-							<Route path="/spa/item/:itemId" element={<ItemPage />} />
-							<Route path="/spa/manage-directories" element={<ManageDirectories />} />
-						</Routes>
-					</BrowserRouter>
+					<Stack
+						sx={{
+							backgroundImage: theme.backgroundImage,
+							width: '100%',
+							height: '100%',
+						}}
+					>
+						<BrowserRouter>
+							{!hideTopBar && (
+								<TopBar
+									previewMode={previewMode}
+									onPreviewModeChange={setPreviewMode}
+									theme={theme}
+									setTheme={(theme) => {
+										if (!theme) {
+											return;
+										}
+
+										setTheme(theme);
+										localStorage.setItem('theme', theme.name);
+									}}
+								/>
+							)}
+							<Routes>
+								<Route
+									index
+									element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
+								/>
+								<Route path="/spa/item/:itemId" element={<ItemPage />} />
+								<Route path="/spa/manage-directories" element={<ManageDirectories />} />
+							</Routes>
+						</BrowserRouter>
+					</Stack>
 					<ReactQueryDevtools initialIsOpen={false} />
 				</ThemeProvider>
 			</StyledEngineProvider>

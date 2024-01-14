@@ -19,7 +19,7 @@ function SubItem({ item, itemWidth, highlighted, onDeleteItem }) {
 			sx={{
 				cursor: 'pointer',
 				borderRadius: theme.spacing(1),
-				backgroundColor: highlighted ? 'dark.lighter2' : 'unset',
+				backgroundColor: highlighted ? theme.palette.primary.light : 'unset',
 				'&:hover': {
 					backgroundColor: 'dark.lighter',
 				},

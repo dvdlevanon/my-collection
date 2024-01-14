@@ -1,8 +1,12 @@
+import { useTheme } from '@emotion/react';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 import React from 'react';
 import Client from '../../utils/client';
+import Svg from '../svg/Svg';
 
 function TagImageTypeSelector({ disabled, tits, tit, onTitChanged }) {
+	const theme = useTheme();
+
 	return (
 		<ToggleButtonGroup
 			disabled={disabled}
@@ -18,7 +22,12 @@ function TagImageTypeSelector({ disabled, tits, tit, onTitChanged }) {
 			{tits.map((tit) => {
 				return (
 					<ToggleButton key={tit.id} value={tit}>
-						<img width="20" height="20" src={Client.buildFileUrl(tit.iconUrl)}></img>
+						<Svg
+							width={theme.iconSize(1)}
+							height={theme.iconSize(1)}
+							color={theme.palette.text.primary}
+							path={Client.buildFileUrl(tit.iconUrl)}
+						/>
 					</ToggleButton>
 				);
 			})}

@@ -12,7 +12,7 @@ function ItemOffests({ item }) {
 	};
 
 	return (
-		<Typography color="bright.darker" variant="caption">
+		<Typography variant="caption">
 			{formatStart()} - {formatEnd()}
 		</Typography>
 	);

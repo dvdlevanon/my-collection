@@ -15,7 +15,7 @@ function Highlight({ item, itemWidth, highlighted }) {
 			borderRadius={theme.spacing(1)}
 			sx={{
 				cursor: 'pointer',
-				backgroundColor: highlighted ? 'dark.lighter2' : 'unset',
+				backgroundColor: highlighted ? theme.palette.primary.light : 'unset',
 				'&:hover': {
 					backgroundColor: 'dark.lighter',
 				},

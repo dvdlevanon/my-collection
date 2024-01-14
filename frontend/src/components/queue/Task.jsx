@@ -46,12 +46,12 @@ function Task({ task }) {
 							</Typography>
 						)}
 						{TasksUtil.isDone(task) && (
-							<Typography variant="caption" color="bright.main" sx={{ fontStyle: 'italic' }}>
+							<Typography variant="caption" sx={{ fontStyle: 'italic' }}>
 								Done in {TimeUtil.msToTime(task.processingEnd - task.processingStart)}
 							</Typography>
 						)}
 						{TasksUtil.isPending(task) && (
-							<Typography variant="caption" color="bright.main" sx={{ fontStyle: 'italic' }}>
+							<Typography variant="caption" sx={{ fontStyle: 'italic' }}>
 								Pending for {TimeUtil.msToTime(Date.now() - task.enqueueTime)}
 							</Typography>
 						)}
