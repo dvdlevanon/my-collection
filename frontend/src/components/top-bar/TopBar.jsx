@@ -169,6 +169,14 @@ function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 					>
 						Run spectagger
 					</MenuItem>
+					<MenuItem
+						onClick={() => {
+							Client.runDirectoryScan();
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Run directory scan
+					</MenuItem>
 				</Menu>
 				<FormControlLabel
 					label="Use Previews"

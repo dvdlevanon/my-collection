@@ -79,6 +79,7 @@ func (s *Server) init() {
 	api.POST("/tags/:tag/images/:image", s.updateTagImage)
 
 	api.GET("/directories", s.getDirectories)
+	api.POST("/directories/scan", s.runDirectoriesScan)
 	api.POST("/directories", s.createOrUpdateDirectory)
 	api.GET("/directories/*directory", s.getDirectory)
 	api.POST("/directories/tags/*directory", s.SetDirectoryTags)

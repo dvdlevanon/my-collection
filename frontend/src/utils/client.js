@@ -252,6 +252,10 @@ export default class Client {
 		fetch(`${Client.apiUrl}/spectagger/run`, { method: 'POST' });
 	}
 
+	static runDirectoryScan() {
+		fetch(`${Client.apiUrl}/directories/scan`, { method: 'POST' });
+	}
+
 	static getExportMetadataUrl() {
 		return `${Client.apiUrl}/export-metadata.json`;
 	}

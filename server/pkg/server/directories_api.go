@@ -84,3 +84,8 @@ func (s *Server) excludeDirectory(c *gin.Context) {
 	s.dcc.DirectoryChanged(directoryPath)
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) runDirectoriesScan(c *gin.Context) {
+	logger.Infof("Triggering directory scan")
+	s.dcc.DirectoryChanged("")
+}
