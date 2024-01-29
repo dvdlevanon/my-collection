@@ -7,10 +7,11 @@ function Category({ isHighlighted, category, onClick }) {
 
 	return (
 		<Box
-			backgroundColor={isHighlighted ? 'dark.lighter' : 'auto'}
 			sx={{
+				backdropFilter: isHighlighted ? 'brightness(2)' : 'auto',
 				padding: theme.multiSpacing(0, 1),
 				height: '100%',
+				borderRadius: theme.spacing(0.3),
 			}}
 		>
 			<Link

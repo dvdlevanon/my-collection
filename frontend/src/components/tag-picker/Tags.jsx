@@ -11,7 +11,7 @@ import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
-import Tag from './Tag';
+import TagsList from './TagsList';
 import TagsTopBar from './TagsTopBar';
 
 function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTagClicked, setHideCategories }) {
@@ -242,10 +242,10 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		} else if (parent.display_style === 'banner') {
 			result = { width: tagSize, height: AspectRatioUtil.calcHeight(tagSize, AspectRatioUtil.asepctRatio16_9) };
 		} else if (parent.display_style === 'chip') {
-			result = { width: 'auto', height: 'auto' };
+			result = { width: 400, height: 50 };
 		} else {
 			console.log('unsupported display style ' + parent.display_style);
-			result = { width: 'auto', height: 'auto' };
+			result = { width: 400, height: 50 };
 		}
 
 		return result;
@@ -331,34 +331,18 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		<Stack width={'100%'} height={'100%'} flexGrow={1} overflow="hidden" backgroundColor="dark.lighter">
 			{getTagsTopBarComponent()}
 			<Divider />
-			<Box ref={tagsEl} overflow="auto" onScroll={onScroll}>
-				<div id="back-to-top-tags-anchor" sx={{ display: 'none' }} />
-				<Box
-					sx={{
-						display: parent.display_style === 'chip' ? 'flex' : 'grid',
-						gridTemplateColumns: 'repeat(auto-fill, ' + calculateTagSize().width + 'px)',
-						justifyContent: parent.display_style === 'chip' ? 'flex-start' : 'space-between',
-						gridGap: theme.spacing(1),
-						padding: theme.spacing(1),
-						flexFlow: 'wrap',
-					}}
-				>
-					{sortTags(filterTags()).map((tag) => {
-						return (
-							<Tag
-								key={tag.id}
-								tag={tag}
-								parent={parent}
-								tagDimension={calculateTagSize()}
-								selectedTit={tit}
-								tagLinkBuilder={tagLinkBuilder}
-								onTagClicked={onTagClicked}
-							/>
-						);
-					})}
-					{getNoDirectoriesFoundComponent()}
-				</Box>
+			<Box width="100%" height="100%">
+				<TagsList
+					tags={sortTags(filterTags())}
+					parent={parent}
+					tagsSize={calculateTagSize()}
+					selectedTit={tit}
+					tagLinkBuilder={tagLinkBuilder}
+					onTagClicked={onTagClicked}
+					tit={tit}
+				/>
 			</Box>
+			{getNoDirectoriesFoundComponent()}
 			<AddTagDialog
 				open={addTagDialogOpened}
 				parentId={parent.id}

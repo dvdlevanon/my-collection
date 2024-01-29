@@ -41,16 +41,16 @@ function Gallery({ previewMode, setHideTopBar }) {
 				/>
 			)}
 			<Divider />
-			<Stack className="gallery_item" overflow="hidden" height="100%">
-				{!tagsDropDownOpened && (
+			{!tagsDropDownOpened && (
+				<Stack className="gallery_item" overflow="hidden" height="100%">
 					<ItemsView
 						tagsQuery={tagsQuery}
 						itemsQuery={itemsQuery}
 						galleryUrlParams={galleryUrlParams}
 						previewMode={previewMode}
 					/>
-				)}
-			</Stack>
+				</Stack>
+			)}
 		</Stack>
 	);
 }
