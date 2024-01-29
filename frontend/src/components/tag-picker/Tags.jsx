@@ -1,6 +1,5 @@
 import { useTheme } from '@emotion/react';
-import KeyboardArrowUpIcon from '@mui/icons-material/KeyboardArrowUp';
-import { Button, Divider, Fab, Fade, Link, Stack, useScrollTrigger } from '@mui/material';
+import { Button, Divider, Link, Stack } from '@mui/material';
 import { Box } from '@mui/system';
 import { useEffect, useRef, useState } from 'react';
 import { useQuery } from 'react-query';
@@ -81,22 +80,6 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 			}
 		},
 	});
-
-	const trigger = useScrollTrigger({
-		disableHysteresis: true,
-		target: tagsEl.current === null ? window : tagsEl.current,
-		threshold: 100,
-	});
-
-	const backToTopClicked = (event) => {
-		const anchor = document.querySelector('#back-to-top-tags-anchor');
-
-		if (anchor) {
-			anchor.scrollIntoView({
-				block: 'center',
-			});
-		}
-	};
 
 	useEffect(() => {
 		let lastTit = localStorage.getItem(buildStorageKey('tit'));
@@ -251,10 +234,6 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		return result;
 	};
 
-	const onScroll = (e) => {
-		setHideCategories(e.target.scrollTop > 120);
-	};
-
 	const getTagsTopBarComponent = () => {
 		return (
 			<TagsTopBar
@@ -340,6 +319,9 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 					tagLinkBuilder={tagLinkBuilder}
 					onTagClicked={onTagClicked}
 					tit={tit}
+					onScroll={(e) => {
+						setHideCategories(e.scrollTop > 120);
+					}}
 				/>
 			</Box>
 			{getNoDirectoriesFoundComponent()}
@@ -349,13 +331,6 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 				verb="Tag"
 				onClose={() => setAddTagDialogOpened(false)}
 			/>
-			<Fade in={trigger}>
-				<Box onClick={backToTopClicked} role="presentation" sx={{ position: 'fixed', bottom: 16, right: 16 }}>
-					<Fab size="small" aria-label="scroll back to top">
-						<KeyboardArrowUpIcon sx={{ fontSize: theme.iconSize(1) }} />
-					</Fab>
-				</Box>
-			</Fade>
 		</Stack>
 	);
 }

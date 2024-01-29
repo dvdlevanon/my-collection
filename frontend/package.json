@@ -19,7 +19,7 @@
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
 		"react-image-crop": "^11.0.1",
-		"react-multi-carousel": "^2.8.4",
+		"react-indiana-drag-scroll": "^3.0.3-alpha",
 		"react-query": "^3.39.3",
 		"react-router-dom": "^6.6.1",
 		"react-scripts": "5.0.1",
