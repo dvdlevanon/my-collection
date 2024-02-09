@@ -2,12 +2,16 @@ import { useTheme } from '@emotion/react';
 import { Box } from '@mui/material';
 import React, { useEffect, useRef } from 'react';
 
-function Thumbnail({ image, imageUrl, title, crop }) {
+function Thumbnail({ image, imageUrl, thumbnailUrl, title, crop }) {
 	const thumbnailCanvasId = useRef(null);
 	const theme = useTheme();
 
 	useEffect(() => {
 		if (thumbnailCanvasId.current == null) {
+			return;
+		}
+
+		if (thumbnailUrl) {
 			return;
 		}
 
@@ -64,7 +68,8 @@ function Thumbnail({ image, imageUrl, title, crop }) {
 				width: theme.iconSize(3),
 				height: theme.iconSize(3),
 			}}
-			component="canvas"
+			component={thumbnailUrl ? 'img' : 'canvas'}
+			src={thumbnailUrl}
 			ref={thumbnailCanvasId}
 		/>
 	);

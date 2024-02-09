@@ -217,5 +217,6 @@ func (s *Server) updateTagImage(c *gin.Context) {
 		return
 	}
 
+	go s.thumbnailProcessor.ProcessThumbnail(&image)
 	c.Status(http.StatusOK)
 }

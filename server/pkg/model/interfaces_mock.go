@@ -1149,6 +1149,80 @@ func (mr *MockTagImageTypeReaderWriterMockRecorder) GetTagImageType(conds ...int
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTagImageType", reflect.TypeOf((*MockTagImageTypeReaderWriter)(nil).GetTagImageType), conds...)
 }
 
+// MockTagImageWriter is a mock of TagImageWriter interface.
+type MockTagImageWriter struct {
+	ctrl     *gomock.Controller
+	recorder *MockTagImageWriterMockRecorder
+}
+
+// MockTagImageWriterMockRecorder is the mock recorder for MockTagImageWriter.
+type MockTagImageWriterMockRecorder struct {
+	mock *MockTagImageWriter
+}
+
+// NewMockTagImageWriter creates a new mock instance.
+func NewMockTagImageWriter(ctrl *gomock.Controller) *MockTagImageWriter {
+	mock := &MockTagImageWriter{ctrl: ctrl}
+	mock.recorder = &MockTagImageWriterMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockTagImageWriter) EXPECT() *MockTagImageWriterMockRecorder {
+	return m.recorder
+}
+
+// UpdateTagImage mocks base method.
+func (m *MockTagImageWriter) UpdateTagImage(image *TagImage) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTagImage", image)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTagImage indicates an expected call of UpdateTagImage.
+func (mr *MockTagImageWriterMockRecorder) UpdateTagImage(image interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTagImage", reflect.TypeOf((*MockTagImageWriter)(nil).UpdateTagImage), image)
+}
+
+// MockThumbnailProcessor is a mock of ThumbnailProcessor interface.
+type MockThumbnailProcessor struct {
+	ctrl     *gomock.Controller
+	recorder *MockThumbnailProcessorMockRecorder
+}
+
+// MockThumbnailProcessorMockRecorder is the mock recorder for MockThumbnailProcessor.
+type MockThumbnailProcessorMockRecorder struct {
+	mock *MockThumbnailProcessor
+}
+
+// NewMockThumbnailProcessor creates a new mock instance.
+func NewMockThumbnailProcessor(ctrl *gomock.Controller) *MockThumbnailProcessor {
+	mock := &MockThumbnailProcessor{ctrl: ctrl}
+	mock.recorder = &MockThumbnailProcessorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockThumbnailProcessor) EXPECT() *MockThumbnailProcessorMockRecorder {
+	return m.recorder
+}
+
+// ProcessThumbnail mocks base method.
+func (m *MockThumbnailProcessor) ProcessThumbnail(image *TagImage) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ProcessThumbnail", image)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// ProcessThumbnail indicates an expected call of ProcessThumbnail.
+func (mr *MockThumbnailProcessorMockRecorder) ProcessThumbnail(image interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProcessThumbnail", reflect.TypeOf((*MockThumbnailProcessor)(nil).ProcessThumbnail), image)
+}
+
 // MockStorageUploader is a mock of StorageUploader interface.
 type MockStorageUploader struct {
 	ctrl     *gomock.Controller

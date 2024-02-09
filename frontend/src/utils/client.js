@@ -261,6 +261,10 @@ export default class Client {
 	}
 
 	static buildFileUrl(storagePath, nonce) {
+		if (!storagePath) {
+			return '';
+		}
+
 		if (nonce) {
 			return `${Client.apiUrl}/file/${encodeURIComponent(storagePath)}?nonce=${nonce}`;
 		} else {

@@ -20,26 +20,28 @@ import (
 var logger = logging.MustGetLogger("server")
 
 type Server struct {
-	router     *gin.Engine
-	db         *db.Database
-	storage    *storage.Storage
-	processor  processor.Processor
-	spectagger *spectagger.Spectagger
-	dcc        model.DirectoryChangedCallback
-	push       *push
+	router             *gin.Engine
+	db                 *db.Database
+	storage            *storage.Storage
+	processor          processor.Processor
+	spectagger         *spectagger.Spectagger
+	dcc                model.DirectoryChangedCallback
+	thumbnailProcessor model.ThumbnailProcessor
+	push               *push
 }
 
 func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback,
-	processor processor.Processor, spectagger *spectagger.Spectagger) *Server {
+	processor processor.Processor, spectagger *spectagger.Spectagger, thumbnailProcessor model.ThumbnailProcessor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
-		router:     gin.New(),
-		db:         db,
-		storage:    storage,
-		dcc:        dcc,
-		processor:  processor,
-		spectagger: spectagger,
+		router:             gin.New(),
+		db:                 db,
+		storage:            storage,
+		dcc:                dcc,
+		processor:          processor,
+		spectagger:         spectagger,
+		thumbnailProcessor: thumbnailProcessor,
 	}
 
 	server.push = newPush(processor, server)

@@ -24,12 +24,15 @@ type TagImageType struct {
 }
 
 type TagImage struct {
-	Id            uint64 `json:"id,omitempty"`
-	Url           string `json:"url,omitempty"`
-	TagId         uint64 `json:"tagId,omitempty"`
-	ImageTypeId   uint64 `json:"imageType,omitempty"`
-	ThumbnailRect Rect   `json:"thumbnail_rect,omitempty" gorm:"type:json"`
-	ImageNonce    int64  `json:"image_nonce,omitempty"`
+	Id                uint64 `json:"id,omitempty"`
+	Url               string `json:"url,omitempty"`
+	TagId             uint64 `json:"tagId,omitempty"`
+	ImageTypeId       uint64 `json:"imageType,omitempty"`
+	ThumbnailRect     Rect   `json:"thumbnail_rect,omitempty" gorm:"type:json"`
+	ImageNonce        int64  `json:"image_nonce,omitempty"`
+	ThumbnailUrl      string `json:"thumbnail_url,omitempty"`
+	ThumbnailUrlRect  Rect   `json:"thumbnail_url_rect,omitempty" gorm:"type:json"`
+	ThumbnailUrlNonce int64  `json:"thumbnail_nonce,omitempty" gorm:"type:json"`
 }
 
 type Item struct {

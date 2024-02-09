@@ -34,7 +34,13 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, withRemoveOptio
 		}
 
 		let image = getRandomImage(imagesWithThumbnails);
-		return <Thumbnail crop={image.thumbnail_rect} imageUrl={Client.buildFileUrl(image.url)} />;
+		return (
+			<Thumbnail
+				crop={image.thumbnail_rect}
+				imageUrl={Client.buildFileUrl(image.url, image.image_nonce)}
+				thumbnailUrl={Client.buildFileUrl(image.thumbnail_url, image.thumbnail_nonce)}
+			/>
+		);
 	};
 
 	const getThumbnailCompnentWrapper = () => {

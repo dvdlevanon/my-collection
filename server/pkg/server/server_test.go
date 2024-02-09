@@ -39,7 +39,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	dcc := model.NewMockDirectoryChangedCallback(ctrl)
 	dcc.EXPECT().DirectoryChanged(gomock.Any()).AnyTimes()
 
-	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{})
+	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{}, &model.MockThumbnailProcessor{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

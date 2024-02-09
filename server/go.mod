@@ -16,7 +16,8 @@ require (
 	github.com/otiai10/copy v1.11.0
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.8.3
-	golang.org/x/text v0.9.0
+	golang.org/x/image v0.15.0
+	golang.org/x/text v0.14.0
 	gorm.io/driver/sqlite v1.5.1
 	gorm.io/gorm v1.25.1
 	k8s.io/utils v0.0.0-20230505201702-9f6742963106

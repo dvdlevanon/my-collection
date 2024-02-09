@@ -79,6 +79,14 @@ type TagImageTypeReaderWriter interface {
 	GetTagImageType(conds ...interface{}) (*TagImageType, error)
 }
 
+type TagImageWriter interface {
+	UpdateTagImage(image *TagImage) error
+}
+
+type ThumbnailProcessor interface {
+	ProcessThumbnail(image *TagImage) error
+}
+
 type StorageUploader interface {
 	GetStorageUrl(name string) string
 	GetFileForWriting(name string) (string, error)

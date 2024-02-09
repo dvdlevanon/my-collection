@@ -12,6 +12,7 @@ import (
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
+	"my-collection/server/pkg/thumbnails"
 	"my-collection/server/pkg/utils"
 	"path/filepath"
 	"time"
@@ -89,7 +90,10 @@ func run() error {
 	}
 	go spectagger.Run()
 
-	return server.New(db, storage, fsManager, processor, spectagger).Run(*listenAddress)
+	thumbnails := thumbnails.New(db, db, storage, 100, 100)
+	go thumbnails.Run()
+
+	return server.New(db, storage, fsManager, processor, spectagger, thumbnails).Run(*listenAddress)
 }
 
 func main() {
