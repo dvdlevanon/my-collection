@@ -39,7 +39,7 @@ function App() {
 				setTheme(ThemeUtil.themeByName(themeName));
 			}
 		}
-	});
+	}, []);
 
 	return (
 		<React.Fragment>

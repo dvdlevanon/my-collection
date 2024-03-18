@@ -27,7 +27,7 @@ function ItemBadges({ item }) {
 							}}
 						>
 							<Avatar>
-								<NoVideoIcon color="bright" sx={{ fontSize: theme.iconSize(1) }} />
+								<NoVideoIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</Avatar>
 						</IconButton>
 					</Tooltip>
@@ -40,7 +40,7 @@ function ItemBadges({ item }) {
 							}}
 						>
 							<Avatar>
-								<NoAudioIcon color="bright" sx={{ fontSize: theme.iconSize(1) }} />
+								<NoAudioIcon sx={{ fontSize: theme.iconSize(1) }} />
 							</Avatar>
 						</IconButton>
 					</Tooltip>

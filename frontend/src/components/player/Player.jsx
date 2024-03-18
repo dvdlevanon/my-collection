@@ -7,11 +7,14 @@ import PauseIcon from '@mui/icons-material/Pause';
 import PlayIcon from '@mui/icons-material/PlayArrow';
 import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
 import HighlightIcon from '@mui/icons-material/Stars';
-import { Box, Fade, IconButton, Slider, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Fade, IconButton, Stack, Tooltip, Typography } from '@mui/material';
 import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Client from '../../utils/client';
+import TimeUtil from '../../utils/time-utils';
 import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
+import PlayerSlider from './PlayerSlider';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
 
@@ -33,6 +36,7 @@ function Player({
 	const [endPosition, setEndPosition] = useState(initialEndPosition);
 	const [fullScreen, setFullScreen] = useState(false);
 	const [showSuggestions, setShowSuggestions] = useState(false);
+	const [autoPlayNext, setAutoPlayNext] = useState(false);
 	const [duration, setDuration] = useState(initialEndPosition - startPosition);
 	const [hideControlsTimerId, setHideControlsTimerId] = useState(0);
 	const [playerWidth, setPlayerWidth] = useState(0);
@@ -40,6 +44,7 @@ function Player({
 	const videoElement = useRef();
 	const playerElement = useRef();
 	const theme = useTheme();
+	const navigate = useNavigate();
 
 	useLayoutEffect(() => {
 		function updateSize() {
@@ -48,6 +53,14 @@ function Player({
 		window.addEventListener('resize', updateSize);
 		updateSize();
 		return () => window.removeEventListener('resize', updateSize);
+	}, []);
+
+	useEffect(() => {
+		let autoPlayNext = localStorage.getItem('auto-play-next');
+
+		if (autoPlayNext) {
+			setAutoPlayNext(autoPlayNext == 'true');
+		}
 	}, []);
 
 	useEffect(() => {
@@ -92,18 +105,6 @@ function Player({
 		videoElement.current.currentTime = newValue;
 	};
 
-	const formatSeconds = (seconds) => {
-		return (
-			Math.floor(seconds / 60)
-				.toString()
-				.padStart(2, '0') +
-			':' +
-			Math.floor(seconds % 60)
-				.toString()
-				.padStart(2, '0')
-		);
-	};
-
 	const enterFullScreen = () => {
 		playerElement.current.requestFullscreen();
 		setFullScreen(true);
@@ -112,6 +113,17 @@ function Player({
 	const exitFullScreen = () => {
 		document.exitFullscreen();
 		setFullScreen(false);
+	};
+
+	const videoFinished = () => {
+		if (autoPlayNext) {
+			let nextItemIndex = Math.floor(Math.random() * suggestedItems.length);
+			navigate('/spa/item/' + suggestedItems[nextItemIndex].id);
+		} else {
+			setShowSuggestions(true);
+		}
+
+		setIsPlaying(false);
 	};
 
 	const setRelativeTime = (offset) => {
@@ -176,8 +188,7 @@ function Player({
 				ref={videoElement}
 				onClick={togglePlay}
 				onEnded={() => {
-					setShowSuggestions(true);
-					setIsPlaying(false);
+					videoFinished();
 				}}
 				onDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
 				onTimeUpdate={(e) => {
@@ -185,8 +196,7 @@ function Player({
 					if (endPosition > 0 && e.target.currentTime >= endPosition) {
 						e.target.currentTime = startPosition;
 						videoElement.current.pause();
-						setShowSuggestions(true);
-						setIsPlaying(false);
+						videoFinished();
 					}
 				}}
 				onLoadedMetadata={(e) => {
@@ -235,14 +245,10 @@ function Player({
 							'FF 100%)',
 					}}
 				>
-					<Slider
+					<PlayerSlider
 						min={startPosition}
 						max={endPosition}
 						value={currentTime}
-						valueLabelDisplay="auto"
-						valueLabelFormat={(number) => {
-							return formatSeconds(currentTime - startPosition);
-						}}
 						onChange={(e, newValue) => changeTime(newValue)}
 					/>
 					<Stack flexDirection="row" alignItems="center" gap={theme.spacing(2)}>
@@ -255,9 +261,20 @@ function Player({
 								)}
 							</IconButton>
 						</Tooltip>
-						<Tooltip title={showSuggestions ? 'Hide Suggestions' : 'Show Suggestions'}>
-							<IconButton onClick={() => setShowSuggestions(!showSuggestions)}>
-								{<PlayNextIcon sx={{ fontSize: theme.iconSize(1) }} />}
+						<Tooltip title={'Toggle Auto Play Next'}>
+							<IconButton
+								onClick={() => {
+									let newValue = !autoPlayNext;
+									setAutoPlayNext(!autoPlayNext);
+									localStorage.setItem('auto-play-next', newValue);
+								}}
+							>
+								{
+									<PlayNextIcon
+										color={autoPlayNext ? 'secondary' : 'auto'}
+										sx={{ fontSize: theme.iconSize(1) }}
+									/>
+								}
 							</IconButton>
 						</Tooltip>
 						<VolumeControls
@@ -268,7 +285,8 @@ function Player({
 						/>
 						<Box>
 							<Typography>
-								{formatSeconds(currentTime - startPosition)} / {formatSeconds(duration)}
+								{TimeUtil.formatSeconds(currentTime - startPosition)} /{' '}
+								{TimeUtil.formatSeconds(duration)}
 							</Typography>
 						</Box>
 						<Box display="flex" flexGrow={1} justifyContent="flex-end">

@@ -71,7 +71,7 @@ function Queue({ onClose }) {
 						</Typography>
 					)) || (
 						<Box flexGrow={1}>
-							<CircularProgress color="bright" size={theme.iconSize(1)} />
+							<CircularProgress size={theme.iconSize(1)} />
 						</Box>
 					)}
 					{queueMetadataQuery.isSuccess && queueMetadataQuery.data.size > 0 && (

@@ -21,7 +21,9 @@ function Task({ task }) {
 				<Stack flexDirection="row" gap={theme.spacing(1)} alignItems="center">
 					{TasksUtil.isProcessing(task) && (
 						<Tooltip title="Processing">
-							<CircularProgress color="bright" size={theme.iconSize(1)} />
+							<Box>
+								<CircularProgress size={theme.iconSize(1)} />
+							</Box>
 						</Tooltip>
 					)}
 					{TasksUtil.isDone(task) && (
@@ -31,7 +33,7 @@ function Task({ task }) {
 					)}
 					{TasksUtil.isPending(task) && (
 						<Tooltip title="Pending">
-							<PendingIcon color="bright" size={theme.iconSize(1)} />
+							<PendingIcon size={theme.iconSize(1)} />
 						</Tooltip>
 					)}
 					<Stack flexDirection="column">

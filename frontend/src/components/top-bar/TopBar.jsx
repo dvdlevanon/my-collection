@@ -26,11 +26,11 @@ import ThemeSelector from '../theme-selector/ThemeSelector';
 
 function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
-	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getStats);
+	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getQueueMetadata);
 
 	const statsQuery = useQuery({
 		queryKey: ReactQueryUtil.STATS_KEY,
-		queryFn: Client.getQueueMetadata,
+		queryFn: Client.getStats,
 		onSuccess: (queueMetadata) => {
 			if (queueMetadata.size == 0) {
 				setQueueEl(null);
@@ -182,14 +182,14 @@ function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 					label="Use Previews"
 					control={<Checkbox checked={previewMode} onChange={(e) => previewsChange(e)} />}
 				/>
-				{queueMetadataQuery.isSuccess && (
+				{statsQuery.isSuccess && (
 					<Stack flexDirection="row" gap={theme.spacing(1)} justifyContent="center" alignItems="center">
 						<Stack flexDirection="column">
-							<Typography variant="caption">Tags: {queueMetadataQuery.data.tags_count}</Typography>
-							<Typography variant="caption">Items: {queueMetadataQuery.data.items_count}</Typography>
+							<Typography variant="caption">Tags: {statsQuery.data.tags_count}</Typography>
+							<Typography variant="caption">Items: {statsQuery.data.items_count}</Typography>
 						</Stack>
 						<Typography variant="caption">
-							Total Duration: {TimeUtil.msToTime(queueMetadataQuery.data.total_duration_seconds * 1000)}{' '}
+							Total Duration: {TimeUtil.msToTime(statsQuery.data.total_duration_seconds * 1000)}{' '}
 						</Typography>
 					</Stack>
 				)}
