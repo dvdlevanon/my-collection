@@ -15,6 +15,7 @@ type Tag struct {
 	Annotations    []*TagAnnotation `json:"tags_annotations,omitempty" gorm:"many2many:tags_annotations;"`
 	DisplayStyle   string           `json:"display_style,omitempty"`
 	DefaultSorting string           `json:"default_sorting,omitempty"`
+	NoRandom       *bool            `json:"no_random,omitempty"`
 }
 
 type TagImageType struct {

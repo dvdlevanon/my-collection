@@ -158,6 +158,16 @@ func DeleteRealFile(ir model.ItemReader, itemId uint64) error {
 	return nil
 }
 
+func noRandom(item *model.Item) bool {
+	for _, tag := range item.Tags {
+		if tag.NoRandom != nil && *tag.NoRandom {
+			return true
+		}
+	}
+
+	return false
+}
+
 func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*model.Item, error) {
 	allItems, err := ir.GetAllItems()
 	if err != nil {
@@ -168,7 +178,7 @@ func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*mode
 	for i := 0; i < count; i++ {
 		chosenItem := &((*allItems)[rand.Intn(len(*allItems))])
 
-		for ItemExists(randomItems, chosenItem) || !filter(chosenItem) {
+		for ItemExists(randomItems, chosenItem) || !filter(chosenItem) || noRandom(chosenItem) {
 			chosenItem = &((*allItems)[rand.Intn(len(*allItems))])
 		}
 

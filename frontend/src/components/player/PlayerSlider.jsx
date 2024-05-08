@@ -8,7 +8,7 @@ function PlayerSlider({ min, max, value, onChange }) {
 
 	return (
 		<Box
-			onMouseEnter={() => setShowTime(true)}
+			onMouseEnter={() => setShowTime(false)}
 			onMouseLeave={() => setShowTime(false)}
 			onMouseMove={(e) => {
 				let bounds = e.currentTarget.getBoundingClientRect();

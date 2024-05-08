@@ -85,6 +85,18 @@ export default class Client {
 		});
 	};
 
+	static excludeFromRandomMix = async (tag) => {
+		return await fetch(`${Client.apiUrl}/tags/${tag.id}/random-mix/exclude`, {
+			method: 'POST',
+		});
+	};
+
+	static includeInRandomMix = async (tag) => {
+		return await fetch(`${Client.apiUrl}/tags/${tag.id}/random-mix/include`, {
+			method: 'POST',
+		});
+	};
+
 	static removeTag = async (tagId) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}`, {
 			method: 'DELETE',

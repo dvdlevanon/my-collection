@@ -96,6 +96,12 @@ function TagThumbnail({ tag, isLink, onTagClicked, onTagRemoved, withRemoveOptio
 						setManageTagImageOpened(true);
 						setAutoThumbnailMode(true);
 					}}
+					onIncludeMixClicked={() => {
+						Client.includeInRandomMix(tag);
+					}}
+					onExcludeMixClicked={() => {
+						Client.excludeFromRandomMix(tag);
+					}}
 				/>
 			)}
 			{manageTagImageOpened && (

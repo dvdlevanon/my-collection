@@ -79,6 +79,8 @@ func (s *Server) init() {
 	api.GET("/tags/:tag/tag-custom-commands", s.getAllTagCustomCommands)
 	api.DELETE("/tags/:tag/tit/:tit", s.removeTagImageFromTag)
 	api.POST("/tags/:tag/images/:image", s.updateTagImage)
+	api.POST("/tags/:tag/random-mix/include", s.randomMixInclude)
+	api.POST("/tags/:tag/random-mix/exclude", s.randomMixExclude)
 
 	api.GET("/directories", s.getDirectories)
 	api.POST("/directories/scan", s.runDirectoriesScan)

@@ -5,6 +5,7 @@ import { default as RemoveIcon } from '@mui/icons-material/Delete';
 import ThumbnailIcon from '@mui/icons-material/Face3';
 import ImageIcon from '@mui/icons-material/Image';
 import GalleryIcon from '@mui/icons-material/OpenInNew';
+import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import React from 'react';
 import { useQuery } from 'react-query';
@@ -21,6 +22,8 @@ function TagContextMenu({
 	onManageImageClicked,
 	onManageAttributesClicked,
 	onRemoveTagClicked,
+	onExcludeMixClicked,
+	onIncludeMixClicked,
 	onEditThumbnail,
 	withRemoveOption,
 	withManageAttributesClicked,
@@ -112,6 +115,22 @@ function TagContextMenu({
 						<RemoveIcon sx={{ fontSize: theme.iconSize(1) }} />
 					</ListItemIcon>
 					Remove
+				</MenuItem>
+			)}
+			{!tag.no_random && (
+				<MenuItem onClick={(e) => closeEndCall(e, onExcludeMixClicked)}>
+					<ListItemIcon>
+						<ShuffleIcon sx={{ fontSize: theme.iconSize(1) }} />
+					</ListItemIcon>
+					Exclude From Random Mix
+				</MenuItem>
+			)}
+			{tag.no_random && (
+				<MenuItem onClick={(e) => closeEndCall(e, onIncludeMixClicked)}>
+					<ListItemIcon>
+						<ShuffleIcon sx={{ fontSize: theme.iconSize(1) }} />
+					</ListItemIcon>
+					Include In Random Mix
 				</MenuItem>
 			)}
 			{tagCustomCommandsQuery.isSuccess && tagCustomCommandsQuery.data.length > 0 && <Divider />}

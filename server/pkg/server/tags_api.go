@@ -220,3 +220,43 @@ func (s *Server) updateTagImage(c *gin.Context) {
 	go s.thumbnailProcessor.ProcessThumbnail(&image)
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) randomMixExclude(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	tag, err := s.db.GetTag(tagId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	noRandom := true
+	tag.NoRandom = &noRandom
+	if s.handleError(c, s.db.UpdateTag(tag)) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (s *Server) randomMixInclude(c *gin.Context) {
+	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	tag, err := s.db.GetTag(tagId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	noRandom := false
+	tag.NoRandom = &noRandom
+	if s.handleError(c, s.db.UpdateTag(tag)) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}

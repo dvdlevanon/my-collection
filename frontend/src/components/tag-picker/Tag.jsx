@@ -2,6 +2,7 @@ import { useTheme } from '@emotion/react';
 import { Chip, Link, Stack } from '@mui/material';
 import React, { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
+import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
@@ -134,6 +135,12 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 					onEditThumbnail={() => {
 						setManageTagImageOpened(true);
 						setAutoThumbnailMode(true);
+					}}
+					onIncludeMixClicked={() => {
+						Client.includeInRandomMix(tag);
+					}}
+					onExcludeMixClicked={() => {
+						Client.excludeFromRandomMix(tag);
 					}}
 				/>
 			)}
