@@ -32,5 +32,5 @@ func changeResolution(irw model.ItemReaderWriter, tempProvider model.TempFilePro
 		return err
 	}
 
-	return refreshFileMetadata(irw, id)
+	return refreshItemMetadata(irw, id)
 }
