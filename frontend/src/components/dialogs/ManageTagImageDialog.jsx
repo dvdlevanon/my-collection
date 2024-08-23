@@ -41,6 +41,19 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 		}
 	});
 
+	useEffect(() => {
+		window.addEventListener('keydown', onKeyDown, false);
+		return () => {
+			window.removeEventListener('keydown', onKeyDown, false);
+		};
+	});
+
+	const onKeyDown = (e) => {
+		if (e.ctrlKey && e.key === 'v') {
+			imageFromClipboardClicked(e);
+		}
+	};
+
 	const imageFromClipboardClicked = async (e) => {
 		e.stopPropagation();
 		const imageUrl = await navigator.clipboard.readText();
