@@ -171,6 +171,14 @@ function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 					</MenuItem>
 					<MenuItem
 						onClick={() => {
+							Client.runItemOptimizer();
+							setRefreshAnchorEl(null);
+						}}
+					>
+						Run item optimizer
+					</MenuItem>
+					<MenuItem
+						onClick={() => {
 							Client.runDirectoryScan();
 							setRefreshAnchorEl(null);
 						}}

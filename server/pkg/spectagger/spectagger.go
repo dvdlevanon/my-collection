@@ -98,7 +98,7 @@ func (d *Spectagger) autoSpectag() error {
 	tagTitleToId := make(map[string]uint64)
 
 	for _, item := range *allItems {
-		resolutionTag, err := getResolutionTag(d.tarw, &item)
+		resolutionTags, err := getResolutionTags(d.tarw, &item)
 		if err != nil {
 			utils.LogError(err)
 			continue
@@ -134,7 +134,9 @@ func (d *Spectagger) autoSpectag() error {
 			continue
 		}
 
-		tagsToAdd := append(categoryTagsToAdd, resolutionTag, videoCodecTag, audioCodecTag, durationTag, typeTag)
+		tagsToAdd := append(categoryTagsToAdd, videoCodecTag, audioCodecTag, durationTag, typeTag)
+		tagsToAdd = append(tagsToAdd, resolutionTags...)
+
 		if err := addTagsToItem(&tagTitleToId, d.trw, d.irw, &item, tagsToAdd); err != nil {
 			utils.LogError(err)
 			continue
@@ -250,17 +252,36 @@ func getCategoriesExists(categories *[]model.Tag, item *model.Item) []bool {
 	return categoriesExists
 }
 
-func getResolutionTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+func getResolutionTags(tarw model.TagAnnotationReaderWriter, item *model.Item) ([]*model.Tag, error) {
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Resolutions"})
 	if err != nil {
 		return nil, err
 	}
 
-	return &model.Tag{
-		ParentID:    &specTag.Id,
+	var tags []*model.Tag
+
+	resolutionTag := &model.Tag{
+		ParentID:    &specTag.Id, // Assuming specTag is defined elsewhere
 		Title:       fmt.Sprintf("%d*%d", item.Width, item.Height),
 		Annotations: []*model.TagAnnotation{ta},
-	}, nil
+	}
+	tags = append(tags, resolutionTag)
+
+	widthTag := &model.Tag{
+		ParentID:    &specTag.Id,
+		Title:       fmt.Sprintf("Width: %d", item.Width),
+		Annotations: []*model.TagAnnotation{ta},
+	}
+	tags = append(tags, widthTag)
+
+	heightTag := &model.Tag{
+		ParentID:    &specTag.Id,
+		Title:       fmt.Sprintf("Height: %d", item.Height),
+		Annotations: []*model.TagAnnotation{ta},
+	}
+	tags = append(tags, heightTag)
+
+	return tags, nil
 }
 
 func getVideoCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {

@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"strconv"
@@ -139,7 +138,7 @@ func ExtractPartOfVideo(videoFile string, second float64, duration int, targetFi
 }
 
 func JoinVideoFiles(videoFiles []string, targetFile string) error {
-	tempFile, err := ioutil.TempFile("", "my-collection-join-video-files-*.txt")
+	tempFile, err := os.CreateTemp("", "my-collection-join-video-files-*.txt")
 	if err != nil {
 		return err
 	}
@@ -165,6 +164,21 @@ func JoinVideoFiles(videoFiles []string, targetFile string) error {
 func OptimizeVideoForPreview(videoFile string, tempFile string) error {
 	_, err := execute("ffmpeg", "-y", "-i", videoFile, "-b:v", "2M", "-an", tempFile)
 	if err != nil {
+		return err
+	}
+
+	return os.Rename(tempFile, videoFile)
+}
+
+func ChangeVideoResolution(videoFile string, tempFile string, newResolution string) error {
+	logger.Infof("Changing video resolution for %s to %s", videoFile, newResolution)
+
+	_, err := execute("ffmpeg", "-i", videoFile, "-vf", fmt.Sprintf("scale=%s", newResolution), "-c:a", "copy", tempFile)
+	if err != nil {
+		return err
+	}
+
+	if err := os.Remove(videoFile); err != nil {
 		return err
 	}
 

@@ -2,6 +2,7 @@ package server
 
 import (
 	"my-collection/server/pkg/db"
+	"my-collection/server/pkg/itemsoptimizer"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/spectagger"
@@ -25,13 +26,15 @@ type Server struct {
 	storage            *storage.Storage
 	processor          processor.Processor
 	spectagger         *spectagger.Spectagger
+	itemsOptimizer     *itemsoptimizer.ItemsOptimizer
 	dcc                model.DirectoryChangedCallback
 	thumbnailProcessor model.ThumbnailProcessor
 	push               *push
 }
 
 func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback,
-	processor processor.Processor, spectagger *spectagger.Spectagger, thumbnailProcessor model.ThumbnailProcessor) *Server {
+	processor processor.Processor, spectagger *spectagger.Spectagger,
+	itemsOptimizer *itemsoptimizer.ItemsOptimizer, thumbnailProcessor model.ThumbnailProcessor) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
@@ -41,6 +44,7 @@ func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCa
 		dcc:                dcc,
 		processor:          processor,
 		spectagger:         spectagger,
+		itemsOptimizer:     itemsOptimizer,
 		thumbnailProcessor: thumbnailProcessor,
 	}
 
@@ -67,6 +71,7 @@ func (s *Server) init() {
 	api.POST("/items/:item/make-highlight", s.makeHighlight)
 	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)
 	api.POST("/items/:item/process", s.refreshItem)
+	api.POST("/items/:item/optimize", s.optimizeItem)
 
 	api.GET("/tags", s.getTags)
 	api.GET("/special-tags", s.getSpecialTags)
@@ -109,6 +114,8 @@ func (s *Server) init() {
 	api.POST("/queue/clear-finished", s.clearFinishedTasks)
 
 	api.POST("/spectagger/run", s.runSpecTagger)
+
+	api.POST("/itemsoptimizer/run", s.runItemsOptimizer)
 
 	api.GET("/stats", s.getStats)
 

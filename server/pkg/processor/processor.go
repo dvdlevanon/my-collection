@@ -31,6 +31,7 @@ type Processor interface {
 	EnqueueItemPreview(id uint64)
 	EnqueueItemCovers(id uint64)
 	EnqueueMainCover(id uint64, second float64)
+	EnqueueChangeResolution(id uint64, newResolution string)
 	EnqueueItemVideoMetadata(id uint64)
 	EnqueueItemFileMetadata(id uint64)
 	IsPaused() bool
@@ -43,22 +44,23 @@ type Processor interface {
 
 type ProcessorMock struct{}
 
-func (d *ProcessorMock) Run()                                            {}
-func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error          { return nil }
-func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error         { return nil }
-func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error   { return nil }
-func (d *ProcessorMock) EnqueueAllItemsFileMetadata() error              { return nil }
-func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)              {}
-func (d *ProcessorMock) EnqueueItemPreview(id uint64)                    {}
-func (d *ProcessorMock) EnqueueItemCovers(id uint64)                     {}
-func (d *ProcessorMock) EnqueueItemFileMetadata(id uint64)               {}
-func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)      {}
-func (d *ProcessorMock) IsAutomaticProcessing() bool                     { return false }
-func (d *ProcessorMock) IsPaused() bool                                  { return false }
-func (d *ProcessorMock) Pause()                                          {}
-func (d *ProcessorMock) Continue()                                       {}
-func (d *ProcessorMock) ClearFinishedTasks() error                       { return nil }
-func (d *ProcessorMock) SetProcessorNotifier(notifier ProcessorNotifier) {}
+func (d *ProcessorMock) Run()                                                    {}
+func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error                  { return nil }
+func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error                 { return nil }
+func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error           { return nil }
+func (d *ProcessorMock) EnqueueAllItemsFileMetadata() error                      { return nil }
+func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)                      {}
+func (d *ProcessorMock) EnqueueItemPreview(id uint64)                            {}
+func (d *ProcessorMock) EnqueueItemCovers(id uint64)                             {}
+func (d *ProcessorMock) EnqueueItemFileMetadata(id uint64)                       {}
+func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)              {}
+func (d *ProcessorMock) EnqueueChangeResolution(id uint64, newResolution string) {}
+func (d *ProcessorMock) IsAutomaticProcessing() bool                             { return false }
+func (d *ProcessorMock) IsPaused() bool                                          { return false }
+func (d *ProcessorMock) Pause()                                                  {}
+func (d *ProcessorMock) Continue()                                               {}
+func (d *ProcessorMock) ClearFinishedTasks() error                               { return nil }
+func (d *ProcessorMock) SetProcessorNotifier(notifier ProcessorNotifier)         {}
 
 func taskBuilder() interface{} {
 	return &model.Task{}
@@ -180,7 +182,7 @@ func (p *itemProcessorImpl) process() {
 
 	logger.Infof("Start processing task %+v", task)
 	if err := p.processTask(task); err != nil {
-		logger.Errorf("Error processing task %+v for id: %d - %t", task.TaskType.String(), task.IdParam, err)
+		logger.Errorf("Error processing task %+v for id: %d - %s", task.TaskType.String(), task.IdParam, err)
 	}
 
 	task.ProcessingEnd = pointer.Int64(time.Now().UnixMilli())
@@ -212,6 +214,8 @@ func (p *itemProcessorImpl) processTask(t *model.Task) error {
 		return refreshItemMetadata(p.db, t.IdParam)
 	case model.REFRESH_FILE_TASK:
 		return refreshFileMetadata(p.db, t.IdParam)
+	case model.CHANGE_RESOLUTION:
+		return changeResolution(p.db, p.storage, t.IdParam, t.StringParam)
 	default:
 		return fmt.Errorf("unknown task %+v", t)
 	}

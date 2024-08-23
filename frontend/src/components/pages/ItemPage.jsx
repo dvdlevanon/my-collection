@@ -1,5 +1,6 @@
 import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
+import OptimizeItem from '@mui/icons-material/AutoFixHigh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ProcessIcon from '@mui/icons-material/Loop';
 import { Box, Chip, IconButton, Stack, Tooltip } from '@mui/material';
@@ -103,6 +104,10 @@ function ItemPage() {
 
 	const processItem = (item) => {
 		Client.forceProcessItem(item.id);
+	};
+
+	const optimizeItem = (item) => {
+		Client.optimizeItem(item.id);
 	};
 
 	const closeSplitVideoDialog = () => {
@@ -275,6 +280,11 @@ function ItemPage() {
 								<Tooltip title="Process this item">
 									<IconButton onClick={() => processItem(itemQuery.data)}>
 										<ProcessIcon sx={{ fontSize: theme.iconSize(1) }} />
+									</IconButton>
+								</Tooltip>
+								<Tooltip title="Optimze item">
+									<IconButton onClick={() => optimizeItem(itemQuery.data)}>
+										<OptimizeItem sx={{ fontSize: theme.iconSize(1) }} />
 									</IconButton>
 								</Tooltip>
 								<Tooltip title="Delete this item">

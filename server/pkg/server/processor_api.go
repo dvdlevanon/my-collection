@@ -68,3 +68,18 @@ func (s *Server) refreshItem(c *gin.Context) {
 
 	c.Status(http.StatusOK)
 }
+
+func (s *Server) optimizeItem(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	item, err := s.db.GetItem(itemId)
+	if s.handleError(c, err) {
+		return
+	}
+
+	s.itemsOptimizer.HandleItem(item)
+	c.Status(http.StatusOK)
+}

@@ -16,6 +16,7 @@ const (
 	REFRESH_METADATA_TASK
 	REFRESH_FILE_TASK
 	SET_MAIN_COVER
+	CHANGE_RESOLUTION
 )
 
 func (t TaskType) ToDescription(title string) string {
@@ -30,6 +31,8 @@ func (t TaskType) ToDescription(title string) string {
 		return fmt.Sprintf("Reading file metadata for %s", title)
 	case SET_MAIN_COVER:
 		return fmt.Sprintf("Setting main cover for %s", title)
+	case CHANGE_RESOLUTION:
+		return fmt.Sprintf("Changing resolution %s", title)
 	default:
 		return "unknown"
 	}
@@ -47,6 +50,8 @@ func (t TaskType) String() string {
 		return "file-metadata"
 	case SET_MAIN_COVER:
 		return "main-cover"
+	case CHANGE_RESOLUTION:
+		return "change-resolution"
 	default:
 		return "unknown"
 	}

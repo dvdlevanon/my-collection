@@ -155,6 +155,12 @@ export default class Client {
 		});
 	};
 
+	static optimizeItem = async (itemId) => {
+		return await fetch(`${Client.apiUrl}/items/${itemId}/optimize`, {
+			method: 'POST',
+		});
+	};
+
 	static splitItem = async (itemId, second) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}/split?second=${second}`, {
 			method: 'POST',
@@ -262,6 +268,10 @@ export default class Client {
 
 	static runSpectagger() {
 		fetch(`${Client.apiUrl}/spectagger/run`, { method: 'POST' });
+	}
+
+	static runItemOptimizer() {
+		fetch(`${Client.apiUrl}/itemsoptimizer/run`, { method: 'POST' });
 	}
 
 	static runDirectoryScan() {

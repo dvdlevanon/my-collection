@@ -7,6 +7,7 @@ import (
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fssync"
+	"my-collection/server/pkg/itemsoptimizer"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
@@ -90,10 +91,13 @@ func run() error {
 	}
 	go spectagger.Run()
 
+	itemsoptimizer := itemsoptimizer.New(db, processor, 1080)
+	go itemsoptimizer.Run()
+
 	thumbnails := thumbnails.New(db, db, storage, 100, 100)
 	go thumbnails.Run()
 
-	return server.New(db, storage, fsManager, processor, spectagger, thumbnails).Run(*listenAddress)
+	return server.New(db, storage, fsManager, processor, spectagger, itemsoptimizer, thumbnails).Run(*listenAddress)
 }
 
 func main() {

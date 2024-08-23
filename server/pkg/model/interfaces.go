@@ -92,6 +92,9 @@ type StorageUploader interface {
 	GetFileForWriting(name string) (string, error)
 	GetTempFile() string
 }
+type TempFileProvider interface {
+	GetTempFile() string
+}
 
 type DirectoryItemsGetter interface {
 	GetBelongingItems(path string) (*[]Item, error)
