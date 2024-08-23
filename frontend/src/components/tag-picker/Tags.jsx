@@ -133,6 +133,26 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		return filteredTags;
 	};
 
+	const filterByTit = (tags) => {
+		let isNoImageSelected = selectedAnnotations.some((annotation) => annotation.id == 'no-image');
+		if (isNoImageSelected) {
+			return tags;
+		}
+
+		if (tit.display_style !== 'portrait') {
+			return tags;
+		}
+
+		let filteredTags = tags;
+		if (tit) {
+			filteredTags = tags.filter((tag) => {
+				return TagsUtil.hasTagImage(tag, tit);
+			});
+		}
+
+		return filteredTags;
+	};
+
 	const filterTagsByAnnotations = (tags) => {
 		return tags.filter((cur) => {
 			if (selectedAnnotations.length == 0) {
@@ -189,7 +209,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	};
 
 	const filterTags = () => {
-		return filterByPrefix(filterTagsByAnnotations(filterTagsBySearch(tags)));
+		return filterByTit(filterByPrefix(filterTagsByAnnotations(filterTagsBySearch(tags))));
 	};
 
 	const getAvailableAnnotations = (availableAnnotations) => {
