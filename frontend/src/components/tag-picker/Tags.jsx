@@ -134,12 +134,18 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	};
 
 	const filterByTit = (tags) => {
+		const filterByTitEnabled = false;
+
+		if (!filterByTitEnabled) {
+			return tags;
+		}
+
 		let isNoImageSelected = selectedAnnotations.some((annotation) => annotation.id == 'no-image');
 		if (isNoImageSelected) {
 			return tags;
 		}
 
-		if (tit.display_style !== 'portrait') {
+		if (parent.display_style !== 'portrait') {
 			return tags;
 		}
 
