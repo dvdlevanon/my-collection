@@ -17,6 +17,7 @@ function TagPicker({
 	tagLinkBuilder,
 	setHideTopBar,
 	singleCategoryMode,
+	galleryUrlParams,
 }) {
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const titsQuery = useQuery(ReactQueryUtil.TAG_IMAGE_TYPES_KEY, Client.getTagImageTypes);

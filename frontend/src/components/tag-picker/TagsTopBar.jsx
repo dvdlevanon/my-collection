@@ -1,5 +1,6 @@
 import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
+import MixIcon from '@mui/icons-material/AutoAwesome';
 import ImageIcon from '@mui/icons-material/PermMedia';
 import { Box, Divider, IconButton, Stack, Tooltip } from '@mui/material';
 import React, { useState } from 'react';
@@ -29,6 +30,7 @@ function TagsTopBar({
 	setPrefixFilter,
 	tagSize,
 	onZoomChanged,
+	mixOnDemand,
 }) {
 	const theme = useTheme();
 	const [showImagesFromDirectory, setShowImagesFromDirectory] = useState(false);
@@ -55,6 +57,11 @@ function TagsTopBar({
 						gap: theme.spacing(1),
 					}}
 				>
+					<Tooltip title="Generate one time mix">
+						<IconButton onClick={() => mixOnDemand()}>
+							<MixIcon sx={{ fontSize: theme.iconSize(1) }} />
+						</IconButton>
+					</Tooltip>
 					{TagsUtil.allowToSetImageToCategory(parentId) && (
 						<Tooltip title="Set images from directory">
 							<IconButton onClick={() => setShowImagesFromDirectory(true)}>

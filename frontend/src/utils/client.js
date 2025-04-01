@@ -103,6 +103,13 @@ export default class Client {
 		});
 	};
 
+	static mixOnDemand = async (desc, tags) => {
+		return await fetch(`${Client.apiUrl}/mix-on-demand?desc=${encodeURIComponent(desc)}`, {
+			method: 'POST',
+			body: JSON.stringify(tags),
+		}).then((response) => response.json());
+	};
+
 	static imageDirectoryChoosen = async (tagId, directoryPath) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/auto-image`, {
 			method: 'POST',

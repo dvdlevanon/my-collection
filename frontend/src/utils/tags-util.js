@@ -19,6 +19,9 @@ export default class TagsUtil {
 			} else if (specialTags[i].title === 'DailyMix') {
 				// automix.go
 				TagsUtil.dailyMixTag = specialTags[i];
+			} else if (specialTags[i].title === 'Mod') {
+				// mixondemand.go
+				TagsUtil.mixOnDemandTag = specialTags[i];
 			} else if (specialTags[i].title === 'Spec') {
 				// spectagger.go
 				TagsUtil.specTag = specialTags[i];
@@ -28,7 +31,13 @@ export default class TagsUtil {
 			}
 		}
 
-		if (!TagsUtil.directoriesTag || !TagsUtil.dailyMixTag || !TagsUtil.highlightsTag || !TagsUtil.specTag) {
+		if (
+			!TagsUtil.directoriesTag ||
+			!TagsUtil.dailyMixTag ||
+			!TagsUtil.highlightsTag ||
+			!TagsUtil.specTag ||
+			!TagsUtil.mixOnDemandTag
+		) {
 			console.log('Missing mandatory special tags');
 		}
 	}
@@ -39,6 +48,10 @@ export default class TagsUtil {
 
 	static isDailymixCategory(tagId) {
 		return tagId === TagsUtil.dailyMixTag.id;
+	}
+
+	static isMixOnDemandCategory(tagId) {
+		return tagId === TagsUtil.mixOnDemandTag.id;
 	}
 
 	static isHighlightsCategory(tagId) {
@@ -53,6 +66,7 @@ export default class TagsUtil {
 		return (
 			TagsUtil.isDirectoriesCategory(tagId) ||
 			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isMixOnDemandCategory(tagId) ||
 			TagsUtil.isSpecCategory(tagId) ||
 			TagsUtil.isHighlightsCategory(tagId)
 		);
@@ -96,6 +110,7 @@ export default class TagsUtil {
 		return !(
 			TagsUtil.isDirectoriesCategory(tagId) ||
 			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isMixOnDemandCategory(tagId) ||
 			TagsUtil.isSpecCategory(tagId)
 		);
 	}
@@ -104,6 +119,7 @@ export default class TagsUtil {
 		return !(
 			TagsUtil.isDirectoriesCategory(tagId) ||
 			TagsUtil.isDailymixCategory(tagId) ||
+			TagsUtil.isMixOnDemandCategory(tagId) ||
 			TagsUtil.isSpecCategory(tagId)
 		);
 	}
@@ -180,6 +196,8 @@ export default class TagsUtil {
 			return true;
 		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
 			return true;
+		} else if (TagsUtil.isMixOnDemandCategory(tag.parentId)) {
+			return true;
 		}
 
 		if (tit && tag.images) {
@@ -217,6 +235,8 @@ export default class TagsUtil {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/directory/directory.png'));
 		} else if (TagsUtil.isDailymixCategory(tag.parentId)) {
 			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/dailymix/dailymix.png'));
+		} else if (TagsUtil.isMixOnDemandCategory(tag.parentId)) {
+			return Client.buildFileUrl(Client.buildInternalStoragePath('tags-image-types/mod/mod.png'));
 		}
 
 		if (selectedTit && tag.images) {

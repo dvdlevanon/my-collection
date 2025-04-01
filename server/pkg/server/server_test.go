@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/itemsoptimizer"
+	"my-collection/server/pkg/mixondemand"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
@@ -40,7 +41,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	dcc := model.NewMockDirectoryChangedCallback(ctrl)
 	dcc.EXPECT().DirectoryChanged(gomock.Any()).AnyTimes()
 
-	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{}, &itemsoptimizer.ItemsOptimizer{}, &model.MockThumbnailProcessor{})
+	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{}, &itemsoptimizer.ItemsOptimizer{}, &model.MockThumbnailProcessor{}, &mixondemand.MixOnDemand{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {

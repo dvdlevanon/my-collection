@@ -8,6 +8,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fssync"
 	"my-collection/server/pkg/itemsoptimizer"
+	"my-collection/server/pkg/mixondemand"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
@@ -85,6 +86,11 @@ func run() error {
 	}
 	go automix.Run()
 
+	mixOnDemand, err := mixondemand.New(db, db, db, 20)
+	if err != nil {
+		return err
+	}
+
 	spectagger, err := spectagger.New(db, db, db)
 	if err != nil {
 		return err
@@ -97,7 +103,7 @@ func run() error {
 	thumbnails := thumbnails.New(db, db, storage, 100, 100)
 	go thumbnails.Run()
 
-	return server.New(db, storage, fsManager, processor, spectagger, itemsoptimizer, thumbnails).Run(*listenAddress)
+	return server.New(db, storage, fsManager, processor, spectagger, itemsoptimizer, thumbnails, mixOnDemand).Run(*listenAddress)
 }
 
 func main() {

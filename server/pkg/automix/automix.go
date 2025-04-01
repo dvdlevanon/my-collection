@@ -3,6 +3,7 @@ package automix
 import (
 	"fmt"
 	"my-collection/server/pkg/bl/items"
+	"my-collection/server/pkg/bl/special_tags"
 	"my-collection/server/pkg/bl/tag_annotations"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
@@ -10,20 +11,15 @@ import (
 	"time"
 )
 
-var dailymixTag = &model.Tag{
-	Title:    "DailyMix", // tags-utils.js
-	ParentID: nil,
-}
-
 func New(trw model.TagReaderWriter, ir model.ItemReader,
 	tarw model.TagAnnotationReaderWriter, dailyMixItemsCount int) (*Automix, error) {
-	d, err := trw.GetTag(dailymixTag)
+	d, err := trw.GetTag(special_tags.DailymixTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(dailymixTag); err != nil {
+		if err := trw.CreateOrUpdateTag(special_tags.DailymixTag); err != nil {
 			return nil, err
 		}
 	} else {
-		dailymixTag = d
+		special_tags.DailymixTag = d
 	}
 
 	return &Automix{
@@ -77,7 +73,7 @@ func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
 }
 
 func isDailymixExists(trw model.TagReaderWriter, ctg model.CurrentTimeGetter) bool {
-	_, err := tags.GetChildTag(trw, dailymixTag.Id, getCurrentDailymixTitle(ctg))
+	_, err := tags.GetChildTag(trw, special_tags.DailymixTag.Id, getCurrentDailymixTitle(ctg))
 	return err == nil
 }
 
@@ -91,7 +87,7 @@ func getCurrentDailymixAnnotation(ctg model.CurrentTimeGetter) string {
 
 func prepareDailymixTag(trw model.TagReaderWriter, tarw model.TagAnnotationReaderWriter,
 	ctg model.CurrentTimeGetter) (*model.Tag, error) {
-	tag, err := tags.GetOrCreateChildTag(trw, dailymixTag.Id, getCurrentDailymixTitle(ctg))
+	tag, err := tags.GetOrCreateChildTag(trw, special_tags.DailymixTag.Id, getCurrentDailymixTitle(ctg))
 	if err != nil {
 		return nil, err
 	}
@@ -107,5 +103,5 @@ func prepareDailymixTag(trw model.TagReaderWriter, tarw model.TagAnnotationReade
 }
 
 func GetDailymixTagId() uint64 {
-	return dailymixTag.Id
+	return special_tags.DailymixTag.Id
 }

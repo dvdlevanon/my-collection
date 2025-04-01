@@ -3,12 +3,14 @@ package server
 import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/itemsoptimizer"
+	"my-collection/server/pkg/mixondemand"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
 	"my-collection/server/pkg/utils"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
@@ -29,12 +31,14 @@ type Server struct {
 	itemsOptimizer     *itemsoptimizer.ItemsOptimizer
 	dcc                model.DirectoryChangedCallback
 	thumbnailProcessor model.ThumbnailProcessor
+	mixOnDemand        *mixondemand.MixOnDemand
 	push               *push
 }
 
 func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback,
 	processor processor.Processor, spectagger *spectagger.Spectagger,
-	itemsOptimizer *itemsoptimizer.ItemsOptimizer, thumbnailProcessor model.ThumbnailProcessor) *Server {
+	itemsOptimizer *itemsoptimizer.ItemsOptimizer, thumbnailProcessor model.ThumbnailProcessor,
+	mixOnDemand *mixondemand.MixOnDemand) *Server {
 	gin.SetMode("release")
 
 	server := &Server{
@@ -46,11 +50,16 @@ func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCa
 		spectagger:         spectagger,
 		itemsOptimizer:     itemsOptimizer,
 		thumbnailProcessor: thumbnailProcessor,
+		mixOnDemand:        mixOnDemand,
 	}
 
 	server.push = newPush(processor, server)
 	server.init()
 	return server
+}
+
+func (d *Server) GetCurrentTime() time.Time {
+	return time.Now()
 }
 
 func (s *Server) init() {
@@ -120,6 +129,8 @@ func (s *Server) init() {
 	api.GET("/stats", s.getStats)
 
 	api.GET("/tag-image-types", s.getTagImageTypes)
+
+	api.POST("/mix-on-demand", s.generateMixOnDemand)
 
 	api.GET("/ws", s.push.websocket)
 

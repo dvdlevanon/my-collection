@@ -5,8 +5,10 @@ import (
 	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/items"
+	"my-collection/server/pkg/bl/special_tags"
 	"my-collection/server/pkg/bl/tag_annotations"
 	"my-collection/server/pkg/bl/tags"
+	"my-collection/server/pkg/mixondemand"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
 	"time"
@@ -16,26 +18,19 @@ import (
 
 var logger = logging.MustGetLogger("spectagger")
 
-var specTag = &model.Tag{
-	Title:          "Spec", // tags-utils.js
-	ParentID:       nil,
-	DisplayStyle:   "chip",
-	DefaultSorting: "items-count",
-}
-
 func GetSpecTagId() uint64 {
-	return specTag.Id
+	return special_tags.SpecTag.Id
 }
 
 func New(trw model.TagReaderWriter, irw model.ItemReaderWriter,
 	tarw model.TagAnnotationReaderWriter) (*Spectagger, error) {
-	s, err := trw.GetTag(specTag)
+	s, err := trw.GetTag(special_tags.SpecTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(specTag); err != nil {
+		if err := trw.CreateOrUpdateTag(special_tags.SpecTag); err != nil {
 			return nil, err
 		}
 	} else {
-		specTag = s
+		special_tags.SpecTag = s
 	}
 
 	return &Spectagger{
@@ -166,6 +161,7 @@ func (d *Spectagger) GetUserCategories() (*[]model.Tag, error) {
 	for _, category := range *categories {
 		if category.Id == directories.GetDirectoriesTagId() ||
 			category.Id == automix.GetDailymixTagId() ||
+			category.Id == mixondemand.GetMixOnDemandTagId() ||
 			category.Id == GetSpecTagId() ||
 			category.Id == items.GetHighlightsTagId() {
 			continue
@@ -219,7 +215,7 @@ func getMissingFromCategoryTag(tarw model.TagAnnotationReaderWriter, tag *model.
 	}
 
 	return &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       fmt.Sprintf("Missing %s", tag.Title),
 		Annotations: []*model.TagAnnotation{ta},
 	}, nil
@@ -232,7 +228,7 @@ func getBelongToCategoryTag(tarw model.TagAnnotationReaderWriter, tag *model.Tag
 	}
 
 	return &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       fmt.Sprintf("Has %s", tag.Title),
 		Annotations: []*model.TagAnnotation{ta},
 	}, nil
@@ -261,21 +257,21 @@ func getResolutionTags(tarw model.TagAnnotationReaderWriter, item *model.Item) (
 	var tags []*model.Tag
 
 	resolutionTag := &model.Tag{
-		ParentID:    &specTag.Id, // Assuming specTag is defined elsewhere
+		ParentID:    &special_tags.SpecTag.Id, // Assuming specTag is defined elsewhere
 		Title:       fmt.Sprintf("%d*%d", item.Width, item.Height),
 		Annotations: []*model.TagAnnotation{ta},
 	}
 	tags = append(tags, resolutionTag)
 
 	widthTag := &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       fmt.Sprintf("Width: %d", item.Width),
 		Annotations: []*model.TagAnnotation{ta},
 	}
 	tags = append(tags, widthTag)
 
 	heightTag := &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       fmt.Sprintf("Height: %d", item.Height),
 		Annotations: []*model.TagAnnotation{ta},
 	}
@@ -291,7 +287,7 @@ func getVideoCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 	}
 
 	return &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       item.VideoCodecName,
 		Annotations: []*model.TagAnnotation{ta},
 	}, nil
@@ -304,7 +300,7 @@ func getAudioCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 	}
 
 	return &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       item.AudioCodecName,
 		Annotations: []*model.TagAnnotation{ta},
 	}, nil
@@ -317,7 +313,7 @@ func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.
 	}
 
 	regularTag := &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       "Regular",
 		Annotations: []*model.TagAnnotation{ta},
 	}
@@ -338,7 +334,7 @@ func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.
 	}
 
 	return &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       title,
 		Annotations: []*model.TagAnnotation{ta},
 	}, tagToRemove, nil
@@ -368,7 +364,7 @@ func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*mo
 	}
 
 	return &model.Tag{
-		ParentID:    &specTag.Id,
+		ParentID:    &special_tags.SpecTag.Id,
 		Title:       title,
 		Annotations: []*model.TagAnnotation{ta},
 	}, nil

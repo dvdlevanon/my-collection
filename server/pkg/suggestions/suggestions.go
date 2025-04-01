@@ -2,11 +2,10 @@ package suggestions
 
 import (
 	"math/rand"
-	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/items"
+	"my-collection/server/pkg/bl/special_tags"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/model"
-	"my-collection/server/pkg/spectagger"
 )
 
 func GetSuggestionsForItem(ir model.ItemReader, tr model.TagReader, itemId uint64, count int) ([]*model.Item, error) {
@@ -20,7 +19,11 @@ func GetSuggestionsForItem(ir model.ItemReader, tr model.TagReader, itemId uint6
 		return nil, err
 	}
 
-	relatedItems, err := getItemsOfTags(ir, t)
+	return GetSuggestionsForTags(ir, tr, t, count)
+}
+
+func GetSuggestionsForTags(ir model.ItemReader, tr model.TagReader, tags *[]model.Tag, count int) ([]*model.Item, error) {
+	relatedItems, err := getItemsOfTags(ir, tags)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +52,7 @@ func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) 
 	relatedItems := make([]*model.Item, 0)
 
 	for _, tag := range *t {
-		if *tag.ParentID == automix.GetDailymixTagId() || *tag.ParentID == spectagger.GetSpecTagId() {
+		if special_tags.IsSpecial(*tag.ParentID) {
 			continue
 		}
 

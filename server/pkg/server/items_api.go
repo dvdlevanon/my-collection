@@ -238,3 +238,24 @@ func (s *Server) getSuggestionsForItem(c *gin.Context) {
 
 	c.JSON(http.StatusOK, result)
 }
+
+func (s *Server) generateMixOnDemand(c *gin.Context) {
+	body, err := io.ReadAll(c.Request.Body)
+	if s.handleError(c, err) {
+		return
+	}
+
+	desc := c.Query("desc")
+
+	var tags []model.Tag
+	if s.handleError(c, json.Unmarshal(body, &tags)) {
+		return
+	}
+
+	result, err := s.mixOnDemand.GenerateMixOnDemand(s, desc, tags)
+	if s.handleError(c, err) {
+		return
+	}
+
+	c.JSON(http.StatusOK, result)
+}

@@ -38,6 +38,7 @@ function Gallery({ previewMode, setHideTopBar }) {
 					tagLinkBuilder={(tag) => {
 						return '/?' + galleryUrlParams.buildActivateTagUrl(tag.id);
 					}}
+					galleryUrlParams={galleryUrlParams}
 				/>
 			)}
 			<Divider />

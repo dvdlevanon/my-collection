@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react';
 import { Button, Divider, Link, Stack } from '@mui/material';
 import { Box } from '@mui/system';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
 import seedrandom from 'seedrandom';
@@ -21,8 +21,8 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	const [prefixFilter, setPrefixFilter] = useState('');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const [tagSize, setTagSize] = useState(initialTagSize);
-	const tagsEl = useRef(null);
 	const theme = useTheme();
+	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parent.id),
 		queryFn: () => Client.getAvailableAnnotations(parent.id),
@@ -37,7 +37,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 				})
 			);
 
-			if (TagsUtil.isDailymixCategory(parent.id)) {
+			if (TagsUtil.isDailymixCategory(parent.id) || TagsUtil.isMixOnDemandCategory(parent.id)) {
 				var today = new Date();
 				var month = today.toLocaleString('default', { month: 'short' });
 				var year = today.getFullYear();
@@ -214,6 +214,29 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 		}
 	};
 
+	const getFilterDesc = () => {
+		let descriptions = [];
+
+		if (prefixFilter && prefixFilter.trim() !== '') {
+			descriptions.push(`Prefix: ${prefixFilter}`);
+		}
+
+		if (selectedAnnotations && selectedAnnotations.length > 0) {
+			const annotationTitles = selectedAnnotations.map((annotation) => annotation.title);
+			descriptions.push(`${annotationTitles.join(', ')}`);
+		}
+
+		if (searchTerm && searchTerm.trim() !== '') {
+			descriptions.push(`Search: "${searchTerm}"`);
+		}
+
+		if (descriptions.length === 0) {
+			return 'No filters applied';
+		}
+
+		return descriptions.join(' | ');
+	};
+
 	const filterTags = () => {
 		return filterByTit(filterByPrefix(filterTagsByAnnotations(filterTagsBySearch(tags))));
 	};
@@ -300,8 +323,18 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 					setTagSize(newTagSize);
 					localStorage.setItem(buildStorageKey('tag-size'), newTagSize);
 				}}
+				mixOnDemand={mixOnDemand}
 			/>
 		);
+	};
+
+	const mixOnDemand = () => {
+		var desc = getFilterDesc();
+		Client.mixOnDemand(desc, filterTags()).then((tag) => {
+			tagsQuery.refetch().then(() => {
+				onTagClicked(tag);
+			});
+		});
 	};
 
 	const getNoDirectoriesFoundComponent = () => {

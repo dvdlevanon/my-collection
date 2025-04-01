@@ -7,6 +7,7 @@ import (
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
+	"my-collection/server/pkg/mixondemand"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/spectagger"
 	"net/http"
@@ -114,6 +115,7 @@ func (s *Server) getSpecialTags(c *gin.Context) {
 	tags, err := s.db.GetTagsWithoutChildren(
 		directories.GetDirectoriesTagId(),
 		automix.GetDailymixTagId(),
+		mixondemand.GetMixOnDemandTagId(),
 		spectagger.GetSpecTagId(),
 		items.GetHighlightsTagId())
 
