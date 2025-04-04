@@ -18,6 +18,7 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	const [searchTerm, setSearchTerm] = useState('');
 	const [sortBy, setSortBy] = useState(parent.default_sorting);
 	const [tit, setTit] = useState(tits[0]);
+	const [filterByTitEnabled, setFilterByTitEnabled] = useState(false);
 	const [prefixFilter, setPrefixFilter] = useState('');
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const [tagSize, setTagSize] = useState(initialTagSize);
@@ -134,8 +135,6 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	};
 
 	const filterByTit = (tags) => {
-		const filterByTitEnabled = false;
-
 		if (!filterByTitEnabled) {
 			return tags;
 		}
@@ -306,6 +305,9 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 				setTit={(tit) => {
 					localStorage.setItem(buildStorageKey('tit'), tit.id);
 					setTit(tit);
+				}}
+				onTitClicked={(clicked) => {
+					setFilterByTitEnabled(clicked);
 				}}
 				sortBy={sortBy}
 				setSortBy={(sortBy) => {

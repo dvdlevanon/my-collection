@@ -24,6 +24,7 @@ function TagsTopBar({
 	tits,
 	tit,
 	setTit,
+	onTitClicked,
 	sortBy,
 	setSortBy,
 	prefixFilter,
@@ -81,6 +82,7 @@ function TagsTopBar({
 						tits={tits}
 						tit={tit}
 						onTitChanged={(newTit) => setTit(newTit)}
+						onTitClicked={onTitClicked}
 					/>
 					<TextFieldWithKeyboard
 						variant="outlined"

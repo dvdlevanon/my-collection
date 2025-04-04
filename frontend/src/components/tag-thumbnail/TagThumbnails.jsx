@@ -14,7 +14,9 @@ function TagThumbnails({ tags, carouselMode, onTagClicked, onTagRemoved, withRem
 					key={tag.id}
 					tag={tag}
 					onTagClicked={(tag) => {
-						onTagClicked(tag);
+						if (onTagClicked) {
+							onTagClicked(tag);
+						}
 					}}
 					onTagRemoved={onTagRemoved}
 					withRemoveOption={withRemoveOption}
