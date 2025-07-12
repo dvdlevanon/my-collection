@@ -235,7 +235,7 @@ function ItemPage() {
 					alignItems: 'center',
 				}}
 			>
-				{itemQuery.isSuccess && suggestedQuery.isSuccess && (
+				{itemQuery.isSuccess && (
 					<Stack
 						flexGrow={1}
 						flexDirection="column"

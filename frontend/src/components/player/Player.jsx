@@ -11,7 +11,7 @@ import PlayIcon from '@mui/icons-material/PlayArrow';
 import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
 import HighlightIcon from '@mui/icons-material/Stars';
 import { Box, Fade, IconButton, Stack, Tooltip, Typography } from '@mui/material';
-import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Client from '../../utils/client';
 import TimeUtil from '../../utils/time-utils';
@@ -132,7 +132,7 @@ function Player({
 	};
 
 	const videoFinished = () => {
-		if (autoPlayNext) {
+		if (autoPlayNext && suggestedItems) {
 			let nextItemIndex = Math.floor(Math.random() * suggestedItems.length);
 			navigate('/spa/item/' + suggestedItems[nextItemIndex].id);
 		} else {
@@ -258,7 +258,7 @@ function Player({
 				/>
 			)}
 			{getVideoElement()}
-			{showSuggestions && (
+			{showSuggestions && suggestedItems && (
 				<ItemSuggestions
 					suggestedItems={suggestedItems}
 					width={playerWidth}
