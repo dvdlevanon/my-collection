@@ -1,5 +1,8 @@
 import { useTheme } from '@emotion/react';
+import CancelIcon from '@mui/icons-material/Cancel';
 import SplitIcon from '@mui/icons-material/ContentCut';
+import CropIcon from '@mui/icons-material/Crop';
+import DoneIcon from '@mui/icons-material/Done';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
 import ImageIcon from '@mui/icons-material/Image';
@@ -12,6 +15,7 @@ import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Client from '../../utils/client';
 import TimeUtil from '../../utils/time-utils';
+import CropFrame from './CropFrame';
 import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
 import PlayerSlider from './PlayerSlider';
@@ -25,6 +29,7 @@ function Player({
 	initialEndPosition,
 	splitVideo,
 	makeHighlight,
+	cropFrame,
 	allowToSplit,
 	suggestedItems,
 }) {
@@ -40,7 +45,10 @@ function Player({
 	const [duration, setDuration] = useState(initialEndPosition - startPosition);
 	const [hideControlsTimerId, setHideControlsTimerId] = useState(0);
 	const [playerWidth, setPlayerWidth] = useState(0);
+	const [playerHeight, setPlayerHeight] = useState(0);
 	const [startHighlightSecond, setStartHighlightSecond] = useState(-1);
+	const [cropMode, setCropMode] = useState(false);
+	const [frameCrop, setFrameCrop] = useState(null);
 	const videoElement = useRef();
 	const playerElement = useRef();
 	const theme = useTheme();
@@ -49,11 +57,19 @@ function Player({
 	useLayoutEffect(() => {
 		function updateSize() {
 			setPlayerWidth(videoElement.current.offsetWidth);
+			setPlayerHeight(videoElement.current.offsetHeight);
 		}
 		window.addEventListener('resize', updateSize);
+		const resizeObserver = new ResizeObserver(updateSize);
+		resizeObserver.observe(videoElement.current);
+
 		updateSize();
-		return () => window.removeEventListener('resize', updateSize);
-	}, []);
+
+		return () => {
+			window.removeEventListener('resize', updateSize);
+			resizeObserver.disconnect();
+		};
+	}, [videoElement]);
 
 	useEffect(() => {
 		let autoPlayNext = localStorage.getItem('auto-play-next');
@@ -163,23 +179,15 @@ function Player({
 		}
 	};
 
-	return (
-		<Stack
-			display="flex"
-			ref={playerElement}
-			sx={{
-				position: 'relative',
-				cursor: isPlaying && !showControls ? 'none' : 'auto',
-			}}
-			tabIndex="0"
-			onMouseLeave={() => onMouseLeave()}
-		>
+	const getVideoElement = () => {
+		return (
 			<Box
 				borderRadius={theme.spacing(2)}
 				sx={{
 					boxShadow: '3',
 				}}
 				component="video"
+				crossOrigin="anonymous"
 				height="100%"
 				width="100%"
 				playsInline
@@ -210,6 +218,46 @@ function Player({
 			>
 				<source src={Client.buildFileUrl(url)} />
 			</Box>
+		);
+	};
+
+	const cropClicked = () => {
+		videoElement.current.pause();
+		setIsPlaying(false);
+		setCropMode(true);
+	};
+
+	const cancelCropClicked = () => {
+		setCropMode(false);
+	};
+
+	const finishCropClicked = () => {
+		setCropMode(false);
+		cropFrame(currentTime, frameCrop);
+	};
+
+	return (
+		<Stack
+			display="flex"
+			ref={playerElement}
+			sx={{
+				position: 'relative',
+				cursor: isPlaying && !showControls ? 'none' : 'auto',
+			}}
+			tabIndex="0"
+			onMouseLeave={() => onMouseLeave()}
+		>
+			{cropMode && (
+				<CropFrame
+					videoRef={videoElement}
+					isPlaying={isPlaying}
+					width={playerWidth}
+					height={playerHeight}
+					onMouseMove={() => onMouseMove()}
+					setCrop={setFrameCrop}
+				/>
+			)}
+			{getVideoElement()}
 			{showSuggestions && (
 				<ItemSuggestions
 					suggestedItems={suggestedItems}
@@ -230,6 +278,7 @@ function Player({
 			<Fade in={showControls}>
 				<Stack
 					onMouseEnter={() => onMouseEnter()}
+					zIndex={2}
 					sx={{
 						position: 'absolute',
 						padding: theme.spacing(1),
@@ -295,18 +344,38 @@ function Player({
 								showSchedule={showSchedule}
 								setShowSchedule={setShowSchedule}
 							/>
-							<IconButton onClick={() => setMainCover(videoElement.current.currentTime)}>
-								<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
-							<IconButton
-								disabled={!allowToSplit()}
-								onClick={() => splitVideo(videoElement.current.currentTime)}
-							>
-								<SplitIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
-							<IconButton onClick={() => setStartHighlightSecond(videoElement.current.currentTime)}>
-								<HighlightIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
+							{!cropMode && (
+								<IconButton onClick={() => setMainCover(videoElement.current.currentTime)}>
+									<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
+								</IconButton>
+							)}
+							{cropMode ? (
+								<>
+									<IconButton onClick={finishCropClicked}>
+										<DoneIcon sx={{ fontSize: theme.iconSize(1) }} />
+									</IconButton>
+									<IconButton onClick={cancelCropClicked}>
+										<CancelIcon sx={{ fontSize: theme.iconSize(1) }} />
+									</IconButton>
+								</>
+							) : (
+								<IconButton onClick={cropClicked}>
+									<CropIcon sx={{ fontSize: theme.iconSize(1) }} />
+								</IconButton>
+							)}
+							{!cropMode && (
+								<IconButton
+									disabled={!allowToSplit()}
+									onClick={() => splitVideo(videoElement.current.currentTime)}
+								>
+									<SplitIcon sx={{ fontSize: theme.iconSize(1) }} />
+								</IconButton>
+							)}
+							{!cropMode && (
+								<IconButton onClick={() => setStartHighlightSecond(videoElement.current.currentTime)}>
+									<HighlightIcon sx={{ fontSize: theme.iconSize(1) }} />
+								</IconButton>
+							)}
 							{(!fullScreen && (
 								<Tooltip title="Full screen">
 									<IconButton onClick={enterFullScreen}>

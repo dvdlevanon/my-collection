@@ -225,6 +225,48 @@ func (s *Server) makeHighlight(c *gin.Context) {
 	c.Status(http.StatusOK)
 }
 
+func (s *Server) cropFrame(c *gin.Context) {
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	second, err := strconv.ParseFloat(c.Query("second"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	cropX, err := strconv.ParseFloat(c.Query("crop-x"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	cropY, err := strconv.ParseFloat(c.Query("crop-y"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	cropWidth, err := strconv.ParseFloat(c.Query("crop-width"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	cropHeight, err := strconv.ParseFloat(c.Query("crop-height"), 64)
+	if s.handleError(c, err) {
+		return
+	}
+
+	rect := model.RectFloat{
+		X: cropX,
+		Y: cropY,
+		W: cropWidth,
+		H: cropHeight,
+	}
+
+	logger.Infof("Cropping frame for item %d at %f %s", itemId, second, rect)
+	s.processor.EnqueueCropFrame(itemId, second, rect)
+}
+
 func (s *Server) getSuggestionsForItem(c *gin.Context) {
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if s.handleError(c, err) {

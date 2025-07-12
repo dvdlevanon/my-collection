@@ -78,6 +78,7 @@ func (s *Server) init() {
 	api.POST("/items/:item/main-cover", s.setMainCover)
 	api.POST("/items/:item/split", s.splitItem)
 	api.POST("/items/:item/make-highlight", s.makeHighlight)
+	api.POST("/items/:item/crop-frame", s.cropFrame)
 	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)
 	api.POST("/items/:item/process", s.refreshItem)
 	api.POST("/items/:item/optimize", s.optimizeItem)

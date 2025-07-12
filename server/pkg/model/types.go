@@ -4,6 +4,8 @@ import (
 	"database/sql/driver"
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 
 	"github.com/go-errors/errors"
 )
@@ -16,6 +18,7 @@ const (
 	REFRESH_METADATA_TASK
 	REFRESH_FILE_TASK
 	SET_MAIN_COVER
+	CROP_FRAME
 	CHANGE_RESOLUTION
 )
 
@@ -83,4 +86,53 @@ func (t *Rect) Scan(value interface{}) error {
 	}
 
 	return json.Unmarshal(b, &t)
+}
+
+type RectFloat struct {
+	X float64 `json:"x"`
+	Y float64 `json:"y"`
+	H float64 `json:"height"`
+	W float64 `json:"width"`
+}
+
+func (t RectFloat) String() string {
+	return fmt.Sprintf("%f:%f %f:%f", t.X, t.Y, t.W, t.H)
+}
+
+func (t RectFloat) Serialize() string {
+	return fmt.Sprintf("%f %f %f %f", t.X, t.Y, t.W, t.H)
+}
+
+func DeserializeRectFloat(str string) (RectFloat, error) {
+	parts := strings.Split(str, " ")
+	if len(parts) != 4 {
+		return RectFloat{}, fmt.Errorf("bad rect format %s", str)
+	}
+
+	x, err := strconv.ParseFloat(parts[0], 64)
+	if err != nil {
+		return RectFloat{}, fmt.Errorf("bad rect format %s %w", str, err)
+	}
+
+	y, err := strconv.ParseFloat(parts[1], 64)
+	if err != nil {
+		return RectFloat{}, fmt.Errorf("bad rect format %s %w", str, err)
+	}
+
+	w, err := strconv.ParseFloat(parts[2], 64)
+	if err != nil {
+		return RectFloat{}, fmt.Errorf("bad rect format %s %w", str, err)
+	}
+
+	h, err := strconv.ParseFloat(parts[3], 64)
+	if err != nil {
+		return RectFloat{}, fmt.Errorf("bad rect format %s %w", str, err)
+	}
+
+	return RectFloat{
+		X: x,
+		Y: y,
+		W: w,
+		H: h,
+	}, nil
 }

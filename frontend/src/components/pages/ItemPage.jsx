@@ -128,6 +128,10 @@ function ItemPage() {
 		});
 	};
 
+	const cropFrame = (second, crop) => {
+		Client.cropFrame(itemQuery.data.id, second, crop);
+	};
+
 	const closeAddTagDialog = () => {
 		setShowAddTagDialog(false);
 		setAddTagDialogCategory(0);
@@ -251,6 +255,7 @@ function ItemPage() {
 								setSplitVideoSecond(splitSecond);
 							}}
 							makeHighlight={makeHighlight}
+							cropFrame={cropFrame}
 							startPosition={itemQuery.data.start_position || 0}
 							initialEndPosition={itemQuery.data.end_position || 0}
 						/>

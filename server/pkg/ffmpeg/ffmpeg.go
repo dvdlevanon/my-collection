@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"my-collection/server/pkg/model"
 	"os"
 	"os/exec"
 	"strconv"
@@ -127,6 +128,15 @@ func TakeScreenshot(videoFile string, second float64, targetFile string) error {
 	return nil
 }
 
+func CropScreenshot(videoFile string, second float64, rect model.RectFloat, targetFile string) error {
+	cropFilter := fmt.Sprintf("crop=%f:%f:%f:%f", rect.W, rect.H, rect.X, rect.Y)
+	_, err := execute("ffmpeg", "-y", "-ss", fmt.Sprintf("%f", second), "-i", videoFile, "-vf", cropFilter, "-vframes", "1", targetFile)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
 func ExtractPartOfVideo(videoFile string, second float64, duration int, targetFile string) error {
 	_, err := execute("ffmpeg", "-ss", fmt.Sprintf("%f", second), "-i", videoFile,
 		"-t", fmt.Sprintf("%d", duration), "-vcodec", "copy", "-acodec", "aac", "-ac", "4", targetFile)

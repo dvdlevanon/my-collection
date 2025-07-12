@@ -31,6 +31,7 @@ type Processor interface {
 	EnqueueItemPreview(id uint64)
 	EnqueueItemCovers(id uint64)
 	EnqueueMainCover(id uint64, second float64)
+	EnqueueCropFrame(id uint64, second float64, rect model.RectFloat)
 	EnqueueChangeResolution(id uint64, newResolution string)
 	EnqueueItemVideoMetadata(id uint64)
 	EnqueueItemFileMetadata(id uint64)
@@ -44,23 +45,24 @@ type Processor interface {
 
 type ProcessorMock struct{}
 
-func (d *ProcessorMock) Run()                                                    {}
-func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error                  { return nil }
-func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error                 { return nil }
-func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error           { return nil }
-func (d *ProcessorMock) EnqueueAllItemsFileMetadata() error                      { return nil }
-func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)                      {}
-func (d *ProcessorMock) EnqueueItemPreview(id uint64)                            {}
-func (d *ProcessorMock) EnqueueItemCovers(id uint64)                             {}
-func (d *ProcessorMock) EnqueueItemFileMetadata(id uint64)                       {}
-func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)              {}
-func (d *ProcessorMock) EnqueueChangeResolution(id uint64, newResolution string) {}
-func (d *ProcessorMock) IsAutomaticProcessing() bool                             { return false }
-func (d *ProcessorMock) IsPaused() bool                                          { return false }
-func (d *ProcessorMock) Pause()                                                  {}
-func (d *ProcessorMock) Continue()                                               {}
-func (d *ProcessorMock) ClearFinishedTasks() error                               { return nil }
-func (d *ProcessorMock) SetProcessorNotifier(notifier ProcessorNotifier)         {}
+func (d *ProcessorMock) Run()                                                             {}
+func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error                           { return nil }
+func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error                          { return nil }
+func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error                    { return nil }
+func (d *ProcessorMock) EnqueueAllItemsFileMetadata() error                               { return nil }
+func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)                               {}
+func (d *ProcessorMock) EnqueueItemPreview(id uint64)                                     {}
+func (d *ProcessorMock) EnqueueItemCovers(id uint64)                                      {}
+func (d *ProcessorMock) EnqueueItemFileMetadata(id uint64)                                {}
+func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)                       {}
+func (d *ProcessorMock) EnqueueCropFrame(id uint64, second float64, rect model.RectFloat) {}
+func (d *ProcessorMock) EnqueueChangeResolution(id uint64, newResolution string)          {}
+func (d *ProcessorMock) IsAutomaticProcessing() bool                                      { return false }
+func (d *ProcessorMock) IsPaused() bool                                                   { return false }
+func (d *ProcessorMock) Pause()                                                           {}
+func (d *ProcessorMock) Continue()                                                        {}
+func (d *ProcessorMock) ClearFinishedTasks() error                                        { return nil }
+func (d *ProcessorMock) SetProcessorNotifier(notifier ProcessorNotifier)                  {}
 
 func taskBuilder() interface{} {
 	return &model.Task{}
@@ -208,6 +210,8 @@ func (p *itemProcessorImpl) processTask(t *model.Task) error {
 		return refreshItemCovers(p.db, p.storage, t.IdParam, p.coversCount)
 	case model.SET_MAIN_COVER:
 		return refreshMainCover(p.db, p.storage, t.IdParam, t.FloatParam)
+	case model.CROP_FRAME:
+		return cropFrame(p.db, p.storage, t.IdParam, t.FloatParam, t.StringParam)
 	case model.REFRESH_PREVIEW_TASK:
 		return refreshItemPreview(p.db, p.storage, p.previewSceneCount, p.previewSceneDuration, t.IdParam)
 	case model.REFRESH_METADATA_TASK:

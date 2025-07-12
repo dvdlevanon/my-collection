@@ -8,7 +8,17 @@ import { Box, Divider, IconButton, Stack } from '@mui/material';
 import React, { useEffect, useRef, useState } from 'react';
 import ReactCrop from 'react-image-crop';
 
-function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageLoaded, onCropDone, onCropCanceled }) {
+function CroppableImage({
+	imageUrl,
+	imageTitle,
+	cropMode,
+	showControls,
+	onCropChange,
+	onImageLoaded,
+	onCropDone,
+	onCropCanceled,
+	aspect,
+}) {
 	const [initialCrop, setInitialCrop] = useState(true);
 	const [crop, setCrop] = useState(null);
 	const [imageDimenssion, setImageDimenssion] = useState(null);
@@ -146,14 +156,14 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 				ref={imageHolderRef}
 				sx={{
 					display: 'flex',
-					height: cropMode ? 'calc(100% - ' + theme.iconSize(4) + ')' : '100%',
+					height: cropMode && showControls ? 'calc(100% - ' + theme.iconSize(4) + ')' : '100%',
 					width: '100%',
 					gap: theme.spacing(1),
 					justifyContent: 'center',
 				}}
 			>
 				{(cropMode && (
-					<ReactCrop aspect={1} crop={crop} onChange={cropChanged}>
+					<ReactCrop aspect={aspect} crop={crop} onChange={cropChanged}>
 						{getImageComponent()}
 					</ReactCrop>
 				)) ||
@@ -185,7 +195,7 @@ function CroppableImage({ imageUrl, imageTitle, cropMode, onCropChange, onImageL
 					</Box>
 				)}
 			</Box>
-			{cropMode && (
+			{cropMode && showControls && (
 				<Stack flexDirection="row" justifyContent="center" gap={theme.spacing(3)}>
 					<IconButton onClick={(e) => changeCropSize(-30)}>
 						<TextIncrease sx={{ fontSize: theme.iconSize(2) }} />

@@ -104,6 +104,10 @@ func (p itemProcessorImpl) EnqueueMainCover(id uint64, second float64) {
 	p.enqueue(&model.Task{TaskType: model.SET_MAIN_COVER, IdParam: id, FloatParam: second})
 }
 
+func (p itemProcessorImpl) EnqueueCropFrame(id uint64, second float64, rect model.RectFloat) {
+	p.enqueue(&model.Task{TaskType: model.CROP_FRAME, IdParam: id, FloatParam: second, StringParam: rect.Serialize()})
+}
+
 func (p itemProcessorImpl) EnqueueChangeResolution(id uint64, newResolution string) {
 	p.enqueue(&model.Task{TaskType: model.CHANGE_RESOLUTION, IdParam: id, StringParam: newResolution})
 }

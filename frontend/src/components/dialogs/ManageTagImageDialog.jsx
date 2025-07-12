@@ -262,6 +262,8 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 							imageUrl={TagsUtil.getTagImageUrl(updatedTag, tit, true)}
 							imageTitle={updatedTag.title}
 							cropMode={thumbnailMode}
+							showControls={true}
+							aspect={1}
 							onCropChange={setThumbnailCrop}
 							onImageLoaded={setImage}
 							onCropCanceled={() => {

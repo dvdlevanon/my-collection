@@ -183,6 +183,15 @@ export default class Client {
 		);
 	};
 
+	static cropFrame = async (itemId, second, crop) => {
+		return await fetch(
+			`${Client.apiUrl}/items/${itemId}/crop-frame?second=${second}&crop-x=${crop.x}&crop-y=${crop.y}&crop-width=${crop.width}&crop-height=${crop.height}`,
+			{
+				method: 'POST',
+			}
+		);
+	};
+
 	static removeTagImageFromTag = async (tagId, titId) => {
 		return await fetch(`${Client.apiUrl}/tags/${tagId}/tit/${titId}`, {
 			method: 'DELETE',
