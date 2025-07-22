@@ -244,6 +244,7 @@ function ItemPage() {
 						width={calcWidth()}
 					>
 						<Player
+							key={suggestedQuery.isLoading}
 							url={itemQuery.data.url}
 							suggestedItems={suggestedQuery.data}
 							setMainCover={setMainCover}

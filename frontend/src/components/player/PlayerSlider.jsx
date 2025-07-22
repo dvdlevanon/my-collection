@@ -1,5 +1,5 @@
 import { Box, Slider, Typography } from '@mui/material';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import TimeUtil from '../../utils/time-utils';
 
 function PlayerSlider({ min, max, value, onChange }) {

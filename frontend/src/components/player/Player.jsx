@@ -1,26 +1,15 @@
 import { useTheme } from '@emotion/react';
-import CancelIcon from '@mui/icons-material/Cancel';
-import SplitIcon from '@mui/icons-material/ContentCut';
-import CropIcon from '@mui/icons-material/Crop';
-import DoneIcon from '@mui/icons-material/Done';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import ImageIcon from '@mui/icons-material/Image';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayIcon from '@mui/icons-material/PlayArrow';
-import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
-import HighlightIcon from '@mui/icons-material/Stars';
-import { Box, Fade, IconButton, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Stack } from '@mui/material';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Client from '../../utils/client';
-import TimeUtil from '../../utils/time-utils';
 import CropFrame from './CropFrame';
 import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
-import PlayerSlider from './PlayerSlider';
-import TimingControls from './TimingControls';
-import VolumeControls from './VolumeControls';
+import { usePlayerActionStore } from './PlayerActionStore';
+import PlayerControls from './PlayerControls';
+import { usePlayerStore } from './PlayerStore';
+import useVideoController from './VideoController';
 
 function Player({
 	url,
@@ -33,35 +22,24 @@ function Player({
 	allowToSplit,
 	suggestedItems,
 }) {
-	const [showControls, setShowControls] = useState(true);
-	const [showVolume, setShowVolume] = useState(false);
-	const [showSchedule, setShowSchedule] = useState(false);
-	const [isPlaying, setIsPlaying] = useState(true);
-	const [currentTime, setCurrentTime] = useState(startPosition);
-	const [endPosition, setEndPosition] = useState(initialEndPosition);
-	const [fullScreen, setFullScreen] = useState(false);
-	const [showSuggestions, setShowSuggestions] = useState(false);
-	const [autoPlayNext, setAutoPlayNext] = useState(false);
-	const [duration, setDuration] = useState(initialEndPosition - startPosition);
-	const [hideControlsTimerId, setHideControlsTimerId] = useState(0);
+	const videoController = useVideoController();
+	const playerStore = usePlayerStore();
+	const playerActionStore = usePlayerActionStore();
+
 	const [playerWidth, setPlayerWidth] = useState(0);
 	const [playerHeight, setPlayerHeight] = useState(0);
-	const [startHighlightSecond, setStartHighlightSecond] = useState(-1);
-	const [cropMode, setCropMode] = useState(false);
-	const [frameCrop, setFrameCrop] = useState(null);
-	const videoElement = useRef();
 	const playerElement = useRef();
 	const theme = useTheme();
 	const navigate = useNavigate();
 
 	useLayoutEffect(() => {
 		function updateSize() {
-			setPlayerWidth(videoElement.current.offsetWidth);
-			setPlayerHeight(videoElement.current.offsetHeight);
+			setPlayerWidth(videoController.videoElement.current.offsetWidth);
+			setPlayerHeight(videoController.videoElement.current.offsetHeight);
 		}
 		window.addEventListener('resize', updateSize);
 		const resizeObserver = new ResizeObserver(updateSize);
-		resizeObserver.observe(videoElement.current);
+		resizeObserver.observe(videoController.videoElement.current);
 
 		updateSize();
 
@@ -69,14 +47,18 @@ function Player({
 			window.removeEventListener('resize', updateSize);
 			resizeObserver.disconnect();
 		};
-	}, [videoElement]);
+	}, [videoController.videoElement]);
 
 	useEffect(() => {
-		let autoPlayNext = localStorage.getItem('auto-play-next');
-
-		if (autoPlayNext) {
-			setAutoPlayNext(autoPlayNext == 'true');
-		}
+		playerStore.loadFromLocalStorage();
+		playerStore.setVideoController(videoController);
+		playerStore.setSuggestedItems(suggestedItems);
+		playerStore.setNavigate(navigate);
+		playerStore.setStartTime(startPosition);
+		playerStore.setCurrentTime(startPosition);
+		playerStore.setEndTime(initialEndPosition);
+		playerStore.setDuration(initialEndPosition - startPosition);
+		playerStore.setIsPlaying(true);
 	}, []);
 
 	useEffect(() => {
@@ -84,7 +66,7 @@ function Player({
 		return () => {
 			window.removeEventListener('keyup', onKeyDown, false);
 		};
-	}, [isPlaying]);
+	}, [playerStore.isPlaying]);
 
 	const isInputFocused = () => {
 		var activeElement = document.activeElement;
@@ -98,85 +80,21 @@ function Player({
 		}
 
 		if (e.key == ' ') {
-			togglePlay();
+			playerStore.togglePlay();
 		} else if (e.key == 'ArrowLeft') {
-			setRelativeTime(e.ctrlKey ? -60 : -10);
+			playerStore.offsetSeek(e.ctrlKey ? -60 : -10);
 		} else if (e.key == 'ArrowRight') {
-			setRelativeTime(e.ctrlKey ? 60 : 10);
-		}
-	};
-
-	const togglePlay = (e) => {
-		if (isPlaying) {
-			videoElement.current.pause();
-			setIsPlaying(false);
-		} else {
-			videoElement.current.play();
-			setIsPlaying(true);
-			setShowSuggestions(false);
-		}
-	};
-
-	const changeTime = (newValue) => {
-		videoElement.current.currentTime = newValue;
-	};
-
-	const enterFullScreen = () => {
-		playerElement.current.requestFullscreen();
-		setFullScreen(true);
-	};
-
-	const exitFullScreen = () => {
-		document.exitFullscreen();
-		setFullScreen(false);
-	};
-
-	const videoFinished = () => {
-		if (autoPlayNext && suggestedItems) {
-			let nextItemIndex = Math.floor(Math.random() * suggestedItems.length);
-			navigate('/spa/item/' + suggestedItems[nextItemIndex].id);
-		} else {
-			setShowSuggestions(true);
-		}
-
-		setIsPlaying(false);
-	};
-
-	const setRelativeTime = (offset) => {
-		let newOffset = videoElement.current.currentTime + offset;
-		if (newOffset > endPosition) {
-			videoElement.current.currentTime = endPosition;
-		} else if (newOffset < startPosition) {
-			videoElement.current.currentTime = startPosition;
-		} else {
-			videoElement.current.currentTime = newOffset;
-		}
-	};
-
-	const onMouseEnter = () => {
-		setShowControls(true);
-
-		if (hideControlsTimerId > 0) {
-			clearTimeout(hideControlsTimerId);
+			playerStore.offsetSeek(e.ctrlKey ? 60 : 10);
 		}
 	};
 
 	const onMouseLeave = () => {
-		setShowControls(!isPlaying);
-		setShowVolume(false);
-		setShowSchedule(false);
-	};
-
-	const onMouseMove = () => {
-		onMouseEnter();
-
-		if (isPlaying) {
-			setHideControlsTimerId(
-				setTimeout(() => {
-					setShowControls(false);
-				}, 2000)
-			);
+		if (playerStore.isPlaying) {
+			playerStore.hideControls();
 		}
+
+		playerStore.setShowVolume(false);
+		playerStore.setShowSchedule(false);
 	};
 
 	const getVideoElement = () => {
@@ -193,47 +111,21 @@ function Player({
 				playsInline
 				autoPlay={true}
 				loop={false}
-				ref={videoElement}
-				onClick={togglePlay}
-				onEnded={() => {
-					videoFinished();
-				}}
-				onDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
+				ref={videoController.videoElement}
+				onClick={playerStore.togglePlay}
+				onEnded={playerStore.videoFinished}
+				onDoubleClick={playerStore.toggleFullScreen}
 				onTimeUpdate={(e) => {
-					setCurrentTime(e.target.currentTime);
-					if (endPosition > 0 && e.target.currentTime >= endPosition) {
-						e.target.currentTime = startPosition;
-						videoElement.current.pause();
-						videoFinished();
-					}
+					playerStore.videoTimeUpdate(e.target.currentTime);
 				}}
 				onLoadedMetadata={(e) => {
-					e.target.currentTime = startPosition;
-					if (endPosition == 0) {
-						setEndPosition(e.target.duration);
-						setDuration(e.target.duration);
-					}
+					playerStore.videoLoadedMetadata(e.target.duration);
 				}}
-				onMouseMove={() => onMouseMove()}
+				onMouseMove={() => playerStore.showControls(true)}
 			>
 				<source src={Client.buildFileUrl(url)} />
 			</Box>
 		);
-	};
-
-	const cropClicked = () => {
-		videoElement.current.pause();
-		setIsPlaying(false);
-		setCropMode(true);
-	};
-
-	const cancelCropClicked = () => {
-		setCropMode(false);
-	};
-
-	const finishCropClicked = () => {
-		setCropMode(false);
-		cropFrame(currentTime, frameCrop);
 	};
 
 	return (
@@ -242,157 +134,44 @@ function Player({
 			ref={playerElement}
 			sx={{
 				position: 'relative',
-				cursor: isPlaying && !showControls ? 'none' : 'auto',
+				cursor: playerStore.isPlaying && !playerStore.controlsVisible ? 'none' : 'auto',
 			}}
 			tabIndex="0"
 			onMouseLeave={() => onMouseLeave()}
 		>
-			{cropMode && (
+			{playerActionStore.cropActive() && (
 				<CropFrame
-					videoRef={videoElement}
-					isPlaying={isPlaying}
+					videoRef={videoController.videoElement}
+					isPlaying={playerStore.isPlaying}
 					width={playerWidth}
 					height={playerHeight}
-					onMouseMove={() => onMouseMove()}
-					setCrop={setFrameCrop}
+					onMouseMove={() => playerStore.showControls(true)}
 				/>
 			)}
 			{getVideoElement()}
-			{showSuggestions && suggestedItems && (
+			{playerStore.showSuggestions && suggestedItems && (
 				<ItemSuggestions
 					suggestedItems={suggestedItems}
 					width={playerWidth}
-					onBackgroundClick={togglePlay}
-					onBackgroundDoubleClick={fullScreen ? exitFullScreen : enterFullScreen}
+					onBackgroundClick={playerStore.togglePlay}
+					onBackgroundDoubleClick={playerStore.toggleFullScreen}
 				/>
 			)}
-			{startHighlightSecond !== -1 && (
+			{playerActionStore.highlightActive() && (
 				<HighlightControls
-					onCancel={() => setStartHighlightSecond(-1)}
+					onCancel={playerActionStore.highlightCanceled}
 					onDone={(highlightId) => {
-						makeHighlight(startHighlightSecond, videoElement.current.currentTime, highlightId);
-						setStartHighlightSecond(-1);
+						makeHighlight(playerActionStore.startHighlightSecond, playerStore.currentTime, highlightId);
+						playerActionStore.highlightCompleted();
 					}}
 				/>
 			)}
-			<Fade in={showControls}>
-				<Stack
-					onMouseEnter={() => onMouseEnter()}
-					zIndex={2}
-					sx={{
-						position: 'absolute',
-						padding: theme.spacing(1),
-						bottom: -1,
-						left: 0,
-						right: 0,
-						flexDirection: 'column',
-						background:
-							'linear-gradient(180deg, ' +
-							theme.palette.gradient.color1 +
-							'00 0%, ' +
-							theme.palette.gradient.color2 +
-							'FF 100%)',
-					}}
-				>
-					<PlayerSlider
-						min={startPosition}
-						max={endPosition}
-						value={currentTime}
-						onChange={(e, newValue) => changeTime(newValue)}
-					/>
-					<Stack flexDirection="row" alignItems="center" gap={theme.spacing(2)}>
-						<Tooltip title={isPlaying ? 'Pause' : 'Play'}>
-							<IconButton onClick={togglePlay}>
-								{isPlaying ? (
-									<PauseIcon sx={{ fontSize: theme.iconSize(1) }} />
-								) : (
-									<PlayIcon sx={{ fontSize: theme.iconSize(1) }} />
-								)}
-							</IconButton>
-						</Tooltip>
-						<Tooltip title={'Toggle Auto Play Next'}>
-							<IconButton
-								onClick={() => {
-									let newValue = !autoPlayNext;
-									setAutoPlayNext(!autoPlayNext);
-									localStorage.setItem('auto-play-next', newValue);
-								}}
-							>
-								{
-									<PlayNextIcon
-										color={autoPlayNext ? 'secondary' : 'auto'}
-										sx={{ fontSize: theme.iconSize(1) }}
-									/>
-								}
-							</IconButton>
-						</Tooltip>
-						<VolumeControls
-							showVolume={showVolume}
-							setShowVolume={setShowVolume}
-							getVideoVolume={() => videoElement.current.volume}
-							setVideoVolume={(volume) => (videoElement.current.volume = volume)}
-						/>
-						<Box>
-							<Typography>
-								{TimeUtil.formatSeconds(currentTime - startPosition)} /{' '}
-								{TimeUtil.formatSeconds(duration)}
-							</Typography>
-						</Box>
-						<Box display="flex" flexGrow={1} justifyContent="flex-end">
-							<TimingControls
-								setRelativeTime={setRelativeTime}
-								showSchedule={showSchedule}
-								setShowSchedule={setShowSchedule}
-							/>
-							{!cropMode && (
-								<IconButton onClick={() => setMainCover(videoElement.current.currentTime)}>
-									<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-							)}
-							{cropMode ? (
-								<>
-									<IconButton onClick={finishCropClicked}>
-										<DoneIcon sx={{ fontSize: theme.iconSize(1) }} />
-									</IconButton>
-									<IconButton onClick={cancelCropClicked}>
-										<CancelIcon sx={{ fontSize: theme.iconSize(1) }} />
-									</IconButton>
-								</>
-							) : (
-								<IconButton onClick={cropClicked}>
-									<CropIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-							)}
-							{!cropMode && (
-								<IconButton
-									disabled={!allowToSplit()}
-									onClick={() => splitVideo(videoElement.current.currentTime)}
-								>
-									<SplitIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-							)}
-							{!cropMode && (
-								<IconButton onClick={() => setStartHighlightSecond(videoElement.current.currentTime)}>
-									<HighlightIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-							)}
-							{(!fullScreen && (
-								<Tooltip title="Full screen">
-									<IconButton onClick={enterFullScreen}>
-										<FullscreenIcon sx={{ fontSize: theme.iconSize(1) }} />
-									</IconButton>
-								</Tooltip>
-							)) || (
-								<Tooltip title="Exit full screen">
-									<IconButton onClick={exitFullScreen}>
-										<FullscreenExitIcon sx={{ fontSize: theme.iconSize(1) }} />
-									</IconButton>
-								</Tooltip>
-							)}
-						</Box>
-					</Stack>
-				</Stack>
-			</Fade>
+			<PlayerControls
+				setMainCover={setMainCover}
+				splitVideo={splitVideo}
+				allowToSplit={allowToSplit}
+				cropFrame={cropFrame}
+			/>
 		</Stack>
 	);
 }

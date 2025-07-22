@@ -3,11 +3,15 @@ import VolumeDownIcon from '@mui/icons-material/VolumeDown';
 import VolumeMuteIcon from '@mui/icons-material/VolumeOff';
 import VolumeUpIcon from '@mui/icons-material/VolumeUp';
 import { Fade, IconButton, Slider, Stack, Tooltip } from '@mui/material';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { usePlayerStore } from './PlayerStore';
 
-function VolumeControls({ showVolume, setShowVolume, getVideoVolume, setVideoVolume }) {
+function VolumeControls() {
+	const setShowVolume = usePlayerStore((state) => state.setShowVolume);
+	const showVolume = usePlayerStore((state) => state.showVolume);
 	const [volume, setVolume] = useState(0);
 	const theme = useTheme();
+	const playerStore = usePlayerStore();
 
 	useEffect(() => {
 		let volume = parseFloat(localStorage.getItem('volume') || 0.3);
@@ -15,18 +19,18 @@ function VolumeControls({ showVolume, setShowVolume, getVideoVolume, setVideoVol
 	}, []);
 
 	const toggleMute = (e) => {
-		if (getVideoVolume() == 0) {
+		if (playerStore.getVolume() == 0) {
 			changeVolume(0.3);
 		} else {
 			changeVolume(0);
 		}
 
-		setVolume(getVideoVolume());
+		setVolume(playerStore.getVolume());
 	};
 
 	const changeVolume = (volume) => {
-		setVideoVolume(volume);
-		setVolume(getVideoVolume());
+		playerStore.setVolume(volume);
+		setVolume(playerStore.getVolume());
 		localStorage.setItem('volume', volume);
 	};
 
