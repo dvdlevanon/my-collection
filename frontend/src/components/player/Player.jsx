@@ -1,6 +1,7 @@
 import { useTheme } from '@emotion/react';
 import { Box, Stack } from '@mui/material';
-import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import useSize from '@react-hook/size';
+import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Client from '../../utils/client';
 import CropFrame from './CropFrame';
@@ -25,29 +26,9 @@ function Player({
 	const videoController = useVideoController();
 	const playerStore = usePlayerStore();
 	const playerActionStore = usePlayerActionStore();
-
-	const [playerWidth, setPlayerWidth] = useState(0);
-	const [playerHeight, setPlayerHeight] = useState(0);
-	const playerElement = useRef();
+	const [playerWidth, playerHeight] = useSize(videoController.videoElement);
 	const theme = useTheme();
 	const navigate = useNavigate();
-
-	useLayoutEffect(() => {
-		function updateSize() {
-			setPlayerWidth(videoController.videoElement.current.offsetWidth);
-			setPlayerHeight(videoController.videoElement.current.offsetHeight);
-		}
-		window.addEventListener('resize', updateSize);
-		const resizeObserver = new ResizeObserver(updateSize);
-		resizeObserver.observe(videoController.videoElement.current);
-
-		updateSize();
-
-		return () => {
-			window.removeEventListener('resize', updateSize);
-			resizeObserver.disconnect();
-		};
-	}, [videoController.videoElement]);
 
 	useEffect(() => {
 		playerStore.setSuggestedItems(suggestedItems);
@@ -134,7 +115,6 @@ function Player({
 	return (
 		<Stack
 			display="flex"
-			ref={playerElement}
 			sx={{
 				position: 'relative',
 				cursor: playerStore.isPlaying && !playerStore.controlsVisible ? 'none' : 'auto',
