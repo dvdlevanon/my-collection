@@ -16,6 +16,7 @@ export const usePlayerStore = create((set, get) => ({
 	currentTime: 0,
 	duration: 0,
 	hideControlsTimerId: 0,
+	volume: 0,
 
 	setShowVolume: (showVolume) => set({ showVolume }),
 	setShowSchedule: (showSchedule) => set({ showSchedule }),
@@ -30,8 +31,10 @@ export const usePlayerStore = create((set, get) => ({
 	setDuration: (duration) => set({ duration }),
 
 	loadFromLocalStorage: () => {
-		const { setAutoPlayNext } = get();
+		const { setAutoPlayNext, setVolume } = get();
+
 		setAutoPlayNext(localStorage.getItem('auto-play-next') == 'true');
+		setVolume(parseFloat(localStorage.getItem('volume') || 0.3));
 	},
 
 	setAutoPlayNext: (autoPlayNext) => {
@@ -63,17 +66,12 @@ export const usePlayerStore = create((set, get) => ({
 		}
 	},
 
-	togglePlay: () => {
-		const { videoController, isPlaying, setIsPlaying, setShowSuggestions } = get();
+	play: () => {
+		const { videoController, setIsPlaying, setShowSuggestions } = get();
 
-		if (isPlaying) {
-			videoController.pause();
-			setIsPlaying(false);
-		} else {
-			videoController.play();
-			setIsPlaying(true);
-			setShowSuggestions(false);
-		}
+		videoController.play();
+		setIsPlaying(true);
+		setShowSuggestions(false);
 	},
 
 	pause: () => {
@@ -81,6 +79,16 @@ export const usePlayerStore = create((set, get) => ({
 
 		videoController.pause();
 		setIsPlaying(false);
+	},
+
+	togglePlay: () => {
+		const { play, pause, isPlaying } = get();
+
+		if (isPlaying) {
+			pause();
+		} else {
+			play();
+		}
 	},
 
 	videoLoadedMetadata: (duration) => {
@@ -136,18 +144,10 @@ export const usePlayerStore = create((set, get) => ({
 		}
 	},
 
-	getVolume: () => {
-		const { videoController } = get();
-
-		if (videoController) {
-			return videoController.getVolume();
-		} else {
-			return 0;
-		}
-	},
-
 	setVolume: (volume) => {
 		const { videoController } = get();
+		set({ volume });
+		localStorage.setItem('volume', volume);
 
 		if (videoController) {
 			videoController.setVolume(volume);

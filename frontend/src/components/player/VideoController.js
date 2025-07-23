@@ -39,14 +39,6 @@ function useVideoController() {
 		document.exitFullScreen();
 	};
 
-	const getVolume = () => {
-		if (videoElement.current) {
-			return videoElement.current.volume;
-		} else {
-			return 0;
-		}
-	};
-
 	const setVolume = (volume) => {
 		if (videoElement.current) {
 			videoElement.current.volume = volume;
@@ -60,7 +52,6 @@ function useVideoController() {
 		currentTime,
 		enterFullScreen,
 		exitFullScreen,
-		getVolume,
 		setVolume,
 
 		videoElement,

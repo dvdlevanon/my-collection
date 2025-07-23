@@ -50,16 +50,19 @@ function Player({
 	}, [videoController.videoElement]);
 
 	useEffect(() => {
-		playerStore.loadFromLocalStorage();
-		playerStore.setVideoController(videoController);
 		playerStore.setSuggestedItems(suggestedItems);
 		playerStore.setNavigate(navigate);
 		playerStore.setStartTime(startPosition);
 		playerStore.setCurrentTime(startPosition);
 		playerStore.setEndTime(initialEndPosition);
 		playerStore.setDuration(initialEndPosition - startPosition);
-		playerStore.setIsPlaying(true);
 	}, []);
+
+	useEffect(() => {
+		playerStore.setVideoController(videoController);
+		playerStore.loadFromLocalStorage();
+		playerStore.setIsPlaying(true);
+	}, [videoController.videoElement]);
 
 	useEffect(() => {
 		window.addEventListener('keyup', onKeyDown, false);
