@@ -123,9 +123,12 @@ func addMissingDirectoryTags(dr model.DirectoryReader, trw model.TagReaderWriter
 		return append(errs, err)
 	}
 
-	for _, dir := range *allDirectories {
+	for i, dir := range *allDirectories {
 		if err := addMissingDirectoryTag(dr, trw, &dir); err != nil {
 			errs = append(errs, err)
+		}
+		if i%100 == 0 {
+			logger.Debugf("Added %d/%d directory tags", i, len(*allDirectories))
 		}
 	}
 
@@ -192,10 +195,13 @@ func removeDir(trw model.TagReaderWriter, dw model.DirectoryWriter, path string)
 
 func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []directorytree.Change) []error {
 	errs := make([]error, 0)
-	for _, change := range addedDirectories {
+	for i, change := range addedDirectories {
 		err := directories.AddDirectoryIfMissing(drw, change.Path1, true)
 		if err != nil {
 			errs = append(errs, err)
+		}
+		if i%100 == 0 {
+			logger.Debugf("Added %d/%d directories", i, len(addedDirectories))
 		}
 	}
 
@@ -205,7 +211,7 @@ func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []director
 func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
 	fmg model.FileMetadataGetter, addedFiles []directorytree.Change) []error {
 	errs := make([]error, 0)
-	for _, change := range addedFiles {
+	for i, change := range addedFiles {
 		dirpath := directories.NormalizeDirectoryPath(filepath.Dir(change.Path1))
 		item, err := digs.GetBelongingItem(dirpath, filepath.Base(change.Path1))
 		if err != nil {
@@ -215,6 +221,9 @@ func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dct
 
 		if err := handleFile(iw, digs, dctg, fmg, item, dirpath, change.Path1); err != nil {
 			errs = append(errs, err)
+		}
+		if i%100 == 0 {
+			logger.Debugf("Added %d/%d files", i, len(addedFiles))
 		}
 	}
 

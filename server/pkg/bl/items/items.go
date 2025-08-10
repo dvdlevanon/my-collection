@@ -1,6 +1,7 @@
 package items
 
 import (
+	"fmt"
 	"math/rand"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -172,6 +173,9 @@ func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*mode
 	allItems, err := ir.GetAllItems()
 	if err != nil {
 		return nil, err
+	}
+	if len(*allItems) == 0 {
+		return nil, fmt.Errorf("no items")
 	}
 
 	randomItems := make([]*model.Item, 0)

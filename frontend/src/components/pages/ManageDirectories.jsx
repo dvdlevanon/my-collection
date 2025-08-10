@@ -47,6 +47,7 @@ function ManageDirectories() {
 			</Fab>
 			{showAddDirectoryDialog && (
 				<ChooseDirectoryDialog
+					open={true}
 					title="Add Directory"
 					onChange={addDirectory}
 					onClose={() => {

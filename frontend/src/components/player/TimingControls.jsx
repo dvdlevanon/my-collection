@@ -3,9 +3,11 @@ import LeftIcon from '@mui/icons-material/NavigateBefore';
 import RightIcon from '@mui/icons-material/NavigateNext';
 import TimingIcon from '@mui/icons-material/Schedule';
 import { Fade, IconButton, Stack, Tooltip } from '@mui/material';
-import React, { useState } from 'react';
+import { useState } from 'react';
+import { usePlayerStore } from './PlayerStore';
 
-function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
+function TimingControls({ setRelativeTime }) {
+	const playerStore = usePlayerStore();
 	const [changeTimerId, setChangeTimerId] = useState(0);
 	const [pressStartedAt, setPressStartedAt] = useState(0);
 	const theme = useTheme();
@@ -46,10 +48,10 @@ function TimingControls({ showSchedule, setShowSchedule, setRelativeTime }) {
 			flexDirection="row"
 			alignItems="center"
 			gap={theme.spacing(2)}
-			onMouseEnter={(e) => setShowSchedule(true)}
+			onMouseEnter={(e) => playerStore.setShowSchedule(true)}
 		>
-			{showSchedule && (
-				<Fade in={showSchedule}>
+			{playerStore.showSchedule && (
+				<Fade in={playerStore.showSchedule}>
 					<Stack flexDirection="row">
 						<Tooltip title="-1s">
 							<IconButton

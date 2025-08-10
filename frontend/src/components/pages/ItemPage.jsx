@@ -235,7 +235,7 @@ function ItemPage() {
 					alignItems: 'center',
 				}}
 			>
-				{itemQuery.isSuccess && suggestedQuery.isSuccess && (
+				{itemQuery.isSuccess && (
 					<Stack
 						flexGrow={1}
 						flexDirection="column"
@@ -244,6 +244,7 @@ function ItemPage() {
 						width={calcWidth()}
 					>
 						<Player
+							key={suggestedQuery.isLoading}
 							url={itemQuery.data.url}
 							suggestedItems={suggestedQuery.data}
 							setMainCover={setMainCover}

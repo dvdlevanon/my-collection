@@ -2,11 +2,13 @@ import { useTheme } from '@emotion/react';
 import { Box } from '@mui/material';
 import { useEffect, useRef, useState } from 'react';
 import CroppableImage from '../croppable-image/CroppableImage';
+import { usePlayerActionStore } from './PlayerActionStore';
 
-function CropFrame({ videoRef, isPlaying, width, height, onMouseMove, setCrop }) {
+function CropFrame({ videoRef, isPlaying, width, height, onMouseMove }) {
 	const theme = useTheme();
 	const thumbnailCanvasId = useRef(null);
 	const [imageDataUrl, setImageDataUrl] = useState(null);
+	const playerActionStore = usePlayerActionStore();
 
 	useEffect(() => {
 		if (thumbnailCanvasId.current == null) {
@@ -81,7 +83,7 @@ function CropFrame({ videoRef, isPlaying, width, height, onMouseMove, setCrop })
 						imageTitle={'test'}
 						cropMode={true}
 						showControls={false}
-						onCropChange={setCrop}
+						onCropChange={playerActionStore.setCropFrame}
 						onImageLoaded={() => {}}
 					/>
 				</Box>
