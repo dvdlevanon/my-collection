@@ -223,6 +223,27 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/tag-image-types`).then((response) => response.json());
 	};
 
+	static getFsDir = async (path, depth) => {
+		return await fetch(`${Client.apiUrl}/fs?path=${encodeURIComponent(path)}&depth=${depth}`).then((response) =>
+			response.json()
+		);
+	};
+
+	static includeDir = async (path, subdirs, hierarchy) => {
+		return fetch(
+			`${Client.apiUrl}/fs/include?path=${encodeURIComponent(path)}&subdirs=${subdirs}&hierarchy=${hierarchy}`,
+			{
+				method: 'POST',
+			}
+		);
+	};
+
+	static excludeDir = async (path) => {
+		return fetch(`${Client.apiUrl}/fs/exclude?path=${encodeURIComponent(path)}`, {
+			method: 'POST',
+		});
+	};
+
 	static fetchTextFile = async (path) => {
 		return await fetch(path).then((response) => response.text());
 	};

@@ -1,22 +1,17 @@
-import { FormControl, MenuItem, Select } from '@mui/material';
-import React, { useState } from 'react';
+import { FormControl, MenuItem, Select, Stack } from '@mui/material';
+import { useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
+import AddTagDialog from '../dialogs/AddTagDialog';
 
-function CategoriesChooser({
-	selectedIds,
-	setCategories,
-	onCreateCategoryClicked,
-	allowToCreate,
-	multiselect,
-	placeholder,
-}) {
+function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multiselect, placeholder }) {
 	const unknownCategoryId = -1;
 	const createCategoryId = -2;
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const [open, setOpen] = useState(false);
+	const [addCategoryDialogOpened, setAddCategoryDialogOpened] = useState(false);
+	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 
 	const getUnknownCategory = () => {
 		return {
@@ -47,7 +42,7 @@ function CategoriesChooser({
 		let value = event.target.value;
 
 		if (value[value.length - 1] == createCategoryId) {
-			onCreateCategoryClicked();
+			setAddCategoryDialogOpened(true);
 			return;
 		}
 
@@ -66,26 +61,36 @@ function CategoriesChooser({
 	};
 
 	return (
-		<FormControl fullWidth>
-			<Select
-				open={open}
-				onOpen={() => setOpen(true)}
-				onClose={() => setOpen(false)}
-				onChange={onChange}
-				size="small"
-				multiple={multiselect}
-				value={selectedIds}
-				displayEmpty
-			>
-				{getCategories().map((category) => {
-					return (
-						<MenuItem key={category.id} value={category.id}>
-							{category.title}
-						</MenuItem>
-					);
-				})}
-			</Select>
-		</FormControl>
+		<Stack>
+			<FormControl fullWidth>
+				<Select
+					open={open}
+					onOpen={() => setOpen(true)}
+					onClose={() => setOpen(false)}
+					onChange={onChange}
+					size="small"
+					multiple={multiselect}
+					value={selectedIds}
+					displayEmpty
+				>
+					{getCategories().map((category) => {
+						return (
+							<MenuItem key={category.id} value={category.id}>
+								{category.title}
+							</MenuItem>
+						);
+					})}
+				</Select>
+			</FormControl>
+			{addCategoryDialogOpened && (
+				<AddTagDialog
+					open={addCategoryDialogOpened}
+					parentId={null}
+					verb="Category"
+					onClose={() => setAddCategoryDialogOpened(false)}
+				/>
+			)}
+		</Stack>
 	);
 }
 

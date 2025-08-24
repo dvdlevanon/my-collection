@@ -3,7 +3,6 @@ import { mdiShuffle, mdiSortAscending, mdiSortDescending } from '@mdi/js';
 import Icon from '@mdi/react';
 import ItemsCountIcon from '@mui/icons-material/Category';
 import { ToggleButton, ToggleButtonGroup, Tooltip } from '@mui/material';
-import React from 'react';
 
 function TagSortSelector({ sortBy, onSortChanged }) {
 	const theme = useTheme();
