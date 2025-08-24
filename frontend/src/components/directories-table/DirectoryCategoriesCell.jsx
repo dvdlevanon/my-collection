@@ -1,12 +1,12 @@
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import CategoriesChooser from '../categories-chooser/CategoriesChooser';
 
 function DirectoryCategoriesCell({ directory, setCategories }) {
 	const unknownCategoryId = -1;
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 	const [selectedCategories, setSelectedCategories] = useState([unknownCategoryId]);
 
 	useEffect(() => {

@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react';
 import { Stack } from '@mui/material';
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import SubItem from './SubItem';

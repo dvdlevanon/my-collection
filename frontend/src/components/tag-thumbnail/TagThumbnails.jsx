@@ -1,6 +1,6 @@
 import { useTheme } from '@emotion/react';
 import { Stack } from '@mui/material';
-import { ScrollContainer } from 'react-indiana-drag-scroll';
+import ScrollContainer from 'react-indiana-drag-scroll';
 import 'react-indiana-drag-scroll/dist/style.css';
 import TagThumbnail from './TagThumbnail';
 

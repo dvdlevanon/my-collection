@@ -15,8 +15,8 @@ import {
 	Tooltip,
 	Typography,
 } from '@mui/material';
-import { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
@@ -26,17 +26,23 @@ import ThemeSelector from '../theme-selector/ThemeSelector';
 
 function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 	const [refreshAnchorEl, setRefreshAnchorEl] = useState(null);
-	const queueMetadataQuery = useQuery(ReactQueryUtil.QUEUE_METADATA_KEY, Client.getQueueMetadata);
+	const queueMetadataQuery = useQuery({
+		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
+		queryFn: Client.getQueueMetadata,
+	});
 
 	const statsQuery = useQuery({
 		queryKey: ReactQueryUtil.STATS_KEY,
 		queryFn: Client.getStats,
-		onSuccess: (queueMetadata) => {
-			if (queueMetadata.size == 0) {
+	});
+
+	useEffect(() => {
+		if (statsQuery.data) {
+			if (statsQuery.data.size == 0) {
 				setQueueEl(null);
 			}
-		},
-	});
+		}
+	}, [statsQuery.data]);
 
 	const previewsChange = (e) => {
 		onPreviewModeChange(e.target.checked);

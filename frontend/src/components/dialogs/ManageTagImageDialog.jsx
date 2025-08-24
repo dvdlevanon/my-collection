@@ -1,9 +1,9 @@
 import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, Dialog, DialogContent, DialogTitle, IconButton, Stack, Typography } from '@mui/material';
-import React, { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
 import 'react-image-crop/dist/ReactCrop.css';
-import { useQuery, useQueryClient } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
@@ -23,16 +23,19 @@ function ManageTagImageDialog({ tag, autoThumbnailMode, onClose }) {
 	const titsQuery = useQuery({
 		queryKey: ReactQueryUtil.TAG_IMAGE_TYPES_KEY,
 		queryFn: Client.getTagImageTypes,
-		onSuccess: (tits) => {
+	});
+
+	useEffect(() => {
+		if (titsQuery.data) {
 			let lastTit = localStorage.getItem('manage_tag_image_last_tit');
 
 			if (lastTit) {
-				setTit(tits.find((cur) => cur.id == lastTit));
+				setTit(titsQuery.data.find((cur) => cur.id == lastTit));
 			} else if (!tit) {
-				setTit(tits[0]);
+				setTit(titsQuery.data[0]);
 			}
-		},
-	});
+		}
+	}, [titsQuery.data]);
 
 	useEffect(() => {
 		let lastTit = localStorage.getItem('manage_tag_image_last_tit');

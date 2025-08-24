@@ -8,7 +8,7 @@ import GalleryIcon from '@mui/icons-material/OpenInNew';
 import ShuffleIcon from '@mui/icons-material/Shuffle';
 import { Divider, ListItemIcon, Menu, MenuItem, Typography } from '@mui/material';
 import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import { Link, Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
@@ -29,9 +29,12 @@ function TagContextMenu({
 	withManageAttributesClicked,
 }) {
 	const theme = useTheme();
-	const tagCustomCommandsQuery = useQuery(ReactQueryUtil.tagCustomCommands(tag.parentId), () =>
-		Client.getTagCustomCommands(tag.parentId)
-	);
+	const tagCustomCommandsQuery = useQuery({
+        queryKey: ReactQueryUtil.tagCustomCommands(tag.parentId),
+
+        queryFn: () =>
+            Client.getTagCustomCommands(tag.parentId)
+    });
 
 	const closeEndCall = (e, callIt) => {
 		onClose();

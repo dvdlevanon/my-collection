@@ -1,15 +1,14 @@
 import { useTheme } from '@emotion/react';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton } from '@mui/material';
-import React from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
 import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagPicker from '../tag-picker/TagPicker';
 
 function AttachTagDialog({ open, item, onTagAdded, onClose, singleCategoryMode, initialSelectedCategoryId }) {
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 	const theme = useTheme();
 
 	return (

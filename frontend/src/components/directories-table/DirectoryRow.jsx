@@ -1,6 +1,6 @@
 import { useTheme } from '@emotion/react';
 import { TableCell, TableRow } from '@mui/material';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TimeUtil from '../../utils/time-utils';

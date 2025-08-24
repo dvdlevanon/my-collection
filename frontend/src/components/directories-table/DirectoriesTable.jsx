@@ -1,5 +1,6 @@
 import { Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow } from '@mui/material';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
 import Client from '../../utils/client';
 import DirectoriesUtil from '../../utils/directories-util';
 import ReactQueryUtil from '../../utils/react-query-util';
@@ -10,8 +11,13 @@ function DirectoriesTable() {
 	const directoriesQuery = useQuery({
 		queryKey: ReactQueryUtil.DIRECTORIES_KEY,
 		queryFn: Client.getDirectories,
-		onSuccess: (directories) => onDirectoriesSuccess(directories),
 	});
+
+	useEffect(() => {
+		if (directoriesQuery.data) {
+			onDirectoriesSuccess(directoriesQuery.data);
+		}
+	}, [directoriesQuery.data]);
 
 	const onDirectoriesSuccess = (directories) => {
 		if (directories.some(shouldRefetchDirectory)) {

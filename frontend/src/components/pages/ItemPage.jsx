@@ -4,8 +4,8 @@ import OptimizeItem from '@mui/icons-material/AutoFixHigh';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ProcessIcon from '@mui/icons-material/Loop';
 import { Box, Chip, IconButton, Stack, Tooltip } from '@mui/material';
-import { useLayoutEffect, useState } from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useLayoutEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
@@ -54,10 +54,13 @@ function ItemPage() {
 	const itemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(itemId),
 		queryFn: () => Client.getItem(itemId),
-		onSuccess: (item) => {
-			document.title = item.title;
-		},
 	});
+
+	useEffect(() => {
+		if (itemQuery.data) {
+			document.title = itemQuery.data.title;
+		}
+	}, [itemQuery.data]);
 
 	const onTitleChanged = (newTitle) => {
 		if (!newTitle) {

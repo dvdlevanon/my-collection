@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import { Fab, Stack, Typography } from '@mui/material';
 import { Box } from '@mui/system';
 import { useState } from 'react';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import ChooseDirectoryDialog from '../dialogs/ChooseDirectoryDialog';

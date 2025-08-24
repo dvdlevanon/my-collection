@@ -1,8 +1,8 @@
 import { useTheme } from '@emotion/react';
 import { Button, Divider, Link, Stack } from '@mui/material';
 import { Box } from '@mui/system';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
 import { Link as RouterLink } from 'react-router-dom';
 import seedrandom from 'seedrandom';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
@@ -23,64 +23,71 @@ function Tags({ origin, tags, tits, parent, initialTagSize, tagLinkBuilder, onTa
 	const [selectedAnnotations, setSelectedAnnotations] = useState([]);
 	const [tagSize, setTagSize] = useState(initialTagSize);
 	const theme = useTheme();
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 	const availableAnnotationsQuery = useQuery({
 		queryKey: ReactQueryUtil.availableAnnotationsKey(parent.id),
 		queryFn: () => Client.getAvailableAnnotations(parent.id),
-		onSuccess: (availableAnnotations) => {
+	});
+
+	useEffect(() => {
+		if (!availableAnnotationsQuery.data) {
+			return;
+		}
+
+		let availableAnnotations = availableAnnotationsQuery.data;
+
+		setSelectedAnnotations(
+			selectedAnnotations.filter((selected) => {
+				return (
+					selected.id == 'none' ||
+					selected.id == 'no-image' ||
+					availableAnnotations.some((annotation) => selected.id == annotation.id)
+				);
+			})
+		);
+
+		if (TagsUtil.isDailymixCategory(parent.id) || TagsUtil.isMixOnDemandCategory(parent.id)) {
+			var today = new Date();
+			var month = today.toLocaleString('default', { month: 'short' });
+			var year = today.getFullYear();
+			var defaultTagAnnotation = month + '-' + year;
+			setSelectedAnnotations(availableAnnotations.filter((cur) => cur.title == defaultTagAnnotation));
+		}
+
+		let lastSelectedAnnotations = localStorage.getItem(buildStorageKey('selected-annotations'));
+		if (lastSelectedAnnotations) {
+			lastSelectedAnnotations = lastSelectedAnnotations.split(',').map((cur) => cur.trim());
 			setSelectedAnnotations(
-				selectedAnnotations.filter((selected) => {
-					return (
-						selected.id == 'none' ||
-						selected.id == 'no-image' ||
-						availableAnnotations.some((annotation) => selected.id == annotation.id)
-					);
+				availableAnnotations.filter((availableAnnoation) => {
+					return lastSelectedAnnotations.some((cur) => cur == availableAnnoation.id);
 				})
 			);
 
-			if (TagsUtil.isDailymixCategory(parent.id) || TagsUtil.isMixOnDemandCategory(parent.id)) {
-				var today = new Date();
-				var month = today.toLocaleString('default', { month: 'short' });
-				var year = today.getFullYear();
-				var defaultTagAnnotation = month + '-' + year;
-				setSelectedAnnotations(availableAnnotations.filter((cur) => cur.title == defaultTagAnnotation));
+			if (lastSelectedAnnotations.some((cur) => cur == 'no-image')) {
+				setSelectedAnnotations((selectedAnnotations) => {
+					let result = selectedAnnotations;
+					result.push({
+						id: 'no-image',
+						title: 'No Image',
+					});
+
+					return result;
+				});
 			}
 
-			let lastSelectedAnnotations = localStorage.getItem(buildStorageKey('selected-annotations'));
-			if (lastSelectedAnnotations) {
-				lastSelectedAnnotations = lastSelectedAnnotations.split(',').map((cur) => cur.trim());
-				setSelectedAnnotations(
-					availableAnnotations.filter((availableAnnoation) => {
-						return lastSelectedAnnotations.some((cur) => cur == availableAnnoation.id);
-					})
-				);
-
-				if (lastSelectedAnnotations.some((cur) => cur == 'no-image')) {
-					setSelectedAnnotations((selectedAnnotations) => {
-						let result = selectedAnnotations;
-						result.push({
-							id: 'no-image',
-							title: 'No Image',
-						});
-
-						return result;
+			if (lastSelectedAnnotations.some((cur) => cur == 'none')) {
+				setSelectedAnnotations((selectedAnnotations) => {
+					let result = selectedAnnotations;
+					result.push({
+						id: 'none',
+						title: 'None',
 					});
-				}
 
-				if (lastSelectedAnnotations.some((cur) => cur == 'none')) {
-					setSelectedAnnotations((selectedAnnotations) => {
-						let result = selectedAnnotations;
-						result.push({
-							id: 'none',
-							title: 'None',
-						});
-
-						return result;
-					});
-				}
+					return result;
+				});
 			}
-		},
-	});
+		}
+	}, [availableAnnotationsQuery.data]);
 
 	useEffect(() => {
 		let lastTit = localStorage.getItem(buildStorageKey('tit'));

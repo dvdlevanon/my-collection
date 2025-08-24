@@ -16,8 +16,8 @@ import {
 	Tooltip,
 	Typography,
 } from '@mui/material';
-import React from 'react';
-import { useQuery, useQueryClient } from 'react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import React, { useEffect } from 'react';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import Task from './Task';
@@ -30,19 +30,22 @@ function Queue({ onClose }) {
 	const queueMetadataQuery = useQuery({
 		queryKey: ReactQueryUtil.QUEUE_METADATA_KEY,
 		queryFn: Client.getQueueMetadata,
-		onSuccess: (queueMetadata) => {
-			if (queueMetadata.size < (tasksPage + 1) * tasksPageSize) {
-				setTasksPage(0);
-			}
-
-			queryClient.refetchQueries(ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize));
-		},
 	});
 	const tasksQuery = useQuery({
 		queryKey: ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize),
 		queryFn: () => Client.getTasks(tasksPage, tasksPageSize),
 		keepPreviousData: true,
 	});
+
+	useEffect(() => {
+		if (queueMetadataQuery.data) {
+			if (queueMetadataQuery.data.size < (tasksPage + 1) * tasksPageSize) {
+				setTasksPage(0);
+			}
+
+			queryClient.refetchQueries(ReactQueryUtil.tasksPageKey(tasksPage, tasksPageSize));
+		}
+	}, [queueMetadataQuery.data]);
 
 	const onClearDoneTasks = () => {
 		Client.clearFinishedTasks();
