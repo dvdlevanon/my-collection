@@ -1,6 +1,7 @@
 package fssync
 
 import (
+	"context"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/db"
@@ -17,35 +18,45 @@ import (
 
 var logger = logging.MustGetLogger("fsmanager")
 
-func NewFsManager(db *db.Database, filesFilter directorytree.FilesFilter, periodicCheckDuration time.Duration) (*FsManager, error) {
+func NewFsManager(db *db.Database, filesFilter directorytree.FilesFilter, checkInterval time.Duration) (*FsManager, error) {
+	if err := directories.AddRootDirectory(db); err != nil {
+		return nil, err
+	}
+
 	return &FsManager{
-		filesFilter:           filesFilter,
-		periodicCheckDuration: periodicCheckDuration,
-		db:                    db,
-		changeChannel:         make(chan string),
+		filesFilter:   filesFilter,
+		checkInterval: checkInterval,
+		db:            db,
+		changeChannel: make(chan bool),
 	}, nil
 }
 
 type FsManager struct {
-	filesFilter           directorytree.FilesFilter
-	periodicCheckDuration time.Duration
-	db                    *db.Database
-	changeChannel         chan string
+	filesFilter   directorytree.FilesFilter
+	checkInterval time.Duration
+	db            *db.Database
+	changeChannel chan bool
 }
 
-func (f *FsManager) Watch() {
+func (f *FsManager) Watch(ctx context.Context) {
+	f.Sync()
 	for {
 		select {
 		case <-f.changeChannel:
 			f.Sync()
-		case <-time.After(f.periodicCheckDuration):
+		case <-ctx.Done():
+			return
+		case <-time.After(f.checkInterval):
 			f.Sync()
 		}
 	}
 }
 
-func (f *FsManager) DirectoryChanged(path string) {
-	f.changeChannel <- path
+func (f *FsManager) DirectoryChanged() {
+	select {
+	case f.changeChannel <- true:
+	default:
+	}
 }
 
 func (f *FsManager) GetBelongingItems(path string) (*[]model.Item, error) {
@@ -79,19 +90,26 @@ func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
 }
 
 func (f *FsManager) Sync() error {
-	fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, f, f.filesFilter)
-	if err != nil {
-		return err
+	hasChanges := true
+	var allErrors []error
+
+	for hasChanges {
+		fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, f, f.filesFilter)
+		if err != nil {
+			return err
+		}
+
+		var errors []error
+		hasChanges, errors = fsSync.sync(f.db, f, f, f)
+
+		for _, err := range errors {
+			utils.LogError(err)
+		}
+		allErrors = append(allErrors, errors...)
 	}
 
-	errors := fsSync.sync(f.db, f, f, f)
-
-	for _, err := range errors {
-		utils.LogError(err)
-	}
-
-	if len(errors) > 0 {
-		return errors[0]
+	if len(allErrors) > 0 {
+		return allErrors[0]
 	}
 
 	return nil

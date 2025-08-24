@@ -16,8 +16,6 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-const ROOT_DIRECTORY_PATH = "<root>"
-
 var directoriesTag = &model.Tag{
 	Title:    "Directories", // tags-utils.js
 	ParentID: nil,
@@ -39,7 +37,7 @@ func Init(trw model.TagReaderWriter) error {
 }
 
 func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
-	directory, err := GetDirectory(drw, path)
+	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
 	if err != nil {
 		return err
 	}
@@ -52,8 +50,22 @@ func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
 	return drw.CreateOrUpdateDirectory(directory)
 }
 
+func IncludeOrCreateDirectory(drw model.DirectoryReaderWriter, path string) error {
+	if err := IncludeDirectory(drw, path); err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			if err := CreateOrUpdateDirectory(drw, &model.Directory{Path: path, Excluded: pointer.Bool(false)}); err != nil {
+				return err
+			}
+		} else {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func IncludeDirectory(drw model.DirectoryReaderWriter, path string) error {
-	directory, err := GetDirectory(drw, path)
+	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
 	if err != nil {
 		return err
 	}
@@ -159,11 +171,15 @@ func BuildDirectoryTags(directory *model.Directory) []*model.Tag {
 	return result
 }
 
+func AddRootDirectory(drw model.DirectoryReaderWriter) error {
+	return AddDirectoryIfMissing(drw, model.ROOT_DIRECTORY_PATH, false)
+}
+
 func NormalizeDirectoryPath(path string) string {
 	normalizedPath := relativasor.GetRelativePath(path)
 
 	if normalizedPath == "" {
-		return ROOT_DIRECTORY_PATH
+		return model.ROOT_DIRECTORY_PATH
 	}
 
 	return normalizedPath
@@ -244,4 +260,26 @@ func ValidateReadyDirectory(drw model.DirectoryReaderWriter, path string) (*mode
 
 func GetDirectoriesTagId() uint64 {
 	return directoriesTag.Id
+}
+
+func EnrichFsNode(dr model.DirectoryReader, node *model.FsNode) (*model.FsNode, error) {
+	dir, err := GetDirectory(dr, node.Path)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return node, nil
+		}
+		return nil, err
+	}
+
+	node.DirInfo = dir
+
+	for i := 0; i < len(node.Children); i++ {
+		child, err := EnrichFsNode(dr, node.Children[i])
+		if err != nil {
+			return nil, err
+		}
+		node.Children[i] = child
+	}
+
+	return node, nil
 }

@@ -32,12 +32,12 @@ func New(rootDirectory string) (*Storage, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
-	execLocation, err := os.Executable()
+	cwd, err := os.Getwd()
 	if err != nil {
 		return nil, errors.Wrap(err, 0)
 	}
 
-	storageTemplateDirectory := filepath.Join(filepath.Dir(execLocation), "storage-template")
+	storageTemplateDirectory := filepath.Join(cwd, "storage-template")
 	if err := cp.Copy(storageTemplateDirectory, rootDirectory, cp.Options{}); err != nil {
 		logger.Warningf("Error copying storage template from %s to %s - %s", storageTemplateDirectory, rootDirectory, err)
 	}

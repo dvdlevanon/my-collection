@@ -88,6 +88,13 @@ type Directory struct {
 	LastSynced      int64  `json:"lastSynced,omitempty"`
 }
 
+type FsNode struct {
+	Path     string     `json:"path,omitempty"`
+	Type     FsNodeType `json:"type,omitempty"`
+	Children []*FsNode  `json:"children,omitempty"`
+	DirInfo  *Directory `json:"dirinfo,omitempty"`
+}
+
 type Task struct {
 	Id              string   `json:"id,omitempty" gorm:"primarykey"`
 	EnequeueTime    *int64   `json:"enqueueTime,omitempty"`
