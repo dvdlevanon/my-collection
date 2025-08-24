@@ -18,8 +18,8 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	gomock "go.uber.org/mock/gomock"
 	"k8s.io/utils/pointer"
 )
 
@@ -39,7 +39,7 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	defer ctrl.Finish()
 
 	dcc := model.NewMockDirectoryChangedCallback(ctrl)
-	dcc.EXPECT().DirectoryChanged(gomock.Any()).AnyTimes()
+	dcc.EXPECT().DirectoryChanged().AnyTimes()
 
 	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{}, &itemsoptimizer.ItemsOptimizer{}, &model.MockThumbnailProcessor{}, &mixondemand.MixOnDemand{})
 }

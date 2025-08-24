@@ -1,6 +1,7 @@
 package thumbnails
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
@@ -27,13 +28,16 @@ type Thumbnails struct {
 	thumbnailHeight int
 }
 
-func (t *Thumbnails) Run() {
+func (t *Thumbnails) Run(ctx context.Context) {
 	for {
-		if err := t.processThumbnails(); err != nil {
-			utils.LogError(err)
+		select {
+		case <-time.After(1 * time.Minute):
+			if err := t.processThumbnails(); err != nil {
+				utils.LogError(err)
+			}
+		case <-ctx.Done():
+			return
 		}
-
-		time.Sleep(1 * time.Hour)
 	}
 }
 

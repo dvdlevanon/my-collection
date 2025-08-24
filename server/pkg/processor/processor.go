@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
@@ -23,7 +24,7 @@ type ProcessorNotifier interface {
 }
 
 type Processor interface {
-	Run()
+	Run(ctx context.Context)
 	EnqueueAllItemsPreview(force bool) error
 	EnqueueAllItemsCovers(force bool) error
 	EnqueueAllItemsVideoMetadata(force bool) error
@@ -45,7 +46,7 @@ type Processor interface {
 
 type ProcessorMock struct{}
 
-func (d *ProcessorMock) Run()                                                             {}
+func (d *ProcessorMock) Run(ctx context.Context)                                          {}
 func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error                           { return nil }
 func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error                          { return nil }
 func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error                    { return nil }
@@ -140,7 +141,7 @@ func (p *itemProcessorImpl) Continue() {
 	p.pauseChannel <- false
 }
 
-func (p *itemProcessorImpl) Run() {
+func (p *itemProcessorImpl) Run(ctx context.Context) {
 	for {
 		select {
 		case paused := <-p.pauseChannel:
@@ -149,6 +150,8 @@ func (p *itemProcessorImpl) Run() {
 			if p.notifier != nil {
 				p.notifier.PauseToggled(p.paused)
 			}
+		case <-ctx.Done():
+			return
 		default:
 			if !p.paused {
 				p.process()

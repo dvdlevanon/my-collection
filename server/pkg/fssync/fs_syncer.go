@@ -53,7 +53,7 @@ func (f *fsSyncer) hasFsChanges() bool {
 }
 
 func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
-	dctg model.DirectoryConcreteTagsGetter, fmg model.FileMetadataGetter) []error {
+	dctg model.DirectoryConcreteTagsGetter, fmg model.FileMetadataGetter) (bool, []error) {
 
 	// TODO:
 	// > remove moved dirs and files from stale dirs and items
@@ -79,7 +79,7 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 	}
 
 	errs = append(errs, syncConcreteTags(db, db, db, dctg)...)
-	return errs
+	return f.hasFsChanges(), errs
 }
 
 func (f *fsSyncer) debugPrint() {
@@ -124,10 +124,10 @@ func addMissingDirectoryTags(dr model.DirectoryReader, trw model.TagReaderWriter
 	}
 
 	for i, dir := range *allDirectories {
-		if err := addMissingDirectoryTag(dr, trw, &dir); err != nil {
+		if err := addMissingDirectoryTag(trw, &dir); err != nil {
 			errs = append(errs, err)
 		}
-		if i%100 == 0 {
+		if i+1%100 == 0 {
 			logger.Debugf("Added %d/%d directory tags", i, len(*allDirectories))
 		}
 	}
@@ -135,7 +135,7 @@ func addMissingDirectoryTags(dr model.DirectoryReader, trw model.TagReaderWriter
 	return errs
 }
 
-func addMissingDirectoryTag(dr model.DirectoryReader, trw model.TagReaderWriter, dir *model.Directory) error {
+func addMissingDirectoryTag(trw model.TagReaderWriter, dir *model.Directory) error {
 	if directories.IsExcluded(dir) {
 		return nil
 	}
@@ -200,11 +200,10 @@ func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []director
 		if err != nil {
 			errs = append(errs, err)
 		}
-		if i%100 == 0 {
+		if i+1%100 == 0 {
 			logger.Debugf("Added %d/%d directories", i, len(addedDirectories))
 		}
 	}
-
 	return errs
 }
 
@@ -222,7 +221,7 @@ func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dct
 		if err := handleFile(iw, digs, dctg, fmg, item, dirpath, change.Path1); err != nil {
 			errs = append(errs, err)
 		}
-		if i%100 == 0 {
+		if i+1%100 == 0 {
 			logger.Debugf("Added %d/%d files", i, len(addedFiles))
 		}
 	}
@@ -388,7 +387,7 @@ func validateReadyDirectory(trw model.TagReaderWriter, drw model.DirectoryReader
 		return err
 	}
 
-	return addMissingDirectoryTag(drw, trw, dir)
+	return addMissingDirectoryTag(trw, dir)
 }
 
 func syncConcreteTags(tr model.TagReader, irw model.ItemReaderWriter,

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"my-collection/server/pkg/bl/directories"
@@ -67,7 +68,7 @@ func run() error {
 	}
 
 	go startControlServer(db)
-	fs.Watch()
+	fs.Watch(context.TODO())
 	return nil
 }
 

@@ -1,6 +1,7 @@
 package spectagger
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/directories"
@@ -52,7 +53,7 @@ func (d *Spectagger) Trigger() {
 	d.triggerChannel <- true
 }
 
-func (d *Spectagger) Run() {
+func (d *Spectagger) Run(ctx context.Context) {
 	first := true
 
 	for {
@@ -67,6 +68,8 @@ func (d *Spectagger) Run() {
 			first = false
 		case <-time.After(60 * time.Minute):
 			d.runSpectagger()
+		case <-ctx.Done():
+			return
 		}
 	}
 }
@@ -131,6 +134,7 @@ func (d *Spectagger) autoSpectag() error {
 
 		tagsToAdd := append(categoryTagsToAdd, videoCodecTag, audioCodecTag, durationTag, typeTag)
 		tagsToAdd = append(tagsToAdd, resolutionTags...)
+		tagsToAdd = removeNils(tagsToAdd)
 
 		if err := addTagsToItem(&tagTitleToId, d.trw, d.irw, &item, tagsToAdd); err != nil {
 			utils.LogError(err)
@@ -149,6 +153,17 @@ func (d *Spectagger) autoSpectag() error {
 	}
 
 	return nil
+}
+
+func removeNils(tags []*model.Tag) []*model.Tag {
+	result := make([]*model.Tag, 0)
+	for _, item := range tags {
+		if item != nil {
+			result = append(result, item)
+		}
+	}
+
+	return result
 }
 
 func (d *Spectagger) GetUserCategories() (*[]model.Tag, error) {
@@ -249,6 +264,10 @@ func getCategoriesExists(categories *[]model.Tag, item *model.Item) []bool {
 }
 
 func getResolutionTags(tarw model.TagAnnotationReaderWriter, item *model.Item) ([]*model.Tag, error) {
+	if item.Width == 0 || item.Height == 0 {
+		return nil, nil
+	}
+
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Resolutions"})
 	if err != nil {
 		return nil, err
@@ -281,6 +300,10 @@ func getResolutionTags(tarw model.TagAnnotationReaderWriter, item *model.Item) (
 }
 
 func getVideoCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+	if item.VideoCodecName == "" {
+		return nil, nil
+	}
+
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Video Codecs"})
 	if err != nil {
 		return nil, err
@@ -294,6 +317,10 @@ func getVideoCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*
 }
 
 func getAudioCodecTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+	if item.AudioCodecName == "" {
+		return nil, nil
+	}
+
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Audio Codecs"})
 	if err != nil {
 		return nil, err
@@ -341,6 +368,10 @@ func getTypeTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.
 }
 
 func getDurationTag(tarw model.TagAnnotationReaderWriter, item *model.Item) (*model.Tag, error) {
+	if item.DurationSeconds == 0 {
+		return nil, nil
+	}
+
 	ta, err := tag_annotations.GetOrCreateTagAnnoation(tarw, &model.TagAnnotation{Title: "Duration"})
 	if err != nil {
 		return nil, err
