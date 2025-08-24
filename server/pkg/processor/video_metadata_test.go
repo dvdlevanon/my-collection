@@ -4,9 +4,9 @@ import (
 	"my-collection/server/pkg/model"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/pkg/errors"
 	"github.com/stretchr/testify/assert"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func TestRefreshVideoMetadata(t *testing.T) {

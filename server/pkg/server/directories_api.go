@@ -38,7 +38,7 @@ func (s *Server) createOrUpdateDirectory(c *gin.Context) {
 		return
 	}
 
-	s.dcc.DirectoryChanged(directory.Path)
+	s.dcc.DirectoryChanged()
 	c.Status(http.StatusOK)
 }
 
@@ -59,18 +59,8 @@ func (s *Server) SetDirectoryTags(c *gin.Context) {
 		return
 	}
 
-	s.dcc.DirectoryChanged(directory.Path)
+	s.dcc.DirectoryChanged()
 	c.Status(http.StatusOK)
-}
-
-func (s *Server) getDirectory(c *gin.Context) {
-	directoryPath := c.Param("directory")[1:]
-	directory, err := s.db.GetDirectory("path = ?", directoryPath)
-	if s.handleError(c, err) {
-		return
-	}
-
-	c.JSON(http.StatusOK, directory)
 }
 
 func (s *Server) excludeDirectory(c *gin.Context) {
@@ -81,11 +71,11 @@ func (s *Server) excludeDirectory(c *gin.Context) {
 		return
 	}
 
-	s.dcc.DirectoryChanged(directoryPath)
+	s.dcc.DirectoryChanged()
 	c.Status(http.StatusOK)
 }
 
 func (s *Server) runDirectoriesScan(c *gin.Context) {
 	logger.Infof("Triggering directory scan")
-	s.dcc.DirectoryChanged("")
+	s.dcc.DirectoryChanged()
 }

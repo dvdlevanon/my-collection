@@ -1,7 +1,7 @@
 import { useTheme } from '@emotion/react';
 import AddIcon from '@mui/icons-material/Add';
 import { IconButton, Stack, Tooltip } from '@mui/material';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 import Category from './Category';

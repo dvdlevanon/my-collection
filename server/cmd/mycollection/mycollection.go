@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/directories"
@@ -16,7 +17,11 @@ import (
 	"my-collection/server/pkg/storage"
 	"my-collection/server/pkg/thumbnails"
 	"my-collection/server/pkg/utils"
+	"os"
+	"os/signal"
+	"path"
 	"path/filepath"
+	"syscall"
 	"time"
 
 	"github.com/op/go-logging"
@@ -49,24 +54,32 @@ func run() error {
 		return err
 	}
 
+	dataDir := path.Join(relativasor.GetRootDirectory(), ".mycollection")
+	if err := os.MkdirAll(dataDir, 0750); err != nil {
+		return err
+	}
+
 	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(filepath.Join(relativasor.GetRootDirectory(), "db.sqlite"))
+	db, err := db.New(filepath.Join(dataDir, "db.sqlite"))
 	if err != nil {
 		return err
 	}
 
-	storage, err := storage.New(filepath.Join(relativasor.GetRootDirectory(), ".storage"))
+	storage, err := storage.New(filepath.Join(dataDir, "storage"))
 	if err != nil {
 		return err
 	}
+
+	ctx, stopSignal := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stopSignal()
 
 	processor, err := processor.New(db, storage)
 	if err != nil {
 		return err
 	}
 	processor.Continue()
-	go processor.Run()
+	go processor.Run(ctx)
 
 	if err := items.InitHighlights(db); err != nil {
 		return err
@@ -78,13 +91,13 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	go fsManager.Watch()
+	go fsManager.Watch(ctx)
 
 	automix, err := automix.New(db, db, db, 40)
 	if err != nil {
 		return err
 	}
-	go automix.Run()
+	go automix.Run(ctx)
 
 	mixOnDemand, err := mixondemand.New(db, db, db, 20)
 	if err != nil {
@@ -95,13 +108,13 @@ func run() error {
 	if err != nil {
 		return err
 	}
-	go spectagger.Run()
+	go spectagger.Run(ctx)
 
 	itemsoptimizer := itemsoptimizer.New(db, processor, 1080)
-	go itemsoptimizer.Run()
+	go itemsoptimizer.Run(ctx)
 
 	thumbnails := thumbnails.New(db, db, storage, 100, 100)
-	go thumbnails.Run()
+	go thumbnails.Run(ctx)
 
 	return server.New(db, storage, fsManager, processor, spectagger, itemsoptimizer, thumbnails, mixOnDemand).Run(*listenAddress)
 }

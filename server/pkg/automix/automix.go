@@ -1,6 +1,7 @@
 package automix
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/special_tags"
@@ -37,15 +38,16 @@ type Automix struct {
 	dailyMixItemsCount int
 }
 
-func (d *Automix) Run() {
-	for {
+func (d *Automix) Run(ctx context.Context) {
+	select {
+	case <-ctx.Done():
+		return
+	case <-time.After(1 * time.Minute):
 		if !isDailymixExists(d.trw, d) {
 			if err := d.generateDailymix(d); err != nil {
 				utils.LogError(err)
 			}
 		}
-
-		time.Sleep(1 * time.Minute)
 	}
 }
 

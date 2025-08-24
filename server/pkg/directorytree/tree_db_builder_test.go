@@ -4,8 +4,8 @@ import (
 	"my-collection/server/pkg/model"
 	"testing"
 
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	gomock "go.uber.org/mock/gomock"
 )
 
 func buildTestDirectoryReader(ctrl *gomock.Controller, additionalDirs ...model.Directory) model.DirectoryReader {

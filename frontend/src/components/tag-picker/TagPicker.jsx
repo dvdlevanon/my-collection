@@ -4,6 +4,7 @@ import { useQuery } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
+import DirectoriesTree from '../directories-tree/DirectoriesTree';
 import Categories from './Categories';
 import Tags from './Tags';
 
@@ -61,6 +62,40 @@ function TagPicker({
 		onTagSelected(tag);
 	};
 
+	const buildDirectoriesComponent = () => {
+		return <DirectoriesTree />;
+	};
+
+	const buildDefaultTagsComponent = () => {
+		return (
+			<Tags
+				origin={origin}
+				tags={getChildrenTags(selectedCategoryId)}
+				tits={titsQuery.data}
+				parent={tagsQuery.data.find((cur) => cur.id == selectedCategoryId)}
+				initialTagSize={initialTagSize}
+				tagLinkBuilder={tagLinkBuilder}
+				onTagClicked={tagSelectedHandler}
+				setHideCategories={(value) => {
+					setHideTopBar(value);
+					setHideCategories(value);
+				}}
+			/>
+		);
+	};
+
+	const shouldShowTags = () => {
+		return tagsQuery.isSuccess && titsQuery.isSuccess && selectedCategoryId > 0;
+	};
+
+	const buildTagsComponent = () => {
+		if (TagsUtil.isDirectoriesCategory(selectedCategoryId)) {
+			return buildDirectoriesComponent();
+		} else {
+			return buildDefaultTagsComponent();
+		}
+	};
+
 	return (
 		<Stack className="tags_picker" height={selectedCategoryId > 0 ? '100%' : 'auto'}>
 			{tagsQuery.isSuccess && !singleCategoryMode && (
@@ -76,21 +111,7 @@ function TagPicker({
 					</Stack>
 				</Collapse>
 			)}
-			{tagsQuery.isSuccess && titsQuery.isSuccess && selectedCategoryId > 0 && (
-				<Tags
-					origin={origin}
-					tags={getChildrenTags(selectedCategoryId)}
-					tits={titsQuery.data}
-					parent={tagsQuery.data.find((cur) => cur.id == selectedCategoryId)}
-					initialTagSize={initialTagSize}
-					tagLinkBuilder={tagLinkBuilder}
-					onTagClicked={tagSelectedHandler}
-					setHideCategories={(value) => {
-						setHideTopBar(value);
-						setHideCategories(value);
-					}}
-				/>
-			)}
+			{shouldShowTags() && buildTagsComponent()}
 		</Stack>
 	);
 }

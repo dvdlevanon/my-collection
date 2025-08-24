@@ -8,8 +8,8 @@ import (
 	"testing"
 
 	"github.com/go-errors/errors"
-	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
+	gomock "go.uber.org/mock/gomock"
 	"gorm.io/gorm"
 	"k8s.io/utils/pointer"
 )
@@ -56,8 +56,8 @@ func TestAddMissingDirs(t *testing.T) {
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "/absolute/error/inner/path4", Excluded: pointer.Bool(true)}).Return(errors.Errorf("test"))
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
-	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: directories.ROOT_DIRECTORY_PATH, Excluded: pointer.Bool(true)}).Return(nil)
-	drw.EXPECT().GetDirectory(gomock.Any()).Return(&model.Directory{Path: directories.ROOT_DIRECTORY_PATH}, nil)
+	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: model.ROOT_DIRECTORY_PATH, Excluded: pointer.Bool(true)}).Return(nil)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(&model.Directory{Path: model.ROOT_DIRECTORY_PATH}, nil)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "some/relative/path", Excluded: pointer.Bool(true)}).Return(nil)
 
@@ -130,9 +130,9 @@ func TestRemoveStaleDirs(t *testing.T) {
 	trw.EXPECT().GetTag(gomock.Any()).Return(&model.Tag{Id: 2, Title: "relative"}, nil)
 	trw.EXPECT().RemoveTag(uint64(2)).Return(nil)
 	dw.EXPECT().RemoveDirectory("relative/path").Return(nil)
-	trw.EXPECT().GetTag(gomock.Any()).Return(&model.Tag{Id: 3, Title: directories.ROOT_DIRECTORY_PATH}, nil)
+	trw.EXPECT().GetTag(gomock.Any()).Return(&model.Tag{Id: 3, Title: model.ROOT_DIRECTORY_PATH}, nil)
 	trw.EXPECT().RemoveTag(uint64(3)).Return(nil)
-	dw.EXPECT().RemoveDirectory(directories.ROOT_DIRECTORY_PATH).Return(nil)
+	dw.EXPECT().RemoveDirectory(model.ROOT_DIRECTORY_PATH).Return(nil)
 
 	errs := removeStaleDirs(trw, dw, []string{
 		"/existing/dir",

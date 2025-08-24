@@ -10,6 +10,15 @@ import (
 	"github.com/go-errors/errors"
 )
 
+const ROOT_DIRECTORY_PATH = "<root>"
+
+type FsNodeType int
+
+const (
+	FS_NODE_DIR = iota + 1
+	FS_NODE_FILE
+)
+
 type TaskType int
 
 const (

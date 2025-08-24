@@ -1,11 +1,9 @@
 import { useTheme } from '@emotion/react';
 import { TableCell, TableRow } from '@mui/material';
-import { useState } from 'react';
 import { useQueryClient } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TimeUtil from '../../utils/time-utils';
-import AddTagDialog from '../dialogs/AddTagDialog';
 import DirectoryActionsCell from './DirectoryActionsCell';
 import DirectoryCategoriesCell from './DirectoryCategoriesCell';
 import DirectoryStatusCell from './DirectoryStatusCell';
@@ -13,7 +11,6 @@ import DirectoryStatusCell from './DirectoryStatusCell';
 function DirectoryRow({ directory }) {
 	const queryClient = useQueryClient();
 	const theme = useTheme();
-	const [addCategoryDialogOpened, setAddCategoryDialogOpened] = useState(false);
 	const refetchDirectories = () => {
 		queryClient.refetchQueries({
 			queryKey: ReactQueryUtil.DIRECTORIES_KEY,
@@ -89,11 +86,7 @@ function DirectoryRow({ directory }) {
 				</TableCell>
 				<TableCell>{directory.path}</TableCell>
 				<TableCell>
-					<DirectoryCategoriesCell
-						directory={directory}
-						setCategories={setCategories}
-						onCreateCategoryClicked={() => setAddCategoryDialogOpened(true)}
-					/>
+					<DirectoryCategoriesCell directory={directory} setCategories={setCategories} />
 				</TableCell>
 				<TableCell>{!directory.excluded && formatFilesCount(directory)}</TableCell>
 				<TableCell>{!directory.excluded && formatLastSynced(directory)}</TableCell>
@@ -105,12 +98,6 @@ function DirectoryRow({ directory }) {
 					/>
 				</TableCell>
 			</TableRow>
-			<AddTagDialog
-				open={addCategoryDialogOpened}
-				parentId={null}
-				verb="Category"
-				onClose={() => setAddCategoryDialogOpened(false)}
-			/>
 		</>
 	);
 }

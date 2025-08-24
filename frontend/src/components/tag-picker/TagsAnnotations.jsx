@@ -1,5 +1,4 @@
 import { Box } from '@mui/material';
-import React from 'react';
 import TagAnnotation from './TagAnnotation';
 
 function TagsAnnotations({ annotations, selectedAnnotations, setSelectedAnnotations }) {

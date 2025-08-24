@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import CategoriesChooser from '../categories-chooser/CategoriesChooser';
 
-function DirectoryCategoriesCell({ directory, setCategories, onCreateCategoryClicked }) {
+function DirectoryCategoriesCell({ directory, setCategories }) {
 	const unknownCategoryId = -1;
 	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
 	const [selectedCategories, setSelectedCategories] = useState([unknownCategoryId]);
@@ -25,7 +25,6 @@ function DirectoryCategoriesCell({ directory, setCategories, onCreateCategoryCli
 				setCategories(categoriyIds);
 				setSelectedCategories(categoriyIds);
 			}}
-			onCreateCategoryClicked={onCreateCategoryClicked}
 		/>
 	);
 }

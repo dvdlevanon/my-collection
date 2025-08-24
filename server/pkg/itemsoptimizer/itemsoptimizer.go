@@ -1,6 +1,7 @@
 package itemsoptimizer
 
 import (
+	"context"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/processor"
@@ -31,9 +32,14 @@ func (d *ItemsOptimizer) Trigger() {
 	d.triggerChannel <- true
 }
 
-func (d *ItemsOptimizer) Run() {
-	for range d.triggerChannel {
-		d.runItemsOptimizer()
+func (d *ItemsOptimizer) Run(ctx context.Context) {
+	for {
+		select {
+		case <-d.triggerChannel:
+			d.runItemsOptimizer()
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 

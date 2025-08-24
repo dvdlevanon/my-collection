@@ -119,7 +119,7 @@ type FileMetadataGetter interface {
 }
 
 type DirectoryChangedCallback interface {
-	DirectoryChanged(path string)
+	DirectoryChanged()
 }
 
 type CurrentTimeGetter interface {

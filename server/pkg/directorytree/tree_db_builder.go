@@ -16,7 +16,7 @@ func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*Dir
 	root := createDirectoryNode(nil, "")
 	for _, dir := range *dirs {
 		path := dir.Path
-		if path == directories.ROOT_DIRECTORY_PATH {
+		if path == model.ROOT_DIRECTORY_PATH {
 			path = ""
 		}
 
