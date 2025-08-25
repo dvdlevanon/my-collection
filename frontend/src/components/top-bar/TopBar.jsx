@@ -91,9 +91,6 @@ function TopBar({ previewMode, onPreviewModeChange, theme, setTheme }) {
 						<Queue onClose={() => setQueueEl(null)} />
 					</Popover>
 				)}
-				<Link component={RouterLink} to="spa/manage-directories">
-					<Button variant="contained">Manage Directories</Button>
-				</Link>
 				<Link href={Client.getExportMetadataUrl()} download>
 					<Button variant="contained">Export metadata</Button>
 				</Link>

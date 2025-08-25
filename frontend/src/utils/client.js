@@ -15,10 +15,6 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/tags`).then((response) => response.json());
 	};
 
-	static getDirectories = async () => {
-		return await fetch(`${Client.apiUrl}/directories`).then((response) => response.json());
-	};
-
 	static getQueueMetadata = async () => {
 		return await fetch(`${Client.apiUrl}/queue/metadata`).then((response) => response.json());
 	};
@@ -51,23 +47,10 @@ export default class Client {
 		});
 	};
 
-	static addOrUpdateDirectory = async (directory) => {
-		return await fetch(`${Client.apiUrl}/directories`, {
-			method: 'POST',
-			body: JSON.stringify(directory),
-		});
-	};
-
 	static setDirectoryCategories = async (directory) => {
 		return await fetch(`${Client.apiUrl}/directories/tags/${directory.path}`, {
 			method: 'POST',
 			body: JSON.stringify(directory),
-		});
-	};
-
-	static removeDirectory = async (directoryPath) => {
-		return await fetch(`${Client.apiUrl}/directories/${directoryPath}`, {
-			method: 'DELETE',
 		});
 	};
 

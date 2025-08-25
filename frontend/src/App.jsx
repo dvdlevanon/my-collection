@@ -1,12 +1,11 @@
 import { CssBaseline, Stack, StyledEngineProvider, ThemeProvider } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import React, { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
-import { ReactQueryDevtools } from 'react-query/devtools';
 import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Gallery from './components/pages/Gallery';
 import ItemPage from './components/pages/ItemPage';
-import ManageDirectories from './components/pages/ManageDirectories';
 import TopBar from './components/top-bar/TopBar';
 import Client from './utils/client';
 import ReactQueryUtil from './utils/react-query-util';
@@ -14,16 +13,14 @@ import TagsUtil from './utils/tags-util';
 import ThemeUtil from './utils/theme-utils';
 
 function App() {
-	useQuery({
+	const { data: specialTags } = useQuery({
 		queryKey: ReactQueryUtil.SPECIAL_TAGS_KEY,
 		queryFn: Client.getSpecialTags,
-		onSuccess: (specialTags) => TagsUtil.initSpecialTags(specialTags),
 	});
 
-	useQuery({
+	const { data: categories } = useQuery({
 		queryKey: ReactQueryUtil.CATEGORIES_KEY,
 		queryFn: Client.getCategories,
-		onSuccess: (categories) => TagsUtil.initCategories(categories),
 	});
 
 	const [hideTopBar, setHideTopBar] = useState(false);
@@ -41,11 +38,24 @@ function App() {
 		}
 	}, []);
 
+	useEffect(() => {
+		if (specialTags) {
+			TagsUtil.initSpecialTags(specialTags);
+		}
+	}, [specialTags]);
+
+	useEffect(() => {
+		if (categories) {
+			TagsUtil.initCategories(categories);
+		}
+	}, [categories]);
+
 	return (
 		<React.Fragment>
 			<StyledEngineProvider injectFirst>
 				<ThemeProvider theme={theme}>
 					<CssBaseline enableColorScheme />
+
 					<Stack
 						sx={{
 							backgroundImage: theme.backgroundImage,
@@ -53,31 +63,32 @@ function App() {
 							height: '100%',
 						}}
 					>
-						<BrowserRouter>
-							{!hideTopBar && (
-								<TopBar
-									previewMode={previewMode}
-									onPreviewModeChange={setPreviewMode}
-									theme={theme}
-									setTheme={(theme) => {
-										if (!theme) {
-											return;
-										}
+						{categories && specialTags && (
+							<BrowserRouter>
+								{!hideTopBar && (
+									<TopBar
+										previewMode={previewMode}
+										onPreviewModeChange={setPreviewMode}
+										theme={theme}
+										setTheme={(theme) => {
+											if (!theme) {
+												return;
+											}
 
-										setTheme(theme);
-										localStorage.setItem('theme', theme.name);
-									}}
-								/>
-							)}
-							<Routes>
-								<Route
-									index
-									element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
-								/>
-								<Route path="/spa/item/:itemId" element={<ItemPage />} />
-								<Route path="/spa/manage-directories" element={<ManageDirectories />} />
-							</Routes>
-						</BrowserRouter>
+											setTheme(theme);
+											localStorage.setItem('theme', theme.name);
+										}}
+									/>
+								)}
+								<Routes>
+									<Route
+										index
+										element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
+									/>
+									<Route path="/spa/item/:itemId" element={<ItemPage />} />
+								</Routes>
+							</BrowserRouter>
+						)}
 					</Stack>
 					<ReactQueryDevtools initialIsOpen={false} />
 				</ThemeProvider>
