@@ -6,7 +6,6 @@ import { BrowserRouter, Route, Routes } from 'react-router-dom';
 import './App.css';
 import Gallery from './components/pages/Gallery';
 import ItemPage from './components/pages/ItemPage';
-import ManageDirectories from './components/pages/ManageDirectories';
 import TopBar from './components/top-bar/TopBar';
 import Client from './utils/client';
 import ReactQueryUtil from './utils/react-query-util';
@@ -87,7 +86,6 @@ function App() {
 										element={<Gallery previewMode={previewMode} setHideTopBar={setHideTopBar} />}
 									/>
 									<Route path="/spa/item/:itemId" element={<ItemPage />} />
-									<Route path="/spa/manage-directories" element={<ManageDirectories />} />
 								</Routes>
 							</BrowserRouter>
 						)}

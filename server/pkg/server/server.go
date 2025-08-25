@@ -97,11 +97,8 @@ func (s *Server) init() {
 	api.POST("/tags/:tag/random-mix/include", s.randomMixInclude)
 	api.POST("/tags/:tag/random-mix/exclude", s.randomMixExclude)
 
-	api.GET("/directories", s.getDirectories)
 	api.POST("/directories/scan", s.runDirectoriesScan)
-	api.POST("/directories", s.createOrUpdateDirectory)
 	api.POST("/directories/tags/*directory", s.SetDirectoryTags)
-	api.DELETE("/directories/*directory", s.excludeDirectory)
 
 	api.GET("/fs", s.getFsDir)
 	api.POST("/fs/include", s.includeDir)
