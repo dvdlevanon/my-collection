@@ -1,6 +1,6 @@
 import { FormControl, MenuItem, Select, Stack } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
@@ -11,7 +11,7 @@ function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multisel
 	const createCategoryId = -2;
 	const [open, setOpen] = useState(false);
 	const [addCategoryDialogOpened, setAddCategoryDialogOpened] = useState(false);
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 
 	const getUnknownCategory = () => {
 		return {

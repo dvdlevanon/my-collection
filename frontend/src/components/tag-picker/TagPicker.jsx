@@ -1,6 +1,6 @@
 import { Collapse, Stack } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useQuery } from 'react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
@@ -20,8 +20,8 @@ function TagPicker({
 	singleCategoryMode,
 	galleryUrlParams,
 }) {
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
-	const titsQuery = useQuery(ReactQueryUtil.TAG_IMAGE_TYPES_KEY, Client.getTagImageTypes);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
+	const titsQuery = useQuery({ queryKey: ReactQueryUtil.TAG_IMAGE_TYPES_KEY, queryFn: Client.getTagImageTypes });
 
 	let [selectedCategoryId, setSelectedCategoryId] = useState(initialSelectedCategoryId);
 	let [hideCategories, setHideCategories] = useState(false);

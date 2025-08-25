@@ -2,14 +2,14 @@ import { useTheme } from '@emotion/react';
 import CancelIcon from '@mui/icons-material/Cancel';
 import StopIcon from '@mui/icons-material/Stop';
 import { Box, IconButton, MenuItem, Select, Skeleton, Stack } from '@mui/material';
-import React, { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 
 function HighlightControls({ onCancel, onDone }) {
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 	const [selectedHighlight, setSelectedHighlight] = useState(-1);
 	const [open, setOpen] = useState(false);
 	const theme = useTheme();

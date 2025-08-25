@@ -3,7 +3,7 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { Dialog, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip } from '@mui/material';
 import React, { useRef, useState } from 'react';
-import { useQueryClient } from 'react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import CategoriesChooser from '../categories-chooser/CategoriesChooser';

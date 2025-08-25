@@ -1,13 +1,13 @@
 import { Box, Menu, MenuItem, TextField, Tooltip, Typography } from '@mui/material';
-import React, { useState } from 'react';
-import { useQuery } from 'react-query';
+import { useQuery } from '@tanstack/react-query';
+import { useState } from 'react';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 
 function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, onTitleChanged, preventDefault }) {
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(null);
 	const [menuY, setMenuY] = useState(null);

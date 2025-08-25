@@ -1,6 +1,6 @@
 import { Divider, Stack } from '@mui/material';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
-import { useQuery } from 'react-query';
 import { useSearchParams } from 'react-router-dom';
 import Client from '../../utils/client';
 import GalleryUrlParams from '../../utils/gallery-url-params';
@@ -9,8 +9,8 @@ import ItemsView from '../items-viewer/ItemsView';
 import TagPicker from '../tag-picker/TagPicker';
 
 function Gallery({ previewMode, setHideTopBar }) {
-	const tagsQuery = useQuery(ReactQueryUtil.TAGS_KEY, Client.getTags);
-	const itemsQuery = useQuery(ReactQueryUtil.ITEMS_KEY, Client.getItems);
+	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
+	const itemsQuery = useQuery({ queryKey: ReactQueryUtil.ITEMS_KEY, queryFn: Client.getItems });
 	const [tagsDropDownOpened, setTagsDropDownOpened] = useState(false);
 	let [searchParams, setSearchParams] = useSearchParams();
 	let galleryUrlParams = new GalleryUrlParams(searchParams, setSearchParams);

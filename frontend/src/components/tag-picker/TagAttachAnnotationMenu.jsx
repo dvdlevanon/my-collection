@@ -3,8 +3,8 @@ import AddIcon from '@mui/icons-material/Add';
 import CloseIcon from '@mui/icons-material/Close';
 import { Divider, IconButton, Popover, Stack, TextField, Typography } from '@mui/material';
 import { Box } from '@mui/system';
-import React, { useRef } from 'react';
-import { useMutation, useQuery, useQueryClient } from 'react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useRef } from 'react';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagAnnotation from './TagAnnotation';
@@ -15,9 +15,11 @@ function TagAttachAnnotationMenu({ tag, menu, onClose }) {
 	const addAnnotationToTagMutation = useMutation(Client.addAnnotationToTag);
 	const removeAnnotationFromTagMutation = useMutation(Client.removeAnnotationFromTag);
 	const theme = useTheme();
-	const availableAnnotationsQuery = useQuery(ReactQueryUtil.availableAnnotationsKey(tag.parentId), () =>
-		Client.getAvailableAnnotations(tag.parentId)
-	);
+	const availableAnnotationsQuery = useQuery({
+		queryKey: ReactQueryUtil.availableAnnotationsKey(tag.parentId),
+
+		queryFn: () => Client.getAvailableAnnotations(tag.parentId),
+	});
 
 	const handleClose = (e) => {
 		e.preventDefault();
