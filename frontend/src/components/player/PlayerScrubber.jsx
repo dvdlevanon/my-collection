@@ -1,10 +1,12 @@
 import { Box, Slider, Typography } from '@mui/material';
 import { useState } from 'react';
 import TimeUtil from '../../utils/time-utils';
+import { usePlayerStore } from './PlayerStore';
 
-function PlayerSlider({ min, max, value, onChange }) {
+function PlayerScrubber({ min, max, value }) {
 	const [showTime, setShowTime] = useState(false);
 	const [mouseX, setMouseX] = useState(0);
+	const playerStore = usePlayerStore();
 
 	return (
 		<Box
@@ -37,10 +39,10 @@ function PlayerSlider({ min, max, value, onChange }) {
 				valueLabelFormat={(number) => {
 					return TimeUtil.formatSeconds(value - min);
 				}}
-				onChange={onChange}
+				onChange={(e, newValue) => playerStore.seek(newValue)}
 			/>
 		</Box>
 	);
 }
 
-export default PlayerSlider;
+export default PlayerScrubber;

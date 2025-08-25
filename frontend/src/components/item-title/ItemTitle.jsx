@@ -7,7 +7,7 @@ import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 
 function ItemTitle({ item, variant, withTooltip, withMenu, sx, onTagAdded, onTitleChanged, preventDefault }) {
-	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
+	const tagsQuery = useQuery(ReactQueryUtil.tagsQuery());
 	const [menuAchrosEl, setMenuAchrosEl] = useState(null);
 	const [menuX, setMenuX] = useState(null);
 	const [menuY, setMenuY] = useState(null);

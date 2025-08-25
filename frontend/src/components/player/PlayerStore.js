@@ -1,12 +1,16 @@
 import { create } from 'zustand';
 
 export const usePlayerStore = create((set, get) => ({
+	itemId: false,
+	url: '',
 	controlsVisible: false,
 	showVolume: false,
 	showSchedule: false,
 	showSuggestions: false,
+	suggestions: [],
 	fullScreen: false,
 	autoPlayNext: false,
+	allowToSplit: false,
 	videoController: null,
 	navigate: null,
 	suggestedItems: null,
@@ -18,11 +22,15 @@ export const usePlayerStore = create((set, get) => ({
 	hideControlsTimerId: 0,
 	volume: 0,
 
+	setSuggestions: (suggestions) => set({ suggestions }),
+	setUrl: (url) => set({ url }),
+	setItemId: (itemId) => set({ itemId }),
 	setShowVolume: (showVolume) => set({ showVolume }),
 	setShowSchedule: (showSchedule) => set({ showSchedule }),
 	setShowSuggestions: (showSuggestions) => set({ showSuggestions }),
 	setVideoController: (videoController) => set({ videoController }),
 	setNavigate: (navigate) => set({ navigate }),
+	setAllowToSplit: (allowToSplit) => set({ allowToSplit }),
 	setSuggestedItems: (suggestedItems) => set({ suggestedItems }),
 	setIsPlaying: (isPlaying) => set({ isPlaying }),
 	setStartTime: (startTime) => set({ startTime }),

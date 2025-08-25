@@ -40,17 +40,9 @@ function ItemPage() {
 	const [showAddTagDialog, setShowAddTagDialog] = useState(false);
 	const [addTagDialogCategory, setAddTagDialogCategory] = useState(0);
 	const [windowWidth, windowHeight] = useWindowSize();
-	const [showSplitVideoConfirmationDialog, setShowSplitVideoConfirmationDialog] = useState(false);
 	const [showDeleteItemConfirmationDialog, setShowDeleteItemConfirmationDialog] = useState(false);
-	const [splitVideoSecond, setSplitVideoSecond] = useState(0);
 	const navigate = useNavigate();
 	const theme = useTheme();
-	const suggestedQuery = useQuery({
-		queryKey: ReactQueryUtil.suggestedItemsKey(itemId),
-		queryFn: () => Client.getSuggestedItems(itemId),
-		staleTime: Infinity,
-		cacheTime: Infinity,
-	});
 	const itemQuery = useQuery({
 		queryKey: ReactQueryUtil.itemKey(itemId),
 		queryFn: () => Client.getItem(itemId),
@@ -89,12 +81,6 @@ function ItemPage() {
 		});
 	};
 
-	const setMainCover = (second) => {
-		Client.setMainCover(itemQuery.data.id, second).then(() => {
-			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
-		});
-	};
-
 	const onDeleteItem = (item, deleteRealFile) => {
 		Client.deleteItem(item.id, deleteRealFile).then(() => {
 			if (deleteRealFile) {
@@ -111,28 +97,6 @@ function ItemPage() {
 
 	const optimizeItem = (item) => {
 		Client.optimizeItem(item.id);
-	};
-
-	const closeSplitVideoDialog = () => {
-		setSplitVideoSecond(0);
-		setShowSplitVideoConfirmationDialog(false);
-	};
-
-	const splitItem = () => {
-		Client.splitItem(itemQuery.data.id, splitVideoSecond).then(() => {
-			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
-		});
-		closeSplitVideoDialog();
-	};
-
-	const makeHighlight = (startSecond, endSecond, highlightId) => {
-		Client.makeHighlight(itemQuery.data.id, startSecond, endSecond, highlightId).then(() => {
-			queryClient.refetchQueries({ queryKey: itemQuery.queryKey });
-		});
-	};
-
-	const cropFrame = (second, crop) => {
-		Client.cropFrame(itemQuery.data.id, second, crop);
 	};
 
 	const closeAddTagDialog = () => {
@@ -246,23 +210,7 @@ function ItemPage() {
 						height={calcHeight()}
 						width={calcWidth()}
 					>
-						<Player
-							key={suggestedQuery.isLoading}
-							url={itemQuery.data.url}
-							suggestedItems={suggestedQuery.data}
-							setMainCover={setMainCover}
-							allowToSplit={() => {
-								return !itemQuery.data.sub_items;
-							}}
-							splitVideo={(splitSecond) => {
-								setShowSplitVideoConfirmationDialog(true);
-								setSplitVideoSecond(splitSecond);
-							}}
-							makeHighlight={makeHighlight}
-							cropFrame={cropFrame}
-							startPosition={itemQuery.data.start_position || 0}
-							initialEndPosition={itemQuery.data.end_position || 0}
-						/>
+						<Player itemId={itemQuery.data.id} />
 						<ItemTitle
 							item={itemQuery.data}
 							variant="h5"
@@ -315,14 +263,6 @@ function ItemPage() {
 					<SubItems item={itemQuery.data} onDeleteItem={(item) => onDeleteItem(item, false)} />
 				)}
 			</Stack>
-			<ConfirmationDialog
-				open={showSplitVideoConfirmationDialog}
-				title="Split Video"
-				text={'Are you sure you want to split the video at second ' + splitVideoSecond + '?'}
-				actionButtonTitle="Split"
-				onCancel={closeSplitVideoDialog}
-				onConfirm={splitItem}
-			/>
 			{itemQuery.isSuccess && (
 				<ConfirmationDialog
 					open={showDeleteItemConfirmationDialog}

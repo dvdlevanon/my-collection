@@ -1,11 +1,13 @@
 import { useTheme } from '@emotion/react';
 import { Box, Grid, Stack } from '@mui/material';
-import React from 'react';
 import AspectRatioUtil from '../../utils/aspect-ratio-util';
 import Item from '../items-viewer/Item';
+import { usePlayerStore } from './PlayerStore';
 
-function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroundDoubleClick }) {
+function ItemSuggestions({ width }) {
 	const theme = useTheme();
+	const playerStore = usePlayerStore();
+
 	const getItemSize = () => {
 		let itemWidth = width / 5;
 		return {
@@ -14,11 +16,15 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 		};
 	};
 
+	if (!playerStore.showSuggestions || !playerStore.suggestions) {
+		return;
+	}
+
 	return (
 		<Stack
 			flexDirection="column"
-			onClick={onBackgroundClick}
-			onDoubleClick={onBackgroundDoubleClick}
+			onClick={playerStore.togglePlay}
+			onDoubleClick={playerStore.toggleFullScreen}
 			sx={{
 				position: 'absolute',
 				left: theme.spacing(5),
@@ -28,7 +34,7 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 			}}
 		>
 			<Grid container height="100%" width="100%">
-				{suggestedItems.map((item) => {
+				{playerStore.suggestions.map((item) => {
 					return (
 						<Grid item xs={3} key={item.id}>
 							<Box
@@ -37,16 +43,16 @@ function ItemSuggestions({ suggestedItems, width, onBackgroundClick, onBackgroun
 								display="flex"
 								justifyContent="center"
 								alignItems="center"
-								onClick={onBackgroundClick}
-								onDoubleClick={onBackgroundDoubleClick}
+								onClick={playerStore.togglePlay}
+								onDoubleClick={playerStore.toggleFullScreen}
 								padding={theme.spacing(1)}
 							>
 								<Box
 									display="flex"
 									justifyContent="center"
 									alignItems="center"
-									onClick={onBackgroundClick}
-									onDoubleClick={onBackgroundDoubleClick}
+									onClick={playerStore.togglePlay}
+									onDoubleClick={playerStore.toggleFullScreen}
 									padding={theme.spacing(1)}
 									sx={{
 										background: 'rgba(0, 0, 0, 0.4)',

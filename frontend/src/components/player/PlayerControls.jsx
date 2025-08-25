@@ -1,24 +1,20 @@
 import { useTheme } from '@emotion/react';
-import CancelIcon from '@mui/icons-material/Cancel';
-import SplitIcon from '@mui/icons-material/ContentCut';
-import CropIcon from '@mui/icons-material/Crop';
-import DoneIcon from '@mui/icons-material/Done';
-import FullscreenIcon from '@mui/icons-material/Fullscreen';
-import FullscreenExitIcon from '@mui/icons-material/FullscreenExit';
-import ImageIcon from '@mui/icons-material/Image';
-import PauseIcon from '@mui/icons-material/Pause';
-import PlayIcon from '@mui/icons-material/PlayArrow';
-import PlayNextIcon from '@mui/icons-material/QueuePlayNext';
-import HighlightIcon from '@mui/icons-material/Stars';
-import { Box, Fade, IconButton, Stack, Tooltip, Typography } from '@mui/material';
-import TimeUtil from '../../utils/time-utils';
+import { Box, Fade, Stack } from '@mui/material';
+import AutoPlayButton from './AutoPlayButton';
+import CropControls from './CropControls';
+import FullscreenButton from './FullscreenButton';
+import HighlightButton from './HighlightButton';
+import PlayButton from './PlayButton';
 import { usePlayerActionStore } from './PlayerActionStore';
-import PlayerSlider from './PlayerSlider';
+import PlayerScrubber from './PlayerScrubber';
 import { usePlayerStore } from './PlayerStore';
+import SetMainCoverButton from './SetMainCoverButton';
+import SplitButton from './SplitButton';
+import TimeDisplay from './TimeDisplay';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
 
-function PlayerControls({ setMainCover, splitVideo, allowToSplit, cropFrame }) {
+function PlayerControls() {
 	const playerStore = usePlayerStore();
 	const playerActionStore = usePlayerActionStore();
 	const theme = useTheme();
@@ -43,98 +39,26 @@ function PlayerControls({ setMainCover, splitVideo, allowToSplit, cropFrame }) {
 						'FF 100%)',
 				}}
 			>
-				<PlayerSlider
-					min={playerStore.startTime}
-					max={playerStore.endTime}
-					value={playerStore.currentTime}
-					onChange={(e, newValue) => playerStore.seek(newValue)}
-				/>
+				<PlayerScrubber min={playerStore.startTime} max={playerStore.endTime} value={playerStore.currentTime} />
 				<Stack flexDirection="row" alignItems="center" gap={theme.spacing(2)}>
-					<Tooltip title={playerStore.isPlaying ? 'Pause' : 'Play'}>
-						<IconButton onClick={playerStore.togglePlay}>
-							{playerStore.isPlaying ? (
-								<PauseIcon sx={{ fontSize: theme.iconSize(1) }} />
-							) : (
-								<PlayIcon sx={{ fontSize: theme.iconSize(1) }} />
-							)}
-						</IconButton>
-					</Tooltip>
-					<Tooltip title={'Toggle Auto Play Next'}>
-						<IconButton
-							onClick={() => {
-								playerStore.setAutoPlayNext(!playerStore.autoPlayNext);
-							}}
-						>
-							{
-								<PlayNextIcon
-									color={playerStore.autoPlayNext ? 'secondary' : 'auto'}
-									sx={{ fontSize: theme.iconSize(1) }}
-								/>
-							}
-						</IconButton>
-					</Tooltip>
+					<PlayButton />
+					<AutoPlayButton />
 					<VolumeControls />
-					<Box>
-						<Typography>
-							{TimeUtil.formatSeconds(playerStore.currentTime - playerStore.startTime)} /{' '}
-							{TimeUtil.formatSeconds(playerStore.duration)}
-						</Typography>
-					</Box>
+					<TimeDisplay />
 					<Box display="flex" flexGrow={1} justifyContent="flex-end">
-						<TimingControls setRelativeTime={playerStore.offsetSeek} />
 						{!playerActionStore.cropActive() && (
-							<IconButton onClick={() => setMainCover(playerStore.currentTime)}>
-								<ImageIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
-						)}
-						{playerActionStore.cropActive() ? (
 							<>
-								<IconButton
-									onClick={() => {
-										let frame = playerActionStore.cropCompleted();
-										cropFrame(playerStore.currentTime, frame);
-									}}
-								>
-									<DoneIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-								<IconButton onClick={playerActionStore.cropCanceled}>
-									<CancelIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
+								<TimingControls setRelativeTime={playerStore.offsetSeek} />
+								<SetMainCoverButton />
 							</>
-						) : (
-							<IconButton
-								onClick={() => {
-									playerStore.pause();
-									playerActionStore.startCrop();
-								}}
-							>
-								<CropIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
 						)}
+						<CropControls />
 						{!playerActionStore.cropActive() && (
-							<IconButton disabled={!allowToSplit()} onClick={() => splitVideo(playerStore.currentTime)}>
-								<SplitIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
-						)}
-						{!playerActionStore.cropActive() && (
-							<IconButton
-								onClick={() => playerActionStore.startHighlightCreation(playerStore.currentTime)}
-							>
-								<HighlightIcon sx={{ fontSize: theme.iconSize(1) }} />
-							</IconButton>
-						)}
-						{(!playerStore.fullScreen && (
-							<Tooltip title="Full screen">
-								<IconButton onClick={playerStore.enterFullScreen}>
-									<FullscreenIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-							</Tooltip>
-						)) || (
-							<Tooltip title="Exit full screen">
-								<IconButton onClick={playerStore.exitFullScreen}>
-									<FullscreenExitIcon sx={{ fontSize: theme.iconSize(1) }} />
-								</IconButton>
-							</Tooltip>
+							<>
+								<SplitButton />
+								<HighlightButton />
+								<FullscreenButton />
+							</>
 						)}
 					</Box>
 				</Stack>

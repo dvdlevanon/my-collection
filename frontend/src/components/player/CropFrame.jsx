@@ -1,14 +1,18 @@
 import { useTheme } from '@emotion/react';
 import { Box } from '@mui/material';
+import useSize from '@react-hook/size';
 import { useEffect, useRef, useState } from 'react';
 import CroppableImage from '../croppable-image/CroppableImage';
 import { usePlayerActionStore } from './PlayerActionStore';
+import { usePlayerStore } from './PlayerStore';
 
-function CropFrame({ videoRef, isPlaying, width, height, onMouseMove }) {
+function CropFrame({ videoRef }) {
+	const { showControls, isPlaying } = usePlayerStore();
+	const playerActionStore = usePlayerActionStore();
 	const theme = useTheme();
 	const thumbnailCanvasId = useRef(null);
 	const [imageDataUrl, setImageDataUrl] = useState(null);
-	const playerActionStore = usePlayerActionStore();
+	const [width, height] = useSize(videoRef);
 
 	useEffect(() => {
 		if (thumbnailCanvasId.current == null) {
@@ -55,40 +59,42 @@ function CropFrame({ videoRef, isPlaying, width, height, onMouseMove }) {
 	}, [videoRef, isPlaying]);
 
 	return (
-		<Box
-			borderRadius={theme.spacing(2)}
-			height={height + 'px'}
-			width={width + 'px'}
-			position={'absolute'}
-			zIndex={1}
-			onMouseMove={onMouseMove}
-			sx={{
-				boxShadow: '3',
-			}}
-		>
+		playerActionStore.cropActive() && (
 			<Box
-				position={'absolute'}
-				component="canvas"
-				ref={thumbnailCanvasId}
-				top={0}
-				left={0}
+				borderRadius={theme.spacing(2)}
 				height={height + 'px'}
 				width={width + 'px'}
-			></Box>
-			{imageDataUrl && (
-				<Box position={'absolute'} top={0} left={0} height={height + 'px'} width={width + 'px'}>
-					<CroppableImage
-						imageUrl={imageDataUrl}
-						aspect={0}
-						imageTitle={'test'}
-						cropMode={true}
-						showControls={false}
-						onCropChange={playerActionStore.setCropFrame}
-						onImageLoaded={() => {}}
-					/>
-				</Box>
-			)}
-		</Box>
+				position={'absolute'}
+				zIndex={1}
+				onMouseMove={() => showControls(true)}
+				sx={{
+					boxShadow: '3',
+				}}
+			>
+				<Box
+					position={'absolute'}
+					component="canvas"
+					ref={thumbnailCanvasId}
+					top={0}
+					left={0}
+					height={height + 'px'}
+					width={width + 'px'}
+				></Box>
+				{imageDataUrl && (
+					<Box position={'absolute'} top={0} left={0} height={height + 'px'} width={width + 'px'}>
+						<CroppableImage
+							imageUrl={imageDataUrl}
+							aspect={0}
+							imageTitle={'test'}
+							cropMode={true}
+							showControls={false}
+							onCropChange={playerActionStore.setCropFrame}
+							onImageLoaded={() => {}}
+						/>
+					</Box>
+				)}
+			</Box>
+		)
 	);
 }
 

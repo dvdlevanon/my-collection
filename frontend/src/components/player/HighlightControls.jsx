@@ -2,13 +2,18 @@ import { useTheme } from '@emotion/react';
 import CancelIcon from '@mui/icons-material/Cancel';
 import StopIcon from '@mui/icons-material/Stop';
 import { Box, IconButton, MenuItem, Select, Skeleton, Stack } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import Client from '../../utils/client';
 import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
+import { usePlayerActionStore } from './PlayerActionStore';
+import { usePlayerStore } from './PlayerStore';
 
-function HighlightControls({ onCancel, onDone }) {
+function HighlightControls() {
+	const queryClient = useQueryClient();
+	const playerStore = usePlayerStore();
+	const playerActionStore = usePlayerActionStore();
 	const tagsQuery = useQuery({ queryKey: ReactQueryUtil.TAGS_KEY, queryFn: Client.getTags });
 	const [selectedHighlight, setSelectedHighlight] = useState(-1);
 	const [open, setOpen] = useState(false);
@@ -25,74 +30,84 @@ function HighlightControls({ onCancel, onDone }) {
 		return TagsUtil.sortByTitle(tags.filter((cur) => TagsUtil.isHighlightsCategory(cur.parentId)));
 	};
 
+	const makeHighlight = (startSecond, endSecond, highlightId) => {
+		Client.makeHighlight(playerStore.itemId, startSecond, endSecond, highlightId).then(() => {
+			ReactQueryUtil.updateItem(queryClient, playerStore.itemId, true);
+		});
+	};
+
 	return (
-		<Stack
-			flexDirection="column"
-			sx={{
-				gap: theme.spacing(1),
-				background: '#000',
-				padding: theme.multiSpacing(0.5, 1),
-				opacity: '0.7',
-				borderRadius: theme.spacing(1),
-				position: 'absolute',
-				right: theme.spacing(2),
-				bottom: '100px',
-			}}
-		>
-			{tagsQuery.isSuccess && (
-				<Select
-					open={open}
-					onOpen={() => setOpen(true)}
-					onClose={() => setOpen(false)}
-					onChange={(e) => setSelectedHighlight(e.target.value)}
-					size="small"
-					value={selectedHighlight}
-					displayEmpty
-				>
-					<MenuItem key={getFakeCategory().id} value={getFakeCategory().id}>
-						{getFakeCategory().title}
-					</MenuItem>
-					{getHighlights(tagsQuery.data).map((highlight) => {
-						return (
-							<MenuItem key={highlight.id} value={highlight.id}>
-								{highlight.title}
-							</MenuItem>
-						);
-					})}
-				</Select>
-			)}
-			<Stack flexDirection="row" gap={theme.spacing(1)} width="100%">
-				<Box sx={{ padding: theme.spacing(0.9) }}>
-					<Skeleton
-						color={'red'}
-						variant="circular"
-						animation="pulse"
-						width={theme.iconSize(1.2)}
-						height={theme.iconSize(1.2)}
-						sx={{
-							backgroundColor: '#880000',
+		playerActionStore.highlightActive() && (
+			<Stack
+				flexDirection="column"
+				sx={{
+					gap: theme.spacing(1),
+					background: '#000',
+					padding: theme.multiSpacing(0.5, 1),
+					opacity: '0.7',
+					borderRadius: theme.spacing(1),
+					position: 'absolute',
+					right: theme.spacing(2),
+					bottom: '100px',
+				}}
+			>
+				{tagsQuery.isSuccess && (
+					<Select
+						open={open}
+						onOpen={() => setOpen(true)}
+						onClose={() => setOpen(false)}
+						onChange={(e) => setSelectedHighlight(e.target.value)}
+						size="small"
+						value={selectedHighlight}
+						displayEmpty
+					>
+						<MenuItem key={getFakeCategory().id} value={getFakeCategory().id}>
+							{getFakeCategory().title}
+						</MenuItem>
+						{getHighlights(tagsQuery.data).map((highlight) => {
+							return (
+								<MenuItem key={highlight.id} value={highlight.id}>
+									{highlight.title}
+								</MenuItem>
+							);
+						})}
+					</Select>
+				)}
+				<Stack flexDirection="row" gap={theme.spacing(1)} width="100%">
+					<Box sx={{ padding: theme.spacing(0.9) }}>
+						<Skeleton
+							color={'red'}
+							variant="circular"
+							animation="pulse"
+							width={theme.iconSize(1.2)}
+							height={theme.iconSize(1.2)}
+							sx={{
+								backgroundColor: '#880000',
+							}}
+						/>
+					</Box>
+					<IconButton
+						onClick={() => {
+							makeHighlight(
+								playerActionStore.highlightCompleted(),
+								playerStore.currentTime,
+								selectedHighlight
+							);
 						}}
-					/>
-				</Box>
-				<IconButton
-					onClick={(e) => {
-						onDone(selectedHighlight);
-					}}
-				>
-					<StopIcon sx={{ fontSize: theme.iconSize(1.2) }} />
-				</IconButton>
-				<IconButton
-					onClick={(e) => {
-						onCancel();
-					}}
-					sx={{
-						marginLeft: 'auto',
-					}}
-				>
-					<CancelIcon sx={{ fontSize: theme.iconSize(1.2) }} />
-				</IconButton>
+					>
+						<StopIcon sx={{ fontSize: theme.iconSize(1.2) }} />
+					</IconButton>
+					<IconButton
+						onClick={playerActionStore.highlightCanceled}
+						sx={{
+							marginLeft: 'auto',
+						}}
+					>
+						<CancelIcon sx={{ fontSize: theme.iconSize(1.2) }} />
+					</IconButton>
+				</Stack>
 			</Stack>
-		</Stack>
+		)
 	);
 }
 

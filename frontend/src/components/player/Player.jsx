@@ -1,43 +1,45 @@
-import { useTheme } from '@emotion/react';
-import { Box, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import useSize from '@react-hook/size';
+import { useQuery } from '@tanstack/react-query';
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Client from '../../utils/client';
+import ReactQueryUtil from '../../utils/react-query-util';
 import CropFrame from './CropFrame';
 import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
-import { usePlayerActionStore } from './PlayerActionStore';
 import PlayerControls from './PlayerControls';
 import { usePlayerStore } from './PlayerStore';
 import useVideoController from './VideoController';
+import VideoElement from './VideoElement';
 
-function Player({
-	url,
-	setMainCover,
-	startPosition,
-	initialEndPosition,
-	splitVideo,
-	makeHighlight,
-	cropFrame,
-	allowToSplit,
-	suggestedItems,
-}) {
+function Player({ itemId }) {
 	const videoController = useVideoController();
 	const playerStore = usePlayerStore();
-	const playerActionStore = usePlayerActionStore();
-	const [playerWidth, playerHeight] = useSize(videoController.videoElement);
-	const theme = useTheme();
+	const [playerWidth] = useSize(videoController.videoElement);
+	const itemQuery = useQuery(ReactQueryUtil.itemQuery(itemId));
+	const suggestedQuery = useQuery(ReactQueryUtil.suggestionQuery(itemId));
 	const navigate = useNavigate();
 
 	useEffect(() => {
-		playerStore.setSuggestedItems(suggestedItems);
+		playerStore.setItemId(itemId);
 		playerStore.setNavigate(navigate);
+	}, []);
+
+	useEffect(() => {
+		let startPosition = itemQuery.data.start_position || 0;
+		let initialEndPosition = itemQuery.data.end_position || 0;
+		let alreadySplit = itemQuery.data.sub_items;
+		playerStore.setUrl(itemQuery.data.url);
 		playerStore.setStartTime(startPosition);
 		playerStore.setCurrentTime(startPosition);
 		playerStore.setEndTime(initialEndPosition);
 		playerStore.setDuration(initialEndPosition - startPosition);
-	}, []);
+		playerStore.setAllowToSplit(!alreadySplit);
+	}, [itemQuery.data]);
+
+	useEffect(() => {
+		playerStore.setSuggestions(suggestedQuery.data);
+	}, [suggestedQuery.data]);
 
 	useEffect(() => {
 		playerStore.setVideoController(videoController);
@@ -81,37 +83,6 @@ function Player({
 		playerStore.setShowSchedule(false);
 	};
 
-	const getVideoElement = () => {
-		return (
-			<Box
-				borderRadius={theme.spacing(2)}
-				sx={{
-					boxShadow: '3',
-				}}
-				component="video"
-				crossOrigin="anonymous"
-				height="100%"
-				width="100%"
-				playsInline
-				autoPlay={true}
-				loop={false}
-				ref={videoController.videoElement}
-				onClick={playerStore.togglePlay}
-				onEnded={playerStore.videoFinished}
-				onDoubleClick={playerStore.toggleFullScreen}
-				onTimeUpdate={(e) => {
-					playerStore.videoTimeUpdate(e.target.currentTime);
-				}}
-				onLoadedMetadata={(e) => {
-					playerStore.videoLoadedMetadata(e.target.duration);
-				}}
-				onMouseMove={() => playerStore.showControls(true)}
-			>
-				<source src={Client.buildFileUrl(url)} />
-			</Box>
-		);
-	};
-
 	return (
 		<Stack
 			display="flex"
@@ -122,39 +93,11 @@ function Player({
 			tabIndex="0"
 			onMouseLeave={() => onMouseLeave()}
 		>
-			{playerActionStore.cropActive() && (
-				<CropFrame
-					videoRef={videoController.videoElement}
-					isPlaying={playerStore.isPlaying}
-					width={playerWidth}
-					height={playerHeight}
-					onMouseMove={() => playerStore.showControls(true)}
-				/>
-			)}
-			{getVideoElement()}
-			{playerStore.showSuggestions && suggestedItems && (
-				<ItemSuggestions
-					suggestedItems={suggestedItems}
-					width={playerWidth}
-					onBackgroundClick={playerStore.togglePlay}
-					onBackgroundDoubleClick={playerStore.toggleFullScreen}
-				/>
-			)}
-			{playerActionStore.highlightActive() && (
-				<HighlightControls
-					onCancel={playerActionStore.highlightCanceled}
-					onDone={(highlightId) => {
-						makeHighlight(playerActionStore.startHighlightSecond, playerStore.currentTime, highlightId);
-						playerActionStore.highlightCompleted();
-					}}
-				/>
-			)}
-			<PlayerControls
-				setMainCover={setMainCover}
-				splitVideo={splitVideo}
-				allowToSplit={allowToSplit}
-				cropFrame={cropFrame}
-			/>
+			<VideoElement videoController={videoController} />
+			<ItemSuggestions width={playerWidth} />
+			<HighlightControls />
+			<CropFrame videoRef={videoController.videoElement} isPlaying={playerStore.isPlaying} />
+			<PlayerControls />
 		</Stack>
 	);
 }

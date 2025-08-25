@@ -16,6 +16,7 @@ export const usePlayerActionStore = create((set, get) => ({
 
 	highlightCompleted: () => {
 		const { startHighlightSecond } = get();
+		set({ startHighlightSecond: -1 });
 		return startHighlightSecond;
 	},
 
