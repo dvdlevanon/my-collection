@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import TagAnnotation from './TagAnnotation';
+import TagAnnotation from '../tag-annotation/TagAnnotation';
 
 function TagsAnnotations({ annotations, selectedAnnotations, setSelectedAnnotations }) {
 	const isSelectedAnnotation = (annotation) => {

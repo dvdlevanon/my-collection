@@ -1,3 +1,4 @@
+import { produce } from 'immer';
 import Client from './client';
 
 export default class ReactQueryUtil {
@@ -46,15 +47,19 @@ export default class ReactQueryUtil {
 	};
 
 	static updateTags = (queryClient, tagId, updater) => {
-		queryClient.setQueryData(ReactQueryUtil.TAGS_KEY, (oldTags) => {
-			return oldTags.map((cur) => {
-				if (cur.id != tagId) {
-					return cur;
+		queryClient.setQueryData(ReactQueryUtil.TAGS_KEY, (oldTags) =>
+			produce(oldTags, (draft) => {
+				const tagToUpdate = draft.find((tag) => tag.id === tagId);
+				if (tagToUpdate) {
+					updater(tagToUpdate);
 				}
+			})
+		);
+	};
 
-				return updater(cur);
-			});
-		});
+	static getTag = (queryClient, tagId) => {
+		const tags = queryClient.getQueryData(ReactQueryUtil.TAGS_KEY);
+		return tags.find((tag) => tag.id === tagId);
 	};
 
 	static updateDirectories = (queryClient, directoryPath, updater) => {
@@ -89,6 +94,13 @@ export default class ReactQueryUtil {
 			queryFn: () => Client.getSuggestedItems(itemId),
 			staleTime: Infinity,
 			cacheTime: Infinity,
+		};
+	};
+
+	static availableAnnotationsQuery = (categoryId) => {
+		return {
+			queryKey: ReactQueryUtil.availableAnnotationsKey(categoryId),
+			queryFn: () => Client.getAvailableAnnotations(categoryId),
 		};
 	};
 }

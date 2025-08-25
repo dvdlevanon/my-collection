@@ -1,13 +1,13 @@
 import { useTheme } from '@emotion/react';
 import { Chip, Link, Stack } from '@mui/material';
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link as RouterLink } from 'react-router-dom';
 import Client from '../../utils/client';
 import TagsUtil from '../../utils/tags-util';
 import ManageTagImageDialog from '../dialogs/ManageTagImageDialog';
 import RemoveTagDialog from '../dialogs/RemoveTagDialog';
+import ManageTagAnnotations from '../manage-tag-annotations/ManageTagAnnotations';
 import TagContextMenu from '../tag-context-menu/TagContextMenu';
-import TagAttachAnnotationMenu from './TagAttachAnnotationMenu';
 import TagImage from './TagImage';
 import TagTitle from './TagTitle';
 
@@ -35,7 +35,7 @@ function Tag({ tag, parent, tagDimension, selectedTit, tagLinkBuilder, onTagClic
 		return (
 			<>
 				{attachMenuAttributes !== null && (
-					<TagAttachAnnotationMenu
+					<ManageTagAnnotations
 						tag={tag}
 						menu={attachMenuAttributes}
 						onClose={() => setAttachMenuAttributes(null)}

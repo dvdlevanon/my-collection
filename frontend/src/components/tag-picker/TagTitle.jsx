@@ -1,6 +1,5 @@
 import { useTheme } from '@emotion/react';
 import { Typography } from '@mui/material';
-import React from 'react';
 import TagsUtil from '../../utils/tags-util';
 
 function TagTitle({ tag }) {

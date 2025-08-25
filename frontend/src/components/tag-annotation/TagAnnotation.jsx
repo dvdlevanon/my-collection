@@ -1,7 +1,6 @@
 import { useTheme } from '@emotion/react';
 import ClearIcon from '@mui/icons-material/Clear';
 import { Box, IconButton, Typography } from '@mui/material';
-import React from 'react';
 
 function TagAnnotation({ annotation, selected, onClick, onRemoveClicked }) {
 	const theme = useTheme();
