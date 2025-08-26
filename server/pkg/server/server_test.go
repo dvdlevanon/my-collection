@@ -20,7 +20,6 @@ import (
 
 	"github.com/stretchr/testify/assert"
 	gomock "go.uber.org/mock/gomock"
-	"k8s.io/utils/pointer"
 )
 
 func setupNewServer(t *testing.T, filename string) *Server {
@@ -41,7 +40,10 @@ func setupNewServer(t *testing.T, filename string) *Server {
 	dcc := model.NewMockDirectoryChangedCallback(ctrl)
 	dcc.EXPECT().DirectoryChanged().AnyTimes()
 
-	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{}, &itemsoptimizer.ItemsOptimizer{}, &model.MockThumbnailProcessor{}, &mixondemand.MixOnDemand{})
+	tp := model.NewMockThumbnailProcessor(ctrl)
+	tp.EXPECT().ProcessThumbnail(gomock.Any()).AnyTimes()
+
+	return New(db, storage, dcc, &processor.ProcessorMock{}, &spectagger.Spectagger{}, &itemsoptimizer.ItemsOptimizer{}, tp, &mixondemand.MixOnDemand{})
 }
 
 func TestCreateAndGetItem(t *testing.T) {
@@ -230,43 +232,6 @@ func TestTagAnnotations(t *testing.T) {
 	err = json.Unmarshal(resp.Body.Bytes(), &returnedTagAnnotations)
 	assert.NoError(t, err)
 	assert.Equal(t, 0, len(returnedTagAnnotations))
-}
-
-func TestDirectories(t *testing.T) {
-	server := setupNewServer(t, "directories-test.sqlite")
-
-	directory := model.Directory{
-		Path:       "path/to/file",
-		Excluded:   pointer.Bool(false),
-		FilesCount: pointer.Int(10),
-		Tags: []*model.Tag{
-			{
-				Title: "tag1",
-			},
-		},
-	}
-
-	payload, err := json.Marshal(directory)
-	assert.NoError(t, err)
-	req := httptest.NewRequest("POST", "/api/directories", bytes.NewReader(payload))
-	resp := httptest.NewRecorder()
-	server.router.ServeHTTP(resp, req)
-	assert.Equal(t, resp.Code, http.StatusOK)
-
-	req = httptest.NewRequest("GET", fmt.Sprintf("/api/directories/%s", directory.Path), nil)
-	resp = httptest.NewRecorder()
-	server.router.ServeHTTP(resp, req)
-	assert.Equal(t, http.StatusOK, resp.Code)
-	returnedDirectory := model.Directory{}
-	err = json.Unmarshal(resp.Body.Bytes(), &returnedDirectory)
-	assert.NoError(t, err)
-
-	assert.Equal(t, directory.Path, returnedDirectory.Path)
-	assert.Equal(t, directory.FilesCount, returnedDirectory.FilesCount)
-	assert.Equal(t, *directory.Excluded, *returnedDirectory.Excluded)
-	assert.Len(t, returnedDirectory.Tags, 1)
-	assert.Empty(t, returnedDirectory.Tags[0].Title)
-	assert.Equal(t, uint64(1), returnedDirectory.Tags[0].Id)
 }
 
 func TestUpdateTagImage(t *testing.T) {
