@@ -85,6 +85,7 @@ function Player({ itemId }) {
 
 	return (
 		<Stack
+			ref={videoController.videoContainer}
 			display="flex"
 			sx={{
 				position: 'relative',

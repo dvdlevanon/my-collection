@@ -54,14 +54,14 @@ export const usePlayerStore = create((set, get) => ({
 		const { videoController, setFullScreen } = get();
 
 		videoController.enterFullScreen();
-		set({ fullscreen: true });
+		set({ fullScreen: true });
 	},
 
 	exitFullScreen: () => {
 		const { videoController } = get();
 
 		videoController.exitFullScreen();
-		set({ fullscreen: false });
+		set({ fullScreen: false });
 	},
 
 	toggleFullScreen: () => {

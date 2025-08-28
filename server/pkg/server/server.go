@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/itemsoptimizer"
 	"my-collection/server/pkg/mixondemand"
@@ -142,10 +143,39 @@ func (s *Server) init() {
 	})
 }
 
-func (s *Server) Run(addr string) error {
+func (s *Server) Run(ctx context.Context, addr string) error {
 	logger.Infof("Starting server at address %s", addr)
-	go s.push.run()
-	return s.router.Run(addr)
+
+	go s.push.run(ctx)
+
+	srv := &http.Server{
+		Addr:    addr,
+		Handler: s.router,
+	}
+
+	serverErr := make(chan error, 1)
+	go func() {
+		if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+			serverErr <- err
+		}
+	}()
+
+	select {
+	case <-ctx.Done():
+		logger.Info("Context cancelled, shutting down server gracefully...")
+		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		if err := srv.Shutdown(shutdownCtx); err != nil {
+			logger.Errorf("Server forced to shutdown: %v", err)
+			return err
+		}
+
+		logger.Info("Server exited gracefully")
+		return nil
+	case err := <-serverErr:
+		return err
+	}
 }
 
 func (s *Server) handleError(c *gin.Context, err error) bool {

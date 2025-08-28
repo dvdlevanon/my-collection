@@ -2,6 +2,7 @@ import { useRef } from 'react';
 
 function useVideoController() {
 	const videoElement = useRef();
+	const videoContainer = useRef();
 
 	const play = () => {
 		if (videoElement.current) {
@@ -30,13 +31,13 @@ function useVideoController() {
 	};
 
 	const enterFullScreen = () => {
-		if (videoElement.current) {
-			videoElement.current.requestFullscreen();
+		if (videoContainer.current) {
+			videoContainer.current.requestFullscreen();
 		}
 	};
 
 	const exitFullScreen = () => {
-		document.exitFullScreen();
+		document.exitFullscreen();
 	};
 
 	const setVolume = (volume) => {
@@ -55,6 +56,7 @@ function useVideoController() {
 		setVolume,
 
 		videoElement,
+		videoContainer,
 	};
 }
 

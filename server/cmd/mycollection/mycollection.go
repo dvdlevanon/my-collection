@@ -116,7 +116,7 @@ func run() error {
 	thumbnails := thumbnails.New(db, db, storage, 100, 100)
 	go thumbnails.Run(ctx)
 
-	return server.New(db, storage, fsManager, processor, spectagger, itemsoptimizer, thumbnails, mixOnDemand).Run(*listenAddress)
+	return server.New(db, storage, fsManager, processor, spectagger, itemsoptimizer, thumbnails, mixOnDemand).Run(ctx, *listenAddress)
 }
 
 func main() {

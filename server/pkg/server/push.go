@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	processor "my-collection/server/pkg/processor"
 	"net"
@@ -63,14 +64,24 @@ func (p *push) pushQueueMetadata() {
 	p.messages <- model.PushMessage{MessageType: model.PUSH_QUEUE_METADATA, Payload: queueMetadata}
 }
 
-func (p *push) run() {
+func (p *push) run(ctx context.Context) {
+	ticker := time.NewTicker(30 * time.Second)
+	defer ticker.Stop()
+
 	for {
 		select {
+		case <-ctx.Done():
+			logger.Info("Push service shutting down...")
+			// Close all websocket connections
+			for _, socket := range p.sockets {
+				socket.Close()
+			}
+			return
 		case socket := <-p.socketsChannel:
 			p.sockets = append(p.sockets, socket)
 		case message := <-p.messages:
 			p.writeToAll(&message)
-		case <-time.After(30 * time.Second):
+		case <-ticker.C:
 			p.writeToAll(&model.PushMessage{MessageType: model.PUSH_PING})
 		}
 	}
