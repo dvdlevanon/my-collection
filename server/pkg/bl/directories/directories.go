@@ -47,6 +47,8 @@ func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
 	}
 
 	directory.Excluded = pointer.Bool(true)
+	directory.AutoIncludeChildren = pointer.Bool(false)
+	directory.AutoIncludeHierarchy = pointer.Bool(false)
 	return drw.CreateOrUpdateDirectory(directory)
 }
 
@@ -62,6 +64,34 @@ func IncludeOrCreateDirectory(drw model.DirectoryReaderWriter, path string) erro
 	}
 
 	return nil
+}
+
+func AutoIncludeHierarchy(drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
+	if err != nil {
+		return err
+	}
+
+	if directory.AutoIncludeHierarchy != nil && *directory.AutoIncludeHierarchy {
+		return nil
+	}
+
+	directory.AutoIncludeHierarchy = pointer.Bool(true)
+	return drw.CreateOrUpdateDirectory(directory)
+}
+
+func AutoIncludeChildren(drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
+	if err != nil {
+		return err
+	}
+
+	if directory.AutoIncludeChildren != nil && *directory.AutoIncludeChildren {
+		return nil
+	}
+
+	directory.AutoIncludeChildren = pointer.Bool(true)
+	return drw.CreateOrUpdateDirectory(directory)
 }
 
 func IncludeDirectory(drw model.DirectoryReaderWriter, path string) error {
@@ -146,6 +176,39 @@ func AddDirectory(dw model.DirectoryWriter, dir string, excluded bool) error {
 	}
 
 	return dw.CreateOrUpdateDirectory(newDirectory)
+}
+
+func ShouldInclude(dr model.DirectoryReader, path string) bool {
+	dir, err := GetParent(dr, path)
+	if err != nil {
+		return false
+	}
+
+	if dir.AutoIncludeChildren != nil && *dir.AutoIncludeChildren {
+		return true
+	}
+
+	for {
+		if dir.AutoIncludeHierarchy != nil && *dir.AutoIncludeHierarchy {
+			return true
+		}
+
+		dir, err = GetParent(dr, dir.Path)
+		if err != nil {
+			return false
+		}
+		if dir == nil {
+			return false
+		}
+	}
+}
+
+func GetParent(dr model.DirectoryReader, path string) (*model.Directory, error) {
+	if path == model.ROOT_DIRECTORY_PATH {
+		return nil, nil
+	}
+	parentPath := filepath.Dir(path)
+	return GetDirectory(dr, parentPath)
 }
 
 func AddDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string, excluded bool) error {

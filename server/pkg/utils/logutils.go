@@ -21,15 +21,15 @@ func ConfigureLogger() error {
 	return nil
 }
 
-func LogError(err error) {
+func LogError(message string, err error) {
 	if err == nil {
 		return
 	}
 
 	var e *errors.Error
 	if errors.As(err, &e) {
-		logger.Errorf("Error: %v", e.ErrorStack())
+		logger.Errorf("Error: %s %v", message, e.ErrorStack())
 	} else {
-		logger.Errorf("Error: %v", err)
+		logger.Errorf("Error: %s %v", message, err)
 	}
 }

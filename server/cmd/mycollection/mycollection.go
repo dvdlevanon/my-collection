@@ -120,5 +120,8 @@ func run() error {
 }
 
 func main() {
-	utils.LogError(run())
+	if err := run(); err != nil {
+		utils.LogError("Error in main", err)
+		os.Exit(1)
+	}
 }

@@ -77,7 +77,7 @@ func (d *Spectagger) Run(ctx context.Context) {
 func (d *Spectagger) runSpectagger() {
 	logger.Infof("Spectagger started")
 	if err := d.autoSpectag(); err != nil {
-		utils.LogError(err)
+		utils.LogError("Error in autoSpectag", err)
 	}
 	logger.Infof("Spectagger finished")
 }
@@ -98,37 +98,37 @@ func (d *Spectagger) autoSpectag() error {
 	for _, item := range *allItems {
 		resolutionTags, err := getResolutionTags(d.tarw, &item)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting resolution tags", err)
 			continue
 		}
 
 		videoCodecTag, err := getVideoCodecTag(d.tarw, &item)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting video codec tag", err)
 			continue
 		}
 
 		audioCodecTag, err := getAudioCodecTag(d.tarw, &item)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting audio codec tag", err)
 			continue
 		}
 
 		durationTag, err := getDurationTag(d.tarw, &item)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting duration tag", err)
 			continue
 		}
 
 		typeTag, typeToRemove, err := getTypeTag(d.tarw, &item)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting type tag", err)
 			continue
 		}
 
 		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(d.tarw, categories, &item)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting category tags", err)
 			continue
 		}
 
@@ -137,7 +137,7 @@ func (d *Spectagger) autoSpectag() error {
 		tagsToAdd = removeNils(tagsToAdd)
 
 		if err := addTagsToItem(&tagTitleToId, d.trw, d.irw, &item, tagsToAdd); err != nil {
-			utils.LogError(err)
+			utils.LogError("Error adding tags to item", err)
 			continue
 		}
 
@@ -147,7 +147,7 @@ func (d *Spectagger) autoSpectag() error {
 		}
 
 		if err := removeTagsFromItem(&tagTitleToId, d.trw, d.irw, &item, tagsToRemove); err != nil {
-			utils.LogError(err)
+			utils.LogError("Error removing tags from item", err)
 			continue
 		}
 	}
@@ -201,13 +201,13 @@ func getCategoryTags(tarw model.TagAnnotationReaderWriter, categories *[]model.T
 	for i, category := range *categories {
 		missing, err := getMissingFromCategoryTag(tarw, &category)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting missing from category tag", err)
 			continue
 		}
 
 		belong, err := getBelongToCategoryTag(tarw, &category)
 		if err != nil {
-			utils.LogError(err)
+			utils.LogError("Error getting belong to category tag", err)
 			continue
 		}
 

@@ -45,7 +45,7 @@ func (d *Automix) Run(ctx context.Context) {
 	case <-time.After(1 * time.Minute):
 		if !isDailymixExists(d.trw, d) {
 			if err := d.generateDailymix(d); err != nil {
-				utils.LogError(err)
+				utils.LogError("Error in generateDailymix", err)
 			}
 		}
 	}

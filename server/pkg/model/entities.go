@@ -80,12 +80,14 @@ type TagAnnotation struct {
 }
 
 type Directory struct {
-	Path            string `json:"path,omitempty" gorm:"primarykey"`
-	Excluded        *bool  `json:"excluded,omitempty"`
-	ProcessingStart *int64 `json:"processingStart,omitempty"`
-	Tags            []*Tag `json:"tags,omitempty" gorm:"many2many:directory_tags;"`
-	FilesCount      *int   `json:"filesCount,omitempty"`
-	LastSynced      int64  `json:"lastSynced,omitempty"`
+	Path                 string `json:"path,omitempty" gorm:"primarykey"`
+	Excluded             *bool  `json:"excluded,omitempty"`
+	ProcessingStart      *int64 `json:"processingStart,omitempty"`
+	AutoIncludeChildren  *bool  `json:"autoIncludeChildren,omitempty"`
+	AutoIncludeHierarchy *bool  `json:"autoIncludeHierarchy,omitempty"`
+	Tags                 []*Tag `json:"tags,omitempty" gorm:"many2many:directory_tags;"`
+	FilesCount           *int   `json:"filesCount,omitempty"`
+	LastSynced           int64  `json:"lastSynced,omitempty"`
 }
 
 type FsNode struct {

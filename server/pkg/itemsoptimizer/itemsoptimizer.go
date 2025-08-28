@@ -46,7 +46,7 @@ func (d *ItemsOptimizer) Run(ctx context.Context) {
 func (d *ItemsOptimizer) runItemsOptimizer() {
 	logger.Infof("ItemsOptimizer started")
 	if err := d.optimizeItems(); err != nil {
-		utils.LogError(err)
+		utils.LogError("Error in optimizeItems", err)
 	}
 	logger.Infof("ItemsOptimizer finished")
 }

@@ -33,7 +33,7 @@ func (t *Thumbnails) Run(ctx context.Context) {
 		select {
 		case <-time.After(1 * time.Minute):
 			if err := t.processThumbnails(); err != nil {
-				utils.LogError(err)
+				utils.LogError("Error processing thumbnails", err)
 			}
 		case <-ctx.Done():
 			return
@@ -54,7 +54,7 @@ func (t *Thumbnails) processThumbnails() error {
 			}
 
 			if err := t.ProcessThumbnail(image); err != nil {
-				utils.LogError(err)
+				utils.LogError("Error processing thumbnail", err)
 			}
 		}
 	}

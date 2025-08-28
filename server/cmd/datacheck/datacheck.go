@@ -7,6 +7,7 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
+	"os"
 
 	"github.com/op/go-logging"
 )
@@ -72,5 +73,8 @@ func run() error {
 }
 
 func main() {
-	utils.LogError(run())
+	if err := run(); err != nil {
+		utils.LogError("Error in main", err)
+		os.Exit(1)
+	}
 }

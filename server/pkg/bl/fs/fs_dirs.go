@@ -172,12 +172,18 @@ func IncludeDir(drw model.DirectoryReaderWriter, path string, subdirs bool, hier
 	}
 
 	if subdirs {
+		if err := directories.AutoIncludeChildren(drw, path); err != nil {
+			return err
+		}
 		if err := includeHierarchy(drw, path, 1); err != nil {
 			return err
 		}
 	}
 
 	if hierarchy {
+		if err := directories.AutoIncludeHierarchy(drw, path); err != nil {
+			return err
+		}
 		if err := includeHierarchy(drw, path, -1); err != nil {
 			return err
 		}

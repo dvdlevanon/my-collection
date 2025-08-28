@@ -395,6 +395,7 @@ func TestAddMissingDirs_Success(t *testing.T) {
 
 	for range changes {
 		mockDRW.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+		mockDRW.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 		mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Return(nil)
 	}
 
@@ -771,6 +772,7 @@ func TestSync_LargeNumberOfOperations(t *testing.T) {
 
 	// addMissingDirs -> AddDirectoryIfMissing -> DirectoryExists -> GetDirectory for each dir
 	mockDB.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound).AnyTimes()
+	mockDB.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound).AnyTimes()
 	mockDB.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Return(nil).AnyTimes()
 
 	// addNewFiles operations
@@ -832,15 +834,22 @@ func TestAddMissingDirs2(t *testing.T) {
 
 	relativasor.Init("/root/dir")
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "path1", Excluded: pointer.Bool(true)}).Return(nil)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "some/path - to dir", Excluded: pointer.Bool(true)}).Return(nil)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(&model.Directory{Path: "/absolute/exists/path3"}, nil)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "/absolute/error/inner/path4", Excluded: pointer.Bool(true)}).Return(errors.Errorf("test"))
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: model.ROOT_DIRECTORY_PATH, Excluded: pointer.Bool(true)}).Return(nil)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(&model.Directory{Path: model.ROOT_DIRECTORY_PATH}, nil)
+	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().GetDirectory(gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
 	drw.EXPECT().CreateOrUpdateDirectory(&model.Directory{Path: "some/relative/path", Excluded: pointer.Bool(true)}).Return(nil)
 
@@ -854,6 +863,313 @@ func TestAddMissingDirs2(t *testing.T) {
 		{Path1: "/root/dir/some/relative/path"},
 	})
 	assert.Equal(t, 1, len(errs))
+}
+
+// Tests for addMissingDirs with AutoIncludeChildren flag
+func TestAddMissingDirs_AutoIncludeChildren_True(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	// Set up parent directory with AutoIncludeChildren = true
+	parentDir := &model.Directory{
+		Path:                "parent",
+		AutoIncludeChildren: pointer.Bool(true),
+		Excluded:            pointer.Bool(false),
+	}
+
+	changes := []directorytree.Change{
+		{Path1: "parent/child1", ChangeType: directorytree.DIRECTORY_ADDED},
+		{Path1: "parent/child2", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock calls for ShouldInclude -> GetParent -> GetDirectory for each child
+	for range changes {
+		// GetParent call for ShouldInclude
+		mockDRW.EXPECT().GetDirectory("path = ?", "parent").Return(parentDir, nil)
+
+		// AddDirectoryIfMissing -> DirectoryExists -> GetDirectory
+		mockDRW.EXPECT().GetDirectory(gomock.Any(), gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+
+		// CreateOrUpdateDirectory with excluded=false (shouldInclude=true)
+		mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+			assert.False(t, *dir.Excluded, "Directory should not be excluded when AutoIncludeChildren is true")
+		}).Return(nil)
+	}
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
+}
+
+func TestAddMissingDirs_AutoIncludeChildren_False(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	// Set up parent directory with AutoIncludeChildren = false
+	parentDir := &model.Directory{
+		Path:                 "parent",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	changes := []directorytree.Change{
+		{Path1: "parent/child", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock calls for ShouldInclude
+	mockDRW.EXPECT().GetDirectory("path = ?", "parent").Return(parentDir, nil)
+
+	// Since AutoIncludeChildren=false and AutoIncludeHierarchy=false, ShouldInclude will check parent hierarchy
+	// GetParent of parent -> returns error, so ShouldInclude returns false
+	mockDRW.EXPECT().GetDirectory("path = ?", model.ROOT_DIRECTORY_PATH).Return(nil, gorm.ErrRecordNotFound)
+
+	// AddDirectoryIfMissing -> DirectoryExists -> GetDirectory
+	mockDRW.EXPECT().GetDirectory("path = ?", "parent/child").Return(nil, gorm.ErrRecordNotFound)
+
+	// CreateOrUpdateDirectory with excluded=true (shouldInclude=false)
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		assert.True(t, *dir.Excluded, "Directory should be excluded when AutoIncludeChildren is false")
+	}).Return(nil)
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
+}
+
+// Tests for addMissingDirs with AutoIncludeHierarchy flag
+func TestAddMissingDirs_AutoIncludeHierarchy_True(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	// Set up directory hierarchy: grandparent -> parent -> child
+	grandparentDir := &model.Directory{
+		Path:                 "grandparent",
+		AutoIncludeHierarchy: pointer.Bool(true),
+		Excluded:             pointer.Bool(false),
+	}
+
+	parentDir := &model.Directory{
+		Path:                 "grandparent/parent",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	changes := []directorytree.Change{
+		{Path1: "grandparent/parent/child", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock calls for ShouldInclude
+	// GetParent of "grandparent/parent/child" -> returns "grandparent/parent"
+	mockDRW.EXPECT().GetDirectory("path = ?", "grandparent/parent").Return(parentDir, nil)
+
+	// Since parent doesn't have AutoIncludeChildren=true, check hierarchy
+	// GetParent of "grandparent/parent" -> returns "grandparent"
+	mockDRW.EXPECT().GetDirectory("path = ?", "grandparent").Return(grandparentDir, nil)
+
+	// AddDirectoryIfMissing -> DirectoryExists -> GetDirectory
+	mockDRW.EXPECT().GetDirectory(gomock.Any(), gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+
+	// CreateOrUpdateDirectory with excluded=false (shouldInclude=true due to hierarchy)
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		assert.False(t, *dir.Excluded, "Directory should not be excluded when ancestor has AutoIncludeHierarchy=true")
+	}).Return(nil)
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
+}
+
+func TestAddMissingDirs_AutoIncludeHierarchy_DeepNesting(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	// Set up deep hierarchy: root -> level1 -> level2 -> level3 -> level4
+	rootDir := &model.Directory{
+		Path:                 "root",
+		AutoIncludeHierarchy: pointer.Bool(true),
+		Excluded:             pointer.Bool(false),
+	}
+
+	level1Dir := &model.Directory{
+		Path:                 "root/level1",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	level2Dir := &model.Directory{
+		Path:                 "root/level1/level2",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	level3Dir := &model.Directory{
+		Path:                 "root/level1/level2/level3",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	changes := []directorytree.Change{
+		{Path1: "root/level1/level2/level3/level4", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock calls for ShouldInclude traversing up the hierarchy
+	mockDRW.EXPECT().GetDirectory("path = ?", "root/level1/level2/level3").Return(level3Dir, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", "root/level1/level2").Return(level2Dir, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", "root/level1").Return(level1Dir, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", "root").Return(rootDir, nil)
+
+	// AddDirectoryIfMissing -> DirectoryExists -> GetDirectory
+	mockDRW.EXPECT().GetDirectory(gomock.Any(), gomock.Any()).Return(nil, gorm.ErrRecordNotFound)
+
+	// CreateOrUpdateDirectory with excluded=false
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		assert.False(t, *dir.Excluded, "Directory should not be excluded when distant ancestor has AutoIncludeHierarchy=true")
+	}).Return(nil)
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
+}
+
+func TestAddMissingDirs_NoAutoInclude_AllExcluded(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	// Set up parent with no auto-include flags
+	parentDir := &model.Directory{
+		Path:                 "parent",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	changes := []directorytree.Change{
+		{Path1: "parent/child", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock calls for ShouldInclude
+	mockDRW.EXPECT().GetDirectory("path = ?", "parent").Return(parentDir, nil)
+
+	// GetParent of parent fails (no more parents), so ShouldInclude returns false
+	mockDRW.EXPECT().GetDirectory("path = ?", model.ROOT_DIRECTORY_PATH).Return(nil, gorm.ErrRecordNotFound)
+
+	// AddDirectoryIfMissing -> DirectoryExists -> GetDirectory
+	mockDRW.EXPECT().GetDirectory("path = ?", "parent/child").Return(nil, gorm.ErrRecordNotFound)
+
+	// CreateOrUpdateDirectory with excluded=true
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		assert.True(t, *dir.Excluded, "Directory should be excluded when no auto-include flags are set")
+	}).Return(nil)
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
+}
+
+func TestAddMissingDirs_ParentNotFound(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	changes := []directorytree.Change{
+		{Path1: "nonexistent/child", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock calls for ShouldInclude - parent not found
+	mockDRW.EXPECT().GetDirectory("path = ?", "nonexistent").Return(nil, gorm.ErrRecordNotFound)
+
+	// AddDirectoryIfMissing -> DirectoryExists -> GetDirectory
+	mockDRW.EXPECT().GetDirectory("path = ?", "nonexistent/child").Return(nil, gorm.ErrRecordNotFound)
+
+	// CreateOrUpdateDirectory with excluded=true (ShouldInclude returns false when parent not found)
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		assert.True(t, *dir.Excluded, "Directory should be excluded when parent directory not found")
+	}).Return(nil)
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
+}
+
+func TestAddMissingDirs_MixedAutoIncludeFlags(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockDRW := model.NewMockDirectoryReaderWriter(ctrl)
+
+	// Set up complex hierarchy with mixed flags
+	parentWithChildren := &model.Directory{
+		Path:                "include-children",
+		AutoIncludeChildren: pointer.Bool(true),
+		Excluded:            pointer.Bool(false),
+	}
+
+	parentWithHierarchy := &model.Directory{
+		Path:                 "include-hierarchy",
+		AutoIncludeHierarchy: pointer.Bool(true),
+		Excluded:             pointer.Bool(false),
+	}
+
+	parentWithoutFlags := &model.Directory{
+		Path:                 "no-flags",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+
+	changes := []directorytree.Change{
+		{Path1: "include-children/child1", ChangeType: directorytree.DIRECTORY_ADDED},
+		{Path1: "include-hierarchy/level1/level2", ChangeType: directorytree.DIRECTORY_ADDED},
+		{Path1: "no-flags/child", ChangeType: directorytree.DIRECTORY_ADDED},
+	}
+
+	// Mock for include-children/child1
+	mockDRW.EXPECT().GetDirectory("path = ?", "include-children").Return(parentWithChildren, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", "include-children/child1").Return(nil, gorm.ErrRecordNotFound)
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		if dir.Path == "include-children/child1" {
+			assert.False(t, *dir.Excluded, "Child should be included when parent has AutoIncludeChildren=true")
+		}
+	}).Return(nil)
+
+	// Mock for include-hierarchy/level1/level2
+	level1Dir := &model.Directory{
+		Path:                 "include-hierarchy/level1",
+		AutoIncludeChildren:  pointer.Bool(false),
+		AutoIncludeHierarchy: pointer.Bool(false),
+		Excluded:             pointer.Bool(false),
+	}
+	mockDRW.EXPECT().GetDirectory("path = ?", "include-hierarchy/level1").Return(level1Dir, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", "include-hierarchy").Return(parentWithHierarchy, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", "include-hierarchy/level1/level2").Return(nil, gorm.ErrRecordNotFound)
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		if dir.Path == "include-hierarchy/level1/level2" {
+			assert.False(t, *dir.Excluded, "Descendant should be included when ancestor has AutoIncludeHierarchy=true")
+		}
+	}).Return(nil)
+
+	// Mock for no-flags/child
+	mockDRW.EXPECT().GetDirectory("path = ?", "no-flags").Return(parentWithoutFlags, nil)
+	mockDRW.EXPECT().GetDirectory("path = ?", model.ROOT_DIRECTORY_PATH).Return(nil, gorm.ErrRecordNotFound)
+	mockDRW.EXPECT().GetDirectory("path = ?", "no-flags/child").Return(nil, gorm.ErrRecordNotFound)
+	mockDRW.EXPECT().CreateOrUpdateDirectory(gomock.Any()).Do(func(dir *model.Directory) {
+		if dir.Path == "no-flags/child" {
+			assert.True(t, *dir.Excluded, "Child should be excluded when parent has no auto-include flags")
+		}
+	}).Return(nil)
+
+	errs := addMissingDirs(mockDRW, changes)
+	assert.Empty(t, errs)
 }
 
 func TestAddNewFiles2(t *testing.T) {

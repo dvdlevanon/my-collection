@@ -1,3 +1,5 @@
 #!/bin/bash
 
-go test ./... -cover
+go test ./pkg/... -cover 
+
+./test/scripts/run_integration_tests.sh

@@ -158,7 +158,7 @@ func (s *Server) handleError(c *gin.Context, err error) bool {
 		httpError = http.StatusNotFound
 	}
 
-	utils.LogError(err)
+	utils.LogError("Server error", err)
 	c.AbortWithError(httpError, err)
 	return true
 }

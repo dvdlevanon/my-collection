@@ -82,6 +82,8 @@ func (f *fsSyncer) sync(db model.Database, digs model.DirectoryItemsGetterSetter
 }
 
 func (f *fsSyncer) debugPrint() {
+	logger.Debugf("Sync starting")
+
 	if len(f.stales.Dirs) > 0 {
 		logger.Debugf("%d Stale directories - [%s]", len(f.stales.Dirs), strings.Join(f.stales.Dirs, ", "))
 	}
@@ -195,7 +197,8 @@ func removeDir(trw model.TagReaderWriter, dw model.DirectoryWriter, path string)
 func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []directorytree.Change) []error {
 	errs := make([]error, 0)
 	for i, change := range addedDirectories {
-		err := directories.AddDirectoryIfMissing(drw, change.Path1, true)
+		shouldInclude := directories.ShouldInclude(drw, change.Path1)
+		err := directories.AddDirectoryIfMissing(drw, change.Path1, !shouldInclude)
 		if err != nil {
 			errs = append(errs, err)
 		}

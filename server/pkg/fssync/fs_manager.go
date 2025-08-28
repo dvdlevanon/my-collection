@@ -43,11 +43,15 @@ func (f *FsManager) Watch(ctx context.Context) {
 	for {
 		select {
 		case <-f.changeChannel:
-			f.Sync()
+			if err := f.Sync(); err != nil {
+				utils.LogError("Error in FS Watch", err)
+			}
 		case <-ctx.Done():
 			return
 		case <-time.After(f.checkInterval):
-			f.Sync()
+			if err := f.Sync(); err != nil {
+				utils.LogError("Error in FS Watch", err)
+			}
 		}
 	}
 }
@@ -91,7 +95,7 @@ func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
 
 func (f *FsManager) Sync() error {
 	hasChanges := true
-	var allErrors []error
+	var lastError error
 
 	for hasChanges {
 		fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, f, f.filesFilter)
@@ -102,15 +106,14 @@ func (f *FsManager) Sync() error {
 		var errors []error
 		hasChanges, errors = fsSync.sync(f.db, f, f, f)
 
-		for _, err := range errors {
-			utils.LogError(err)
+		if len(errors) > 0 {
+			lastError = errors[0]
+			logger.Errorf("FS Sync finished with %d errors", len(errors))
+			for _, err := range errors {
+				utils.LogError("Error in FS Sync", err)
+			}
 		}
-		allErrors = append(allErrors, errors...)
 	}
 
-	if len(allErrors) > 0 {
-		return allErrors[0]
-	}
-
-	return nil
+	return lastError
 }
