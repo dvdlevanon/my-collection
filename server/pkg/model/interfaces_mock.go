@@ -1508,43 +1508,43 @@ func (mr *MockDirectoryItemsGetterSetterMockRecorder) GetBelongingItems(path any
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetBelongingItems", reflect.TypeOf((*MockDirectoryItemsGetterSetter)(nil).GetBelongingItems), path)
 }
 
-// MockDirectoryConcreteTagsGetter is a mock of DirectoryConcreteTagsGetter interface.
-type MockDirectoryConcreteTagsGetter struct {
+// MockDirectoryAutoTagsGetter is a mock of DirectoryAutoTagsGetter interface.
+type MockDirectoryAutoTagsGetter struct {
 	ctrl     *gomock.Controller
-	recorder *MockDirectoryConcreteTagsGetterMockRecorder
+	recorder *MockDirectoryAutoTagsGetterMockRecorder
 	isgomock struct{}
 }
 
-// MockDirectoryConcreteTagsGetterMockRecorder is the mock recorder for MockDirectoryConcreteTagsGetter.
-type MockDirectoryConcreteTagsGetterMockRecorder struct {
-	mock *MockDirectoryConcreteTagsGetter
+// MockDirectoryAutoTagsGetterMockRecorder is the mock recorder for MockDirectoryAutoTagsGetter.
+type MockDirectoryAutoTagsGetterMockRecorder struct {
+	mock *MockDirectoryAutoTagsGetter
 }
 
-// NewMockDirectoryConcreteTagsGetter creates a new mock instance.
-func NewMockDirectoryConcreteTagsGetter(ctrl *gomock.Controller) *MockDirectoryConcreteTagsGetter {
-	mock := &MockDirectoryConcreteTagsGetter{ctrl: ctrl}
-	mock.recorder = &MockDirectoryConcreteTagsGetterMockRecorder{mock}
+// NewMockDirectoryAutoTagsGetter creates a new mock instance.
+func NewMockDirectoryAutoTagsGetter(ctrl *gomock.Controller) *MockDirectoryAutoTagsGetter {
+	mock := &MockDirectoryAutoTagsGetter{ctrl: ctrl}
+	mock.recorder = &MockDirectoryAutoTagsGetterMockRecorder{mock}
 	return mock
 }
 
 // EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockDirectoryConcreteTagsGetter) EXPECT() *MockDirectoryConcreteTagsGetterMockRecorder {
+func (m *MockDirectoryAutoTagsGetter) EXPECT() *MockDirectoryAutoTagsGetterMockRecorder {
 	return m.recorder
 }
 
-// GetConcreteTags mocks base method.
-func (m *MockDirectoryConcreteTagsGetter) GetConcreteTags(path string) ([]*Tag, error) {
+// GetAutoTags mocks base method.
+func (m *MockDirectoryAutoTagsGetter) GetAutoTags(path string) ([]*Tag, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "GetConcreteTags", path)
+	ret := m.ctrl.Call(m, "GetAutoTags", path)
 	ret0, _ := ret[0].([]*Tag)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
-// GetConcreteTags indicates an expected call of GetConcreteTags.
-func (mr *MockDirectoryConcreteTagsGetterMockRecorder) GetConcreteTags(path any) *gomock.Call {
+// GetAutoTags indicates an expected call of GetAutoTags.
+func (mr *MockDirectoryAutoTagsGetterMockRecorder) GetAutoTags(path any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetConcreteTags", reflect.TypeOf((*MockDirectoryConcreteTagsGetter)(nil).GetConcreteTags), path)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAutoTags", reflect.TypeOf((*MockDirectoryAutoTagsGetter)(nil).GetAutoTags), path)
 }
 
 // MockFileMetadataGetter is a mock of FileMetadataGetter interface.
@@ -1659,4 +1659,355 @@ func (m *MockCurrentTimeGetter) GetCurrentTime() time.Time {
 func (mr *MockCurrentTimeGetterMockRecorder) GetCurrentTime() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetCurrentTime", reflect.TypeOf((*MockCurrentTimeGetter)(nil).GetCurrentTime))
+}
+
+// MockDatabase is a mock of Database interface.
+type MockDatabase struct {
+	ctrl     *gomock.Controller
+	recorder *MockDatabaseMockRecorder
+	isgomock struct{}
+}
+
+// MockDatabaseMockRecorder is the mock recorder for MockDatabase.
+type MockDatabaseMockRecorder struct {
+	mock *MockDatabase
+}
+
+// NewMockDatabase creates a new mock instance.
+func NewMockDatabase(ctrl *gomock.Controller) *MockDatabase {
+	mock := &MockDatabase{ctrl: ctrl}
+	mock.recorder = &MockDatabaseMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use.
+func (m *MockDatabase) EXPECT() *MockDatabaseMockRecorder {
+	return m.recorder
+}
+
+// CreateOrUpdateDirectory mocks base method.
+func (m *MockDatabase) CreateOrUpdateDirectory(directory *Directory) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrUpdateDirectory", directory)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrUpdateDirectory indicates an expected call of CreateOrUpdateDirectory.
+func (mr *MockDatabaseMockRecorder) CreateOrUpdateDirectory(directory any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateDirectory", reflect.TypeOf((*MockDatabase)(nil).CreateOrUpdateDirectory), directory)
+}
+
+// CreateOrUpdateItem mocks base method.
+func (m *MockDatabase) CreateOrUpdateItem(item *Item) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrUpdateItem", item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrUpdateItem indicates an expected call of CreateOrUpdateItem.
+func (mr *MockDatabaseMockRecorder) CreateOrUpdateItem(item any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateItem", reflect.TypeOf((*MockDatabase)(nil).CreateOrUpdateItem), item)
+}
+
+// CreateOrUpdateTag mocks base method.
+func (m *MockDatabase) CreateOrUpdateTag(tag *Tag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrUpdateTag", tag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrUpdateTag indicates an expected call of CreateOrUpdateTag.
+func (mr *MockDatabaseMockRecorder) CreateOrUpdateTag(tag any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateTag", reflect.TypeOf((*MockDatabase)(nil).CreateOrUpdateTag), tag)
+}
+
+// GetAllDirectories mocks base method.
+func (m *MockDatabase) GetAllDirectories() (*[]Directory, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllDirectories")
+	ret0, _ := ret[0].(*[]Directory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllDirectories indicates an expected call of GetAllDirectories.
+func (mr *MockDatabaseMockRecorder) GetAllDirectories() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllDirectories", reflect.TypeOf((*MockDatabase)(nil).GetAllDirectories))
+}
+
+// GetAllItems mocks base method.
+func (m *MockDatabase) GetAllItems() (*[]Item, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllItems")
+	ret0, _ := ret[0].(*[]Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllItems indicates an expected call of GetAllItems.
+func (mr *MockDatabaseMockRecorder) GetAllItems() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllItems", reflect.TypeOf((*MockDatabase)(nil).GetAllItems))
+}
+
+// GetAllTags mocks base method.
+func (m *MockDatabase) GetAllTags() (*[]Tag, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "GetAllTags")
+	ret0, _ := ret[0].(*[]Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetAllTags indicates an expected call of GetAllTags.
+func (mr *MockDatabaseMockRecorder) GetAllTags() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetAllTags", reflect.TypeOf((*MockDatabase)(nil).GetAllTags))
+}
+
+// GetDirectories mocks base method.
+func (m *MockDatabase) GetDirectories(conds ...any) (*[]Directory, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetDirectories", varargs...)
+	ret0, _ := ret[0].(*[]Directory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDirectories indicates an expected call of GetDirectories.
+func (mr *MockDatabaseMockRecorder) GetDirectories(conds ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDirectories", reflect.TypeOf((*MockDatabase)(nil).GetDirectories), conds...)
+}
+
+// GetDirectory mocks base method.
+func (m *MockDatabase) GetDirectory(conds ...any) (*Directory, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetDirectory", varargs...)
+	ret0, _ := ret[0].(*Directory)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetDirectory indicates an expected call of GetDirectory.
+func (mr *MockDatabaseMockRecorder) GetDirectory(conds ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetDirectory", reflect.TypeOf((*MockDatabase)(nil).GetDirectory), conds...)
+}
+
+// GetItem mocks base method.
+func (m *MockDatabase) GetItem(conds ...any) (*Item, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetItem", varargs...)
+	ret0, _ := ret[0].(*Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetItem indicates an expected call of GetItem.
+func (mr *MockDatabaseMockRecorder) GetItem(conds ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItem", reflect.TypeOf((*MockDatabase)(nil).GetItem), conds...)
+}
+
+// GetItems mocks base method.
+func (m *MockDatabase) GetItems(conds ...any) (*[]Item, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetItems", varargs...)
+	ret0, _ := ret[0].(*[]Item)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetItems indicates an expected call of GetItems.
+func (mr *MockDatabaseMockRecorder) GetItems(conds ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetItems", reflect.TypeOf((*MockDatabase)(nil).GetItems), conds...)
+}
+
+// GetTag mocks base method.
+func (m *MockDatabase) GetTag(conds ...any) (*Tag, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetTag", varargs...)
+	ret0, _ := ret[0].(*Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTag indicates an expected call of GetTag.
+func (mr *MockDatabaseMockRecorder) GetTag(conds ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTag", reflect.TypeOf((*MockDatabase)(nil).GetTag), conds...)
+}
+
+// GetTags mocks base method.
+func (m *MockDatabase) GetTags(conds ...any) (*[]Tag, error) {
+	m.ctrl.T.Helper()
+	varargs := []any{}
+	for _, a := range conds {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "GetTags", varargs...)
+	ret0, _ := ret[0].(*[]Tag)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// GetTags indicates an expected call of GetTags.
+func (mr *MockDatabaseMockRecorder) GetTags(conds ...any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetTags", reflect.TypeOf((*MockDatabase)(nil).GetTags), conds...)
+}
+
+// RemoveDirectory mocks base method.
+func (m *MockDatabase) RemoveDirectory(path string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveDirectory", path)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveDirectory indicates an expected call of RemoveDirectory.
+func (mr *MockDatabaseMockRecorder) RemoveDirectory(path any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveDirectory", reflect.TypeOf((*MockDatabase)(nil).RemoveDirectory), path)
+}
+
+// RemoveItem mocks base method.
+func (m *MockDatabase) RemoveItem(itemId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveItem", itemId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveItem indicates an expected call of RemoveItem.
+func (mr *MockDatabaseMockRecorder) RemoveItem(itemId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveItem", reflect.TypeOf((*MockDatabase)(nil).RemoveItem), itemId)
+}
+
+// RemoveTag mocks base method.
+func (m *MockDatabase) RemoveTag(tagId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTag", tagId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTag indicates an expected call of RemoveTag.
+func (mr *MockDatabaseMockRecorder) RemoveTag(tagId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTag", reflect.TypeOf((*MockDatabase)(nil).RemoveTag), tagId)
+}
+
+// RemoveTagFromDirectory mocks base method.
+func (m *MockDatabase) RemoveTagFromDirectory(direcotryPath string, tagId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTagFromDirectory", direcotryPath, tagId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTagFromDirectory indicates an expected call of RemoveTagFromDirectory.
+func (mr *MockDatabaseMockRecorder) RemoveTagFromDirectory(direcotryPath, tagId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagFromDirectory", reflect.TypeOf((*MockDatabase)(nil).RemoveTagFromDirectory), direcotryPath, tagId)
+}
+
+// RemoveTagFromItem mocks base method.
+func (m *MockDatabase) RemoveTagFromItem(itemId, tagId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTagFromItem", itemId, tagId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTagFromItem indicates an expected call of RemoveTagFromItem.
+func (mr *MockDatabaseMockRecorder) RemoveTagFromItem(itemId, tagId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagFromItem", reflect.TypeOf((*MockDatabase)(nil).RemoveTagFromItem), itemId, tagId)
+}
+
+// RemoveTagImageFromTag mocks base method.
+func (m *MockDatabase) RemoveTagImageFromTag(tagId, imageId uint64) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoveTagImageFromTag", tagId, imageId)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// RemoveTagImageFromTag indicates an expected call of RemoveTagImageFromTag.
+func (mr *MockDatabaseMockRecorder) RemoveTagImageFromTag(tagId, imageId any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoveTagImageFromTag", reflect.TypeOf((*MockDatabase)(nil).RemoveTagImageFromTag), tagId, imageId)
+}
+
+// UpdateDirectory mocks base method.
+func (m *MockDatabase) UpdateDirectory(directory *Directory) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateDirectory", directory)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateDirectory indicates an expected call of UpdateDirectory.
+func (mr *MockDatabaseMockRecorder) UpdateDirectory(directory any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateDirectory", reflect.TypeOf((*MockDatabase)(nil).UpdateDirectory), directory)
+}
+
+// UpdateItem mocks base method.
+func (m *MockDatabase) UpdateItem(item *Item) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateItem", item)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateItem indicates an expected call of UpdateItem.
+func (mr *MockDatabaseMockRecorder) UpdateItem(item any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateItem", reflect.TypeOf((*MockDatabase)(nil).UpdateItem), item)
+}
+
+// UpdateTag mocks base method.
+func (m *MockDatabase) UpdateTag(tag *Tag) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "UpdateTag", tag)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// UpdateTag indicates an expected call of UpdateTag.
+func (mr *MockDatabaseMockRecorder) UpdateTag(tag any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpdateTag", reflect.TypeOf((*MockDatabase)(nil).UpdateTag), tag)
 }

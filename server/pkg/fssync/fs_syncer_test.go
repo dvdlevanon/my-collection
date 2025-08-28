@@ -78,34 +78,34 @@ func TestAddNewFiles(t *testing.T) {
 	defer ctrl.Finish()
 	iw := model.NewMockItemWriter(ctrl)
 	digs := model.NewMockDirectoryItemsGetterSetter(ctrl)
-	dctg := model.NewMockDirectoryConcreteTagsGetter(ctrl)
+	datg := model.NewMockDirectoryAutoTagsGetter(ctrl)
 	fmg := model.NewMockFileMetadataGetter(ctrl)
 
 	relativasor.Init("/root/dir")
 
 	tags := []*model.Tag{{Id: 3, Title: "old"}}
 	digs.EXPECT().GetBelongingItem("new", "file").Return(&model.Item{Title: "file", Origin: "new", Url: "new/file", LastModified: 4234234, Tags: tags}, nil)
-	concreteTags1 := []*model.Tag{{Id: 1, Title: "concrete1"}, {Id: 2, Title: "concrete2"}}
-	dctg.EXPECT().GetConcreteTags("new").Return(concreteTags1, nil)
-	iw.EXPECT().UpdateItem(&model.Item{Title: "file", Origin: "new", Url: "new/file", LastModified: 4234234, Tags: append(tags, concreteTags1...)})
+	autoTags1 := []*model.Tag{{Id: 1, Title: "auto1"}, {Id: 2, Title: "auto2"}}
+	datg.EXPECT().GetAutoTags("new").Return(autoTags1, nil)
+	iw.EXPECT().UpdateItem(&model.Item{Title: "file", Origin: "new", Url: "new/file", LastModified: 4234234, Tags: append(tags, autoTags1...)})
 
 	digs.EXPECT().GetBelongingItem("some/deep/deep/deep", "file").Return(nil, nil)
-	concreteTags2 := []*model.Tag{{Title: "concrete1"}, {Title: "concrete2"}}
-	dctg.EXPECT().GetConcreteTags("some/deep/deep/deep").Return(concreteTags2, nil)
+	autoTags2 := []*model.Tag{{Title: "auto1"}, {Title: "auto2"}}
+	datg.EXPECT().GetAutoTags("some/deep/deep/deep").Return(autoTags2, nil)
 	fmg.EXPECT().GetFileMetadata("/root/dir/some/deep/deep/deep/file").Return(int64(7657657), int64(0), nil)
-	digs.EXPECT().AddBelongingItem(&model.Item{Title: "file", Origin: "some/deep/deep/deep", Url: "some/deep/deep/deep/file", LastModified: 7657657, Tags: concreteTags2}).Return(nil)
+	digs.EXPECT().AddBelongingItem(&model.Item{Title: "file", Origin: "some/deep/deep/deep", Url: "some/deep/deep/deep/file", LastModified: 7657657, Tags: autoTags2}).Return(nil)
 
 	digs.EXPECT().GetBelongingItem("/absolute", "path").Return(nil, nil)
-	dctg.EXPECT().GetConcreteTags("/absolute").Return([]*model.Tag{}, nil)
+	datg.EXPECT().GetAutoTags("/absolute").Return([]*model.Tag{}, nil)
 	fmg.EXPECT().GetFileMetadata("/absolute/path").Return(int64(7567657), int64(0), nil)
 	digs.EXPECT().AddBelongingItem(&model.Item{Title: "path", Origin: "/absolute", Url: "/absolute/path", LastModified: 7567657, Tags: make([]*model.Tag, 0)}).Return(nil)
 
 	digs.EXPECT().GetBelongingItem("some", "file").Return(nil, nil)
-	dctg.EXPECT().GetConcreteTags("some").Return([]*model.Tag{}, nil)
+	datg.EXPECT().GetAutoTags("some").Return([]*model.Tag{}, nil)
 	fmg.EXPECT().GetFileMetadata("/root/dir/some/file").Return(int64(9876532), int64(0), nil)
 	digs.EXPECT().AddBelongingItem(&model.Item{Title: "file", Origin: "some", Url: "some/file", LastModified: 9876532, Tags: make([]*model.Tag, 0)}).Return(nil)
 
-	errs := addNewFiles(iw, digs, dctg, fmg, []directorytree.Change{
+	errs := addNewFiles(iw, digs, datg, fmg, []directorytree.Change{
 		{Path1: "new/file"},
 		{Path1: "some/deep/deep/deep/file"},
 		{Path1: "/absolute/path"},

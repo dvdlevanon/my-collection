@@ -4,7 +4,6 @@ import (
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/tags"
-	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/directorytree"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -15,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func newFsSyncer(path string, db *db.Database, dig model.DirectoryItemsGetter, filter directorytree.FilesFilter) (*fsSyncer, error) {
+func newFsSyncer(path string, db model.Database, dig model.DirectoryItemsGetter, filter directorytree.FilesFilter) (*fsSyncer, error) {
 	exists, err := directories.DirectoryExists(db, path)
 	if err != nil {
 		return nil, err
@@ -52,16 +51,16 @@ func (f *fsSyncer) hasFsChanges() bool {
 	return f.stales.HasChanges() || f.diff.HasChanges()
 }
 
-func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
-	dctg model.DirectoryConcreteTagsGetter, fmg model.FileMetadataGetter) (bool, []error) {
+func (f *fsSyncer) sync(db model.Database, digs model.DirectoryItemsGetterSetter,
+	datg model.DirectoryAutoTagsGetter, fmg model.FileMetadataGetter) (bool, []error) {
 
 	// TODO:
 	// > remove moved dirs and files from stale dirs and items
 	// > tag title+parent must be unique (representing the full origin location)
-	// > remove concrete tags when removing directory
+	// > remove auto tags when removing directory
 	// > update directory path when renaming dirs
-	// > remove concrete tags from items if they removed from their dir (how do we know its a concrete tag?)
-	// > redefine concrete tags - what are they? maybe auto tags, allow more flexibility with them
+	// > remove auto tags from items if they removed from their dir (how do we know its an auto tag?)
+	// > redefine auto tags - what are they? maybe auto tags, allow more flexibility with them
 
 	errs := make([]error, 0)
 	errs = append(errs, addMissingDirectoryTags(db, db)...)
@@ -75,10 +74,10 @@ func (f *fsSyncer) sync(db *db.Database, digs model.DirectoryItemsGetterSetter,
 		errs = append(errs, renameFiles(db, db, db, f.diff.MovedFiles)...)
 		errs = append(errs, removeDeletedDirs(db, db, f.diff.RemovedDirectories)...)
 		errs = append(errs, removeDeletedFiles(digs, db, f.diff.RemovedFiles)...)
-		errs = append(errs, addNewFiles(db, digs, dctg, fmg, f.diff.AddedFiles)...)
+		errs = append(errs, addNewFiles(db, digs, datg, fmg, f.diff.AddedFiles)...)
 	}
 
-	errs = append(errs, syncConcreteTags(db, db, db, dctg)...)
+	errs = append(errs, syncAutoTags(db, db, db, datg)...)
 	return f.hasFsChanges(), errs
 }
 
@@ -207,7 +206,7 @@ func addMissingDirs(drw model.DirectoryReaderWriter, addedDirectories []director
 	return errs
 }
 
-func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
+func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, datg model.DirectoryAutoTagsGetter,
 	fmg model.FileMetadataGetter, addedFiles []directorytree.Change) []error {
 	errs := make([]error, 0)
 	for i, change := range addedFiles {
@@ -218,7 +217,7 @@ func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dct
 			continue
 		}
 
-		if err := handleFile(iw, digs, dctg, fmg, item, dirpath, change.Path1); err != nil {
+		if err := handleFile(iw, digs, datg, fmg, item, dirpath, change.Path1); err != nil {
 			errs = append(errs, err)
 		}
 		if i+1%100 == 0 {
@@ -229,28 +228,28 @@ func addNewFiles(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dct
 	return errs
 }
 
-func handleFile(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, dctg model.DirectoryConcreteTagsGetter,
+func handleFile(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, datg model.DirectoryAutoTagsGetter,
 	fmg model.FileMetadataGetter, item *model.Item, dirpath string, path string) error {
-	concreteTags, err := dctg.GetConcreteTags(dirpath)
+	autoTags, err := datg.GetAutoTags(dirpath)
 	if err != nil {
 		return err
 	}
 
 	if item != nil {
-		return items.EnsureItemHaveTags(iw, item, concreteTags)
+		return items.EnsureItemHaveTags(iw, item, autoTags)
 	} else {
-		return handleNewFile(digs, fmg, dirpath, path, concreteTags)
+		return handleNewFile(digs, fmg, dirpath, path, autoTags)
 	}
 }
 
 func handleNewFile(digs model.DirectoryItemsGetterSetter, fmg model.FileMetadataGetter,
-	dirpath string, path string, concreteTags []*model.Tag) error {
+	dirpath string, path string, autoTags []*model.Tag) error {
 	item, err := items.BuildItemFromPath(dirpath, relativasor.GetAbsoluteFile(path), fmg)
 	if err != nil {
 		return err
 	}
 
-	item.Tags = concreteTags
+	item.Tags = autoTags
 	return digs.AddBelongingItem(item)
 }
 
@@ -390,8 +389,8 @@ func validateReadyDirectory(trw model.TagReaderWriter, drw model.DirectoryReader
 	return addMissingDirectoryTag(trw, dir)
 }
 
-func syncConcreteTags(tr model.TagReader, irw model.ItemReaderWriter,
-	dr model.DirectoryReader, dctg model.DirectoryConcreteTagsGetter) []error {
+func syncAutoTags(tr model.TagReader, irw model.ItemReaderWriter,
+	dr model.DirectoryReader, datg model.DirectoryAutoTagsGetter) []error {
 	errs := make([]error, 0)
 	allDirectories, err := dr.GetAllDirectories()
 	if err != nil {
@@ -399,20 +398,20 @@ func syncConcreteTags(tr model.TagReader, irw model.ItemReaderWriter,
 	}
 
 	for _, dir := range *allDirectories {
-		concreteTags, err := dctg.GetConcreteTags(dir.Path)
+		autoTags, err := datg.GetAutoTags(dir.Path)
 		if err != nil {
 			errs = append(errs, err)
 			continue
 		}
 
-		errs = append(errs, syncConcreteTagsForDir(tr, irw, concreteTags, &dir)...)
+		errs = append(errs, syncAutoTagsForDir(tr, irw, autoTags, &dir)...)
 	}
 
 	return errs
 }
 
-func syncConcreteTagsForDir(tr model.TagReader, irw model.ItemReaderWriter,
-	concreteTags []*model.Tag, dir *model.Directory) []error {
+func syncAutoTagsForDir(tr model.TagReader, irw model.ItemReaderWriter,
+	autoTags []*model.Tag, dir *model.Directory) []error {
 	errs := make([]error, 0)
 	fsdir := newFsDirectory(dir.Path)
 	belongingItems, err := fsdir.getItems(tr, irw)
@@ -421,7 +420,7 @@ func syncConcreteTagsForDir(tr model.TagReader, irw model.ItemReaderWriter,
 	}
 
 	for _, item := range *belongingItems {
-		if err := items.EnsureItemHaveTags(irw, &item, concreteTags); err != nil {
+		if err := items.EnsureItemHaveTags(irw, &item, autoTags); err != nil {
 			errs = append(errs, err)
 		}
 	}

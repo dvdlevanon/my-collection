@@ -110,8 +110,8 @@ type DirectoryItemsGetterSetter interface {
 	DirectoryItemsSetter
 }
 
-type DirectoryConcreteTagsGetter interface {
-	GetConcreteTags(path string) ([]*Tag, error)
+type DirectoryAutoTagsGetter interface {
+	GetAutoTags(path string) ([]*Tag, error)
 }
 
 type FileMetadataGetter interface {
@@ -124,4 +124,10 @@ type DirectoryChangedCallback interface {
 
 type CurrentTimeGetter interface {
 	GetCurrentTime() time.Time
+}
+
+type Database interface {
+	DirectoryReaderWriter
+	TagReaderWriter
+	ItemReaderWriter
 }

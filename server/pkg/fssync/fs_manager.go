@@ -71,7 +71,7 @@ func (f *FsManager) AddBelongingItem(item *model.Item) error {
 	return newFsDirectory(item.Origin).addItem(f.db, f.db, item)
 }
 
-func (f *FsManager) GetConcreteTags(path string) ([]*model.Tag, error) {
+func (f *FsManager) GetAutoTags(path string) ([]*model.Tag, error) {
 	directory, err := directories.GetDirectory(f.db, path)
 	if err != nil {
 		return nil, err
