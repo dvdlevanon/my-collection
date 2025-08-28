@@ -7,7 +7,8 @@ SCRIPT_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
 # Get current timestamp for unique directory name
 TIMESTAMP=$(date +%Y-%m-%d-%H%M%S)
-BASE_DIR="media-library-$TIMESTAMP"
+BASE_DIR=$1
+[ -z "$BASE_DIR" ] && BASE_DIR="media-library-$TIMESTAMP"
 
 echo "Creating media library structure in: $BASE_DIR"
 
@@ -39,14 +40,14 @@ for movie in "${movies[@]}"; do
     $SCRIPT_DIR/generate-subtitle.sh 20 $movie "lib1/$movie/movie.srt"
     # Add additional subtitle files for some movies
     if [[ $movie == *"action"* ]] || [[ $movie == *"sci_fi"* ]]; then
-        touch "lib1/$movie/movie.es.srt"
-        touch "lib1/$movie/movie.fr.srt"
+        $SCRIPT_DIR/generate-subtitle.sh 20 "$movie - es" "lib1/$movie/movie.es.srt"
+        $SCRIPT_DIR/generate-subtitle.sh 20 "$movie - fr" "lib1/$movie/movie.fr.srt"
     fi
     # Add extras for some movies
     if [[ $movie == *"drama"* ]] || [[ $movie == *"documentary"* ]]; then
         mkdir -p "lib1/$movie/extras"
-        touch "lib1/$movie/extras/behind_the_scenes.mp4"
-        touch "lib1/$movie/extras/deleted_scenes.mp4"
+        $SCRIPT_DIR/generate-movie.sh "$movie - behind the scenes" 20 "lib1/$movie/extras/behind_the_scenes.mp4"
+        $SCRIPT_DIR/generate-movie.sh "$movie - deleted scenes" 20 "lib1/$movie/extras/deleted_scenes.mp4"
     fi
 done
 
