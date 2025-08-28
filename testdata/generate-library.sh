@@ -1,5 +1,7 @@
 #!/bin/bash
 
+SCRIPT_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
+
 # Media Library Directory Structure Generator
 # Creates a comprehensive media library with movies, series, and short clips
 
@@ -33,8 +35,8 @@ movies=(
 
 for movie in "${movies[@]}"; do
     mkdir -p "lib1/$movie"
-    touch "lib1/$movie/movie.mp4"
-    touch "lib1/$movie/movie.srt"
+    $SCRIPT_DIR/generate-movie.sh $movie 20 "lib1/$movie/movie.mp4"
+    $SCRIPT_DIR/generate-subtitle.sh 20 $movie "lib1/$movie/movie.srt"
     # Add additional subtitle files for some movies
     if [[ $movie == *"action"* ]] || [[ $movie == *"sci_fi"* ]]; then
         touch "lib1/$movie/movie.es.srt"
