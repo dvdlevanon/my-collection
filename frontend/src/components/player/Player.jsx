@@ -9,6 +9,7 @@ import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
 import PlayerControls from './PlayerControls';
 import { usePlayerStore } from './PlayerStore';
+import Subtitles from './Subtitiles';
 import useVideoController from './VideoController';
 import VideoElement from './VideoElement';
 
@@ -45,7 +46,7 @@ function Player({ itemId }) {
 		playerStore.setVideoController(videoController);
 		playerStore.loadFromLocalStorage();
 		playerStore.setIsPlaying(true);
-	}, [videoController.videoElement]);
+	}, [videoController.videoElement.current]);
 
 	useEffect(() => {
 		window.addEventListener('keyup', onKeyDown, false);
@@ -87,18 +88,19 @@ function Player({ itemId }) {
 		<Stack
 			ref={videoController.videoContainer}
 			display="flex"
-			sx={{
-				position: 'relative',
-				cursor: playerStore.isPlaying && !playerStore.controlsVisible ? 'none' : 'auto',
-			}}
+			position={'relative'}
+			cursor={playerStore.isPlaying && !playerStore.controlsVisible ? 'none' : 'auto'}
 			tabIndex="0"
 			onMouseLeave={() => onMouseLeave()}
+			width={'100%'}
+			height={'100%'}
 		>
 			<VideoElement videoController={videoController} />
 			<ItemSuggestions width={playerWidth} />
 			<HighlightControls />
 			<CropFrame videoRef={videoController.videoElement} isPlaying={playerStore.isPlaying} />
 			<PlayerControls />
+			<Subtitles itemId={itemId} />
 		</Stack>
 	);
 }

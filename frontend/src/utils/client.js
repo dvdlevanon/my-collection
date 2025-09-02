@@ -104,6 +104,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/items`).then((response) => response.json());
 	};
 
+	static getSubtitle = async (itemId) => {
+		return await fetch(`${Client.apiUrl}/subtitles/${itemId}`).then((response) => response.json());
+	};
+
 	static getSuggestedItems = async (itemId) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}/suggestions`).then((response) => response.json());
 	};
@@ -203,7 +207,7 @@ export default class Client {
 	};
 
 	static getTagImageTypes = async () => {
-		return await fetch(`${Client.apiUrl}/tag-image-types`).then((response) => response.json());
+		return await fetch(`${Client.apiUrl}/tags/tag-image-types`).then((response) => response.json());
 	};
 
 	static getFsDir = async (path, depth) => {

@@ -24,6 +24,10 @@ export default class ReactQueryUtil {
 		return ['items', { id: String(itemId) }];
 	};
 
+	static subtitleQueryKey = (itemId) => {
+		return ['subtitle', { id: String(itemId) }];
+	};
+
 	static tagKey = (tagId) => {
 		return ['tags', { id: String(tagId) }];
 	};
@@ -101,6 +105,13 @@ export default class ReactQueryUtil {
 		return {
 			queryKey: ReactQueryUtil.availableAnnotationsKey(categoryId),
 			queryFn: () => Client.getAvailableAnnotations(categoryId),
+		};
+	};
+
+	static subtitleQuery = (itemId) => {
+		return {
+			queryKey: ReactQueryUtil.subtitleQueryKey(itemId),
+			queryFn: () => Client.getSubtitle(itemId),
 		};
 	};
 }
