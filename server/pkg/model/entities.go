@@ -63,6 +63,16 @@ type Item struct {
 	MainItemId            *uint64 `json:"main_item,omitempty"`
 }
 
+type Subtitle struct {
+	Items []SubtitleItem `json:"items,omitempty"`
+}
+
+type SubtitleItem struct {
+	StartMillis int64  `json:"start_millis"`
+	EndMillis   int64  `json:"end_millis"`
+	Text        string `json:"text"`
+}
+
 type Cover struct {
 	Id     uint64 `json:"id,omitempty"`
 	Url    string `json:"url,omitempty"`

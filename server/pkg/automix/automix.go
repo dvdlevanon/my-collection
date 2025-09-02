@@ -12,11 +12,16 @@ import (
 	"time"
 )
 
-func New(trw model.TagReaderWriter, ir model.ItemReader,
-	tarw model.TagAnnotationReaderWriter, dailyMixItemsCount int) (*Automix, error) {
-	d, err := trw.GetTag(special_tags.DailymixTag)
+type autoMixDb interface {
+	model.TagReaderWriter
+	model.ItemReader
+	model.TagAnnotationReaderWriter
+}
+
+func New(db autoMixDb, dailyMixItemsCount int) (*Automix, error) {
+	d, err := db.GetTag(special_tags.DailymixTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(special_tags.DailymixTag); err != nil {
+		if err := db.CreateOrUpdateTag(special_tags.DailymixTag); err != nil {
 			return nil, err
 		}
 	} else {
@@ -24,28 +29,26 @@ func New(trw model.TagReaderWriter, ir model.ItemReader,
 	}
 
 	return &Automix{
-		trw:                trw,
-		ir:                 ir,
-		tarw:               tarw,
+		db:                 db,
 		dailyMixItemsCount: dailyMixItemsCount,
 	}, nil
 }
 
 type Automix struct {
-	trw                model.TagReaderWriter
-	ir                 model.ItemReader
-	tarw               model.TagAnnotationReaderWriter
+	db                 autoMixDb
 	dailyMixItemsCount int
 }
 
-func (d *Automix) Run(ctx context.Context) {
-	select {
-	case <-ctx.Done():
-		return
-	case <-time.After(1 * time.Minute):
-		if !isDailymixExists(d.trw, d) {
-			if err := d.generateDailymix(d); err != nil {
-				utils.LogError("Error in generateDailymix", err)
+func (d *Automix) Run(ctx context.Context) error {
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-time.After(1 * time.Minute):
+			if !isDailymixExists(d.db, d) {
+				if err := d.generateDailymix(d); err != nil {
+					utils.LogError("Error in generateDailymix", err)
+				}
 			}
 		}
 	}
@@ -56,12 +59,12 @@ func (d *Automix) GetCurrentTime() time.Time {
 }
 
 func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
-	tag, err := prepareDailymixTag(d.trw, d.tarw, ctg)
+	tag, err := prepareDailymixTag(d.db, ctg)
 	if err != nil {
 		return err
 	}
 
-	randomItems, err := items.GetRandomItems(d.ir, d.dailyMixItemsCount, func(item *model.Item) bool {
+	randomItems, err := items.GetRandomItems(d.db, d.dailyMixItemsCount, func(item *model.Item) bool {
 		isShortSubitem := items.IsSubItem(item) && item.DurationSeconds < 60*5
 		return !items.IsHighlight(item) && !items.IsSplittedItem(item) && !isShortSubitem
 	})
@@ -71,11 +74,11 @@ func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
 	}
 
 	tag.Items = randomItems
-	return d.trw.CreateOrUpdateTag(tag)
+	return d.db.CreateOrUpdateTag(tag)
 }
 
-func isDailymixExists(trw model.TagReaderWriter, ctg model.CurrentTimeGetter) bool {
-	_, err := tags.GetChildTag(trw, special_tags.DailymixTag.Id, getCurrentDailymixTitle(ctg))
+func isDailymixExists(db autoMixDb, ctg model.CurrentTimeGetter) bool {
+	_, err := tags.GetChildTag(db, special_tags.DailymixTag.Id, getCurrentDailymixTitle(ctg))
 	return err == nil
 }
 
@@ -87,14 +90,13 @@ func getCurrentDailymixAnnotation(ctg model.CurrentTimeGetter) string {
 	return ctg.GetCurrentTime().Format("Jan-2006")
 }
 
-func prepareDailymixTag(trw model.TagReaderWriter, tarw model.TagAnnotationReaderWriter,
-	ctg model.CurrentTimeGetter) (*model.Tag, error) {
-	tag, err := tags.GetOrCreateChildTag(trw, special_tags.DailymixTag.Id, getCurrentDailymixTitle(ctg))
+func prepareDailymixTag(db autoMixDb, ctg model.CurrentTimeGetter) (*model.Tag, error) {
+	tag, err := tags.GetOrCreateChildTag(db, special_tags.DailymixTag.Id, getCurrentDailymixTitle(ctg))
 	if err != nil {
 		return nil, err
 	}
 
-	_, err = tag_annotations.AddAnnotationToTag(trw, tarw, tag.Id, model.TagAnnotation{
+	_, err = tag_annotations.AddAnnotationToTag(db, db, tag.Id, model.TagAnnotation{
 		Title: getCurrentDailymixAnnotation(ctg),
 	})
 	if err != nil {

@@ -23,11 +23,16 @@ func GetSpecTagId() uint64 {
 	return special_tags.SpecTag.Id
 }
 
-func New(trw model.TagReaderWriter, irw model.ItemReaderWriter,
-	tarw model.TagAnnotationReaderWriter) (*Spectagger, error) {
-	s, err := trw.GetTag(special_tags.SpecTag)
+type specTaggerDb interface {
+	model.TagReaderWriter
+	model.ItemReaderWriter
+	model.TagAnnotationReaderWriter
+}
+
+func New(db specTaggerDb) (*Spectagger, error) {
+	s, err := db.GetTag(special_tags.SpecTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(special_tags.SpecTag); err != nil {
+		if err := db.CreateOrUpdateTag(special_tags.SpecTag); err != nil {
 			return nil, err
 		}
 	} else {
@@ -35,25 +40,21 @@ func New(trw model.TagReaderWriter, irw model.ItemReaderWriter,
 	}
 
 	return &Spectagger{
-		trw:            trw,
-		irw:            irw,
-		tarw:           tarw,
+		db:             db,
 		triggerChannel: make(chan bool),
 	}, nil
 }
 
 type Spectagger struct {
-	trw            model.TagReaderWriter
-	irw            model.ItemReaderWriter
-	tarw           model.TagAnnotationReaderWriter
+	db             specTaggerDb
 	triggerChannel chan bool
 }
 
-func (d *Spectagger) Trigger() {
+func (d *Spectagger) EnqueueSpecTagger() {
 	d.triggerChannel <- true
 }
 
-func (d *Spectagger) Run(ctx context.Context) {
+func (d *Spectagger) Run(ctx context.Context) error {
 	first := true
 
 	for {
@@ -69,7 +70,7 @@ func (d *Spectagger) Run(ctx context.Context) {
 		case <-time.After(60 * time.Minute):
 			d.runSpectagger()
 		case <-ctx.Done():
-			return
+			return nil
 		}
 	}
 }
@@ -83,7 +84,7 @@ func (d *Spectagger) runSpectagger() {
 }
 
 func (d *Spectagger) autoSpectag() error {
-	allItems, err := d.irw.GetAllItems()
+	allItems, err := d.db.GetAllItems()
 	if err != nil {
 		return err
 	}
@@ -96,37 +97,37 @@ func (d *Spectagger) autoSpectag() error {
 	tagTitleToId := make(map[string]uint64)
 
 	for _, item := range *allItems {
-		resolutionTags, err := getResolutionTags(d.tarw, &item)
+		resolutionTags, err := getResolutionTags(d.db, &item)
 		if err != nil {
 			utils.LogError("Error getting resolution tags", err)
 			continue
 		}
 
-		videoCodecTag, err := getVideoCodecTag(d.tarw, &item)
+		videoCodecTag, err := getVideoCodecTag(d.db, &item)
 		if err != nil {
 			utils.LogError("Error getting video codec tag", err)
 			continue
 		}
 
-		audioCodecTag, err := getAudioCodecTag(d.tarw, &item)
+		audioCodecTag, err := getAudioCodecTag(d.db, &item)
 		if err != nil {
 			utils.LogError("Error getting audio codec tag", err)
 			continue
 		}
 
-		durationTag, err := getDurationTag(d.tarw, &item)
+		durationTag, err := getDurationTag(d.db, &item)
 		if err != nil {
 			utils.LogError("Error getting duration tag", err)
 			continue
 		}
 
-		typeTag, typeToRemove, err := getTypeTag(d.tarw, &item)
+		typeTag, typeToRemove, err := getTypeTag(d.db, &item)
 		if err != nil {
 			utils.LogError("Error getting type tag", err)
 			continue
 		}
 
-		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(d.tarw, categories, &item)
+		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(d.db, categories, &item)
 		if err != nil {
 			utils.LogError("Error getting category tags", err)
 			continue
@@ -136,7 +137,7 @@ func (d *Spectagger) autoSpectag() error {
 		tagsToAdd = append(tagsToAdd, resolutionTags...)
 		tagsToAdd = removeNils(tagsToAdd)
 
-		if err := addTagsToItem(&tagTitleToId, d.trw, d.irw, &item, tagsToAdd); err != nil {
+		if err := addTagsToItem(&tagTitleToId, d.db, &item, tagsToAdd); err != nil {
 			utils.LogError("Error adding tags to item", err)
 			continue
 		}
@@ -146,7 +147,7 @@ func (d *Spectagger) autoSpectag() error {
 			tagsToRemove = append(tagsToRemove, typeToRemove)
 		}
 
-		if err := removeTagsFromItem(&tagTitleToId, d.trw, d.irw, &item, tagsToRemove); err != nil {
+		if err := removeTagsFromItem(&tagTitleToId, d.db, &item, tagsToRemove); err != nil {
 			utils.LogError("Error removing tags from item", err)
 			continue
 		}
@@ -167,7 +168,7 @@ func removeNils(tags []*model.Tag) []*model.Tag {
 }
 
 func (d *Spectagger) GetUserCategories() (*[]model.Tag, error) {
-	categories, err := tags.GetCategories(d.trw)
+	categories, err := tags.GetCategories(d.db)
 	if err != nil {
 		return nil, err
 	}
@@ -421,30 +422,30 @@ func getTagsWithId(tagTitleToId *map[string]uint64, trw model.TagReaderWriter,
 	return savedTags, nil
 }
 
-func addTagsToItem(tagTitleToId *map[string]uint64, trw model.TagReaderWriter, irw model.ItemReaderWriter,
-	item *model.Item, unsavedTags []*model.Tag) error {
+func addTagsToItem(tagTitleToId *map[string]uint64, db specTaggerDb, item *model.Item, unsavedTags []*model.Tag) error {
 	if len(unsavedTags) == 0 {
 		return nil
 	}
 
-	savedTags, err := getTagsWithId(tagTitleToId, trw, unsavedTags)
+	savedTags, err := getTagsWithId(tagTitleToId, db, unsavedTags)
 	if err != nil {
 		return err
 	}
 
-	return items.EnsureItemHaveTags(irw, item, savedTags)
+	_, err = items.EnsureItemHaveTags(db, item, savedTags)
+	return err
 }
 
-func removeTagsFromItem(tagTitleToId *map[string]uint64, trw model.TagReaderWriter, irw model.ItemReaderWriter,
+func removeTagsFromItem(tagTitleToId *map[string]uint64, db specTaggerDb,
 	item *model.Item, unsavedTags []*model.Tag) error {
 	if len(unsavedTags) == 0 {
 		return nil
 	}
 
-	savedTags, err := getTagsWithId(tagTitleToId, trw, unsavedTags)
+	savedTags, err := getTagsWithId(tagTitleToId, db, unsavedTags)
 	if err != nil {
 		return err
 	}
 
-	return items.EnsureItemMissingTags(irw, item, savedTags)
+	return items.EnsureItemMissingTags(db, item, savedTags)
 }

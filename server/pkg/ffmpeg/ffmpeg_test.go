@@ -7,7 +7,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-var testFiles = "../../test-files"
+var testFiles = "../../../testdata/sample-files"
 var sampleMp4 = filepath.Join(testFiles, "sample.mp4")
 var sample3SecondsScreenshotPng = filepath.Join(testFiles, "sample-3-second-screenshot.png")
 

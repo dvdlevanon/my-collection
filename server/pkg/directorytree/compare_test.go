@@ -15,6 +15,13 @@ import (
 type extendsFs func(rootDir string)
 type extendsDig func(dig *model.MockDirectoryItemsGetter)
 
+type testFileFilter2 struct {
+}
+
+func (f testFileFilter2) Filter(path string) bool {
+	return !strings.HasSuffix(path, "file4-excluded")
+}
+
 func skeleton(t *testing.T, extendsFs extendsFs, extendsDig extendsDig,
 	additionalDbDirs ...model.Directory) (*DirectoryNode, *DirectoryNode) {
 	ctrl := gomock.NewController(t)
@@ -30,9 +37,7 @@ func skeleton(t *testing.T, extendsFs extendsFs, extendsDig extendsDig,
 	dbRoot, err := BuildFromDb(buildTestDirectoryReader(ctrl, additionalDbDirs...), dig)
 	assert.NoError(t, err)
 
-	fsRoot, err := BuildFromPath(rootDir, func(path string) bool {
-		return !strings.HasSuffix(path, "file4-excluded")
-	})
+	fsRoot, err := BuildFromPath(rootDir, testFileFilter{})
 	assert.NoError(t, err)
 	return fsRoot, dbRoot
 }

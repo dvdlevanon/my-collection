@@ -4,7 +4,6 @@ import (
 	"context"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
-	"my-collection/server/pkg/processor"
 	"my-collection/server/pkg/utils"
 
 	"github.com/op/go-logging"
@@ -12,7 +11,11 @@ import (
 
 var logger = logging.MustGetLogger("itemsoptimizer")
 
-func New(ir model.ItemReader, processor processor.Processor, maxResolution int) *ItemsOptimizer {
+type Processor interface {
+	EnqueueChangeResolution(id uint64, newResolution string)
+}
+
+func New(ir model.ItemReader, processor Processor, maxResolution int) *ItemsOptimizer {
 	return &ItemsOptimizer{
 		ir:             ir,
 		maxResolution:  maxResolution,
@@ -24,21 +27,21 @@ func New(ir model.ItemReader, processor processor.Processor, maxResolution int) 
 type ItemsOptimizer struct {
 	ir             model.ItemReader
 	maxResolution  int
-	processor      processor.Processor
+	processor      Processor
 	triggerChannel chan bool
 }
 
-func (d *ItemsOptimizer) Trigger() {
+func (d *ItemsOptimizer) EnqueueItemOptimizer() {
 	d.triggerChannel <- true
 }
 
-func (d *ItemsOptimizer) Run(ctx context.Context) {
+func (d *ItemsOptimizer) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-d.triggerChannel:
 			d.runItemsOptimizer()
 		case <-ctx.Done():
-			return
+			return nil
 		}
 	}
 }

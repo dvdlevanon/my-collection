@@ -4,7 +4,7 @@ import (
 	"path/filepath"
 )
 
-var testFiles = "../../test-files"
+var testFiles = "../../../testdata/sample-files"
 var sampleMp4 = filepath.Join(testFiles, "sample.mp4")
 var sampleNoAudioMp4 = filepath.Join(testFiles, "sample-no-audio.mp4")
 var sampleNoVideoMp4 = filepath.Join(testFiles, "sample-no-video.mp4")

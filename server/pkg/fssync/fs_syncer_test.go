@@ -89,6 +89,13 @@ func createTestDir(path string, excluded bool) *model.Directory {
 	}
 }
 
+type trueFileFilter struct {
+}
+
+func (f trueFileFilter) Filter(path string) bool {
+	return true
+}
+
 // Tests for newFsSyncer constructor
 func TestNewFsSyncer_Success(t *testing.T) {
 	ctrl, mockDB, _, _, _ := setupMocksForTest(t)
@@ -117,7 +124,7 @@ func TestNewFsSyncer_Success(t *testing.T) {
 	// Mock GetBelongingItems call for the test directory - use gomock.Any() since testDir is dynamic
 	mockDIG.EXPECT().GetBelongingItems(gomock.Any()).Return(&[]model.Item{}, nil)
 
-	syncer, err := newFsSyncer(testDir, mockDB, mockDIG, func(path string) bool { return true })
+	syncer, err := newFsSyncer(testDir, mockDB, mockDIG, trueFileFilter{})
 
 	assert.NoError(t, err)
 	assert.NotNil(t, syncer)
@@ -134,7 +141,7 @@ func TestNewFsSyncer_DirectoryNotFound(t *testing.T) {
 
 	mockDIG := model.NewMockDirectoryItemsGetter(ctrl)
 
-	syncer, err := newFsSyncer("/nonexistent", mockDB, mockDIG, func(path string) bool { return true })
+	syncer, err := newFsSyncer("/nonexistent", mockDB, mockDIG, trueFileFilter{})
 
 	assert.Error(t, err)
 	assert.Nil(t, syncer)
@@ -150,7 +157,7 @@ func TestNewFsSyncer_DirectoryCheckError(t *testing.T) {
 
 	mockDIG := model.NewMockDirectoryItemsGetter(ctrl)
 
-	syncer, err := newFsSyncer("/test", mockDB, mockDIG, func(path string) bool { return true })
+	syncer, err := newFsSyncer("/test", mockDB, mockDIG, trueFileFilter{})
 
 	assert.Error(t, err)
 	assert.Nil(t, syncer)
@@ -574,7 +581,7 @@ func TestSyncAutoTags_Success(t *testing.T) {
 		mockTR.EXPECT().GetTag(gomock.Any()).Return(createTestTag(uint64(i+1), dir.Path, nil), nil)
 	}
 
-	errs := syncAutoTags(mockTR, mockIRW, mockDR, mockDATG)
+	_, errs := syncAutoTags(mockTR, mockIRW, mockDR, mockDATG)
 
 	assert.Empty(t, errs)
 }
@@ -590,7 +597,7 @@ func TestSyncAutoTags_GetDirectoriesError(t *testing.T) {
 
 	mockDR.EXPECT().GetAllDirectories().Return(nil, errors.New("db error"))
 
-	errs := syncAutoTags(mockTR, mockIRW, mockDR, mockDATG)
+	_, errs := syncAutoTags(mockTR, mockIRW, mockDR, mockDATG)
 
 	assert.Len(t, errs, 1)
 	assert.Contains(t, errs[0].Error(), "db error")
@@ -620,7 +627,7 @@ func TestSyncAutoTagsForDir_Success(t *testing.T) {
 	// Mock updating item with auto tags
 	mockIRW.EXPECT().UpdateItem(gomock.Any()).Return(nil)
 
-	errs := syncAutoTagsForDir(mockTR, mockIRW, autoTags, dir)
+	_, errs := syncAutoTagsForDir(mockTR, mockIRW, autoTags, dir)
 
 	assert.Empty(t, errs)
 }

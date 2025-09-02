@@ -75,6 +75,7 @@ const (
 	// values in ws.js
 	PUSH_PING           = 1
 	PUSH_QUEUE_METADATA = 2
+	PUSH_FS_CHANGE      = 3
 )
 
 type Rect struct {

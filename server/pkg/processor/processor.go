@@ -3,9 +3,11 @@ package processor
 import (
 	"context"
 	"fmt"
+	"my-collection/server/pkg/bl/tasks"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
+	"my-collection/server/pkg/utils"
 	"os"
 	"time"
 
@@ -16,73 +18,24 @@ import (
 
 var logger = logging.MustGetLogger("item-processor")
 
-type ProcessorNotifier interface {
-	OnTaskAdded(task *model.Task)
-	OnTaskComplete(task *model.Task)
-	PauseToggled(paused bool)
-	OnFinishedTasksCleared()
-}
-
-type Processor interface {
-	Run(ctx context.Context)
-	EnqueueAllItemsPreview(force bool) error
-	EnqueueAllItemsCovers(force bool) error
-	EnqueueAllItemsVideoMetadata(force bool) error
-	EnqueueAllItemsFileMetadata() error
-	EnqueueItemPreview(id uint64)
-	EnqueueItemCovers(id uint64)
-	EnqueueMainCover(id uint64, second float64)
-	EnqueueCropFrame(id uint64, second float64, rect model.RectFloat)
-	EnqueueChangeResolution(id uint64, newResolution string)
-	EnqueueItemVideoMetadata(id uint64)
-	EnqueueItemFileMetadata(id uint64)
-	IsPaused() bool
-	IsAutomaticProcessing() bool
-	Pause()
-	Continue()
-	SetProcessorNotifier(notifier ProcessorNotifier)
-	ClearFinishedTasks() error
-}
-
-type ProcessorMock struct{}
-
-func (d *ProcessorMock) Run(ctx context.Context)                                          {}
-func (d *ProcessorMock) EnqueueAllItemsCovers(force bool) error                           { return nil }
-func (d *ProcessorMock) EnqueueAllItemsPreview(force bool) error                          { return nil }
-func (d *ProcessorMock) EnqueueAllItemsVideoMetadata(force bool) error                    { return nil }
-func (d *ProcessorMock) EnqueueAllItemsFileMetadata() error                               { return nil }
-func (d *ProcessorMock) EnqueueItemVideoMetadata(id uint64)                               {}
-func (d *ProcessorMock) EnqueueItemPreview(id uint64)                                     {}
-func (d *ProcessorMock) EnqueueItemCovers(id uint64)                                      {}
-func (d *ProcessorMock) EnqueueItemFileMetadata(id uint64)                                {}
-func (d *ProcessorMock) EnqueueMainCover(id uint64, second float64)                       {}
-func (d *ProcessorMock) EnqueueCropFrame(id uint64, second float64, rect model.RectFloat) {}
-func (d *ProcessorMock) EnqueueChangeResolution(id uint64, newResolution string)          {}
-func (d *ProcessorMock) IsAutomaticProcessing() bool                                      { return false }
-func (d *ProcessorMock) IsPaused() bool                                                   { return false }
-func (d *ProcessorMock) Pause()                                                           {}
-func (d *ProcessorMock) Continue()                                                        {}
-func (d *ProcessorMock) ClearFinishedTasks() error                                        { return nil }
-func (d *ProcessorMock) SetProcessorNotifier(notifier ProcessorNotifier)                  {}
-
 func taskBuilder() interface{} {
 	return &model.Task{}
 }
 
-type itemProcessorImpl struct {
+type Processor struct {
+	utils.PushSender
 	db                   *db.Database
 	storage              *storage.Storage
 	dque                 *dque.DQue
 	pauseChannel         chan bool
 	paused               bool
-	notifier             ProcessorNotifier
 	coversCount          int
 	previewSceneCount    int
 	previewSceneDuration int
 	automaticProcessing  bool
 }
 
-func New(db *db.Database, storage *storage.Storage) (Processor, error) {
+func New(db *db.Database, storage *storage.Storage, paused bool, coversCount int, previewSceneCount int, previewSceneDuration int) (*Processor, error) {
 	logger.Infof("Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")
@@ -97,61 +50,63 @@ func New(db *db.Database, storage *storage.Storage) (Processor, error) {
 		return nil, err
 	}
 
-	return &itemProcessorImpl{
+	return &Processor{
 		db:                   db,
 		storage:              storage,
 		dque:                 dque,
 		coversCount:          3,
 		previewSceneCount:    4,
 		previewSceneDuration: 3,
+		paused:               paused,
 		automaticProcessing:  false,
 		pauseChannel:         make(chan bool, 10),
 	}, nil
 }
 
-func (p *itemProcessorImpl) ClearFinishedTasks() error {
+func (p *Processor) pushQueueMetadata() {
+	queueMetadata, err := tasks.BuildQueueMetadata(p.db, p)
+	if err != nil {
+		logger.Errorf("Unable to build queue metadata %s", err)
+		return
+	}
+
+	p.Push(model.PushMessage{MessageType: model.PUSH_QUEUE_METADATA, Payload: queueMetadata})
+}
+
+func (p *Processor) ClearFinishedTasks() error {
 	if err := p.db.RemoveTasks("processing_end is not null"); err != nil {
 		logger.Errorf("Unable to clear finished tasks %s", err)
 		return err
 	}
 
-	if p.notifier != nil {
-		p.notifier.OnFinishedTasksCleared()
-	}
-
+	p.pushQueueMetadata()
 	return nil
 }
 
-func (p *itemProcessorImpl) SetProcessorNotifier(notifier ProcessorNotifier) {
-	p.notifier = notifier
-}
-
-func (p *itemProcessorImpl) IsPaused() bool {
+func (p *Processor) IsPaused() bool {
 	return p.paused
 }
-func (p *itemProcessorImpl) IsAutomaticProcessing() bool {
+func (p *Processor) IsAutomaticProcessing() bool {
 	return p.automaticProcessing
 }
 
-func (p *itemProcessorImpl) Pause() {
+func (p *Processor) Pause() {
 	p.pauseChannel <- true
 }
 
-func (p *itemProcessorImpl) Continue() {
+func (p *Processor) Continue() {
 	p.pauseChannel <- false
 }
 
-func (p *itemProcessorImpl) Run(ctx context.Context) {
+func (p *Processor) Run(ctx context.Context) error {
 	for {
 		select {
 		case paused := <-p.pauseChannel:
 			logger.Infof("Queue paused changed from %t to %t", p.paused, paused)
 			p.paused = paused
-			if p.notifier != nil {
-				p.notifier.PauseToggled(p.paused)
-			}
+			p.pushQueueMetadata()
 		case <-ctx.Done():
-			return
+			return nil
 		default:
 			if !p.paused {
 				p.process()
@@ -162,7 +117,7 @@ func (p *itemProcessorImpl) Run(ctx context.Context) {
 	}
 }
 
-func (p *itemProcessorImpl) process() {
+func (p *Processor) process() {
 	taskIfc, err := p.dque.Peek()
 	if err != nil {
 		if err != dque.ErrEmpty {
@@ -199,15 +154,13 @@ func (p *itemProcessorImpl) process() {
 		logger.Errorf("Error dequeuing task %s - %+v", err, task)
 	}
 
-	if p.notifier != nil {
-		p.notifier.OnTaskComplete(task)
-	}
+	p.pushQueueMetadata()
 
 	processingMillis := time.Now().UnixMilli() - startMillis
 	logger.Infof("Done processing task in %dms %+v", processingMillis, task)
 }
 
-func (p *itemProcessorImpl) processTask(t *model.Task) error {
+func (p *Processor) processTask(t *model.Task) error {
 	switch t.TaskType {
 	case model.REFRESH_COVER_TASK:
 		return refreshItemCovers(p.db, p.storage, t.IdParam, p.coversCount)

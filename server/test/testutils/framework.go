@@ -24,7 +24,17 @@ type IntegrationTestFramework struct {
 	dbFile      string
 	database    *db.Database
 	fsManager   *fssync.FsManager
+	dig         model.DirectoryItemsGetter
 	initialSync bool
+}
+
+type testFileFilter struct {
+}
+
+func (f testFileFilter) Filter(path string) bool {
+	// Accept all files except hidden ones for testing
+	base := filepath.Base(path)
+	return !strings.HasPrefix(base, ".")
 }
 
 // NewIntegrationTestFramework creates a new test framework with fresh DB and filesystem
@@ -46,11 +56,7 @@ func NewIntegrationTestFramework(t *testing.T) *IntegrationTestFramework {
 	require.NoError(t, err)
 
 	// Create FsManager with filter that accepts all files
-	fsManager, err := fssync.NewFsManager(database, func(path string) bool {
-		// Accept all files except hidden ones for testing
-		base := filepath.Base(path)
-		return !strings.HasPrefix(base, ".")
-	}, time.Hour) // Long interval since we sync manually
+	fsManager, err := fssync.NewFsManager(database, testFileFilter{}, time.Hour) // Long interval since we sync manually
 	require.NoError(t, err)
 
 	return &IntegrationTestFramework{
@@ -59,6 +65,7 @@ func NewIntegrationTestFramework(t *testing.T) *IntegrationTestFramework {
 		dbFile:    dbFile,
 		database:  database,
 		fsManager: fsManager,
+		dig:       fsManager,
 	}
 }
 
@@ -84,8 +91,8 @@ func (f *IntegrationTestFramework) GetDatabase() *db.Database {
 }
 
 // GetFsManager returns the filesystem manager instance
-func (f *IntegrationTestFramework) GetFsManager() *fssync.FsManager {
-	return f.fsManager
+func (f *IntegrationTestFramework) GetDirectoryItemsGetter() model.DirectoryItemsGetter {
+	return f.dig
 }
 
 // CreateFile creates a file with given content at the specified relative path

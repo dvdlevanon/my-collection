@@ -30,7 +30,7 @@ func TestAutoTagsBasicBehavior(t *testing.T) {
 	framework.AssertAutoTagsExist("tv/drama", []string{"tv/drama"})
 
 	// Verify items have the correct AutoTags
-	actionItem, err := framework.GetFsManager().GetBelongingItem("movies/action", "terminator.mp4")
+	actionItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("movies/action", "terminator.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, actionItem)
 
@@ -65,7 +65,7 @@ func TestAutoTagsFileMovement(t *testing.T) {
 	framework.Sync()
 
 	// Verify AutoTags are updated
-	movedItem, err := framework.GetFsManager().GetBelongingItem("destination", "movie.mp4")
+	movedItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("destination", "movie.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, movedItem)
 
@@ -111,7 +111,7 @@ func TestAutoTagsDirectoryRename(t *testing.T) {
 
 	// Verify individual items have updated AutoTags
 	for _, filename := range []string{"movie1.mp4", "movie2.mp4"} {
-		item, err := framework.GetFsManager().GetBelongingItem("newname", filename)
+		item, err := framework.GetDirectoryItemsGetter().GetBelongingItem("newname", filename)
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -159,7 +159,7 @@ func TestAutoTagsNestedDirectoryOperations(t *testing.T) {
 	framework.AssertAutoTagsExist("content/movies/comedy/2022", []string{"content/movies/comedy/2022"})
 
 	// Verify files have correct AutoTags
-	terminatorItem, err := framework.GetFsManager().GetBelongingItem("content/movies/action/2023", "terminator.mp4")
+	terminatorItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("content/movies/action/2023", "terminator.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, terminatorItem)
 
@@ -246,7 +246,7 @@ func TestAutoTagsMultipleFileOperations(t *testing.T) {
 
 	// Verify AutoTags for moved files
 	for _, filename := range []string{"movie1.mp4", "movie2.mp4", "movie3.mp4"} {
-		item, err := framework.GetFsManager().GetBelongingItem("favorites", filename)
+		item, err := framework.GetDirectoryItemsGetter().GetBelongingItem("favorites", filename)
 		require.NoError(t, err)
 		require.NotNil(t, item)
 
@@ -268,7 +268,7 @@ func TestAutoTagsMultipleFileOperations(t *testing.T) {
 	}
 
 	// Verify remaining files still have correct AutoTags
-	dramaItem, err := framework.GetFsManager().GetBelongingItem("drama", "movie4.mp4")
+	dramaItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("drama", "movie4.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, dramaItem)
 
@@ -295,7 +295,7 @@ func TestAutoTagsWithManualTags(t *testing.T) {
 	framework.Sync()
 
 	// Get the item and verify it has AutoTags
-	item, err := framework.GetFsManager().GetBelongingItem("movies/action", "terminator.mp4")
+	item, err := framework.GetDirectoryItemsGetter().GetBelongingItem("movies/action", "terminator.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, item)
 
@@ -325,7 +325,7 @@ func TestAutoTagsWithManualTags(t *testing.T) {
 	framework.Sync()
 
 	// Verify both manual tag and new AutoTag coexist
-	movedItem, err := framework.GetFsManager().GetBelongingItem("movies/sci-fi", "terminator.mp4")
+	movedItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("movies/sci-fi", "terminator.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, movedItem)
 
@@ -475,7 +475,7 @@ func TestCustomAutoTagsBasicBehavior(t *testing.T) {
 	framework.Sync()
 
 	// Verify that files in the action directory now have custom AutoTags
-	terminatorItem, err := framework.GetFsManager().GetBelongingItem("movies/action", "terminator.mp4")
+	terminatorItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("movies/action", "terminator.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, terminatorItem)
 
@@ -497,7 +497,7 @@ func TestCustomAutoTagsBasicBehavior(t *testing.T) {
 	assert.True(t, hasYearAutoTag, "File should have custom AutoTag derived from 2023 Release")
 
 	// Files in other directories should not have these custom AutoTags
-	ghostbustersItem, err := framework.GetFsManager().GetBelongingItem("movies/comedy", "ghostbusters.mp4")
+	ghostbustersItem, err := framework.GetDirectoryItemsGetter().GetBelongingItem("movies/comedy", "ghostbusters.mp4")
 	require.NoError(t, err)
 	require.NotNil(t, ghostbustersItem)
 

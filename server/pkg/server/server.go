@@ -3,139 +3,45 @@ package server
 import (
 	"context"
 	"my-collection/server/pkg/db"
-	"my-collection/server/pkg/itemsoptimizer"
-	"my-collection/server/pkg/mixondemand"
-	"my-collection/server/pkg/model"
-	processor "my-collection/server/pkg/processor"
-	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
-	"my-collection/server/pkg/utils"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
-	"gorm.io/gorm"
-	"k8s.io/utils/pointer"
 )
 
 var logger = logging.MustGetLogger("server")
 
 type Server struct {
-	router             *gin.Engine
-	db                 *db.Database
-	storage            *storage.Storage
-	processor          processor.Processor
-	spectagger         *spectagger.Spectagger
-	itemsOptimizer     *itemsoptimizer.ItemsOptimizer
-	dcc                model.DirectoryChangedCallback
-	thumbnailProcessor model.ThumbnailProcessor
-	mixOnDemand        *mixondemand.MixOnDemand
-	push               *push
+	addr     string
+	router   *gin.Engine
+	apiRoute *gin.RouterGroup
 }
 
-func New(db *db.Database, storage *storage.Storage, dcc model.DirectoryChangedCallback,
-	processor processor.Processor, spectagger *spectagger.Spectagger,
-	itemsOptimizer *itemsoptimizer.ItemsOptimizer, thumbnailProcessor model.ThumbnailProcessor,
-	mixOnDemand *mixondemand.MixOnDemand) *Server {
+func New(addr string, db *db.Database, storage *storage.Storage) *Server {
 	gin.SetMode("release")
 
+	router := gin.New()
+	router.Use(cors.Default())
+	router.Use(httpLogger)
+
 	server := &Server{
-		router:             gin.New(),
-		db:                 db,
-		storage:            storage,
-		dcc:                dcc,
-		processor:          processor,
-		spectagger:         spectagger,
-		itemsOptimizer:     itemsOptimizer,
-		thumbnailProcessor: thumbnailProcessor,
-		mixOnDemand:        mixOnDemand,
+		addr:     addr,
+		router:   router,
+		apiRoute: router.Group("/api"),
 	}
 
-	server.push = newPush(processor, server)
-	server.init()
+	server.registerStaticHandlers()
 	return server
 }
 
-func (d *Server) GetCurrentTime() time.Time {
-	return time.Now()
+func (s *Server) RegisterHandler(h Handler) {
+	h.RegisterRoutes(s.apiRoute)
 }
 
-func (s *Server) init() {
-	s.router.Use(cors.Default())
-	s.router.Use(httpLogger)
-
-	api := s.router.Group("/api")
-
-	api.GET("/items", s.getItems)
-	api.POST("/items", s.createItem)
-	api.POST("/items/:item", s.updateItem)
-	api.GET("/items/:item", s.getItem)
-	api.DELETE("/items/:item", s.deleteItem)
-	api.GET("/items/:item/location", s.getItemLocation)
-	api.POST("/items/:item/remove-tag/:tag", s.removeTagFromItem)
-	api.POST("/items/:item/main-cover", s.setMainCover)
-	api.POST("/items/:item/split", s.splitItem)
-	api.POST("/items/:item/make-highlight", s.makeHighlight)
-	api.POST("/items/:item/crop-frame", s.cropFrame)
-	api.GET("/items/:item/suggestions", s.getSuggestionsForItem)
-	api.POST("/items/:item/process", s.refreshItem)
-	api.POST("/items/:item/optimize", s.optimizeItem)
-
-	api.GET("/tags", s.getTags)
-	api.GET("/special-tags", s.getSpecialTags)
-	api.GET("/categories", s.getCategories)
-	api.POST("/tags", s.createTag)
-	api.POST("/tags/:tag", s.updateTag)
-	api.GET("/tags/:tag", s.getTag)
-	api.DELETE("/tags/:tag", s.removeTag)
-	api.POST("/tags/:tag/auto-image", s.autoImage)
-	api.GET("/tags/:tag/tag-custom-commands", s.getAllTagCustomCommands)
-	api.DELETE("/tags/:tag/tit/:tit", s.removeTagImageFromTag)
-	api.POST("/tags/:tag/images/:image", s.updateTagImage)
-	api.POST("/tags/:tag/random-mix/include", s.randomMixInclude)
-	api.POST("/tags/:tag/random-mix/exclude", s.randomMixExclude)
-
-	api.POST("/directories/scan", s.runDirectoriesScan)
-	api.POST("/directories/tags/*directory", s.SetDirectoryTags)
-
-	api.GET("/fs", s.getFsDir)
-	api.POST("/fs/include", s.includeDir)
-	api.POST("/fs/exclude", s.excludeDir)
-
-	api.POST("/tags/:tag/annotations", s.addAnnotationToTag)
-	api.DELETE("/tags/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)
-	api.GET("/tags/:tag/available-annotations", s.getTagAvailableAnnotations)
-
-	api.POST("/items/refresh-covers", s.refreshItemsCovers)
-	api.POST("/items/refresh-preview", s.refreshItemsPreview)
-	api.POST("/items/refresh-video-metadata", s.refreshItemsVideoMetadata)
-	api.POST("/items/refresh-file-metadata", s.refreshItemsFileMetadata)
-	api.GET("/file/*path", s.getFile)
-	api.POST("/upload-file", s.uploadFile)
-	api.POST("/upload-file-from-url", s.uploadFileFromUrl)
-	api.GET("/export-metadata.json", s.exportMetadata)
-
-	api.GET("/queue/metadata", s.getQueueMetadata)
-	api.GET("/queue/tasks", s.getTasks)
-	api.POST("/queue/continue", s.queueContinue)
-	api.POST("/queue/pause", s.queuePause)
-	api.POST("/queue/clear-finished", s.clearFinishedTasks)
-
-	api.POST("/spectagger/run", s.runSpecTagger)
-
-	api.POST("/itemsoptimizer/run", s.runItemsOptimizer)
-
-	api.GET("/stats", s.getStats)
-
-	api.GET("/tag-image-types", s.getTagImageTypes)
-
-	api.POST("/mix-on-demand", s.generateMixOnDemand)
-
-	api.GET("/ws", s.push.websocket)
-
+func (s *Server) registerStaticHandlers() {
 	s.router.Static("/ui", "ui/")
 	s.router.StaticFile("/", "ui/index.html")
 	s.router.GET("/spa/*route", func(c *gin.Context) {
@@ -143,13 +49,11 @@ func (s *Server) init() {
 	})
 }
 
-func (s *Server) Run(ctx context.Context, addr string) error {
-	logger.Infof("Starting server at address %s", addr)
-
-	go s.push.run(ctx)
+func (s *Server) Run(ctx context.Context) error {
+	logger.Infof("Starting server at address %s", s.addr)
 
 	srv := &http.Server{
-		Addr:    addr,
+		Addr:    s.addr,
 		Handler: s.router,
 	}
 
@@ -176,41 +80,4 @@ func (s *Server) Run(ctx context.Context, addr string) error {
 	case err := <-serverErr:
 		return err
 	}
-}
-
-func (s *Server) handleError(c *gin.Context, err error) bool {
-	if err == nil {
-		return false
-	}
-
-	httpError := http.StatusInternalServerError
-	if errors.Is(err, gorm.ErrRecordNotFound) {
-		httpError = http.StatusNotFound
-	}
-
-	utils.LogError("Server error", err)
-	c.AbortWithError(httpError, err)
-	return true
-}
-
-func (s *Server) buildQueueMetadata() (model.QueueMetadata, error) {
-	size, err := s.db.TasksCount("")
-	if err != nil {
-		logger.Errorf("Unable to get queue size %s", err)
-		return model.QueueMetadata{}, nil
-	}
-
-	unfinishedTasks, err := s.db.TasksCount("processing_end is null")
-	if err != nil {
-		logger.Errorf("Unable to get unfinished tasks count %s", err)
-		return model.QueueMetadata{}, nil
-	}
-
-	queueMetadata := model.QueueMetadata{
-		Size:            pointer.Int64(size),
-		Paused:          pointer.Bool(s.processor.IsPaused()),
-		UnfinishedTasks: pointer.Int64(unfinishedTasks),
-	}
-
-	return queueMetadata, err
 }

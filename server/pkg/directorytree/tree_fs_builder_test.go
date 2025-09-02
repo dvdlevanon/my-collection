@@ -26,14 +26,19 @@ func buildTestFs(t *testing.T, rootDir string) {
 	assert.NoError(t, err)
 }
 
+type testFileFilter struct {
+}
+
+func (f testFileFilter) Filter(path string) bool {
+	return !strings.HasSuffix(path, "file4-excluded")
+}
+
 func TestBuildFromPath(t *testing.T) {
 	rootDir, err := os.MkdirTemp("", "mc-build-from-fs-*")
 	assert.NoError(t, err)
 	buildTestFs(t, rootDir)
 
-	root, err := BuildFromPath(rootDir, func(path string) bool {
-		return !strings.HasSuffix(path, "file4-excluded")
-	})
+	root, err := BuildFromPath(rootDir, testFileFilter{})
 	assert.NoError(t, err)
 	assert.NotNil(t, root)
 	assert.Equal(t, 3, len(root.getOrCreateChild("1/2/3/4").Files))

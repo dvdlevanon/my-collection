@@ -32,14 +32,18 @@ func NewFsManager(db *db.Database, filesFilter directorytree.FilesFilter, checkI
 }
 
 type FsManager struct {
+	utils.PushSender
 	filesFilter   directorytree.FilesFilter
 	checkInterval time.Duration
 	db            *db.Database
 	changeChannel chan bool
 }
 
-func (f *FsManager) Watch(ctx context.Context) {
-	f.Sync()
+func (f *FsManager) Watch(ctx context.Context) error {
+	if err := f.Sync(); err != nil {
+		utils.LogError("Error in FS Watch", err)
+	}
+
 	for {
 		select {
 		case <-f.changeChannel:
@@ -47,7 +51,7 @@ func (f *FsManager) Watch(ctx context.Context) {
 				utils.LogError("Error in FS Watch", err)
 			}
 		case <-ctx.Done():
-			return
+			return nil
 		case <-time.After(f.checkInterval):
 			if err := f.Sync(); err != nil {
 				utils.LogError("Error in FS Watch", err)
@@ -93,26 +97,44 @@ func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
 	return file.ModTime().UnixMilli(), file.Size(), nil
 }
 
+func (f *FsManager) runSync() (bool, error) {
+	fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, f, f.filesFilter)
+	if err != nil {
+		return false, err
+	}
+
+	hasChanges, errors := fsSync.sync(f.db, f, f, f)
+
+	if len(errors) > 0 {
+		logger.Errorf("FS Sync finished with %d errors", len(errors))
+		for _, err := range errors {
+			utils.LogError("Error in FS Sync", err)
+		}
+
+		return hasChanges, errors[0]
+	}
+
+	return hasChanges, nil
+}
+
 func (f *FsManager) Sync() error {
-	hasChanges := true
 	var lastError error
+	hasAnyChange := false
 
+	hasChanges := true
 	for hasChanges {
-		fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, f, f.filesFilter)
+		var err error
+		hasChanges, err = f.runSync()
 		if err != nil {
-			return err
+			lastError = err
 		}
-
-		var errors []error
-		hasChanges, errors = fsSync.sync(f.db, f, f, f)
-
-		if len(errors) > 0 {
-			lastError = errors[0]
-			logger.Errorf("FS Sync finished with %d errors", len(errors))
-			for _, err := range errors {
-				utils.LogError("Error in FS Sync", err)
-			}
+		if hasChanges {
+			hasAnyChange = hasChanges
 		}
+	}
+
+	if hasAnyChange {
+		f.Push(model.PushMessage{MessageType: model.PUSH_FS_CHANGE, Payload: ""})
 	}
 
 	return lastError

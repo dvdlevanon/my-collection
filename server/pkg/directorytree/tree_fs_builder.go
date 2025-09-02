@@ -6,7 +6,9 @@ import (
 	"strings"
 )
 
-type FilesFilter func(path string) bool
+type FilesFilter interface {
+	Filter(path string) bool
+}
 
 func BuildFromPath(path string, filter FilesFilter) (*DirectoryNode, error) {
 	root, err := buildFromDir(nil, path, filter)
@@ -40,7 +42,7 @@ func buildFromDir(parent *DirectoryNode, path string, filter FilesFilter) (*Dire
 			}
 
 			node.Children = append(node.Children, child)
-		} else if filter(filepath.Join(path, file.Name())) {
+		} else if filter.Filter(filepath.Join(path, file.Name())) {
 			node.Files = append(node.Files, createFileNode(node, file.Name()))
 		}
 	}

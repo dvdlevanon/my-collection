@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
-	"my-collection/server/pkg/storage"
 	"os"
 	"path/filepath"
 	"time"
@@ -14,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func AutoImageChildren(storage *storage.Storage, trw model.TagReaderWriter,
+func AutoImageChildren(storage model.StorageUploader, trw model.TagReaderWriter,
 	titrw model.TagImageTypeReaderWriter, tag *model.Tag, directoryPath string) error {
 	dirs, err := os.ReadDir(directoryPath)
 	if err != nil {
@@ -42,7 +41,7 @@ func AutoImageChildren(storage *storage.Storage, trw model.TagReaderWriter,
 	return nil
 }
 
-func autoImageTagType(storage *storage.Storage, tw model.TagWriter,
+func autoImageTagType(storage model.StorageUploader, tw model.TagWriter,
 	titrw model.TagImageTypeReaderWriter, tag *model.Tag, directoryPath string, nickname string) error {
 	tit, err := getOrCreateTagImageType(titrw, nickname)
 	if err != nil {
@@ -57,7 +56,7 @@ func autoImageTagType(storage *storage.Storage, tw model.TagWriter,
 	return autoImageTag(storage, tw, tag, directoryPath, tit)
 }
 
-func updateTagImageTypeIcon(storage *storage.Storage, titrw model.TagImageTypeReaderWriter, tit *model.TagImageType, directoryPath string) error {
+func updateTagImageTypeIcon(storage model.StorageUploader, titrw model.TagImageTypeReaderWriter, tit *model.TagImageType, directoryPath string) error {
 	if tit.IconUrl != "" {
 		return nil
 	}
@@ -115,7 +114,7 @@ func getOrCreateTagImageType(titrw model.TagImageTypeReaderWriter, nickname stri
 	return tit, nil
 }
 
-func autoImageTag(storage *storage.Storage, tw model.TagWriter, tag *model.Tag,
+func autoImageTag(storage model.StorageUploader, tw model.TagWriter, tag *model.Tag,
 	directoryPath string, tit *model.TagImageType) error {
 	path, err := findExistingImage(tag.Title, directoryPath)
 	if err != nil {

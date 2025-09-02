@@ -1,6 +1,8 @@
 package model
 
-import "time"
+import (
+	"time"
+)
 
 //go:generate mockgen -package model -source interfaces.go -destination interfaces_mock.go
 
@@ -26,6 +28,7 @@ type TagReader interface {
 	GetTag(conds ...interface{}) (*Tag, error)
 	GetTags(conds ...interface{}) (*[]Tag, error)
 	GetAllTags() (*[]Tag, error)
+	GetTagsWithoutChildren(conds ...interface{}) (*[]Tag, error)
 }
 
 type TagWriter interface {
@@ -74,17 +77,27 @@ type DirectoryReaderWriter interface {
 	DirectoryWriter
 }
 
-type TagImageTypeReaderWriter interface {
-	CreateOrUpdateTagImageType(tit *TagImageType) error
+type TagImageTypeReader interface {
 	GetTagImageType(conds ...interface{}) (*TagImageType, error)
+	GetAllTagImageTypes() (*[]TagImageType, error)
+}
+
+type TagImageTypeWriter interface {
+	CreateOrUpdateTagImageType(tit *TagImageType) error
+}
+
+type TagImageTypeReaderWriter interface {
+	TagImageTypeReader
+	TagImageTypeWriter
 }
 
 type TagImageWriter interface {
 	UpdateTagImage(image *TagImage) error
 }
 
-type ThumbnailProcessor interface {
-	ProcessThumbnail(image *TagImage) error
+type StorageDownloader interface {
+	IsStorageUrl(name string) bool
+	GetFile(name string) string
 }
 
 type StorageUploader interface {
@@ -92,6 +105,7 @@ type StorageUploader interface {
 	GetFileForWriting(name string) (string, error)
 	GetTempFile() string
 }
+
 type TempFileProvider interface {
 	GetTempFile() string
 }
@@ -110,16 +124,21 @@ type DirectoryItemsGetterSetter interface {
 	DirectoryItemsSetter
 }
 
+type TaskReader interface {
+	GetTasks(offset int, limit int) (*[]Task, error)
+	TasksCount(query interface{}, conds ...interface{}) (int64, error)
+}
+
+type ProcessorStatus interface {
+	IsPaused() bool
+}
+
 type DirectoryAutoTagsGetter interface {
 	GetAutoTags(path string) ([]*Tag, error)
 }
 
 type FileMetadataGetter interface {
 	GetFileMetadata(f string) (int64, int64, error)
-}
-
-type DirectoryChangedCallback interface {
-	DirectoryChanged()
 }
 
 type CurrentTimeGetter interface {
@@ -130,4 +149,19 @@ type Database interface {
 	DirectoryReaderWriter
 	TagReaderWriter
 	ItemReaderWriter
+}
+
+type TagCustomCommandsReader interface {
+	GetTagCustomCommand(conds ...interface{}) (*[]TagCustomCommand, error)
+	GetAllTagCustomCommands() (*[]TagCustomCommand, error)
+}
+
+type DbMetadataReader interface {
+	GetItemsCount() (int64, error)
+	GetTagsCount() (int64, error)
+	GetTotalDurationSeconds() (float64, error)
+}
+
+type PushListener interface {
+	Push(m PushMessage)
 }

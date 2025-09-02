@@ -11,7 +11,7 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-func (p *itemProcessorImpl) enqueue(t *model.Task) {
+func (p *Processor) enqueue(t *model.Task) {
 	t.Id = uuid.New().String()
 	t.EnequeueTime = pointer.Int64(time.Now().UnixMilli())
 	if err := p.dque.Enqueue(t); err != nil {
@@ -24,12 +24,10 @@ func (p *itemProcessorImpl) enqueue(t *model.Task) {
 		return
 	}
 
-	if p.notifier != nil {
-		p.notifier.OnTaskAdded(t)
-	}
+	p.pushQueueMetadata()
 }
 
-func (p itemProcessorImpl) GetFileMetadata(path string) (int64, int64, error) {
+func (p *Processor) GetFileMetadata(path string) (int64, int64, error) {
 	file, err := os.Stat(path)
 	if err != nil {
 		return 0, 0, errors.Wrap(err, 1)
@@ -38,7 +36,7 @@ func (p itemProcessorImpl) GetFileMetadata(path string) (int64, int64, error) {
 	return file.ModTime().UnixMilli(), file.Size(), nil
 }
 
-func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata(force bool) error {
+func (p *Processor) EnqueueAllItemsVideoMetadata(force bool) error {
 	allItems, err := p.db.GetAllItems()
 	if err != nil {
 		return err
@@ -58,11 +56,11 @@ func (p itemProcessorImpl) EnqueueAllItemsVideoMetadata(force bool) error {
 	return nil
 }
 
-func (p itemProcessorImpl) EnqueueItemVideoMetadata(id uint64) {
+func (p *Processor) EnqueueItemVideoMetadata(id uint64) {
 	p.enqueue(&model.Task{TaskType: model.REFRESH_METADATA_TASK, IdParam: id})
 }
 
-func (p itemProcessorImpl) EnqueueAllItemsPreview(force bool) error {
+func (p *Processor) EnqueueAllItemsPreview(force bool) error {
 	items, err := p.db.GetAllItems()
 	if err != nil {
 		return err
@@ -79,11 +77,11 @@ func (p itemProcessorImpl) EnqueueAllItemsPreview(force bool) error {
 	return nil
 }
 
-func (p itemProcessorImpl) EnqueueItemPreview(id uint64) {
+func (p *Processor) EnqueueItemPreview(id uint64) {
 	p.enqueue(&model.Task{TaskType: model.REFRESH_PREVIEW_TASK, IdParam: id})
 }
 
-func (p itemProcessorImpl) EnqueueAllItemsCovers(force bool) error {
+func (p *Processor) EnqueueAllItemsCovers(force bool) error {
 	items, err := p.db.GetAllItems()
 	if err != nil {
 		return err
@@ -100,23 +98,23 @@ func (p itemProcessorImpl) EnqueueAllItemsCovers(force bool) error {
 	return nil
 }
 
-func (p itemProcessorImpl) EnqueueMainCover(id uint64, second float64) {
+func (p *Processor) EnqueueMainCover(id uint64, second float64) {
 	p.enqueue(&model.Task{TaskType: model.SET_MAIN_COVER, IdParam: id, FloatParam: second})
 }
 
-func (p itemProcessorImpl) EnqueueCropFrame(id uint64, second float64, rect model.RectFloat) {
+func (p *Processor) EnqueueCropFrame(id uint64, second float64, rect model.RectFloat) {
 	p.enqueue(&model.Task{TaskType: model.CROP_FRAME, IdParam: id, FloatParam: second, StringParam: rect.Serialize()})
 }
 
-func (p itemProcessorImpl) EnqueueChangeResolution(id uint64, newResolution string) {
+func (p *Processor) EnqueueChangeResolution(id uint64, newResolution string) {
 	p.enqueue(&model.Task{TaskType: model.CHANGE_RESOLUTION, IdParam: id, StringParam: newResolution})
 }
 
-func (p itemProcessorImpl) EnqueueItemCovers(id uint64) {
+func (p *Processor) EnqueueItemCovers(id uint64) {
 	p.enqueue(&model.Task{TaskType: model.REFRESH_COVER_TASK, IdParam: id})
 }
 
-func (p itemProcessorImpl) EnqueueAllItemsFileMetadata() error {
+func (p *Processor) EnqueueAllItemsFileMetadata() error {
 	allItems, err := p.db.GetAllItems()
 	if err != nil {
 		return err
@@ -129,6 +127,6 @@ func (p itemProcessorImpl) EnqueueAllItemsFileMetadata() error {
 	return nil
 }
 
-func (p itemProcessorImpl) EnqueueItemFileMetadata(id uint64) {
+func (p *Processor) EnqueueItemFileMetadata(id uint64) {
 	p.enqueue(&model.Task{TaskType: model.REFRESH_FILE_TASK, IdParam: id})
 }

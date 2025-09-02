@@ -28,7 +28,7 @@ type Thumbnails struct {
 	thumbnailHeight int
 }
 
-func (t *Thumbnails) Run(ctx context.Context) {
+func (t *Thumbnails) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-time.After(1 * time.Minute):
@@ -36,7 +36,7 @@ func (t *Thumbnails) Run(ctx context.Context) {
 				utils.LogError("Error processing thumbnails", err)
 			}
 		case <-ctx.Done():
-			return
+			return nil
 		}
 	}
 }

@@ -89,7 +89,7 @@ func TagExists(tags []*model.Tag, tag *model.Tag) bool {
 	return false
 }
 
-func EnsureItemHaveTags(iw model.ItemWriter, item *model.Item, tags []*model.Tag) error {
+func EnsureItemHaveTags(iw model.ItemWriter, item *model.Item, tags []*model.Tag) (bool, error) {
 	missingTags := make([]*model.Tag, 0)
 	for _, tag := range tags {
 		if !TagExists(item.Tags, tag) {
@@ -98,15 +98,15 @@ func EnsureItemHaveTags(iw model.ItemWriter, item *model.Item, tags []*model.Tag
 	}
 
 	if len(missingTags) == 0 {
-		return nil
+		return false, nil
 	}
 
 	item.Tags = append(item.Tags, missingTags...)
 	if err := iw.UpdateItem(item); err != nil {
-		return err
+		return false, err
 	}
 
-	return nil
+	return true, nil
 }
 
 func EnsureItemMissingTags(iw model.ItemWriter, item *model.Item, tags []*model.Tag) error {
@@ -176,6 +176,9 @@ func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*mode
 	}
 	if len(*allItems) == 0 {
 		return nil, fmt.Errorf("no items")
+	}
+	if count >= len(*allItems) {
+		count = len(*allItems) - 1
 	}
 
 	randomItems := make([]*model.Item, 0)

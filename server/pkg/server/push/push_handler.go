@@ -1,28 +1,28 @@
-package server
+package push
 
 import (
 	"context"
 	"my-collection/server/pkg/model"
-	processor "my-collection/server/pkg/processor"
+	"my-collection/server/pkg/server"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
+	"github.com/op/go-logging"
 )
 
-type push struct {
-	server         *Server
-	upgrader       websocket.Upgrader
-	socketsChannel chan *websocket.Conn
-	sockets        []*websocket.Conn
-	messages       chan model.PushMessage
+var logger = logging.MustGetLogger("push")
+
+type PushHandler interface {
+	server.Handler
+	Run(ctx context.Context) error
+	Push(m model.PushMessage)
 }
 
-func newPush(processor processor.Processor, server *Server) *push {
-	result := &push{
-		server: server,
+func NewPush() PushHandler {
+	return &push{
 		upgrader: websocket.Upgrader{
 			CheckOrigin: func(r *http.Request) bool {
 				return true
@@ -32,39 +32,24 @@ func newPush(processor processor.Processor, server *Server) *push {
 		socketsChannel: make(chan *websocket.Conn),
 		messages:       make(chan model.PushMessage),
 	}
-
-	processor.SetProcessorNotifier(result)
-
-	return result
 }
 
-func (p *push) OnFinishedTasksCleared() {
-	p.pushQueueMetadata()
+type push struct {
+	upgrader       websocket.Upgrader
+	socketsChannel chan *websocket.Conn
+	sockets        []*websocket.Conn
+	messages       chan model.PushMessage
 }
 
-func (p *push) PauseToggled(paused bool) {
-	p.pushQueueMetadata()
+func (p *push) RegisterRoutes(rg *gin.RouterGroup) {
+	rg.GET("/ws", p.websocket)
 }
 
-func (p *push) OnTaskAdded(task *model.Task) {
-	p.pushQueueMetadata()
+func (p *push) Push(m model.PushMessage) {
+	p.messages <- m
 }
 
-func (p *push) OnTaskComplete(task *model.Task) {
-	p.pushQueueMetadata()
-}
-
-func (p *push) pushQueueMetadata() {
-	queueMetadata, err := p.server.buildQueueMetadata()
-	if err != nil {
-		logger.Errorf("Unable to build queue metadata %s", err)
-		return
-	}
-
-	p.messages <- model.PushMessage{MessageType: model.PUSH_QUEUE_METADATA, Payload: queueMetadata}
-}
-
-func (p *push) run(ctx context.Context) {
+func (p *push) Run(ctx context.Context) error {
 	ticker := time.NewTicker(30 * time.Second)
 	defer ticker.Stop()
 
@@ -76,7 +61,7 @@ func (p *push) run(ctx context.Context) {
 			for _, socket := range p.sockets {
 				socket.Close()
 			}
-			return
+			return nil
 		case socket := <-p.socketsChannel:
 			p.sockets = append(p.sockets, socket)
 		case message := <-p.messages:

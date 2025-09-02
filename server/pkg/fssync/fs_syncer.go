@@ -77,8 +77,9 @@ func (f *fsSyncer) sync(db model.Database, digs model.DirectoryItemsGetterSetter
 		errs = append(errs, addNewFiles(db, digs, datg, fmg, f.diff.AddedFiles)...)
 	}
 
-	errs = append(errs, syncAutoTags(db, db, db, datg)...)
-	return f.hasFsChanges(), errs
+	anyItemChanged, tagsErrs := syncAutoTags(db, db, db, datg)
+	errs = append(errs, tagsErrs...)
+	return f.hasFsChanges() || anyItemChanged, errs
 }
 
 func (f *fsSyncer) debugPrint() {
@@ -239,7 +240,8 @@ func handleFile(iw model.ItemWriter, digs model.DirectoryItemsGetterSetter, datg
 	}
 
 	if item != nil {
-		return items.EnsureItemHaveTags(iw, item, autoTags)
+		_, err := items.EnsureItemHaveTags(iw, item, autoTags)
+		return err
 	} else {
 		return handleNewFile(digs, fmg, dirpath, path, autoTags)
 	}
@@ -393,13 +395,14 @@ func validateReadyDirectory(trw model.TagReaderWriter, drw model.DirectoryReader
 }
 
 func syncAutoTags(tr model.TagReader, irw model.ItemReaderWriter,
-	dr model.DirectoryReader, datg model.DirectoryAutoTagsGetter) []error {
+	dr model.DirectoryReader, datg model.DirectoryAutoTagsGetter) (bool, []error) {
 	errs := make([]error, 0)
 	allDirectories, err := dr.GetAllDirectories()
 	if err != nil {
-		return append(errs, err)
+		return false, append(errs, err)
 	}
 
+	anyItemChanged := false
 	for _, dir := range *allDirectories {
 		autoTags, err := datg.GetAutoTags(dir.Path)
 		if err != nil {
@@ -407,26 +410,31 @@ func syncAutoTags(tr model.TagReader, irw model.ItemReaderWriter,
 			continue
 		}
 
-		errs = append(errs, syncAutoTagsForDir(tr, irw, autoTags, &dir)...)
+		itemChanged, errs := syncAutoTagsForDir(tr, irw, autoTags, &dir)
+		errs = append(errs, errs...)
+		anyItemChanged = anyItemChanged || itemChanged
 	}
 
-	return errs
+	return anyItemChanged, errs
 }
 
 func syncAutoTagsForDir(tr model.TagReader, irw model.ItemReaderWriter,
-	autoTags []*model.Tag, dir *model.Directory) []error {
+	autoTags []*model.Tag, dir *model.Directory) (bool, []error) {
 	errs := make([]error, 0)
 	fsdir := newFsDirectory(dir.Path)
 	belongingItems, err := fsdir.getItems(tr, irw)
 	if err != nil {
-		return append(errs, err)
+		return false, append(errs, err)
 	}
 
+	anyItemChanged := false
 	for _, item := range *belongingItems {
-		if err := items.EnsureItemHaveTags(irw, &item, autoTags); err != nil {
+		itemChanged, err := items.EnsureItemHaveTags(irw, &item, autoTags)
+		if err != nil {
 			errs = append(errs, err)
 		}
+		anyItemChanged = anyItemChanged || itemChanged
 	}
 
-	return errs
+	return anyItemChanged, errs
 }
