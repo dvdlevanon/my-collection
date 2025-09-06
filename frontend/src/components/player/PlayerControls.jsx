@@ -10,6 +10,7 @@ import PlayerScrubber from './PlayerScrubber';
 import { usePlayerStore } from './PlayerStore';
 import SetMainCoverButton from './SetMainCoverButton';
 import SplitButton from './SplitButton';
+import SubtitlesButton from './subtitles/SubtitlesButton';
 import TimeDisplay from './TimeDisplay';
 import TimingControls from './TimingControls';
 import VolumeControls from './VolumeControls';
@@ -50,6 +51,7 @@ function PlayerControls() {
 							<>
 								<TimingControls setRelativeTime={playerStore.offsetSeek} />
 								<SetMainCoverButton />
+								<SubtitlesButton />
 							</>
 						)}
 						<CropControls />

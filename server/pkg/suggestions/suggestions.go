@@ -39,8 +39,17 @@ func GetSuggestionsForTags(ir model.ItemReader, tr model.TagReader, tags *[]mode
 		relatedItems = append(relatedItems, randomItems...)
 	}
 
+	// Safety check: if we still don't have enough items, adjust count
+	if len(relatedItems) == 0 {
+		return []*model.Item{}, nil
+	}
+
+	if count > len(relatedItems) {
+		count = len(relatedItems)
+	}
+
 	resultIndexes := getUniqueRandomNumbers(len(relatedItems), count)
-	result := make([]*model.Item, count)
+	result := make([]*model.Item, len(resultIndexes))
 	for i, n := range resultIndexes {
 		result[i] = relatedItems[n-1]
 	}
@@ -73,6 +82,16 @@ func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) 
 }
 
 func getUniqueRandomNumbers(max int, count int) []int {
+	// Safety check: can't generate more unique numbers than available
+	if count > max {
+		count = max
+	}
+
+	// If no numbers can be generated, return empty slice
+	if max <= 0 || count <= 0 {
+		return []int{}
+	}
+
 	result := make([]int, count)
 
 	for i := 0; i < count; i++ {

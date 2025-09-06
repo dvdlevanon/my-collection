@@ -24,6 +24,7 @@ func (mc *MyCollection) registerHandlers(db *db.Database, storage *storage.Stora
 	mc.server.RegisterHandler(fs.NewHandler(db, fsm))
 	mc.server.RegisterHandler(tasks.NewHandler(db, mc.processor))
 	mc.server.RegisterHandler(subtitles.NewHandler(db))
+	mc.server.RegisterHandler(mc.push)
 	mc.server.RegisterHandler(management.NewHandler(db, &struct {
 		processor.Processor
 		itemsoptimizer.ItemsOptimizer

@@ -44,4 +44,9 @@ export const usePlayerActionStore = create((set, get) => ({
 	},
 
 	setCropFrame: (cropFrame) => set({ cropFrame }),
+
+	closeAll: () => {
+		set({ cropMode: false });
+		set({ startHighlightSecond: -1 });
+	},
 }));

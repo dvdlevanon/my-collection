@@ -9,7 +9,8 @@ import HighlightControls from './HighlightControls';
 import ItemSuggestions from './ItemSuggestions';
 import PlayerControls from './PlayerControls';
 import { usePlayerStore } from './PlayerStore';
-import Subtitles from './Subtitiles';
+import Subtitles from './subtitles/Subtitiles';
+import SubtitlesControls from './subtitles/SubtitlesControls';
 import useVideoController from './VideoController';
 import VideoElement from './VideoElement';
 
@@ -101,6 +102,7 @@ function Player({ itemId }) {
 			<CropFrame videoRef={videoController.videoElement} isPlaying={playerStore.isPlaying} />
 			<PlayerControls />
 			<Subtitles itemId={itemId} />
+			<SubtitlesControls />
 		</Stack>
 	);
 }

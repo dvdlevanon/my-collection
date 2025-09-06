@@ -1,11 +1,15 @@
 import { useTheme } from '@emotion/react';
 import { Box } from '@mui/material';
 import Client from '../../utils/client';
+import { usePlayerActionStore } from './PlayerActionStore';
 import { usePlayerStore } from './PlayerStore';
+import { useSubtitleStore } from './subtitles/SubtitlesStore';
 
 function VideoElement({ videoController }) {
 	const theme = useTheme();
 	const playerStore = usePlayerStore();
+	const playerActionStore = usePlayerActionStore();
+	const subtitleStore = useSubtitleStore();
 
 	return (
 		playerStore.url && (
@@ -23,7 +27,10 @@ function VideoElement({ videoController }) {
 				autoPlay={true}
 				loop={false}
 				ref={videoController.videoElement}
-				onClick={playerStore.togglePlay}
+				onClick={() => {
+					playerStore.togglePlay();
+					playerActionStore.closeAll();
+				}}
 				onEnded={playerStore.videoFinished}
 				onDoubleClick={playerStore.toggleFullScreen}
 				onTimeUpdate={(e) => {

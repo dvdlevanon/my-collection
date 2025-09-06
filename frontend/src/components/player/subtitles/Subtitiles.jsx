@@ -1,8 +1,9 @@
 import { Box, Typography } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
-import ReactQueryUtil from '../../utils/react-query-util';
-import { usePlayerStore } from './PlayerStore';
+import ReactQueryUtil from '../../../utils/react-query-util';
+import { usePlayerStore } from '../PlayerStore';
+import { useSubtitleStore } from './SubtitlesStore';
 
 function getCurrentSubtitle(currentTimeSeconds, subtitleData, currentIndexRef) {
 	if (!subtitleData || !subtitleData.items || subtitleData.items.length === 0) {
@@ -33,9 +34,14 @@ function getCurrentSubtitle(currentTimeSeconds, subtitleData, currentIndexRef) {
 
 function Subtitles({ itemId }) {
 	const playerStore = usePlayerStore();
+	const subtitleStore = useSubtitleStore();
 	const [text, setText] = useState('');
 	const currentIndexRef = useRef(-1);
-	const subtitleQuery = useQuery(ReactQueryUtil.subtitleQuery(itemId));
+	const subtitleQuery = useQuery(ReactQueryUtil.subtitleQuery(itemId, subtitleStore.selectedSubtitleName));
+
+	useEffect(() => {
+		subtitleStore.loadFromLocalStorage();
+	}, []);
 
 	useEffect(() => {
 		if (subtitleQuery.data) {
@@ -43,6 +49,22 @@ function Subtitles({ itemId }) {
 			setText(text);
 		}
 	}, [playerStore.currentTime, subtitleQuery.data]);
+
+	const getTextShadaw = () => {
+		let shadowWidth = subtitleStore.fontShadowWidth;
+		let shadawColor = subtitleStore.fontShadowColor;
+
+		return `
+			-${shadowWidth}px -${shadowWidth}px 0 ${shadawColor},
+			0 -${shadowWidth}px 0 ${shadawColor},
+			${shadowWidth}px -${shadowWidth}px 0 ${shadawColor},
+			${shadowWidth}px 0 0 ${shadawColor},
+			${shadowWidth}px ${shadowWidth}px 0 ${shadawColor},
+			0 ${shadowWidth}px 0 ${shadawColor},
+			-${shadowWidth}px ${shadowWidth}px 0 ${shadawColor},
+			-${shadowWidth}px 0 0 ${shadawColor};
+		`;
+	};
 
 	return (
 		<Box
@@ -52,9 +74,17 @@ function Subtitles({ itemId }) {
 			right={0}
 			display={'flex'}
 			flexDirection={'column'}
-			sx={{ pointerEvents: 'none' }}
+			sx={{ pointerEvents: 'none', containerType: 'inline-size' }}
 		>
-			<Typography fontSize={60} textAlign={'center'} variant="caption">
+			<Typography
+				fontSize={'clamp(16px, ' + subtitleStore.fontSize + 'cqw, 1000px)'}
+				textAlign={'center'}
+				variant="caption"
+				color={subtitleStore.fontColor}
+				sx={{
+					textShadow: getTextShadaw(),
+				}}
+			>
 				{text}
 			</Typography>
 		</Box>

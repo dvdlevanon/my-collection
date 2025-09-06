@@ -182,14 +182,32 @@ func GetRandomItems(ir model.ItemReader, count int, filter ItemsFilter) ([]*mode
 	}
 
 	randomItems := make([]*model.Item, 0)
-	for i := 0; i < count; i++ {
-		chosenItem := &((*allItems)[rand.Intn(len(*allItems))])
+	maxAttempts := len(*allItems) * 10 // Safety limit to prevent infinite loops
 
-		for ItemExists(randomItems, chosenItem) || !filter(chosenItem) || noRandom(chosenItem) {
+	for i := 0; i < count; i++ {
+		attempts := 0
+		var chosenItem *model.Item
+
+		for {
+			if attempts >= maxAttempts {
+				// If we can't find enough valid items, return what we have
+				break
+			}
+
 			chosenItem = &((*allItems)[rand.Intn(len(*allItems))])
+
+			// Check if this item is suitable
+			if !ItemExists(randomItems, chosenItem) && filter(chosenItem) && !noRandom(chosenItem) {
+				break
+			}
+
+			attempts++
 		}
 
-		randomItems = append(randomItems, chosenItem)
+		// Only add the item if we found a valid one
+		if attempts < maxAttempts {
+			randomItems = append(randomItems, chosenItem)
+		}
 	}
 
 	return randomItems, nil

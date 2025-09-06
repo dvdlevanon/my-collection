@@ -27,6 +27,8 @@ print_usage() {
     echo "Test Suites:"
     echo "  fssync           Run filesystem synchronization tests"
     echo "  autotags         Run AutoTags integration tests"
+    echo "  server           Run server API integration tests"
+    echo "  tags             Run tags API integration tests"
     echo "  stress           Run stress and performance tests"
     echo "  all              Run all integration tests (default)"
     echo ""
@@ -42,6 +44,8 @@ print_usage() {
     echo "  $0                           # Run all integration tests"
     echo "  $0 fssync                    # Run only filesystem sync tests"
     echo "  $0 autotags -v               # Run AutoTags tests with verbose output"
+    echo "  $0 server                    # Run only server API tests"
+    echo "  $0 tags                      # Run only tags API tests"
     echo "  $0 stress                    # Run only stress tests"
     echo "  $0 -v -c                     # Run all tests with verbose output and coverage"
     echo "  $0 -p 'TestBasic*'           # Run only basic tests"
@@ -159,6 +163,50 @@ run_autotags_tests() {
         return 0
     else
         log_error "AutoTags integration tests failed"
+        return 1
+    fi
+}
+
+run_server_tests() {
+    log_suite "Running Server API Integration Tests"
+    
+    local pattern=""
+    if [ -n "$TEST_PATTERN" ]; then
+        pattern="$TEST_PATTERN"
+    else
+        pattern="TestServer.*"
+    fi
+    
+    local cmd=$(build_test_command "server" "$pattern")
+    eval $cmd
+    
+    if [ $? -eq 0 ]; then
+        log_success "Server API integration tests passed"
+        return 0
+    else
+        log_error "Server API integration tests failed"
+        return 1
+    fi
+}
+
+run_tags_tests() {
+    log_suite "Running Tags API Integration Tests"
+    
+    local pattern=""
+    if [ -n "$TEST_PATTERN" ]; then
+        pattern="$TEST_PATTERN"
+    else
+        pattern="TestTagsServer.*"
+    fi
+    
+    local cmd=$(build_test_command "tags" "$pattern")
+    eval $cmd
+    
+    if [ $? -eq 0 ]; then
+        log_success "Tags API integration tests passed"
+        return 0
+    else
+        log_error "Tags API integration tests failed"
         return 1
     fi
 }
@@ -285,6 +333,7 @@ show_test_summary() {
     echo "  📁 Location: server/test/integration/"
     echo "  🔧 Framework: Real database and filesystem operations"
     echo "  🏷️  AutoTags: Comprehensive testing of automatic tag behavior"
+    echo "  🌐 Server API: Real HTTP server with end-to-end testing"
     echo "  🚀 Performance: Stress tests with 1000+ files and deep hierarchies"
     echo "  🔍 Edge Cases: Special characters, long filenames, circular operations"
     echo "  📊 Coverage: Integration test coverage across multiple packages"
@@ -296,6 +345,8 @@ show_test_summary() {
     echo "  💡 Next Steps:"
     echo "    - Run 'server/test/scripts/run_integration_tests.sh fssync' for fs tests only"
     echo "    - Run 'server/test/scripts/run_integration_tests.sh autotags' for AutoTags tests"
+    echo "    - Run 'server/test/scripts/run_integration_tests.sh server' for server API tests"
+    echo "    - Run 'server/test/scripts/run_integration_tests.sh tags' for tags API tests"
     echo "    - Run 'server/test/scripts/run_integration_tests.sh stress' for stress testing"
     echo "    - Add new integration tests to server/test/integration/"
 }
@@ -330,7 +381,7 @@ while [[ $# -gt 0 ]]; do
             SHORT_MODE=true
             shift
             ;;
-        fssync|autotags|stress|all)
+        fssync|autotags|server|tags|stress|all)
             SUITE="$1"
             shift
             ;;
@@ -383,6 +434,12 @@ main() {
             ;;
         "autotags")
             run_autotags_tests
+            ;;
+        "server")
+            run_server_tests
+            ;;
+        "tags")
+            run_tags_tests
             ;;
         "stress")
             run_stress_tests

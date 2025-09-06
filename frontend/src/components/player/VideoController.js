@@ -33,7 +33,10 @@ function useVideoController() {
 	const enterFullScreen = () => {
 		if (videoContainer.current) {
 			videoContainer.current.requestFullscreen();
+			return true;
 		}
+
+		return false;
 	};
 
 	const exitFullScreen = () => {

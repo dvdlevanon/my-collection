@@ -51,7 +51,6 @@ type tagsHandler struct {
 func (s *tagsHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.GET("/special-tags", s.getSpecialTags)
 	rg.GET("/categories", s.getCategories)
-	rg.GET("/tag-image-types", s.getTagImageTypes)
 	rg = rg.Group("tags")
 	rg.GET("", s.getTags)
 	rg.POST("", s.createTag)
@@ -67,6 +66,7 @@ func (s *tagsHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.POST("/:tag/annotations", s.addAnnotationToTag)
 	rg.DELETE("/:tag/annotations/:annotation-id", s.removeAnnotationFromTag)
 	rg.GET("/:tag/available-annotations", s.getTagAvailableAnnotations)
+	rg.GET("/tag-image-types", s.getTagImageTypes)
 }
 
 func (s *tagsHandler) createTag(c *gin.Context) {
