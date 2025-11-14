@@ -25,10 +25,14 @@ function ColorPicker({ color, onChange }) {
 				</Avatar>
 			</IconButton>
 			<Popover
+				container={anochorEl.current}
 				anchorEl={anochorEl.current}
 				open={pickerOpenend}
 				onClose={() => {
 					setPickerOpened(false);
+				}}
+				sx={{
+					zIndex: 10000,
 				}}
 			>
 				<Stack padding={theme.spacing(1)}>

@@ -23,11 +23,12 @@ function SubtitlesControls() {
 					gap: theme.spacing(1),
 					background: theme.palette.gradient.color2,
 					padding: theme.multiSpacing(0.5, 1),
-					opacity: '0.7',
+					opacity: '0.9',
 					borderRadius: theme.spacing(1),
 					position: 'absolute',
 					right: theme.spacing(2),
 					bottom: '100px',
+					zIndex: 3,
 				}}
 			>
 				<Stack flexDirection={'row'}>

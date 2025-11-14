@@ -5,12 +5,12 @@ import ReactQueryUtil from '../../../utils/react-query-util';
 import { usePlayerStore } from '../PlayerStore';
 import { useSubtitleStore } from './SubtitlesStore';
 
-function getCurrentSubtitle(currentTimeSeconds, subtitleData, currentIndexRef) {
+function getCurrentSubtitle(currentTimeSeconds, subtitleData, currentIndexRef, subtitleOffset) {
 	if (!subtitleData || !subtitleData.items || subtitleData.items.length === 0) {
 		return '';
 	}
 
-	const currentTimeMillis = currentTimeSeconds * 1000;
+	const currentTimeMillis = currentTimeSeconds * 1000 + subtitleOffset;
 	const items = subtitleData.items;
 
 	if (currentIndexRef.current >= 0 && currentIndexRef.current < items.length) {
@@ -45,10 +45,15 @@ function Subtitles({ itemId }) {
 
 	useEffect(() => {
 		if (subtitleQuery.data) {
-			let text = getCurrentSubtitle(playerStore.currentTime, subtitleQuery.data, currentIndexRef);
+			let text = getCurrentSubtitle(
+				playerStore.currentTime,
+				subtitleQuery.data,
+				currentIndexRef,
+				subtitleStore.subtitleOffsetMillis
+			);
 			setText(text);
 		}
-	}, [playerStore.currentTime, subtitleQuery.data]);
+	}, [playerStore.currentTime, subtitleQuery.data, subtitleStore.subtitleOffsetMillis]);
 
 	const getTextShadaw = () => {
 		let shadowWidth = subtitleStore.fontShadowWidth;

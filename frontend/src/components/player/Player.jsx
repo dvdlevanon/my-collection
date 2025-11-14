@@ -34,9 +34,13 @@ function Player({ itemId }) {
 		playerStore.setUrl(itemQuery.data.url);
 		playerStore.setStartTime(startPosition);
 		playerStore.setCurrentTime(startPosition);
-		playerStore.setEndTime(initialEndPosition);
-		playerStore.setDuration(initialEndPosition - startPosition);
 		playerStore.setAllowToSplit(!alreadySplit);
+		if (playerStore.endTime == 0) {
+			playerStore.setEndTime(initialEndPosition);
+		}
+		if (playerStore.duration == 0) {
+			playerStore.setDuration(initialEndPosition - startPosition);
+		}
 	}, [itemQuery.data]);
 
 	useEffect(() => {

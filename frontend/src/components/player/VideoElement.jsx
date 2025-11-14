@@ -29,7 +29,6 @@ function VideoElement({ videoController }) {
 				ref={videoController.videoElement}
 				onClick={() => {
 					playerStore.togglePlay();
-					playerActionStore.closeAll();
 				}}
 				onEnded={playerStore.videoFinished}
 				onDoubleClick={playerStore.toggleFullScreen}

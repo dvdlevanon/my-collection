@@ -39,6 +39,7 @@ export const useSubtitleStore = create((set, get) => ({
 	},
 
 	setSelectedSubtitleName: (selectedSubtitleName) => set({ selectedSubtitleName }),
+	setSubtitleOffsetMillis: (subtitleOffsetMillis) => set({ subtitleOffsetMillis }),
 
 	toggleSubtitlesControls: () => {
 		let { controlsShown } = get();
