@@ -105,7 +105,7 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 
 	mc.itemsoptimizer = itemsoptimizer.New(db, mc.processor, config.ItemsOptimizerMaxResolution)
 	mc.thumbnails = thumbnails.New(db, db, storage, 100, 100)
-	mc.server = server.New(config.ListenAddress, db, storage)
+	mc.server = server.New(config.ListenAddress, storage)
 	mc.push = push.NewPush()
 
 	mc.fsManager.AddPushListener(mc.push)

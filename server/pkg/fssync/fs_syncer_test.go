@@ -498,8 +498,11 @@ func TestRenameDirs_Success(t *testing.T) {
 
 	// Mock getting directory tag for updating items - called in updateItemsLocation
 	dirTag := createTestTag(1, "new-dir", nil)
-	dirTag.Items = []*model.Item{} // Empty items so GetItems won't be called
+	dirTag.Items = []*model.Item{} // Empty items list
 	mockTRW.EXPECT().GetTag(gomock.Any()).Return(dirTag, nil)
+	// Even with empty items, GetItems([]) is still called
+	emptyItems := &[]model.Item{}
+	mockIRW.EXPECT().GetItems([]uint64{}).Return(emptyItems, nil)
 
 	errs := renameDirs(mockTRW, mockDRW, mockIRW, changes)
 
@@ -577,8 +580,12 @@ func TestSyncAutoTags_Success(t *testing.T) {
 		mockDATG.EXPECT().GetAutoTags(dir.Path).Return([]*model.Tag{}, nil)
 
 		// Mock getting directory tag - createTestTag creates tags with no items
-		// so tags.GetItems will return early without calling ir.GetItems
-		mockTR.EXPECT().GetTag(gomock.Any()).Return(createTestTag(uint64(i+1), dir.Path, nil), nil)
+		tag := createTestTag(uint64(i+1), dir.Path, nil)
+		tag.Items = []*model.Item{} // Empty items list
+		mockTR.EXPECT().GetTag(gomock.Any()).Return(tag, nil)
+		// Even with empty items, GetItems([]) is still called in getItems
+		emptyItems := &[]model.Item{}
+		mockIRW.EXPECT().GetItems([]uint64{}).Return(emptyItems, nil)
 	}
 
 	_, errs := syncAutoTags(mockTR, mockIRW, mockDR, mockDATG)

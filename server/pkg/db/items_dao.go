@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Database) CreateOrUpdateItem(item *model.Item) error {
+func (d *databaseImpl) CreateOrUpdateItem(item *model.Item) error {
 	if item.Id == 0 && (item.Title == "" || item.Origin == "") {
 		return errors.Errorf("invalid item, missing ('id') or ('title' and 'origin') %v", item)
 	}
@@ -33,19 +33,19 @@ func (d *Database) CreateOrUpdateItem(item *model.Item) error {
 	return err
 }
 
-func (d *Database) UpdateItem(item *model.Item) error {
+func (d *databaseImpl) UpdateItem(item *model.Item) error {
 	return d.update(item)
 }
 
-func (d *Database) RemoveItem(itemId uint64) error {
+func (d *databaseImpl) RemoveItem(itemId uint64) error {
 	return d.deleteWithAssociations(model.Item{Id: itemId})
 }
 
-func (d *Database) RemoveTagFromItem(itemId uint64, tagId uint64) error {
+func (d *databaseImpl) RemoveTagFromItem(itemId uint64, tagId uint64) error {
 	return d.deleteAssociation(model.Item{Id: itemId}, model.Tag{Id: tagId}, "Tags")
 }
 
-func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
+func (d *databaseImpl) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 	tagsPreloading := func(db *gorm.DB) *gorm.DB {
 		if includeTagIdsOnly {
 			return db.Select("ID", "ParentID")
@@ -69,29 +69,29 @@ func (d *Database) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 		Preload("Highlights", highlightsPreloading)
 }
 
-func (d *Database) GetItem(conds ...interface{}) (*model.Item, error) {
+func (d *databaseImpl) GetItem(conds ...interface{}) (*model.Item, error) {
 	item := &model.Item{}
 	err := d.handleError(d.getItemModel(false).First(item, conds...).Error)
 	return item, err
 }
 
-func (d *Database) GetItems(conds ...interface{}) (*[]model.Item, error) {
+func (d *databaseImpl) GetItems(conds ...interface{}) (*[]model.Item, error) {
 	var items []model.Item
 	err := d.handleError(d.getItemModel(false).Find(&items, conds...).Error)
 	return &items, err
 }
 
-func (d *Database) GetAllItems() (*[]model.Item, error) {
+func (d *databaseImpl) GetAllItems() (*[]model.Item, error) {
 	return d.GetItems()
 }
 
-func (d *Database) GetItemsCount() (int64, error) {
+func (d *databaseImpl) GetItemsCount() (int64, error) {
 	var count int64
 	err := d.handleError(d.db.Model(&model.Item{}).Count(&count).Error)
 	return count, err
 }
 
-func (d *Database) GetTotalDurationSeconds() (float64, error) {
+func (d *databaseImpl) GetTotalDurationSeconds() (float64, error) {
 	var result struct {
 		Total float64
 	}

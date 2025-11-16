@@ -24,7 +24,7 @@ func taskBuilder() interface{} {
 
 type Processor struct {
 	utils.PushSender
-	db                   *db.Database
+	db                   db.Database
 	storage              *storage.Storage
 	dque                 *dque.DQue
 	pauseChannel         chan bool
@@ -35,7 +35,7 @@ type Processor struct {
 	automaticProcessing  bool
 }
 
-func New(db *db.Database, storage *storage.Storage, paused bool, coversCount int, previewSceneCount int, previewSceneDuration int) (*Processor, error) {
+func New(db db.Database, storage *storage.Storage, paused bool, coversCount int, previewSceneCount int, previewSceneDuration int) (*Processor, error) {
 	logger.Infof("Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")

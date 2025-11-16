@@ -14,7 +14,7 @@ import (
 
 var importExportTestJson = "{\"items\":[{\"id\":10,\"title\":\"item10\",\"origin\":\"origin\",\"tags\":[{\"id\":10,\"title\":\"tag10\"},{\"id\":20,\"title\":\"tag20\"}]},{\"id\":20,\"title\":\"item20\",\"origin\":\"origin\",\"tags\":[{\"id\":10,\"title\":\"tag10\"},{\"id\":30,\"title\":\"tag30\"}]},{\"id\":30,\"title\":\"item30\",\"origin\":\"origin\"}],\"tags\":[{\"id\":10,\"title\":\"tag10\",\"items\":[{\"id\":10},{\"id\":20}]},{\"id\":20,\"title\":\"tag20\",\"items\":[{\"id\":10}]},{\"id\":30,\"title\":\"tag30\",\"items\":[{\"id\":20}]}]}"
 
-func setupNewDb(t *testing.T, filename string) *db.Database {
+func setupNewDb(t *testing.T, filename string) db.Database {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))
 	dbpath := fmt.Sprintf(".tests/%s", filename)
 	_, err := os.Create(dbpath)

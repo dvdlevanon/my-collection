@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
+func (d *databaseImpl) CreateOrUpdateTag(tag *model.Tag) error {
 	if tag.Id == 0 && tag.Title == "" {
 		return errors.Errorf("Invalid tag, missing id or title %v", tag)
 	}
@@ -33,11 +33,11 @@ func (d *Database) CreateOrUpdateTag(tag *model.Tag) error {
 	return err
 }
 
-func (d *Database) UpdateTag(tag *model.Tag) error {
+func (d *databaseImpl) UpdateTag(tag *model.Tag) error {
 	return d.update(tag)
 }
 
-func (d *Database) getTagModel(withChildren bool) *gorm.DB {
+func (d *databaseImpl) getTagModel(withChildren bool) *gorm.DB {
 	itemsPreloading := func(db *gorm.DB) *gorm.DB {
 		return db.Select("ID")
 	}
@@ -58,37 +58,37 @@ func (d *Database) getTagModel(withChildren bool) *gorm.DB {
 	return model
 }
 
-func (d *Database) GetTag(conds ...interface{}) (*model.Tag, error) {
+func (d *databaseImpl) GetTag(conds ...interface{}) (*model.Tag, error) {
 	tag := &model.Tag{}
 	err := d.handleError(d.getTagModel(true).First(tag, conds...).Error)
 	return tag, err
 }
 
-func (d *Database) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
+func (d *databaseImpl) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
 	var tags []model.Tag
 	err := d.handleError(d.getTagModel(false).Find(&tags, conds...).Error)
 	return &tags, err
 }
 
-func (d *Database) GetTags(conds ...interface{}) (*[]model.Tag, error) {
+func (d *databaseImpl) GetTags(conds ...interface{}) (*[]model.Tag, error) {
 	var tags []model.Tag
 	err := d.handleError(d.getTagModel(true).Find(&tags, conds...).Error)
 	return &tags, err
 }
 
-func (d *Database) GetAllTags() (*[]model.Tag, error) {
+func (d *databaseImpl) GetAllTags() (*[]model.Tag, error) {
 	return d.GetTags()
 }
 
-func (d *Database) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
+func (d *databaseImpl) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
 	return d.deleteAssociation(model.Tag{Id: tagId}, model.TagImage{Id: imageId}, "Images")
 }
 
-func (d *Database) UpdateTagImage(image *model.TagImage) error {
+func (d *databaseImpl) UpdateTagImage(image *model.TagImage) error {
 	return d.update(image)
 }
 
-func (d *Database) GetTagsCount() (int64, error) {
+func (d *databaseImpl) GetTagsCount() (int64, error) {
 	var count int64
 	err := d.handleError(d.db.Model(&model.Tag{}).Count(&count).Error)
 	return count, err

@@ -17,7 +17,7 @@ import (
 	"my-collection/server/pkg/storage"
 )
 
-func (mc *MyCollection) registerHandlers(db *db.Database, storage *storage.Storage, fsm *fssync.FsManager) {
+func (mc *MyCollection) registerHandlers(db db.Database, storage *storage.Storage, fsm *fssync.FsManager) {
 	mc.server.RegisterHandler(items.NewHandler(db, mc.processor, mc.itemsoptimizer))
 	mc.server.RegisterHandler(tags.NewHandler(db, storage, mc.thumbnails))
 	mc.server.RegisterHandler(storageHandler.NewHandler(storage))

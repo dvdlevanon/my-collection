@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/storage"
 	"net/http"
 	"time"
@@ -20,7 +19,7 @@ type Server struct {
 	apiRoute *gin.RouterGroup
 }
 
-func New(addr string, db *db.Database, storage *storage.Storage) *Server {
+func New(addr string, storage *storage.Storage) *Server {
 	gin.SetMode("release")
 
 	router := gin.New()

@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func setupNewDb(t *testing.T, filename string) *db.Database {
+func setupNewDb(t *testing.T, filename string) db.Database {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))
 	dbpath := fmt.Sprintf(".tests/%s", filename)
 	_, err := os.Create(dbpath)

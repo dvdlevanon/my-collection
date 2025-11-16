@@ -22,7 +22,7 @@ type IntegrationTestFramework struct {
 	t           *testing.T
 	tempDir     string
 	dbFile      string
-	database    *db.Database
+	database    db.Database
 	fsManager   *fssync.FsManager
 	dig         model.DirectoryItemsGetter
 	initialSync bool
@@ -86,7 +86,7 @@ func (f *IntegrationTestFramework) GetTempDir() string {
 }
 
 // GetDatabase returns the test database instance
-func (f *IntegrationTestFramework) GetDatabase() *db.Database {
+func (f *IntegrationTestFramework) GetDatabase() db.Database {
 	return f.database
 }
 

@@ -7,7 +7,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-func (d *Database) CreateOrUpdateTagImageType(tit *model.TagImageType) error {
+func (d *databaseImpl) CreateOrUpdateTagImageType(tit *model.TagImageType) error {
 	if tit.Id == 0 && tit.Nickname == "" {
 		return errors.Errorf("invalid tag image type, missing ('id') or ('title') %v", tit)
 	}
@@ -32,18 +32,18 @@ func (d *Database) CreateOrUpdateTagImageType(tit *model.TagImageType) error {
 	return err
 }
 
-func (d *Database) GetTagImageType(conds ...interface{}) (*model.TagImageType, error) {
+func (d *databaseImpl) GetTagImageType(conds ...interface{}) (*model.TagImageType, error) {
 	tit := &model.TagImageType{}
 	err := d.handleError(d.db.Model(tit).First(tit, conds...).Error)
 	return tit, err
 }
 
-func (d *Database) GetTagImageTypes(conds ...interface{}) (*[]model.TagImageType, error) {
+func (d *databaseImpl) GetTagImageTypes(conds ...interface{}) (*[]model.TagImageType, error) {
 	var tits []model.TagImageType
 	err := d.handleError(d.db.Model(model.TagImageType{}).Find(&tits, conds...).Error)
 	return &tits, err
 }
 
-func (d *Database) GetAllTagImageTypes() (*[]model.TagImageType, error) {
+func (d *databaseImpl) GetAllTagImageTypes() (*[]model.TagImageType, error) {
 	return d.GetTagImageTypes()
 }

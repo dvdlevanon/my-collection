@@ -7,7 +7,7 @@ import (
 	"github.com/mattn/go-sqlite3"
 )
 
-func (d *Database) CreateOrUpdateTagCustomCommand(command *model.TagCustomCommand) error {
+func (d *databaseImpl) CreateOrUpdateTagCustomCommand(command *model.TagCustomCommand) error {
 	if command.Id == 0 && command.Title == "" {
 		return errors.Errorf("invalid command, missing ('id') or ('title') %v", command)
 	}
@@ -32,12 +32,12 @@ func (d *Database) CreateOrUpdateTagCustomCommand(command *model.TagCustomComman
 	return err
 }
 
-func (d *Database) GetTagCustomCommand(conds ...interface{}) (*[]model.TagCustomCommand, error) {
+func (d *databaseImpl) GetTagCustomCommand(conds ...interface{}) (*[]model.TagCustomCommand, error) {
 	var commands []model.TagCustomCommand
 	err := d.handleError(d.db.Model(model.TagCustomCommand{}).Find(&commands, conds...).Error)
 	return &commands, err
 }
 
-func (d *Database) GetAllTagCustomCommands() (*[]model.TagCustomCommand, error) {
+func (d *databaseImpl) GetAllTagCustomCommands() (*[]model.TagCustomCommand, error) {
 	return d.GetTagCustomCommand()
 }
