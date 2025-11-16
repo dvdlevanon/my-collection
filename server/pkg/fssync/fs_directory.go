@@ -10,6 +10,41 @@ import (
 	"gorm.io/gorm"
 )
 
+type BelongingItemDbReader interface {
+	GetDirectoryTag(path string) (*model.Tag, error)
+	GetItems(ids []uint64) (*[]model.Item, error)
+	GetItemByTitle(tag *model.Tag, title string) (*model.Item, error)
+}
+
+func wrapDb(tr model.TagReader, ir model.ItemReader) BelongingItemDbReader {
+	return &dbBelongingItemDbReader{
+		tr: tr,
+		ir: ir,
+	}
+}
+
+type dbBelongingItemDbReader struct {
+	tr model.TagReader
+	ir model.ItemReader
+}
+
+func (d *dbBelongingItemDbReader) GetDirectoryTag(path string) (*model.Tag, error) {
+	return tags.GetChildTag(d.tr, directories.GetDirectoriesTagId(), path)
+}
+
+func (d *dbBelongingItemDbReader) GetItemByTitle(tag *model.Tag, title string) (*model.Item, error) {
+	return tags.GetItemByTitle(d.ir, tag, title)
+}
+
+func (d *dbBelongingItemDbReader) GetItems(ids []uint64) (*[]model.Item, error) {
+	if len(ids) == 0 {
+		result := make([]model.Item, 0)
+		return &result, nil
+	}
+
+	return d.ir.GetItems(ids)
+}
+
 func newFsDirectory(path string) *FsDirectory {
 	return &FsDirectory{
 		path: path,
@@ -20,8 +55,8 @@ type FsDirectory struct {
 	path string
 }
 
-func (d *FsDirectory) getTag(tr model.TagReader) (*model.Tag, error) {
-	tag, err := tags.GetChildTag(tr, directories.GetDirectoriesTagId(), d.path)
+func (d *FsDirectory) getTag(tr BelongingItemDbReader) (*model.Tag, error) {
+	tag, err := tr.GetDirectoryTag(d.path)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
@@ -33,7 +68,7 @@ func (d *FsDirectory) getTag(tr model.TagReader) (*model.Tag, error) {
 }
 
 func (d *FsDirectory) removeItem(tr model.TagReader, iw model.ItemWriter, item *model.Item) error {
-	tag, err := d.getTag(tr)
+	tag, err := d.getTag(wrapDb(tr, nil))
 	if err != nil {
 		return err
 	}
@@ -45,7 +80,7 @@ func (d *FsDirectory) removeItem(tr model.TagReader, iw model.ItemWriter, item *
 }
 
 func (d *FsDirectory) addItem(tr model.TagReader, iw model.ItemWriter, item *model.Item) error {
-	tag, err := d.getTag(tr)
+	tag, err := d.getTag(wrapDb(tr, nil))
 	if err != nil {
 		return err
 	}
@@ -57,7 +92,7 @@ func (d *FsDirectory) addItem(tr model.TagReader, iw model.ItemWriter, item *mod
 	return iw.CreateOrUpdateItem(item)
 }
 
-func (d *FsDirectory) getItem(tr model.TagReader, ir model.ItemReader, filename string) (*model.Item, error) {
+func (d *FsDirectory) getItem(tr BelongingItemDbReader, filename string) (*model.Item, error) {
 	tag, err := d.getTag(tr)
 	if err != nil {
 		return nil, err
@@ -67,10 +102,10 @@ func (d *FsDirectory) getItem(tr model.TagReader, ir model.ItemReader, filename 
 		return nil, nil
 	}
 
-	return tags.GetItemByTitle(ir, tag, items.TitleFromFileName(filename))
+	return tr.GetItemByTitle(tag, items.TitleFromFileName(filename))
 }
 
-func (d *FsDirectory) getItems(tr model.TagReader, ir model.ItemReader) (*[]model.Item, error) {
+func (d *FsDirectory) getItems(tr BelongingItemDbReader) (*[]model.Item, error) {
 	tag, err := d.getTag(tr)
 	if err != nil {
 		return nil, err
@@ -81,7 +116,12 @@ func (d *FsDirectory) getItems(tr model.TagReader, ir model.ItemReader) (*[]mode
 		return &empty, nil
 	}
 
-	items, err := tags.GetItems(ir, tag)
+	itemIds := make([]uint64, 0)
+	for _, item := range tag.Items {
+		itemIds = append(itemIds, item.Id)
+	}
+
+	items, err := tr.GetItems(itemIds)
 	if err != nil {
 		return nil, err
 	}

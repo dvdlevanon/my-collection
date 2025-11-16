@@ -181,7 +181,7 @@ func removeStaleDirs(trw model.TagReaderWriter, dw model.DirectoryWriter, dirs [
 func removeDir(trw model.TagReaderWriter, dw model.DirectoryWriter, path string) []error {
 	errs := make([]error, 0)
 	dir := newFsDirectory(directories.NormalizeDirectoryPath(path))
-	tag, err := dir.getTag(trw)
+	tag, err := dir.getTag(wrapDb(trw, nil))
 	if err != nil {
 		errs = append(errs, err)
 	} else if tag != nil {
@@ -295,7 +295,7 @@ func updateItemsLocation(trw model.TagReaderWriter, irw model.ItemReaderWriter, 
 	dirpath := directories.NormalizeDirectoryPath(path)
 	errs := make([]error, 0)
 	dir := newFsDirectory(dirpath)
-	belongingItems, err := dir.getItems(trw, irw)
+	belongingItems, err := dir.getItems(wrapDb(trw, irw))
 	if err != nil {
 		return append(errs, err)
 	}
@@ -364,7 +364,7 @@ func moveFile(trw model.TagReaderWriter, drw model.DirectoryReaderWriter,
 
 	srcDirpath := directories.NormalizeDirectoryPath(filepath.Dir(src))
 	srcDir := newFsDirectory(srcDirpath)
-	item, err := srcDir.getItem(trw, irw, items.TitleFromFileName(src))
+	item, err := srcDir.getItem(wrapDb(trw, irw), items.TitleFromFileName(src))
 	if err != nil {
 		return err
 	}
@@ -410,8 +410,8 @@ func syncAutoTags(tr model.TagReader, irw model.ItemReaderWriter,
 			continue
 		}
 
-		itemChanged, errs := syncAutoTagsForDir(tr, irw, autoTags, &dir)
-		errs = append(errs, errs...)
+		itemChanged, syncErrs := syncAutoTagsForDir(tr, irw, autoTags, &dir)
+		errs = append(errs, syncErrs...)
 		anyItemChanged = anyItemChanged || itemChanged
 	}
 
@@ -422,7 +422,7 @@ func syncAutoTagsForDir(tr model.TagReader, irw model.ItemReaderWriter,
 	autoTags []*model.Tag, dir *model.Directory) (bool, []error) {
 	errs := make([]error, 0)
 	fsdir := newFsDirectory(dir.Path)
-	belongingItems, err := fsdir.getItems(tr, irw)
+	belongingItems, err := fsdir.getItems(wrapDb(tr, irw))
 	if err != nil {
 		return false, append(errs, err)
 	}

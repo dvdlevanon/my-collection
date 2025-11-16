@@ -18,7 +18,7 @@ import (
 
 var logger = logging.MustGetLogger("fsmanager")
 
-func NewFsManager(db *db.Database, filesFilter directorytree.FilesFilter, checkInterval time.Duration) (*FsManager, error) {
+func NewFsManager(db db.Database, filesFilter directorytree.FilesFilter, checkInterval time.Duration) (*FsManager, error) {
 	if err := directories.AddRootDirectory(db); err != nil {
 		return nil, err
 	}
@@ -35,7 +35,7 @@ type FsManager struct {
 	utils.PushSender
 	filesFilter   directorytree.FilesFilter
 	checkInterval time.Duration
-	db            *db.Database
+	db            db.Database
 	changeChannel chan bool
 }
 
@@ -68,11 +68,11 @@ func (f *FsManager) DirectoryChanged() {
 }
 
 func (f *FsManager) GetBelongingItems(path string) (*[]model.Item, error) {
-	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItems(f.db, f.db)
+	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItems(wrapDb(f.db, f.db))
 }
 
 func (f *FsManager) GetBelongingItem(path string, filename string) (*model.Item, error) {
-	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItem(f.db, f.db, filename)
+	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItem(wrapDb(f.db, f.db), filename)
 }
 
 func (f *FsManager) AddBelongingItem(item *model.Item) error {
@@ -98,7 +98,11 @@ func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
 }
 
 func (f *FsManager) runSync() (bool, error) {
-	fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, f, f.filesFilter)
+	dig, err := NewCachedDig(f.db, f.db)
+	if err != nil {
+		return false, err
+	}
+	fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, dig, f.filesFilter)
 	if err != nil {
 		return false, err
 	}
