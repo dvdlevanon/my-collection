@@ -1,6 +1,7 @@
 package items
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/model"
 
@@ -27,14 +28,14 @@ func buildSubItem(item *model.Item, startPosition float64, endPosition float64) 
 	}
 }
 
-func GetMainItem(ir model.ItemReader, itemId uint64) (*model.Item, error) {
-	item, err := ir.GetItem(itemId)
+func GetMainItem(ctx context.Context, ir model.ItemReader, itemId uint64) (*model.Item, error) {
+	item, err := ir.GetItem(ctx, itemId)
 	if err != nil {
 		return nil, err
 	}
 
 	for IsSubItem(item) {
-		item, err = ir.GetItem(item.MainItemId)
+		item, err = ir.GetItem(ctx, item.MainItemId)
 		if err != nil {
 			return nil, err
 		}
@@ -57,13 +58,13 @@ func GetContainedSubItem(mainItem *model.Item, second float64) (*model.Item, err
 	return nil, errors.Errorf("sub-item at second %f not found in %v", second, mainItem)
 }
 
-func splitMain(iw model.ItemWriter, mainItem *model.Item, second float64) ([]*model.Item, error) {
+func splitMain(ctx context.Context, iw model.ItemWriter, mainItem *model.Item, second float64) ([]*model.Item, error) {
 	sub1 := buildSubItem(mainItem, 0, second)
 	sub2 := buildSubItem(mainItem, second, float64(mainItem.DurationSeconds))
-	if err := iw.CreateOrUpdateItem(sub1); err != nil {
+	if err := iw.CreateOrUpdateItem(ctx, sub1); err != nil {
 		return nil, err
 	}
-	if err := iw.CreateOrUpdateItem(sub2); err != nil {
+	if err := iw.CreateOrUpdateItem(ctx, sub2); err != nil {
 		return nil, err
 	}
 	mainItem.SubItems = append(mainItem.SubItems, sub1, sub2)
@@ -71,14 +72,14 @@ func splitMain(iw model.ItemWriter, mainItem *model.Item, second float64) ([]*mo
 	return changedItems, nil
 }
 
-func shrinkAndSplit(iw model.ItemWriter, mainItem *model.Item, containedItem *model.Item, second float64) ([]*model.Item, error) {
+func shrinkAndSplit(ctx context.Context, iw model.ItemWriter, mainItem *model.Item, containedItem *model.Item, second float64) ([]*model.Item, error) {
 	sub := buildSubItem(mainItem, second, containedItem.EndPosition)
-	if err := iw.CreateOrUpdateItem(sub); err != nil {
+	if err := iw.CreateOrUpdateItem(ctx, sub); err != nil {
 		return nil, err
 	}
 	containedItem.EndPosition = second
 	containedItem.DurationSeconds = containedItem.EndPosition - containedItem.StartPosition
-	if err := iw.UpdateItem(containedItem); err != nil {
+	if err := iw.UpdateItem(ctx, containedItem); err != nil {
 		return nil, err
 	}
 	mainItem.SubItems = append(mainItem.SubItems, sub)
@@ -86,8 +87,8 @@ func shrinkAndSplit(iw model.ItemWriter, mainItem *model.Item, containedItem *mo
 	return changedItems, nil
 }
 
-func Split(irw model.ItemReaderWriter, itemId uint64, second float64) ([]*model.Item, error) {
-	mainItem, err := GetMainItem(irw, itemId)
+func Split(ctx context.Context, irw model.ItemReaderWriter, itemId uint64, second float64) ([]*model.Item, error) {
+	mainItem, err := GetMainItem(ctx, irw, itemId)
 	if err != nil {
 		return nil, err
 	}
@@ -99,15 +100,15 @@ func Split(irw model.ItemReaderWriter, itemId uint64, second float64) ([]*model.
 
 	var changedItems []*model.Item
 	if IsSubItem(containedItem) {
-		changedItems, err = shrinkAndSplit(irw, mainItem, containedItem, second)
+		changedItems, err = shrinkAndSplit(ctx, irw, mainItem, containedItem, second)
 	} else {
-		changedItems, err = splitMain(irw, mainItem, second)
+		changedItems, err = splitMain(ctx, irw, mainItem, second)
 	}
 	if err != nil {
 		return nil, err
 	}
 
-	return changedItems, irw.UpdateItem(mainItem)
+	return changedItems, irw.UpdateItem(ctx, mainItem)
 }
 
 func IsSubItem(item *model.Item) bool {

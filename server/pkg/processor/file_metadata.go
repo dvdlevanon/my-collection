@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"os"
@@ -8,8 +9,8 @@ import (
 	"github.com/go-errors/errors"
 )
 
-func refreshFileMetadata(irw model.ItemReaderWriter, id uint64) error {
-	item, err := irw.GetItem(id)
+func refreshFileMetadata(ctx context.Context, irw model.ItemReaderWriter, id uint64) error {
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -18,7 +19,7 @@ func refreshFileMetadata(irw model.ItemReaderWriter, id uint64) error {
 		return err
 	}
 
-	return irw.UpdateItem(item)
+	return irw.UpdateItem(ctx, item)
 }
 
 func updateFileMetadata(item *model.Item) error {

@@ -2,6 +2,7 @@ package tags
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -22,123 +23,123 @@ type MockTagsHandlerDb struct {
 	mock.Mock
 }
 
-func (m *MockTagsHandlerDb) GetAllTags() (*[]model.Tag, error) {
-	args := m.Called()
+func (m *MockTagsHandlerDb) GetAllTags(ctx context.Context) (*[]model.Tag, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTag(conds ...interface{}) (*model.Tag, error) {
-	args := m.Called(conds...)
+func (m *MockTagsHandlerDb) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTags(conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(conds...)
+func (m *MockTagsHandlerDb) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(conds...)
+func (m *MockTagsHandlerDb) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) CreateOrUpdateTag(tag *model.Tag) error {
-	args := m.Called(tag)
+func (m *MockTagsHandlerDb) CreateOrUpdateTag(ctx context.Context, tag *model.Tag) error {
+	args := m.Called(ctx, tag)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) UpdateTag(tag *model.Tag) error {
-	args := m.Called(tag)
+func (m *MockTagsHandlerDb) UpdateTag(ctx context.Context, tag *model.Tag) error {
+	args := m.Called(ctx, tag)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) RemoveTag(tagId uint64) error {
-	args := m.Called(tagId)
+func (m *MockTagsHandlerDb) RemoveTag(ctx context.Context, tagId uint64) error {
+	args := m.Called(ctx, tagId)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
-	args := m.Called(tagId, imageId)
+func (m *MockTagsHandlerDb) RemoveTagImageFromTag(ctx context.Context, tagId uint64, imageId uint64) error {
+	args := m.Called(ctx, tagId, imageId)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) GetTagCustomCommand(conds ...interface{}) (*[]model.TagCustomCommand, error) {
-	args := m.Called(conds...)
+func (m *MockTagsHandlerDb) GetTagCustomCommand(ctx context.Context, conds ...interface{}) (*[]model.TagCustomCommand, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.TagCustomCommand), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetAllTagCustomCommands() (*[]model.TagCustomCommand, error) {
-	args := m.Called()
+func (m *MockTagsHandlerDb) GetAllTagCustomCommands(ctx context.Context) (*[]model.TagCustomCommand, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.TagCustomCommand), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) UpdateTagImage(image *model.TagImage) error {
-	args := m.Called(image)
+func (m *MockTagsHandlerDb) UpdateTagImage(ctx context.Context, image *model.TagImage) error {
+	args := m.Called(ctx, image)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) GetAllTagImageTypes() (*[]model.TagImageType, error) {
-	args := m.Called()
+func (m *MockTagsHandlerDb) GetAllTagImageTypes(ctx context.Context) (*[]model.TagImageType, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.TagImageType), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTagImageType(conds ...interface{}) (*model.TagImageType, error) {
-	args := m.Called(conds...)
+func (m *MockTagsHandlerDb) GetTagImageType(ctx context.Context, conds ...interface{}) (*model.TagImageType, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.TagImageType), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) CreateOrUpdateTagImageType(tit *model.TagImageType) error {
-	args := m.Called(tit)
+func (m *MockTagsHandlerDb) CreateOrUpdateTagImageType(ctx context.Context, tit *model.TagImageType) error {
+	args := m.Called(ctx, tit)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) GetTagAnnotation(conds ...interface{}) (*model.TagAnnotation, error) {
-	args := m.Called(conds...)
+func (m *MockTagsHandlerDb) GetTagAnnotation(ctx context.Context, conds ...interface{}) (*model.TagAnnotation, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.TagAnnotation), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error) {
-	args := m.Called(tagId)
+func (m *MockTagsHandlerDb) GetTagAnnotations(ctx context.Context, tagId uint64) ([]model.TagAnnotation, error) {
+	args := m.Called(ctx, tagId)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).([]model.TagAnnotation), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error {
-	args := m.Called(tagAnnotation)
+func (m *MockTagsHandlerDb) CreateTagAnnotation(ctx context.Context, tagAnnotation *model.TagAnnotation) error {
+	args := m.Called(ctx, tagAnnotation)
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) RemoveTagAnnotationFromTag(tagId uint64, annotationId uint64) error {
-	args := m.Called(tagId, annotationId)
+func (m *MockTagsHandlerDb) RemoveTagAnnotationFromTag(ctx context.Context, tagId uint64, annotationId uint64) error {
+	args := m.Called(ctx, tagId, annotationId)
 	return args.Error(0)
 }
 
@@ -167,8 +168,8 @@ type MockTagsHandlerProcessor struct {
 	mock.Mock
 }
 
-func (m *MockTagsHandlerProcessor) ProcessThumbnail(image *model.TagImage) error {
-	args := m.Called(image)
+func (m *MockTagsHandlerProcessor) ProcessThumbnail(ctx context.Context, image *model.TagImage) error {
+	args := m.Called(ctx, image)
 	return args.Error(0)
 }
 
@@ -198,9 +199,9 @@ func TestTagsCRUDOperations(t *testing.T) {
 
 		t.Run("Success", func(t *testing.T) {
 			tag := model.Tag{Title: "rock"}
-			mockDb.On("CreateOrUpdateTag", &tag).Return(nil).Run(func(args mock.Arguments) {
+			mockDb.On("CreateOrUpdateTag", mock.Anything, &tag).Return(nil).Run(func(args mock.Arguments) {
 				// Simulate database setting the ID
-				tagArg := args.Get(0).(*model.Tag)
+				tagArg := args.Get(1).(*model.Tag)
 				tagArg.Id = 123
 			})
 
@@ -234,7 +235,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 			router := setupTagsTestRouter(handler)
 
 			tag := model.Tag{Title: "rock"}
-			mockDb.On("CreateOrUpdateTag", &tag).Return(assert.AnError)
+			mockDb.On("CreateOrUpdateTag", mock.Anything, &tag).Return(assert.AnError)
 
 			body, _ := json.Marshal(tag)
 			w := httptest.NewRecorder()
@@ -253,7 +254,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 
 		t.Run("Success", func(t *testing.T) {
 			expectedTag := &model.Tag{Id: 123, Title: "rock"}
-			mockDb.On("GetTag", mock.Anything).Return(expectedTag, nil)
+			mockDb.On("GetTag", mock.Anything, mock.Anything).Return(expectedTag, nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", "/api/tags/123", nil)
@@ -282,7 +283,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 			handler, mockDb, _, _ := setupTagsTestHandler()
 			router := setupTagsTestRouter(handler)
 
-			mockDb.On("GetTag", mock.Anything).Return(nil, assert.AnError)
+			mockDb.On("GetTag", mock.Anything, mock.Anything).Return(nil, assert.AnError)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", "/api/tags/999", nil)
@@ -299,7 +300,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 
 		t.Run("Success", func(t *testing.T) {
 			tag := model.Tag{Id: 123, Title: "updated-rock"}
-			mockDb.On("UpdateTag", &tag).Return(nil)
+			mockDb.On("UpdateTag", mock.Anything, &tag).Return(nil)
 
 			body, _ := json.Marshal(tag)
 			w := httptest.NewRecorder()
@@ -328,7 +329,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 			router := setupTagsTestRouter(handler)
 
 			tag := model.Tag{Id: 123, Title: "rock"}
-			mockDb.On("UpdateTag", &tag).Return(assert.AnError)
+			mockDb.On("UpdateTag", mock.Anything, &tag).Return(assert.AnError)
 
 			body, _ := json.Marshal(tag)
 			w := httptest.NewRecorder()
@@ -346,7 +347,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 		router := setupTagsTestRouter(handler)
 
 		t.Run("Success", func(t *testing.T) {
-			mockDb.On("RemoveTag", uint64(123)).Return(nil)
+			mockDb.On("RemoveTag", mock.Anything, uint64(123)).Return(nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("DELETE", "/api/tags/123", nil)
@@ -360,7 +361,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 			handler, mockDb, _, _ := setupTagsTestHandler()
 			router := setupTagsTestRouter(handler)
 
-			mockDb.On("RemoveTag", uint64(123)).Return(assert.AnError)
+			mockDb.On("RemoveTag", mock.Anything, uint64(123)).Return(assert.AnError)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("DELETE", "/api/tags/123", nil)
@@ -380,7 +381,7 @@ func TestTagsCRUDOperations(t *testing.T) {
 				{Id: 1, Title: "rock"},
 				{Id: 2, Title: "jazz"},
 			}
-			mockDb.On("GetAllTags").Return(expectedTags, nil)
+			mockDb.On("GetAllTags", mock.Anything).Return(expectedTags, nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", "/api/tags", nil)
@@ -410,7 +411,7 @@ func TestTagsSpecialOperations(t *testing.T) {
 			{Id: 2, Title: "movies", ParentID: nil},
 		}
 		// Mock the GetTags call that tags.GetCategories makes
-		mockDb.On("GetTags", mock.Anything).Return(expectedTags, nil)
+		mockDb.On("GetTags", mock.Anything, mock.Anything).Return(expectedTags, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/categories", nil)
@@ -428,7 +429,7 @@ func TestTagsSpecialOperations(t *testing.T) {
 			{Id: 1, Title: "special-tag-1"},
 			{Id: 2, Title: "special-tag-2"},
 		}
-		mockDb.On("GetTagsWithoutChildren", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(expectedTags, nil)
+		mockDb.On("GetTagsWithoutChildren", mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything, mock.Anything).Return(expectedTags, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/special-tags", nil)
@@ -446,7 +447,7 @@ func TestTagsSpecialOperations(t *testing.T) {
 			{Id: 1, Nickname: "banner"},
 			{Id: 2, Nickname: "thumbnail"},
 		}
-		mockDb.On("GetAllTagImageTypes").Return(expectedTypes, nil)
+		mockDb.On("GetAllTagImageTypes", mock.Anything).Return(expectedTypes, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/tags/tag-image-types", nil)
@@ -476,7 +477,7 @@ func TestTagsImageOperations(t *testing.T) {
 			tag := &model.Tag{Id: 123, Title: "rock", Children: []*model.Tag{}}
 			fileUrl := model.FileUrl{Url: tempDir}
 
-			mockDb.On("GetTag", uint64(123)).Return(tag, nil)
+			mockDb.On("GetTag", mock.Anything, uint64(123)).Return(tag, nil)
 			// Since AutoImageChildren reads directory contents and no children exist,
 			// it should return successfully without doing anything
 
@@ -506,8 +507,8 @@ func TestTagsImageOperations(t *testing.T) {
 
 		t.Run("Success", func(t *testing.T) {
 			image := model.TagImage{Id: 456, TagId: 123, Url: "/path/to/image.jpg"}
-			mockDb.On("UpdateTagImage", &image).Return(nil)
-			mockProcessor.On("ProcessThumbnail", &image).Return(nil)
+			mockDb.On("UpdateTagImage", mock.Anything, &image).Return(nil)
+			mockProcessor.On("ProcessThumbnail", mock.Anything, &image).Return(nil)
 
 			body, _ := json.Marshal(image)
 			w := httptest.NewRecorder()
@@ -551,8 +552,8 @@ func TestTagsImageOperations(t *testing.T) {
 
 		// Mock the tags.RemoveTagImages call - since this is a business logic function,
 		// we'll need to mock its dependencies
-		mockDb.On("GetTag", mock.Anything).Return(&model.Tag{Id: 123}, nil)
-		mockDb.On("RemoveTagImageFromTag", uint64(123), uint64(456)).Return(nil)
+		mockDb.On("GetTag", mock.Anything, mock.Anything).Return(&model.Tag{Id: 123}, nil)
+		mockDb.On("RemoveTagImageFromTag", mock.Anything, uint64(123), uint64(456)).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("DELETE", "/api/tags/123/tit/456", nil)
@@ -569,9 +570,9 @@ func TestTagsRandomMixOperations(t *testing.T) {
 		router := setupTagsTestRouter(handler)
 
 		tag := &model.Tag{Id: 123, Title: "rock"}
-		mockDb.On("GetTag", mock.Anything).Return(tag, nil)
-		mockDb.On("UpdateTag", mock.AnythingOfType("*model.Tag")).Return(nil).Run(func(args mock.Arguments) {
-			tagArg := args.Get(0).(*model.Tag)
+		mockDb.On("GetTag", mock.Anything, mock.Anything).Return(tag, nil)
+		mockDb.On("UpdateTag", mock.Anything, mock.AnythingOfType("*model.Tag")).Return(nil).Run(func(args mock.Arguments) {
+			tagArg := args.Get(1).(*model.Tag)
 			assert.NotNil(t, tagArg.NoRandom)
 			assert.False(t, *tagArg.NoRandom)
 		})
@@ -589,9 +590,9 @@ func TestTagsRandomMixOperations(t *testing.T) {
 		router := setupTagsTestRouter(handler)
 
 		tag := &model.Tag{Id: 123, Title: "rock"}
-		mockDb.On("GetTag", mock.Anything).Return(tag, nil)
-		mockDb.On("UpdateTag", mock.AnythingOfType("*model.Tag")).Return(nil).Run(func(args mock.Arguments) {
-			tagArg := args.Get(0).(*model.Tag)
+		mockDb.On("GetTag", mock.Anything, mock.Anything).Return(tag, nil)
+		mockDb.On("UpdateTag", mock.Anything, mock.AnythingOfType("*model.Tag")).Return(nil).Run(func(args mock.Arguments) {
+			tagArg := args.Get(1).(*model.Tag)
 			assert.NotNil(t, tagArg.NoRandom)
 			assert.True(t, *tagArg.NoRandom)
 		})
@@ -615,14 +616,14 @@ func TestTagsAnnotationOperations(t *testing.T) {
 
 		// Mock the tag_annotations.AddAnnotationToTag business logic calls
 		// First it checks if annotation exists, then gets the tag, then creates/updates
-		mockDb.On("GetTagAnnotation", mock.AnythingOfType("*model.TagAnnotation")).Return(nil, gorm.ErrRecordNotFound)
-		mockDb.On("CreateTagAnnotation", mock.AnythingOfType("*model.TagAnnotation")).Return(nil).Run(func(args mock.Arguments) {
+		mockDb.On("GetTagAnnotation", mock.Anything, mock.AnythingOfType("*model.TagAnnotation")).Return(nil, gorm.ErrRecordNotFound)
+		mockDb.On("CreateTagAnnotation", mock.Anything, mock.AnythingOfType("*model.TagAnnotation")).Return(nil).Run(func(args mock.Arguments) {
 			// Simulate setting an ID
-			annotationArg := args.Get(0).(*model.TagAnnotation)
+			annotationArg := args.Get(1).(*model.TagAnnotation)
 			annotationArg.Id = 456
 		})
-		mockDb.On("GetTag", uint64(123)).Return(&model.Tag{Id: 123, Annotations: []*model.TagAnnotation{}}, nil)
-		mockDb.On("CreateOrUpdateTag", mock.AnythingOfType("*model.Tag")).Return(nil)
+		mockDb.On("GetTag", mock.Anything, uint64(123)).Return(&model.Tag{Id: 123, Annotations: []*model.TagAnnotation{}}, nil)
+		mockDb.On("CreateOrUpdateTag", mock.Anything, mock.AnythingOfType("*model.Tag")).Return(nil)
 
 		body, _ := json.Marshal(annotation)
 		w := httptest.NewRecorder()
@@ -642,7 +643,7 @@ func TestTagsAnnotationOperations(t *testing.T) {
 		handler, mockDb, _, _ := setupTagsTestHandler()
 		router := setupTagsTestRouter(handler)
 
-		mockDb.On("RemoveTagAnnotationFromTag", uint64(123), uint64(456)).Return(nil)
+		mockDb.On("RemoveTagAnnotationFromTag", mock.Anything, uint64(123), uint64(456)).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("DELETE", "/api/tags/123/annotations/456", nil)
@@ -662,8 +663,8 @@ func TestTagsAnnotationOperations(t *testing.T) {
 		}
 
 		// Mock the tag_annotations.GetTagAvailableAnnotations business logic calls
-		mockDb.On("GetTag", mock.Anything).Return(&model.Tag{Id: 123}, nil)
-		mockDb.On("GetTagAnnotations", uint64(123)).Return(expectedAnnotations, nil)
+		mockDb.On("GetTag", mock.Anything, mock.Anything).Return(&model.Tag{Id: 123}, nil)
+		mockDb.On("GetTagAnnotations", mock.Anything, uint64(123)).Return(expectedAnnotations, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/tags/123/available-annotations", nil)
@@ -688,7 +689,7 @@ func TestTagsCustomCommands(t *testing.T) {
 			{Id: 1, Title: "ffmpeg command", Arg: "ffmpeg -i input output"},
 			{Id: 2, Title: "convert command", Arg: "convert resize"},
 		}
-		mockDb.On("GetAllTagCustomCommands").Return(expectedCommands, nil)
+		mockDb.On("GetAllTagCustomCommands", mock.Anything).Return(expectedCommands, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/tags/123/tag-custom-commands", nil)

@@ -18,8 +18,8 @@ import (
 
 var logger = logging.MustGetLogger("fsmanager")
 
-func NewFsManager(db db.Database, filesFilter directorytree.FilesFilter, checkInterval time.Duration) (*FsManager, error) {
-	if err := directories.AddRootDirectory(db); err != nil {
+func NewFsManager(ctx context.Context, db db.Database, filesFilter directorytree.FilesFilter, checkInterval time.Duration) (*FsManager, error) {
+	if err := directories.AddRootDirectory(ctx, db); err != nil {
 		return nil, err
 	}
 
@@ -40,20 +40,22 @@ type FsManager struct {
 }
 
 func (f *FsManager) Watch(ctx context.Context) error {
-	if err := f.Sync(); err != nil {
+	ctx = utils.ContextWithSubject(ctx, "fs_manager")
+
+	if err := f.Sync(ctx); err != nil {
 		utils.LogError("Error in FS Watch", err)
 	}
 
 	for {
 		select {
 		case <-f.changeChannel:
-			if err := f.Sync(); err != nil {
+			if err := f.Sync(ctx); err != nil {
 				utils.LogError("Error in FS Watch", err)
 			}
 		case <-ctx.Done():
 			return nil
 		case <-time.After(f.checkInterval):
-			if err := f.Sync(); err != nil {
+			if err := f.Sync(ctx); err != nil {
 				utils.LogError("Error in FS Watch", err)
 			}
 		}
@@ -67,25 +69,25 @@ func (f *FsManager) DirectoryChanged() {
 	}
 }
 
-func (f *FsManager) GetBelongingItems(path string) (*[]model.Item, error) {
-	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItems(wrapDb(f.db, f.db))
+func (f *FsManager) GetBelongingItems(ctx context.Context, path string) (*[]model.Item, error) {
+	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItems(ctx, wrapDb(f.db, f.db))
 }
 
-func (f *FsManager) GetBelongingItem(path string, filename string) (*model.Item, error) {
-	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItem(wrapDb(f.db, f.db), filename)
+func (f *FsManager) GetBelongingItem(ctx context.Context, path string, filename string) (*model.Item, error) {
+	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItem(ctx, wrapDb(f.db, f.db), filename)
 }
 
-func (f *FsManager) AddBelongingItem(item *model.Item) error {
-	return newFsDirectory(item.Origin).addItem(f.db, f.db, item)
+func (f *FsManager) AddBelongingItem(ctx context.Context, item *model.Item) error {
+	return newFsDirectory(item.Origin).addItem(ctx, f.db, f.db, item)
 }
 
-func (f *FsManager) GetAutoTags(path string) ([]*model.Tag, error) {
-	directory, err := directories.GetDirectory(f.db, path)
+func (f *FsManager) GetAutoTags(ctx context.Context, path string) ([]*model.Tag, error) {
+	directory, err := directories.GetDirectory(ctx, f.db, path)
 	if err != nil {
 		return nil, err
 	}
 
-	return tags.GetOrCreateTags(f.db, directories.BuildDirectoryTags(directory))
+	return tags.GetOrCreateTags(ctx, f.db, directories.BuildDirectoryTags(directory))
 }
 
 func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
@@ -97,17 +99,17 @@ func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {
 	return file.ModTime().UnixMilli(), file.Size(), nil
 }
 
-func (f *FsManager) runSync() (bool, error) {
-	dig, err := NewCachedDig(f.db, f.db)
+func (f *FsManager) runSync(ctx context.Context) (bool, error) {
+	dig, err := NewCachedDig(ctx, f.db, f.db)
 	if err != nil {
 		return false, err
 	}
-	fsSync, err := newFsSyncer(relativasor.GetRootDirectory(), f.db, dig, f.filesFilter)
+	fsSync, err := newFsSyncer(ctx, relativasor.GetRootDirectory(), f.db, dig, f.filesFilter)
 	if err != nil {
 		return false, err
 	}
 
-	hasChanges, errors := fsSync.sync(f.db, f, f, f)
+	hasChanges, errors := fsSync.sync(ctx, f.db, f, f, f)
 
 	if len(errors) > 0 {
 		logger.Errorf("FS Sync finished with %d errors", len(errors))
@@ -121,14 +123,14 @@ func (f *FsManager) runSync() (bool, error) {
 	return hasChanges, nil
 }
 
-func (f *FsManager) Sync() error {
+func (f *FsManager) Sync(ctx context.Context) error {
 	var lastError error
 	hasAnyChange := false
 
 	hasChanges := true
 	for hasChanges {
 		var err error
-		hasChanges, err = f.runSync()
+		hasChanges, err = f.runSync(ctx)
 		if err != nil {
 			lastError = err
 		}

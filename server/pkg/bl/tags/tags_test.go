@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"context"
 	"errors"
 	"my-collection/server/pkg/model"
 	"testing"
@@ -36,10 +37,10 @@ func TestGetItems(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItems(expectedItemIds).
+			GetItems(gomock.Any(), expectedItemIds).
 			Return(expectedItems, nil)
 
-		result, err := GetItems(mockItemReader, tag)
+		result, err := GetItems(context.Background(), mockItemReader, tag)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -54,7 +55,7 @@ func TestGetItems(t *testing.T) {
 			Items: []*model.Item{},
 		}
 
-		result, err := GetItems(mockItemReader, tag)
+		result, err := GetItems(context.Background(), mockItemReader, tag)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -73,10 +74,10 @@ func TestGetItems(t *testing.T) {
 
 		expectedError := errors.New("database error")
 		mockItemReader.EXPECT().
-			GetItems([]uint64{1}).
+			GetItems(gomock.Any(), []uint64{1}).
 			Return(nil, expectedError)
 
-		result, err := GetItems(mockItemReader, tag)
+		result, err := GetItems(context.Background(), mockItemReader, tag)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -109,10 +110,10 @@ func TestGetItemByTitle(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItems([]uint64{1, 2, 3}).
+			GetItems(gomock.Any(), []uint64{1, 2, 3}).
 			Return(expectedItems, nil)
 
-		result, err := GetItemByTitle(mockItemReader, tag, "Target Item")
+		result, err := GetItemByTitle(context.Background(), mockItemReader, tag, "Target Item")
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -137,10 +138,10 @@ func TestGetItemByTitle(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItems([]uint64{1, 2}).
+			GetItems(gomock.Any(), []uint64{1, 2}).
 			Return(expectedItems, nil)
 
-		result, err := GetItemByTitle(mockItemReader, tag, "Non-existent Item")
+		result, err := GetItemByTitle(context.Background(), mockItemReader, tag, "Non-existent Item")
 
 		assert.NoError(t, err)
 		assert.Nil(t, result)
@@ -158,10 +159,10 @@ func TestGetItemByTitle(t *testing.T) {
 
 		expectedError := errors.New("database error")
 		mockItemReader.EXPECT().
-			GetItems([]uint64{1}).
+			GetItems(gomock.Any(), []uint64{1}).
 			Return(nil, expectedError)
 
-		result, err := GetItemByTitle(mockItemReader, tag, "Item 1")
+		result, err := GetItemByTitle(context.Background(), mockItemReader, tag, "Item 1")
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -185,10 +186,10 @@ func TestGetOrCreateTag(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTag).
+			GetTag(gomock.Any(), inputTag).
 			Return(existingTag, nil)
 
-		result, err := GetOrCreateTag(mockTagReaderWriter, inputTag)
+		result, err := GetOrCreateTag(context.Background(), mockTagReaderWriter, inputTag)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -201,13 +202,13 @@ func TestGetOrCreateTag(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTag).
+			GetTag(gomock.Any(), inputTag).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(inputTag).
+			CreateOrUpdateTag(gomock.Any(), inputTag).
 			Return(nil)
 
-		result, err := GetOrCreateTag(mockTagReaderWriter, inputTag)
+		result, err := GetOrCreateTag(context.Background(), mockTagReaderWriter, inputTag)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -221,10 +222,10 @@ func TestGetOrCreateTag(t *testing.T) {
 		expectedError := errors.New("database connection error")
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTag).
+			GetTag(gomock.Any(), inputTag).
 			Return(nil, expectedError)
 
-		result, err := GetOrCreateTag(mockTagReaderWriter, inputTag)
+		result, err := GetOrCreateTag(context.Background(), mockTagReaderWriter, inputTag)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -238,13 +239,13 @@ func TestGetOrCreateTag(t *testing.T) {
 		expectedError := errors.New("create error")
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTag).
+			GetTag(gomock.Any(), inputTag).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(inputTag).
+			CreateOrUpdateTag(gomock.Any(), inputTag).
 			Return(expectedError)
 
-		result, err := GetOrCreateTag(mockTagReaderWriter, inputTag)
+		result, err := GetOrCreateTag(context.Background(), mockTagReaderWriter, inputTag)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -268,13 +269,13 @@ func TestGetOrCreateChildTag(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(expectedTag).
+			GetTag(gomock.Any(), expectedTag).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(expectedTag).
+			CreateOrUpdateTag(gomock.Any(), expectedTag).
 			Return(nil)
 
-		result, err := GetOrCreateChildTag(mockTagReaderWriter, parentId, title)
+		result, err := GetOrCreateChildTag(context.Background(), mockTagReaderWriter, parentId, title)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -297,10 +298,10 @@ func TestGetOrCreateChildTag(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(queryTag).
+			GetTag(gomock.Any(), queryTag).
 			Return(existingTag, nil)
 
-		result, err := GetOrCreateChildTag(mockTagReaderWriter, parentId, title)
+		result, err := GetOrCreateChildTag(context.Background(), mockTagReaderWriter, parentId, title)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -329,10 +330,10 @@ func TestGetChildTag(t *testing.T) {
 		}
 
 		mockTagReader.EXPECT().
-			GetTag(*expectedTag).
+			GetTag(gomock.Any(), *expectedTag).
 			Return(returnedTag, nil)
 
-		result, err := GetChildTag(mockTagReader, parentId, title)
+		result, err := GetChildTag(context.Background(), mockTagReader, parentId, title)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -349,10 +350,10 @@ func TestGetChildTag(t *testing.T) {
 		}
 
 		mockTagReader.EXPECT().
-			GetTag(expectedTag).
+			GetTag(gomock.Any(), expectedTag).
 			Return(nil, gorm.ErrRecordNotFound)
 
-		result, err := GetChildTag(mockTagReader, parentId, title)
+		result, err := GetChildTag(context.Background(), mockTagReader, parentId, title)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -376,24 +377,24 @@ func TestGetOrCreateTags(t *testing.T) {
 		// First tag exists
 		existingTag1 := &model.Tag{Id: 1, Title: "Tag 1"}
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTags[0]).
+			GetTag(gomock.Any(), inputTags[0]).
 			Return(existingTag1, nil)
 
 		// Second tag doesn't exist, needs to be created
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTags[1]).
+			GetTag(gomock.Any(), inputTags[1]).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(inputTags[1]).
+			CreateOrUpdateTag(gomock.Any(), inputTags[1]).
 			Return(nil)
 
 		// Third tag exists
 		existingTag3 := &model.Tag{Id: 3, Title: "Tag 3"}
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTags[2]).
+			GetTag(gomock.Any(), inputTags[2]).
 			Return(existingTag3, nil)
 
-		result, err := GetOrCreateTags(mockTagReaderWriter, inputTags)
+		result, err := GetOrCreateTags(context.Background(), mockTagReaderWriter, inputTags)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -412,19 +413,19 @@ func TestGetOrCreateTags(t *testing.T) {
 		// First tag succeeds
 		existingTag1 := &model.Tag{Id: 1, Title: "Tag 1"}
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTags[0]).
+			GetTag(gomock.Any(), inputTags[0]).
 			Return(existingTag1, nil)
 
 		// Second tag fails to create
 		expectedError := errors.New("create error")
 		mockTagReaderWriter.EXPECT().
-			GetTag(inputTags[1]).
+			GetTag(gomock.Any(), inputTags[1]).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(inputTags[1]).
+			CreateOrUpdateTag(gomock.Any(), inputTags[1]).
 			Return(expectedError)
 
-		result, err := GetOrCreateTags(mockTagReaderWriter, inputTags)
+		result, err := GetOrCreateTags(context.Background(), mockTagReaderWriter, inputTags)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -434,7 +435,7 @@ func TestGetOrCreateTags(t *testing.T) {
 	t.Run("empty tags slice", func(t *testing.T) {
 		inputTags := []*model.Tag{}
 
-		result, err := GetOrCreateTags(mockTagReaderWriter, inputTags)
+		result, err := GetOrCreateTags(context.Background(), mockTagReaderWriter, inputTags)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -455,10 +456,10 @@ func TestRemoveTagAndItsAssociations(t *testing.T) {
 		}
 
 		mockTagWriter.EXPECT().
-			RemoveTag(tag.Id).
+			RemoveTag(gomock.Any(), tag.Id).
 			Return(nil)
 
-		errors := RemoveTagAndItsAssociations(mockTagWriter, tag)
+		errors := RemoveTagAndItsAssociations(context.Background(), mockTagWriter, tag)
 
 		assert.Empty(t, errors)
 	})
@@ -471,10 +472,10 @@ func TestRemoveTagAndItsAssociations(t *testing.T) {
 
 		expectedError := errors.New("removal error")
 		mockTagWriter.EXPECT().
-			RemoveTag(tag.Id).
+			RemoveTag(gomock.Any(), tag.Id).
 			Return(expectedError)
 
-		errorList := RemoveTagAndItsAssociations(mockTagWriter, tag)
+		errorList := RemoveTagAndItsAssociations(context.Background(), mockTagWriter, tag)
 
 		assert.Len(t, errorList, 1)
 		assert.Equal(t, expectedError, errorList[0])
@@ -502,10 +503,10 @@ func TestGetFullTags(t *testing.T) {
 		}
 
 		mockTagReader.EXPECT().
-			GetTags(expectedIds).
+			GetTags(gomock.Any(), expectedIds).
 			Return(expectedTags, nil)
 
-		result, err := GetFullTags(mockTagReader, tagIds)
+		result, err := GetFullTags(context.Background(), mockTagReader, tagIds)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -515,7 +516,7 @@ func TestGetFullTags(t *testing.T) {
 	t.Run("empty tags slice", func(t *testing.T) {
 		tagIds := []*model.Tag{}
 
-		result, err := GetFullTags(mockTagReader, tagIds)
+		result, err := GetFullTags(context.Background(), mockTagReader, tagIds)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -531,10 +532,10 @@ func TestGetFullTags(t *testing.T) {
 		expectedError := errors.New("database error")
 
 		mockTagReader.EXPECT().
-			GetTags(expectedIds).
+			GetTags(gomock.Any(), expectedIds).
 			Return(nil, expectedError)
 
-		result, err := GetFullTags(mockTagReader, tagIds)
+		result, err := GetFullTags(context.Background(), mockTagReader, tagIds)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -555,10 +556,10 @@ func TestGetCategories(t *testing.T) {
 		}
 
 		mockTagReader.EXPECT().
-			GetTags("parent_id is NULL").
+			GetTags(gomock.Any(), "parent_id is NULL").
 			Return(expectedTags, nil)
 
-		result, err := GetCategories(mockTagReader)
+		result, err := GetCategories(context.Background(), mockTagReader)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -569,10 +570,10 @@ func TestGetCategories(t *testing.T) {
 		expectedError := errors.New("database error")
 
 		mockTagReader.EXPECT().
-			GetTags("parent_id is NULL").
+			GetTags(gomock.Any(), "parent_id is NULL").
 			Return(nil, expectedError)
 
-		result, err := GetCategories(mockTagReader)
+		result, err := GetCategories(context.Background(), mockTagReader)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -650,16 +651,16 @@ func TestRemoveTagImages(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(tagId).
+			GetTag(gomock.Any(), tagId).
 			Return(tag, nil)
 		mockTagReaderWriter.EXPECT().
-			RemoveTagImageFromTag(tagId, uint64(1)).
+			RemoveTagImageFromTag(gomock.Any(), tagId, uint64(1)).
 			Return(nil)
 		mockTagReaderWriter.EXPECT().
-			RemoveTagImageFromTag(tagId, uint64(3)).
+			RemoveTagImageFromTag(gomock.Any(), tagId, uint64(3)).
 			Return(nil)
 
-		err := RemoveTagImages(mockTagReaderWriter, tagId, titId)
+		err := RemoveTagImages(context.Background(), mockTagReaderWriter, tagId, titId)
 
 		assert.NoError(t, err)
 	})
@@ -670,10 +671,10 @@ func TestRemoveTagImages(t *testing.T) {
 		expectedError := errors.New("tag not found")
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(tagId).
+			GetTag(gomock.Any(), tagId).
 			Return(nil, expectedError)
 
-		err := RemoveTagImages(mockTagReaderWriter, tagId, titId)
+		err := RemoveTagImages(context.Background(), mockTagReaderWriter, tagId, titId)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -693,13 +694,13 @@ func TestRemoveTagImages(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(tagId).
+			GetTag(gomock.Any(), tagId).
 			Return(tag, nil)
 		mockTagReaderWriter.EXPECT().
-			RemoveTagImageFromTag(tagId, uint64(1)).
+			RemoveTagImageFromTag(gomock.Any(), tagId, uint64(1)).
 			Return(expectedError)
 
-		err := RemoveTagImages(mockTagReaderWriter, tagId, titId)
+		err := RemoveTagImages(context.Background(), mockTagReaderWriter, tagId, titId)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -719,10 +720,10 @@ func TestRemoveTagImages(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(tagId).
+			GetTag(gomock.Any(), tagId).
 			Return(tag, nil)
 
-		err := RemoveTagImages(mockTagReaderWriter, tagId, titId)
+		err := RemoveTagImages(context.Background(), mockTagReaderWriter, tagId, titId)
 
 		assert.NoError(t, err)
 	})
@@ -738,10 +739,10 @@ func TestRemoveTagImages(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(tagId).
+			GetTag(gomock.Any(), tagId).
 			Return(tag, nil)
 
-		err := RemoveTagImages(mockTagReaderWriter, tagId, titId)
+		err := RemoveTagImages(context.Background(), mockTagReaderWriter, tagId, titId)
 
 		assert.NoError(t, err)
 	})

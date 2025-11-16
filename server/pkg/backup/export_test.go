@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
@@ -65,11 +66,11 @@ func TestExport(t *testing.T) {
 		Title:  "item30",
 	}
 
-	assert.NoError(t, db.CreateOrUpdateItem(&item10))
-	assert.NoError(t, db.CreateOrUpdateItem(&item20))
-	assert.NoError(t, db.CreateOrUpdateItem(&item30))
+	assert.NoError(t, db.CreateOrUpdateItem(context.Background(), &item10))
+	assert.NoError(t, db.CreateOrUpdateItem(context.Background(), &item20))
+	assert.NoError(t, db.CreateOrUpdateItem(context.Background(), &item30))
 
 	out := strings.Builder{}
-	assert.NoError(t, Export(db, db, &out))
+	assert.NoError(t, Export(context.Background(), db, db, &out))
 	assert.Equal(t, importExportTestJson, out.String())
 }

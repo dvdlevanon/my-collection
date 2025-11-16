@@ -45,6 +45,7 @@ func (s *fsHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *fsHandler) getFsDir(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	path := c.Query("path")
 	depth, err := strconv.ParseInt(c.Query("depth"), 10, 64)
 	if server.HandleError(c, err) {
@@ -56,7 +57,7 @@ func (s *fsHandler) getFsDir(c *gin.Context) {
 		return
 	}
 
-	node, err = directories.EnrichFsNode(s.db, node)
+	node, err = directories.EnrichFsNode(ctx, s.db, node)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -65,6 +66,7 @@ func (s *fsHandler) getFsDir(c *gin.Context) {
 }
 
 func (s *fsHandler) includeDir(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	path := c.Query("path")
 	subdirs, err := strconv.ParseBool(c.Query("subdirs"))
 	if server.HandleError(c, err) {
@@ -75,7 +77,7 @@ func (s *fsHandler) includeDir(c *gin.Context) {
 		return
 	}
 
-	err = fs.IncludeDir(s.db, path, subdirs, hierarchy)
+	err = fs.IncludeDir(ctx, s.db, path, subdirs, hierarchy)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -85,9 +87,10 @@ func (s *fsHandler) includeDir(c *gin.Context) {
 }
 
 func (s *fsHandler) excludeDir(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	path := c.Query("path")
 
-	err := fs.ExcludeDir(s.db, path)
+	err := fs.ExcludeDir(ctx, s.db, path)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -97,6 +100,7 @@ func (s *fsHandler) excludeDir(c *gin.Context) {
 }
 
 func (s *fsHandler) SetDirectoryTags(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
 	if server.HandleError(c, err) {
 		return
@@ -108,7 +112,7 @@ func (s *fsHandler) SetDirectoryTags(c *gin.Context) {
 		return
 	}
 
-	if err = directories.UpdateDirectoryTags(s.db, &directory); err != nil {
+	if err = directories.UpdateDirectoryTags(ctx, s.db, &directory); err != nil {
 		server.HandleError(c, err)
 		return
 	}

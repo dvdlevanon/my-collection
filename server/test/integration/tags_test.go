@@ -23,7 +23,7 @@ import (
 // MockTagsProcessor implements a simple mock for the tags processor interface
 type MockTagsProcessor struct{}
 
-func (m *MockTagsProcessor) ProcessThumbnail(image *model.TagImage) error {
+func (m *MockTagsProcessor) ProcessThumbnail(ctx context.Context, image *model.TagImage) error {
 	return nil
 }
 

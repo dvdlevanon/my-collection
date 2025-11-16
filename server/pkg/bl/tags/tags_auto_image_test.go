@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"context"
 	"errors"
 	"io/fs"
 	"my-collection/server/pkg/bl/directories"
@@ -81,7 +82,7 @@ func TestAutoImageChildren(t *testing.T) {
 		childTag1 := &model.Tag{Id: 2, Title: "Child Tag 1", Images: []*model.TagImage{}}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(uint64(2)).
+			GetTag(gomock.Any(), uint64(2)).
 			Return(childTag1, nil)
 
 		// The function calls autoImageTagType for each directory, and each call can potentially
@@ -92,7 +93,7 @@ func TestAutoImageChildren(t *testing.T) {
 			Return(nil, gorm.ErrRecordNotFound).
 			AnyTimes()
 		mockTagImageTypeReaderWriter.EXPECT().
-			CreateOrUpdateTagImageType(gomock.Any()).
+			CreateOrUpdateTagImageType(context.Background(), gomock.Any()).
 			Return(nil).
 			AnyTimes()
 
@@ -108,11 +109,15 @@ func TestAutoImageChildren(t *testing.T) {
 
 		// Mock tag updates
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(gomock.Any()).
+			CreateOrUpdateTag(gomock.Any(), gomock.Any()).
 			Return(nil).
 			AnyTimes()
+		mockTagReaderWriter.EXPECT().
+			GetTag(gomock.Any(), gomock.Any()).
+			Return(nil, nil).
+			AnyTimes()
 
-		err := AutoImageChildren(mockStorage, mockTagReaderWriter, mockTagImageTypeReaderWriter, tag, tempDir)
+		err := AutoImageChildren(context.Background(), mockStorage, mockTagReaderWriter, mockTagImageTypeReaderWriter, tag, tempDir)
 
 		assert.NoError(t, err)
 	})
@@ -124,7 +129,7 @@ func TestAutoImageChildren(t *testing.T) {
 			Children: []*model.Tag{},
 		}
 
-		err := AutoImageChildren(mockStorage, mockTagReaderWriter, mockTagImageTypeReaderWriter, tag, "/non-existent-directory")
+		err := AutoImageChildren(context.Background(), mockStorage, mockTagReaderWriter, mockTagImageTypeReaderWriter, tag, "/non-existent-directory")
 
 		assert.Error(t, err)
 	})
@@ -139,7 +144,7 @@ func TestAutoImageChildren(t *testing.T) {
 			Children: []*model.Tag{}, // No children
 		}
 
-		err := AutoImageChildren(mockStorage, mockTagReaderWriter, mockTagImageTypeReaderWriter, tag, tempDir)
+		err := AutoImageChildren(context.Background(), mockStorage, mockTagReaderWriter, mockTagImageTypeReaderWriter, tag, tempDir)
 
 		assert.NoError(t, err)
 	})
@@ -176,7 +181,7 @@ func TestAutoImageTagType(t *testing.T) {
 		}
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			GetTagImageType("nickname = ?", "banners").
+			GetTagImageType(gomock.Any(), "nickname = ?", "banners").
 			Return(tit, nil)
 
 		// No icon update needed since no icon file, so no storage calls for icon
@@ -190,10 +195,10 @@ func TestAutoImageTagType(t *testing.T) {
 			Return("http://storage/test-url")
 
 		mockTagWriter.EXPECT().
-			CreateOrUpdateTag(tag).
+			CreateOrUpdateTag(gomock.Any(), tag).
 			Return(nil)
 
-		err := autoImageTagType(mockStorage, mockTagWriter, mockTagImageTypeReaderWriter, tag, filepath.Join(tempDir, "banners"), "banners")
+		err := autoImageTagType(context.Background(), mockStorage, mockTagWriter, mockTagImageTypeReaderWriter, tag, filepath.Join(tempDir, "banners"), "banners")
 
 		assert.NoError(t, err)
 		assert.Len(t, tag.Images, 1)
@@ -208,10 +213,10 @@ func TestAutoImageTagType(t *testing.T) {
 		expectedError := errors.New("database error")
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			GetTagImageType("nickname = ?", "banners").
+			GetTagImageType(gomock.Any(), "nickname = ?", "banners").
 			Return(nil, expectedError)
 
-		err := autoImageTagType(mockStorage, mockTagWriter, mockTagImageTypeReaderWriter, tag, filepath.Join(tempDir, "banners"), "banners")
+		err := autoImageTagType(context.Background(), mockStorage, mockTagWriter, mockTagImageTypeReaderWriter, tag, filepath.Join(tempDir, "banners"), "banners")
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -231,7 +236,7 @@ func TestUpdateTagImageTypeIcon(t *testing.T) {
 			IconUrl: "http://existing-icon.jpg",
 		}
 
-		err := updateTagImageTypeIcon(mockStorage, mockTagImageTypeReaderWriter, tit, "/some/directory")
+		err := updateTagImageTypeIcon(context.Background(), mockStorage, mockTagImageTypeReaderWriter, tit, "/some/directory")
 
 		assert.NoError(t, err)
 	})
@@ -260,10 +265,10 @@ func TestUpdateTagImageTypeIcon(t *testing.T) {
 			Return("http://storage/icon-url")
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			CreateOrUpdateTagImageType(tit).
+			CreateOrUpdateTagImageType(gomock.Any(), tit).
 			Return(nil)
 
-		err := updateTagImageTypeIcon(mockStorage, mockTagImageTypeReaderWriter, tit, tempDir)
+		err := updateTagImageTypeIcon(context.Background(), mockStorage, mockTagImageTypeReaderWriter, tit, tempDir)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "http://storage/icon-url", tit.IconUrl)
@@ -278,7 +283,7 @@ func TestUpdateTagImageTypeIcon(t *testing.T) {
 			IconUrl: "",
 		}
 
-		err := updateTagImageTypeIcon(mockStorage, mockTagImageTypeReaderWriter, tit, tempDir)
+		err := updateTagImageTypeIcon(context.Background(), mockStorage, mockTagImageTypeReaderWriter, tit, tempDir)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "", tit.IconUrl) // Should remain empty
@@ -304,7 +309,7 @@ func TestUpdateTagImageTypeIcon(t *testing.T) {
 			GetFileForWriting(gomock.Any()).
 			Return("", expectedError)
 
-		err := updateTagImageTypeIcon(mockStorage, mockTagImageTypeReaderWriter, tit, tempDir)
+		err := updateTagImageTypeIcon(context.Background(), mockStorage, mockTagImageTypeReaderWriter, tit, tempDir)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -387,10 +392,10 @@ func TestGetOrCreateTagImageType(t *testing.T) {
 		}
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			GetTagImageType("nickname = ?", nickname).
+			GetTagImageType(gomock.Any(), "nickname = ?", nickname).
 			Return(existingTit, nil)
 
-		result, err := getOrCreateTagImageType(mockTagImageTypeReaderWriter, nickname)
+		result, err := getOrCreateTagImageType(context.Background(), mockTagImageTypeReaderWriter, nickname)
 
 		assert.NoError(t, err)
 		assert.Equal(t, existingTit, result)
@@ -400,16 +405,16 @@ func TestGetOrCreateTagImageType(t *testing.T) {
 		nickname := "thumbnails"
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			GetTagImageType("nickname = ?", nickname).
+			GetTagImageType(gomock.Any(), "nickname = ?", nickname).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagImageTypeReaderWriter.EXPECT().
-			CreateOrUpdateTagImageType(gomock.Any()).
-			DoAndReturn(func(tit *model.TagImageType) error {
+			CreateOrUpdateTagImageType(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, tit *model.TagImageType) error {
 				tit.Id = 456 // Simulate DB assigning ID
 				return nil
 			})
 
-		result, err := getOrCreateTagImageType(mockTagImageTypeReaderWriter, nickname)
+		result, err := getOrCreateTagImageType(context.Background(), mockTagImageTypeReaderWriter, nickname)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -422,10 +427,10 @@ func TestGetOrCreateTagImageType(t *testing.T) {
 		expectedError := errors.New("database connection error")
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			GetTagImageType("nickname = ?", nickname).
+			GetTagImageType(gomock.Any(), "nickname = ?", nickname).
 			Return(nil, expectedError)
 
-		result, err := getOrCreateTagImageType(mockTagImageTypeReaderWriter, nickname)
+		result, err := getOrCreateTagImageType(context.Background(), mockTagImageTypeReaderWriter, nickname)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -437,13 +442,13 @@ func TestGetOrCreateTagImageType(t *testing.T) {
 		expectedError := errors.New("create error")
 
 		mockTagImageTypeReaderWriter.EXPECT().
-			GetTagImageType("nickname = ?", nickname).
+			GetTagImageType(gomock.Any(), "nickname = ?", nickname).
 			Return(nil, gorm.ErrRecordNotFound)
 		mockTagImageTypeReaderWriter.EXPECT().
-			CreateOrUpdateTagImageType(gomock.Any()).
+			CreateOrUpdateTagImageType(gomock.Any(), gomock.Any()).
 			Return(expectedError)
 
-		result, err := getOrCreateTagImageType(mockTagImageTypeReaderWriter, nickname)
+		result, err := getOrCreateTagImageType(context.Background(), mockTagImageTypeReaderWriter, nickname)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -488,10 +493,10 @@ func TestAutoImageTag(t *testing.T) {
 			Return("http://storage/tag-image-url")
 
 		mockTagWriter.EXPECT().
-			CreateOrUpdateTag(tag).
+			CreateOrUpdateTag(gomock.Any(), tag).
 			Return(nil)
 
-		err := autoImageTag(mockStorage, mockTagWriter, tag, tempDir, tit)
+		err := autoImageTag(context.Background(), mockStorage, mockTagWriter, tag, tempDir, tit)
 
 		assert.NoError(t, err)
 		assert.Len(t, tag.Images, 1)
@@ -516,7 +521,7 @@ func TestAutoImageTag(t *testing.T) {
 			Nickname: "banners",
 		}
 
-		err := autoImageTag(mockStorage, mockTagWriter, tag, tempDir, tit)
+		err := autoImageTag(context.Background(), mockStorage, mockTagWriter, tag, tempDir, tit)
 
 		assert.NoError(t, err)
 		assert.Len(t, tag.Images, 0) // No image should be added
@@ -550,10 +555,10 @@ func TestAutoImageTag(t *testing.T) {
 			Return(filepath.Join(tempDir, "storage-file"), nil)
 
 		mockTagWriter.EXPECT().
-			CreateOrUpdateTag(tag).
+			CreateOrUpdateTag(gomock.Any(), tag).
 			Return(nil)
 
-		err := autoImageTag(mockStorage, mockTagWriter, tag, tempDir, tit)
+		err := autoImageTag(context.Background(), mockStorage, mockTagWriter, tag, tempDir, tit)
 
 		assert.NoError(t, err)
 		assert.Len(t, tag.Images, 1) // Should still be only 1 image
@@ -585,7 +590,7 @@ func TestAutoImageTag(t *testing.T) {
 			GetFileForWriting(gomock.Any()).
 			Return("", expectedError)
 
-		err := autoImageTag(mockStorage, mockTagWriter, tag, tempDir, tit)
+		err := autoImageTag(context.Background(), mockStorage, mockTagWriter, tag, tempDir, tit)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -622,10 +627,10 @@ func TestAutoImageTag(t *testing.T) {
 			Return("http://storage/tag-image-url")
 
 		mockTagWriter.EXPECT().
-			CreateOrUpdateTag(tag).
+			CreateOrUpdateTag(gomock.Any(), tag).
 			Return(expectedError)
 
-		err := autoImageTag(mockStorage, mockTagWriter, tag, tempDir, tit)
+		err := autoImageTag(context.Background(), mockStorage, mockTagWriter, tag, tempDir, tit)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)

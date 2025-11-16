@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"log"
 	"my-collection/server/pkg/model"
 	"os"
@@ -97,22 +98,22 @@ func (d *databaseImpl) handleError(err error) error {
 	return nil
 }
 
-func (d *databaseImpl) deleteAssociation(value interface{}, association interface{}, name string) error {
-	return d.handleError(d.db.Model(value).Association(name).Delete(association))
+func (d *databaseImpl) deleteAssociation(ctx context.Context, value interface{}, association interface{}, name string) error {
+	return d.handleError(d.db.WithContext(ctx).Model(value).Association(name).Delete(association))
 }
 
-func (d *databaseImpl) delete(value interface{}, conds ...interface{}) error {
-	return d.handleError(d.db.Delete(value, conds...).Error)
+func (d *databaseImpl) delete(ctx context.Context, value interface{}, conds ...interface{}) error {
+	return d.handleError(d.db.WithContext(ctx).Delete(value, conds...).Error)
 }
 
-func (d *databaseImpl) deleteWithAssociations(value interface{}, conds ...interface{}) error {
-	return d.handleError(d.db.Select(clause.Associations).Delete(value, conds...).Error)
+func (d *databaseImpl) deleteWithAssociations(ctx context.Context, value interface{}, conds ...interface{}) error {
+	return d.handleError(d.db.WithContext(ctx).Select(clause.Associations).Delete(value, conds...).Error)
 }
 
-func (d *databaseImpl) create(value interface{}) error {
-	return d.handleError(d.db.Create(value).Error)
+func (d *databaseImpl) create(ctx context.Context, value interface{}) error {
+	return d.handleError(d.db.WithContext(ctx).Create(value).Error)
 }
 
-func (d *databaseImpl) update(value interface{}) error {
-	return d.handleError(d.db.Updates(value).Error)
+func (d *databaseImpl) update(ctx context.Context, value interface{}) error {
+	return d.handleError(d.db.WithContext(ctx).Updates(value).Error)
 }

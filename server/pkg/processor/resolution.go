@@ -1,14 +1,15 @@
 package processor
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 )
 
-func changeResolution(irw model.ItemReaderWriter, tempProvider model.TempFileProvider, id uint64, newResolution string) error {
-	item, err := irw.GetItem(id)
+func changeResolution(ctx context.Context, irw model.ItemReaderWriter, tempProvider model.TempFileProvider, id uint64, newResolution string) error {
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -32,5 +33,5 @@ func changeResolution(irw model.ItemReaderWriter, tempProvider model.TempFilePro
 		return err
 	}
 
-	return refreshItemMetadata(irw, id)
+	return refreshItemMetadata(ctx, irw, id)
 }

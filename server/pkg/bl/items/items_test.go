@@ -1,6 +1,7 @@
 package items
 
 import (
+	"context"
 	"errors"
 	"math/rand"
 	"my-collection/server/pkg/model"
@@ -175,10 +176,10 @@ func TestUpdateFileLocation(t *testing.T) {
 		url := ""
 
 		mockItemWriter.EXPECT().
-			UpdateItem(item).
+			UpdateItem(gomock.Any(), item).
 			Return(nil)
 
-		err := UpdateFileLocation(mockItemWriter, item, origin, path, url)
+		err := UpdateFileLocation(context.Background(), mockItemWriter, item, origin, path, url)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "new_title.mp4", item.Title)
@@ -199,10 +200,10 @@ func TestUpdateFileLocation(t *testing.T) {
 		url := "custom_url"
 
 		mockItemWriter.EXPECT().
-			UpdateItem(item).
+			UpdateItem(gomock.Any(), item).
 			Return(nil)
 
-		err := UpdateFileLocation(mockItemWriter, item, origin, path, url)
+		err := UpdateFileLocation(context.Background(), mockItemWriter, item, origin, path, url)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "new_title.mp4", item.Title)
@@ -236,16 +237,16 @@ func TestUpdateFileLocation(t *testing.T) {
 
 		// Expect recursive calls for highlights and subitems
 		mockItemWriter.EXPECT().
-			UpdateItem(highlight).
+			UpdateItem(gomock.Any(), highlight).
 			Return(nil)
 		mockItemWriter.EXPECT().
-			UpdateItem(subitem).
+			UpdateItem(gomock.Any(), subitem).
 			Return(nil)
 		mockItemWriter.EXPECT().
-			UpdateItem(item).
+			UpdateItem(gomock.Any(), item).
 			Return(nil)
 
-		err := UpdateFileLocation(mockItemWriter, item, origin, path, url)
+		err := UpdateFileLocation(context.Background(), mockItemWriter, item, origin, path, url)
 
 		assert.NoError(t, err)
 		assert.Equal(t, "new_title.mp4", item.Title)
@@ -267,10 +268,10 @@ func TestUpdateFileLocation(t *testing.T) {
 		expectedError := errors.New("update error")
 
 		mockItemWriter.EXPECT().
-			UpdateItem(item).
+			UpdateItem(gomock.Any(), item).
 			Return(expectedError)
 
-		err := UpdateFileLocation(mockItemWriter, item, origin, path, url)
+		err := UpdateFileLocation(context.Background(), mockItemWriter, item, origin, path, url)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -362,7 +363,7 @@ func TestEnsureItemHaveTags(t *testing.T) {
 			{Id: 1, Title: "tag1"},
 		}
 
-		changed, err := EnsureItemHaveTags(mockItemWriter, item, tagsToEnsure)
+		changed, err := EnsureItemHaveTags(context.Background(), mockItemWriter, item, tagsToEnsure)
 
 		assert.NoError(t, err)
 		assert.False(t, changed)
@@ -384,10 +385,10 @@ func TestEnsureItemHaveTags(t *testing.T) {
 		}
 
 		mockItemWriter.EXPECT().
-			UpdateItem(item).
+			UpdateItem(gomock.Any(), item).
 			Return(nil)
 
-		changed, err := EnsureItemHaveTags(mockItemWriter, item, tagsToEnsure)
+		changed, err := EnsureItemHaveTags(context.Background(), mockItemWriter, item, tagsToEnsure)
 
 		assert.NoError(t, err)
 		assert.True(t, changed)
@@ -407,10 +408,10 @@ func TestEnsureItemHaveTags(t *testing.T) {
 		expectedError := errors.New("update error")
 
 		mockItemWriter.EXPECT().
-			UpdateItem(item).
+			UpdateItem(gomock.Any(), item).
 			Return(expectedError)
 
-		changed, err := EnsureItemHaveTags(mockItemWriter, item, tagsToEnsure)
+		changed, err := EnsureItemHaveTags(context.Background(), mockItemWriter, item, tagsToEnsure)
 
 		assert.Error(t, err)
 		assert.False(t, changed)
@@ -439,13 +440,13 @@ func TestEnsureItemMissingTags(t *testing.T) {
 		}
 
 		mockItemWriter.EXPECT().
-			RemoveTagFromItem(item.Id, uint64(1)).
+			RemoveTagFromItem(gomock.Any(), item.Id, uint64(1)).
 			Return(nil)
 		mockItemWriter.EXPECT().
-			RemoveTagFromItem(item.Id, uint64(3)).
+			RemoveTagFromItem(gomock.Any(), item.Id, uint64(3)).
 			Return(nil)
 
-		err := EnsureItemMissingTags(mockItemWriter, item, tagsToRemove)
+		err := EnsureItemMissingTags(context.Background(), mockItemWriter, item, tagsToRemove)
 
 		assert.NoError(t, err)
 	})
@@ -462,7 +463,7 @@ func TestEnsureItemMissingTags(t *testing.T) {
 			{Id: 5, Title: "tag5"},
 		}
 
-		err := EnsureItemMissingTags(mockItemWriter, item, tagsToRemove)
+		err := EnsureItemMissingTags(context.Background(), mockItemWriter, item, tagsToRemove)
 
 		assert.NoError(t, err)
 	})
@@ -480,10 +481,10 @@ func TestEnsureItemMissingTags(t *testing.T) {
 		expectedError := errors.New("remove error")
 
 		mockItemWriter.EXPECT().
-			RemoveTagFromItem(item.Id, uint64(1)).
+			RemoveTagFromItem(gomock.Any(), item.Id, uint64(1)).
 			Return(expectedError)
 
-		err := EnsureItemMissingTags(mockItemWriter, item, tagsToRemove)
+		err := EnsureItemMissingTags(context.Background(), mockItemWriter, item, tagsToRemove)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -545,10 +546,10 @@ func TestRemoveItemAndItsAssociations(t *testing.T) {
 		itemId := uint64(123)
 
 		mockItemWriter.EXPECT().
-			RemoveItem(itemId).
+			RemoveItem(gomock.Any(), itemId).
 			Return(nil)
 
-		errors := RemoveItemAndItsAssociations(mockItemWriter, itemId)
+		errors := RemoveItemAndItsAssociations(context.Background(), mockItemWriter, itemId)
 
 		assert.Empty(t, errors)
 	})
@@ -558,10 +559,10 @@ func TestRemoveItemAndItsAssociations(t *testing.T) {
 		expectedError := errors.New("removal error")
 
 		mockItemWriter.EXPECT().
-			RemoveItem(itemId).
+			RemoveItem(gomock.Any(), itemId).
 			Return(expectedError)
 
-		errs := RemoveItemAndItsAssociations(mockItemWriter, itemId)
+		errs := RemoveItemAndItsAssociations(context.Background(), mockItemWriter, itemId)
 
 		assert.Len(t, errs, 1)
 		assert.Equal(t, expectedError, errs[0])
@@ -596,10 +597,10 @@ func TestDeleteRealFile(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(item, nil)
 
-		err = DeleteRealFile(mockItemReader, itemId)
+		err = DeleteRealFile(context.Background(), mockItemReader, itemId)
 
 		assert.NoError(t, err)
 		// Verify file was deleted
@@ -615,10 +616,10 @@ func TestDeleteRealFile(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(item, nil)
 
-		err := DeleteRealFile(mockItemReader, itemId)
+		err := DeleteRealFile(context.Background(), mockItemReader, itemId)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Deletion of subitem is forbidden")
@@ -632,10 +633,10 @@ func TestDeleteRealFile(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(item, nil)
 
-		err := DeleteRealFile(mockItemReader, itemId)
+		err := DeleteRealFile(context.Background(), mockItemReader, itemId)
 
 		assert.Error(t, err)
 		assert.Contains(t, err.Error(), "Deletion of highlight is forbidden")
@@ -646,10 +647,10 @@ func TestDeleteRealFile(t *testing.T) {
 		expectedError := errors.New("get item error")
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(nil, expectedError)
 
-		err := DeleteRealFile(mockItemReader, itemId)
+		err := DeleteRealFile(context.Background(), mockItemReader, itemId)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -663,10 +664,10 @@ func TestDeleteRealFile(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(item, nil)
 
-		err := DeleteRealFile(mockItemReader, itemId)
+		err := DeleteRealFile(context.Background(), mockItemReader, itemId)
 
 		// Should not return error even if file doesn't exist
 		assert.NoError(t, err)
@@ -746,13 +747,13 @@ func TestGetRandomItems(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetAllItems().
+			GetAllItems(gomock.Any()).
 			Return(&items, nil)
 
 		// Seed random for deterministic testing
 		rand.Seed(time.Now().UnixNano())
 
-		result, err := GetRandomItems(mockItemReader, 3, acceptAllFilter)
+		result, err := GetRandomItems(context.Background(), mockItemReader, 3, acceptAllFilter)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 3)
@@ -774,10 +775,10 @@ func TestGetRandomItems(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetAllItems().
+			GetAllItems(gomock.Any()).
 			Return(&items, nil)
 
-		result, err := GetRandomItems(mockItemReader, 2, rejectId2Filter)
+		result, err := GetRandomItems(context.Background(), mockItemReader, 2, rejectId2Filter)
 
 		assert.NoError(t, err)
 		assert.LessOrEqual(t, len(result), 2) // Should be at most 2 items
@@ -796,10 +797,10 @@ func TestGetRandomItems(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetAllItems().
+			GetAllItems(gomock.Any()).
 			Return(&items, nil)
 
-		result, err := GetRandomItems(mockItemReader, 2, acceptAllFilter)
+		result, err := GetRandomItems(context.Background(), mockItemReader, 2, acceptAllFilter)
 
 		assert.NoError(t, err)
 
@@ -816,10 +817,10 @@ func TestGetRandomItems(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetAllItems().
+			GetAllItems(gomock.Any()).
 			Return(&items, nil)
 
-		result, err := GetRandomItems(mockItemReader, 5, acceptAllFilter)
+		result, err := GetRandomItems(context.Background(), mockItemReader, 5, acceptAllFilter)
 
 		assert.NoError(t, err)
 		assert.LessOrEqual(t, len(result), len(items)-1) // Should be at most len(items)-1
@@ -829,10 +830,10 @@ func TestGetRandomItems(t *testing.T) {
 		items := []model.Item{}
 
 		mockItemReader.EXPECT().
-			GetAllItems().
+			GetAllItems(gomock.Any()).
 			Return(&items, nil)
 
-		result, err := GetRandomItems(mockItemReader, 3, acceptAllFilter)
+		result, err := GetRandomItems(context.Background(), mockItemReader, 3, acceptAllFilter)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -843,10 +844,10 @@ func TestGetRandomItems(t *testing.T) {
 		expectedError := errors.New("get items error")
 
 		mockItemReader.EXPECT().
-			GetAllItems().
+			GetAllItems(gomock.Any()).
 			Return(nil, expectedError)
 
-		result, err := GetRandomItems(mockItemReader, 3, acceptAllFilter)
+		result, err := GetRandomItems(context.Background(), mockItemReader, 3, acceptAllFilter)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)

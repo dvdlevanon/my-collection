@@ -1,22 +1,23 @@
 package model
 
 import (
+	"context"
 	"time"
 )
 
 //go:generate mockgen -package model -source interfaces.go -destination interfaces_mock.go
 
 type ItemReader interface {
-	GetItem(conds ...interface{}) (*Item, error)
-	GetItems(conds ...interface{}) (*[]Item, error)
-	GetAllItems() (*[]Item, error)
+	GetItem(ctx context.Context, conds ...interface{}) (*Item, error)
+	GetItems(ctx context.Context, conds ...interface{}) (*[]Item, error)
+	GetAllItems(ctx context.Context) (*[]Item, error)
 }
 
 type ItemWriter interface {
-	CreateOrUpdateItem(item *Item) error
-	UpdateItem(item *Item) error
-	RemoveItem(itemId uint64) error
-	RemoveTagFromItem(itemId uint64, tagId uint64) error
+	CreateOrUpdateItem(ctx context.Context, item *Item) error
+	UpdateItem(ctx context.Context, item *Item) error
+	RemoveItem(ctx context.Context, itemId uint64) error
+	RemoveTagFromItem(ctx context.Context, itemId uint64, tagId uint64) error
 }
 
 type ItemReaderWriter interface {
@@ -25,17 +26,17 @@ type ItemReaderWriter interface {
 }
 
 type TagReader interface {
-	GetTag(conds ...interface{}) (*Tag, error)
-	GetTags(conds ...interface{}) (*[]Tag, error)
-	GetAllTags() (*[]Tag, error)
-	GetTagsWithoutChildren(conds ...interface{}) (*[]Tag, error)
+	GetTag(ctx context.Context, conds ...interface{}) (*Tag, error)
+	GetTags(ctx context.Context, conds ...interface{}) (*[]Tag, error)
+	GetAllTags(ctx context.Context) (*[]Tag, error)
+	GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]Tag, error)
 }
 
 type TagWriter interface {
-	CreateOrUpdateTag(tag *Tag) error
-	UpdateTag(tag *Tag) error
-	RemoveTag(tagId uint64) error
-	RemoveTagImageFromTag(tagId uint64, imageId uint64) error
+	CreateOrUpdateTag(ctx context.Context, tag *Tag) error
+	UpdateTag(ctx context.Context, tag *Tag) error
+	RemoveTag(ctx context.Context, tagId uint64) error
+	RemoveTagImageFromTag(ctx context.Context, tagId uint64, imageId uint64) error
 }
 
 type TagReaderWriter interface {
@@ -44,14 +45,14 @@ type TagReaderWriter interface {
 }
 
 type TagAnnotationReader interface {
-	GetTagAnnotation(conds ...interface{}) (*TagAnnotation, error)
-	GetTagAnnotations(tagId uint64) ([]TagAnnotation, error)
+	GetTagAnnotation(ctx context.Context, conds ...interface{}) (*TagAnnotation, error)
+	GetTagAnnotations(ctx context.Context, tagId uint64) ([]TagAnnotation, error)
 }
 
 type TagAnnotationWriter interface {
-	CreateTagAnnotation(tagAnnotation *TagAnnotation) error
-	RemoveTag(tagId uint64) error
-	RemoveTagAnnotationFromTag(tagId uint64, annotationId uint64) error
+	CreateTagAnnotation(ctx context.Context, tagAnnotation *TagAnnotation) error
+	RemoveTag(ctx context.Context, tagId uint64) error
+	RemoveTagAnnotationFromTag(ctx context.Context, tagId uint64, annotationId uint64) error
 }
 
 type TagAnnotationReaderWriter interface {
@@ -60,16 +61,16 @@ type TagAnnotationReaderWriter interface {
 }
 
 type DirectoryReader interface {
-	GetDirectory(conds ...interface{}) (*Directory, error)
-	GetDirectories(conds ...interface{}) (*[]Directory, error)
-	GetAllDirectories() (*[]Directory, error)
+	GetDirectory(ctx context.Context, conds ...interface{}) (*Directory, error)
+	GetDirectories(ctx context.Context, conds ...interface{}) (*[]Directory, error)
+	GetAllDirectories(ctx context.Context) (*[]Directory, error)
 }
 
 type DirectoryWriter interface {
-	CreateOrUpdateDirectory(directory *Directory) error
-	UpdateDirectory(directory *Directory) error
-	RemoveDirectory(path string) error
-	RemoveTagFromDirectory(direcotryPath string, tagId uint64) error
+	CreateOrUpdateDirectory(ctx context.Context, directory *Directory) error
+	UpdateDirectory(ctx context.Context, directory *Directory) error
+	RemoveDirectory(ctx context.Context, path string) error
+	RemoveTagFromDirectory(ctx context.Context, direcotryPath string, tagId uint64) error
 }
 
 type DirectoryReaderWriter interface {
@@ -78,12 +79,12 @@ type DirectoryReaderWriter interface {
 }
 
 type TagImageTypeReader interface {
-	GetTagImageType(conds ...interface{}) (*TagImageType, error)
-	GetAllTagImageTypes() (*[]TagImageType, error)
+	GetTagImageType(ctx context.Context, conds ...interface{}) (*TagImageType, error)
+	GetAllTagImageTypes(ctx context.Context) (*[]TagImageType, error)
 }
 
 type TagImageTypeWriter interface {
-	CreateOrUpdateTagImageType(tit *TagImageType) error
+	CreateOrUpdateTagImageType(ctx context.Context, tit *TagImageType) error
 }
 
 type TagImageTypeReaderWriter interface {
@@ -92,7 +93,7 @@ type TagImageTypeReaderWriter interface {
 }
 
 type TagImageWriter interface {
-	UpdateTagImage(image *TagImage) error
+	UpdateTagImage(ctx context.Context, image *TagImage) error
 }
 
 type StorageDownloader interface {
@@ -111,12 +112,12 @@ type TempFileProvider interface {
 }
 
 type DirectoryItemsGetter interface {
-	GetBelongingItems(path string) (*[]Item, error)
-	GetBelongingItem(path string, filename string) (*Item, error)
+	GetBelongingItems(ctx context.Context, path string) (*[]Item, error)
+	GetBelongingItem(ctx context.Context, path string, filename string) (*Item, error)
 }
 
 type DirectoryItemsSetter interface {
-	AddBelongingItem(item *Item) error
+	AddBelongingItem(ctx context.Context, item *Item) error
 }
 
 type DirectoryItemsGetterSetter interface {
@@ -125,8 +126,8 @@ type DirectoryItemsGetterSetter interface {
 }
 
 type TaskReader interface {
-	GetTasks(offset int, limit int) (*[]Task, error)
-	TasksCount(query interface{}, conds ...interface{}) (int64, error)
+	GetTasks(ctx context.Context, offset int, limit int) (*[]Task, error)
+	TasksCount(ctx context.Context, query interface{}, conds ...interface{}) (int64, error)
 }
 
 type ProcessorStatus interface {
@@ -134,7 +135,7 @@ type ProcessorStatus interface {
 }
 
 type DirectoryAutoTagsGetter interface {
-	GetAutoTags(path string) ([]*Tag, error)
+	GetAutoTags(ctx context.Context, path string) ([]*Tag, error)
 }
 
 type FileMetadataGetter interface {
@@ -152,14 +153,14 @@ type Database interface {
 }
 
 type TagCustomCommandsReader interface {
-	GetTagCustomCommand(conds ...interface{}) (*[]TagCustomCommand, error)
-	GetAllTagCustomCommands() (*[]TagCustomCommand, error)
+	GetTagCustomCommand(ctx context.Context, conds ...interface{}) (*[]TagCustomCommand, error)
+	GetAllTagCustomCommands(ctx context.Context) (*[]TagCustomCommand, error)
 }
 
 type DbMetadataReader interface {
-	GetItemsCount() (int64, error)
-	GetTagsCount() (int64, error)
-	GetTotalDurationSeconds() (float64, error)
+	GetItemsCount(ctx context.Context) (int64, error)
+	GetTagsCount(ctx context.Context) (int64, error)
+	GetTotalDurationSeconds(ctx context.Context) (float64, error)
 }
 
 type PushListener interface {

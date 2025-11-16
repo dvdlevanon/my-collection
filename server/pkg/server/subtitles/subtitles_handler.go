@@ -34,13 +34,14 @@ func (s *subtitleHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *subtitleHandler) getSubtitle(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
 	subtitleName := c.Query("name")
-	subtitle, err := subtitles.GetSubtitle(s.db, itemId, subtitleName)
+	subtitle, err := subtitles.GetSubtitle(ctx, s.db, itemId, subtitleName)
 	if err == subtitles.ErrSubtitileNotFound {
 		c.Status(http.StatusNoContent)
 		return
@@ -53,12 +54,13 @@ func (s *subtitleHandler) getSubtitle(c *gin.Context) {
 }
 
 func (s *subtitleHandler) getAvailalbeNames(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	availableNames, err := subtitles.GetAvailableNames(s.db, itemId)
+	availableNames, err := subtitles.GetAvailableNames(ctx, s.db, itemId)
 	if server.HandleError(c, err) {
 		return
 	}

@@ -1,6 +1,7 @@
 package integration
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	"my-collection/server/test/testutils"
 	"testing"
@@ -229,7 +230,7 @@ func TestDirectoryIncludeExcludeWithCustomAutoTags(t *testing.T) {
 
 	// Create custom tag and add to directory
 	actionTag := &model.Tag{Title: "Action Genre"}
-	err := framework.GetDatabase().CreateOrUpdateTag(actionTag)
+	err := framework.GetDatabase().CreateOrUpdateTag(context.Background(), actionTag)
 	require.NoError(t, err)
 
 	// Include directory first, then add custom tags

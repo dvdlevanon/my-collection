@@ -1,6 +1,7 @@
 package testutils
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/db"
@@ -52,11 +53,11 @@ func NewIntegrationTestFramework(t *testing.T) *IntegrationTestFramework {
 	relativasor.Init(rootDir)
 
 	// Initialize directories and tags subsystems
-	err = directories.Init(database)
+	err = directories.Init(context.Background(), database)
 	require.NoError(t, err)
 
 	// Create FsManager with filter that accepts all files
-	fsManager, err := fssync.NewFsManager(database, testFileFilter{}, time.Hour) // Long interval since we sync manually
+	fsManager, err := fssync.NewFsManager(context.Background(), database, testFileFilter{}, time.Hour) // Long interval since we sync manually
 	require.NoError(t, err)
 
 	return &IntegrationTestFramework{
@@ -154,7 +155,7 @@ func (f *IntegrationTestFramework) MoveDir(src, dst string) {
 
 // Sync performs a filesystem synchronization
 func (f *IntegrationTestFramework) Sync() {
-	err := f.fsManager.Sync()
+	err := f.fsManager.Sync(context.Background())
 	require.NoError(f.t, err)
 	f.initialSync = true
 }
@@ -164,7 +165,7 @@ func (f *IntegrationTestFramework) Sync() {
 
 // GetItems returns all items for a given directory path
 func (f *IntegrationTestFramework) GetItems(dirPath string) []model.Item {
-	items, err := f.fsManager.GetBelongingItems(directories.NormalizeDirectoryPath(dirPath))
+	items, err := f.fsManager.GetBelongingItems(context.Background(), directories.NormalizeDirectoryPath(dirPath))
 	require.NoError(f.t, err)
 	if items == nil {
 		return []model.Item{}
@@ -174,42 +175,42 @@ func (f *IntegrationTestFramework) GetItems(dirPath string) []model.Item {
 
 // GetDirectories returns all directories from the database
 func (f *IntegrationTestFramework) GetDirectories() []model.Directory {
-	dirs, err := f.database.GetAllDirectories()
+	dirs, err := f.database.GetAllDirectories(context.Background())
 	require.NoError(f.t, err)
 	return *dirs
 }
 
 // GetTags returns all tags from the database
 func (f *IntegrationTestFramework) GetTags() []model.Tag {
-	tags, err := f.database.GetAllTags()
+	tags, err := f.database.GetAllTags(context.Background())
 	require.NoError(f.t, err)
 	return *tags
 }
 
 // AssertItemExists checks that an item with the given title exists in the given directory
 func (f *IntegrationTestFramework) AssertItemExists(dirPath, filename string) {
-	item, err := f.fsManager.GetBelongingItem(directories.NormalizeDirectoryPath(dirPath), filename)
+	item, err := f.fsManager.GetBelongingItem(context.Background(), directories.NormalizeDirectoryPath(dirPath), filename)
 	require.NoError(f.t, err)
 	assert.NotNil(f.t, item, "Item %s should exist in directory %s", filename, dirPath)
 }
 
 // AssertItemNotExists checks that an item with the given title does not exist in the given directory
 func (f *IntegrationTestFramework) AssertItemNotExists(dirPath, filename string) {
-	item, err := f.fsManager.GetBelongingItem(directories.NormalizeDirectoryPath(dirPath), filename)
+	item, err := f.fsManager.GetBelongingItem(context.Background(), directories.NormalizeDirectoryPath(dirPath), filename)
 	require.NoError(f.t, err)
 	assert.Nil(f.t, item, "Item %s should not exist in directory %s", filename, dirPath)
 }
 
 // AssertDirectoryExists checks that a directory exists in the database
 func (f *IntegrationTestFramework) AssertDirectoryExists(path string) {
-	dir, err := f.database.GetDirectory("path = ?", directories.NormalizeDirectoryPath(path))
+	dir, err := f.database.GetDirectory(context.Background(), "path = ?", directories.NormalizeDirectoryPath(path))
 	require.NoError(f.t, err)
 	assert.NotNil(f.t, dir, "Directory %s should exist in database", path)
 }
 
 // AssertDirectoryNotExists checks that a directory does not exist in the database
 func (f *IntegrationTestFramework) AssertDirectoryNotExists(path string) {
-	dir, err := f.database.GetDirectory("path = ?", directories.NormalizeDirectoryPath(path))
+	dir, err := f.database.GetDirectory(context.Background(), "path = ?", directories.NormalizeDirectoryPath(path))
 	if err != nil {
 		// Record not found is expected
 		return
@@ -303,7 +304,7 @@ func (f *IntegrationTestFramework) CreateLargeTestSet(dirCount, filesPerDir int)
 
 // GetAllItems returns all items from the database
 func (f *IntegrationTestFramework) GetAllItems() []model.Item {
-	items, err := f.database.GetAllItems()
+	items, err := f.database.GetAllItems(context.Background())
 	require.NoError(f.t, err)
 	if items == nil {
 		return []model.Item{}
@@ -331,7 +332,7 @@ func (f *IntegrationTestFramework) CountItemsInDirectory(dirPath string) int {
 }
 
 func (f *IntegrationTestFramework) AutoIncludeHierarchy(dirPath string) error {
-	return directories.AutoIncludeHierarchy(f.database, dirPath)
+	return directories.AutoIncludeHierarchy(context.Background(), f.database, dirPath)
 }
 
 // AddCustomTagsToDirectory adds custom tags to a directory that will be applied as AutoTags to files
@@ -339,19 +340,19 @@ func (f *IntegrationTestFramework) AddCustomTagsToDirectory(dirPath string, cust
 	normalizedPath := directories.NormalizeDirectoryPath(dirPath)
 
 	// Get the directory from database
-	dir, err := f.database.GetDirectory("path = ?", normalizedPath)
+	dir, err := f.database.GetDirectory(context.Background(), "path = ?", normalizedPath)
 	require.NoError(f.t, err)
 	require.NotNil(f.t, dir, "Directory %s should exist before adding custom tags", dirPath)
 
 	// Update directory tags
 	dir.Tags = customTags
-	err = f.database.CreateOrUpdateDirectory(dir)
+	err = f.database.CreateOrUpdateDirectory(context.Background(), dir)
 	require.NoError(f.t, err)
 }
 
 // AssertCustomAutoTagExists checks that a file has a custom AutoTag (child of a specific parent tag)
 func (f *IntegrationTestFramework) AssertCustomAutoTagExists(dirPath, filename string, parentTag *model.Tag, expectedTitle string) {
-	item, err := f.fsManager.GetBelongingItem(directories.NormalizeDirectoryPath(dirPath), filename)
+	item, err := f.fsManager.GetBelongingItem(context.Background(), directories.NormalizeDirectoryPath(dirPath), filename)
 	require.NoError(f.t, err)
 	require.NotNil(f.t, item, "Item %s should exist in directory %s", filename, dirPath)
 
@@ -370,7 +371,7 @@ func (f *IntegrationTestFramework) AssertCustomAutoTagExists(dirPath, filename s
 
 // AssertCustomAutoTagNotExists checks that a file does not have a custom AutoTag from a specific parent
 func (f *IntegrationTestFramework) AssertCustomAutoTagNotExists(dirPath, filename string, parentTag *model.Tag) {
-	item, err := f.fsManager.GetBelongingItem(directories.NormalizeDirectoryPath(dirPath), filename)
+	item, err := f.fsManager.GetBelongingItem(context.Background(), directories.NormalizeDirectoryPath(dirPath), filename)
 	require.NoError(f.t, err)
 	require.NotNil(f.t, item, "Item %s should exist in directory %s", filename, dirPath)
 
@@ -389,25 +390,25 @@ func (f *IntegrationTestFramework) AssertCustomAutoTagNotExists(dirPath, filenam
 
 // IncludeDirectory includes a directory (emulates user clicking include button)
 func (f *IntegrationTestFramework) IncludeDirectory(dirPath string) {
-	err := directories.IncludeDirectory(f.database, dirPath)
+	err := directories.IncludeDirectory(context.Background(), f.database, dirPath)
 	require.NoError(f.t, err)
 }
 
 // ExcludeDirectory excludes a directory (emulates user clicking exclude button)
 func (f *IntegrationTestFramework) ExcludeDirectory(dirPath string) {
-	err := directories.ExcludeDirectory(f.database, dirPath)
+	err := directories.ExcludeDirectory(context.Background(), f.database, dirPath)
 	require.NoError(f.t, err)
 }
 
 // IncludeOrCreateDirectory includes a directory or creates it if missing
 func (f *IntegrationTestFramework) IncludeOrCreateDirectory(dirPath string) {
-	err := directories.IncludeOrCreateDirectory(f.database, dirPath)
+	err := directories.IncludeOrCreateDirectory(context.Background(), f.database, dirPath)
 	require.NoError(f.t, err)
 }
 
 // AssertDirectoryIncluded checks that a directory is included (not excluded)
 func (f *IntegrationTestFramework) AssertDirectoryIncluded(dirPath string) {
-	dir, err := f.database.GetDirectory("path = ?", directories.NormalizeDirectoryPath(dirPath))
+	dir, err := f.database.GetDirectory(context.Background(), "path = ?", directories.NormalizeDirectoryPath(dirPath))
 	require.NoError(f.t, err)
 	require.NotNil(f.t, dir, "Directory %s should exist", dirPath)
 	assert.False(f.t, directories.IsExcluded(dir), "Directory %s should be included (not excluded)", dirPath)
@@ -415,7 +416,7 @@ func (f *IntegrationTestFramework) AssertDirectoryIncluded(dirPath string) {
 
 // AssertDirectoryExcluded checks that a directory is excluded
 func (f *IntegrationTestFramework) AssertDirectoryExcluded(dirPath string) {
-	dir, err := f.database.GetDirectory("path = ?", directories.NormalizeDirectoryPath(dirPath))
+	dir, err := f.database.GetDirectory(context.Background(), "path = ?", directories.NormalizeDirectoryPath(dirPath))
 	if err != nil {
 		// If directory doesn't exist in database yet, it's effectively excluded
 		assert.Contains(f.t, err.Error(), "record not found",

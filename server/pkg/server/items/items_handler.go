@@ -1,6 +1,7 @@
 package items
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"my-collection/server/pkg/bl/items"
@@ -24,16 +25,16 @@ type itemsHandlerDb interface {
 }
 
 type itemsHandlerProcessor interface {
-	EnqueueItemVideoMetadata(id uint64)
-	EnqueueItemCovers(id uint64)
-	EnqueueCropFrame(id uint64, second float64, rect model.RectFloat)
-	EnqueueItemPreview(id uint64)
-	EnqueueItemFileMetadata(id uint64)
-	EnqueueMainCover(id uint64, second float64)
+	EnqueueItemVideoMetadata(ctx context.Context, id uint64)
+	EnqueueItemCovers(ctx context.Context, id uint64)
+	EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat)
+	EnqueueItemPreview(ctx context.Context, id uint64)
+	EnqueueItemFileMetadata(ctx context.Context, id uint64)
+	EnqueueMainCover(ctx context.Context, id uint64, second float64)
 }
 
 type itemsHandlerOptimizer interface {
-	HandleItem(item *model.Item)
+	HandleItem(ctx context.Context, item *model.Item)
 }
 
 func NewHandler(db itemsHandlerDb, processor itemsHandlerProcessor, optimizer itemsHandlerOptimizer) *itemsHandler {
@@ -69,6 +70,7 @@ func (s *itemsHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *itemsHandler) createItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
 	if server.HandleError(c, err) {
 		return
@@ -81,7 +83,7 @@ func (s *itemsHandler) createItem(c *gin.Context) {
 
 	item.Url = relativasor.GetRelativePath(item.Url)
 	item.Origin = relativasor.GetRelativePath(item.Origin)
-	if server.HandleError(c, s.db.CreateOrUpdateItem(&item)) {
+	if server.HandleError(c, s.db.CreateOrUpdateItem(ctx, &item)) {
 		return
 	}
 
@@ -89,6 +91,7 @@ func (s *itemsHandler) createItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) updateItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -110,7 +113,7 @@ func (s *itemsHandler) updateItem(c *gin.Context) {
 	}
 
 	item.Id = itemId
-	if server.HandleError(c, s.db.UpdateItem(&item)) {
+	if server.HandleError(c, s.db.UpdateItem(ctx, &item)) {
 		return
 	}
 
@@ -118,12 +121,13 @@ func (s *itemsHandler) updateItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) getItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	item, err := s.db.GetItem(itemId)
+	item, err := s.db.GetItem(ctx, itemId)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -132,6 +136,7 @@ func (s *itemsHandler) getItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) deleteItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -143,12 +148,12 @@ func (s *itemsHandler) deleteItem(c *gin.Context) {
 	}
 
 	if deleteRealItem {
-		if server.HandleError(c, items.DeleteRealFile(s.db, itemId)) {
+		if server.HandleError(c, items.DeleteRealFile(ctx, s.db, itemId)) {
 			return
 		}
 	}
 
-	errs := items.RemoveItemAndItsAssociations(s.db, itemId)
+	errs := items.RemoveItemAndItsAssociations(ctx, s.db, itemId)
 	if len(errs) > 0 {
 		if server.HandleError(c, errs[0]) {
 			return
@@ -159,12 +164,13 @@ func (s *itemsHandler) deleteItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) getItemLocation(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	item, err := s.db.GetItem(itemId)
+	item, err := s.db.GetItem(ctx, itemId)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -175,7 +181,8 @@ func (s *itemsHandler) getItemLocation(c *gin.Context) {
 }
 
 func (s *itemsHandler) getItems(c *gin.Context) {
-	items, err := s.db.GetAllItems()
+	ctx := server.ContextWithSubject(c)
+	items, err := s.db.GetAllItems(ctx)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -185,6 +192,7 @@ func (s *itemsHandler) getItems(c *gin.Context) {
 }
 
 func (s *itemsHandler) removeTagFromItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -195,7 +203,7 @@ func (s *itemsHandler) removeTagFromItem(c *gin.Context) {
 		return
 	}
 
-	if server.HandleError(c, s.db.RemoveTagFromItem(itemId, tagId)) {
+	if server.HandleError(c, s.db.RemoveTagFromItem(ctx, itemId, tagId)) {
 		return
 	}
 
@@ -203,6 +211,7 @@ func (s *itemsHandler) removeTagFromItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) setMainCover(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -214,11 +223,12 @@ func (s *itemsHandler) setMainCover(c *gin.Context) {
 	}
 
 	logger.Infof("Setting main cover for item %d at %d", itemId, second)
-	s.processor.EnqueueMainCover(itemId, second)
+	s.processor.EnqueueMainCover(ctx, itemId, second)
 	c.Status(http.StatusOK)
 }
 
 func (s *itemsHandler) splitItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -230,15 +240,15 @@ func (s *itemsHandler) splitItem(c *gin.Context) {
 	}
 
 	logger.Infof("Splitting item %d at %f", itemId, second)
-	changedItems, err := items.Split(s.db, itemId, second)
+	changedItems, err := items.Split(ctx, s.db, itemId, second)
 	if server.HandleError(c, err) {
 		return
 	}
 
 	for _, item := range changedItems {
-		s.processor.EnqueueItemVideoMetadata(item.Id)
-		s.processor.EnqueueItemCovers(item.Id)
-		s.processor.EnqueueItemFileMetadata(item.Id)
+		s.processor.EnqueueItemVideoMetadata(ctx, item.Id)
+		s.processor.EnqueueItemCovers(ctx, item.Id)
+		s.processor.EnqueueItemFileMetadata(ctx, item.Id)
 		// s.processor.EnqueueItemPreview(item.Id)
 	}
 
@@ -246,6 +256,7 @@ func (s *itemsHandler) splitItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) makeHighlight(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -267,19 +278,20 @@ func (s *itemsHandler) makeHighlight(c *gin.Context) {
 	}
 
 	logger.Infof("Making highlight for item %d from %f to %f", itemId, startSecond, endSecond)
-	highlightItem, err := items.MakeHighlight(s.db, itemId, startSecond, endSecond, highlightId)
+	highlightItem, err := items.MakeHighlight(ctx, s.db, itemId, startSecond, endSecond, highlightId)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	s.processor.EnqueueItemVideoMetadata(highlightItem.Id)
-	s.processor.EnqueueItemCovers(highlightItem.Id)
-	s.processor.EnqueueItemPreview(highlightItem.Id)
-	s.processor.EnqueueItemFileMetadata(highlightItem.Id)
+	s.processor.EnqueueItemVideoMetadata(ctx, highlightItem.Id)
+	s.processor.EnqueueItemCovers(ctx, highlightItem.Id)
+	s.processor.EnqueueItemPreview(ctx, highlightItem.Id)
+	s.processor.EnqueueItemFileMetadata(ctx, highlightItem.Id)
 	c.Status(http.StatusOK)
 }
 
 func (s *itemsHandler) cropFrame(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -318,16 +330,17 @@ func (s *itemsHandler) cropFrame(c *gin.Context) {
 	}
 
 	logger.Infof("Cropping frame for item %d at %f %s", itemId, second, rect)
-	s.processor.EnqueueCropFrame(itemId, second, rect)
+	s.processor.EnqueueCropFrame(ctx, itemId, second, rect)
 }
 
 func (s *itemsHandler) getSuggestionsForItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	result, err := suggestions.GetSuggestionsForItem(s.db, s.db, itemId, 8)
+	result, err := suggestions.GetSuggestionsForItem(ctx, s.db, s.db, itemId, 8)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -336,30 +349,32 @@ func (s *itemsHandler) getSuggestionsForItem(c *gin.Context) {
 }
 
 func (s *itemsHandler) refreshItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	s.processor.EnqueueItemVideoMetadata(itemId)
-	s.processor.EnqueueItemCovers(itemId)
-	s.processor.EnqueueItemPreview(itemId)
-	s.processor.EnqueueItemFileMetadata(itemId)
+	s.processor.EnqueueItemVideoMetadata(ctx, itemId)
+	s.processor.EnqueueItemCovers(ctx, itemId)
+	s.processor.EnqueueItemPreview(ctx, itemId)
+	s.processor.EnqueueItemFileMetadata(ctx, itemId)
 
 	c.Status(http.StatusOK)
 }
 
 func (s *itemsHandler) optimizeItem(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	item, err := s.db.GetItem(itemId)
+	item, err := s.db.GetItem(ctx, itemId)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	s.optimizer.HandleItem(item)
+	s.optimizer.HandleItem(ctx, item)
 	c.Status(http.StatusOK)
 }

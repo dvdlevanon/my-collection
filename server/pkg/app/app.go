@@ -17,6 +17,7 @@ import (
 	"my-collection/server/pkg/spectagger"
 	"my-collection/server/pkg/storage"
 	"my-collection/server/pkg/thumbnails"
+	"my-collection/server/pkg/utils"
 	"os"
 	"os/signal"
 	"path"
@@ -51,6 +52,8 @@ type MyCollection struct {
 }
 
 func (mc *MyCollection) initialize(config MyCollectionConfig) error {
+	ctx := utils.ContextWithSubject(context.TODO(), "init")
+
 	if err := relativasor.Init(config.RootDir); err != nil {
 		return err
 	}
@@ -77,28 +80,28 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 		return err
 	}
 
-	if err := items.InitHighlights(db); err != nil {
+	if err := items.InitHighlights(ctx, db); err != nil {
 		return err
 	}
-	if err := directories.Init(db); err != nil {
+	if err := directories.Init(ctx, db); err != nil {
 		return err
 	}
-	mc.fsManager, err = fssync.NewFsManager(db, config.FilesFilter, 60*time.Second)
+	mc.fsManager, err = fssync.NewFsManager(ctx, db, config.FilesFilter, 60*time.Second)
 	if err != nil {
 		return err
 	}
 
-	mc.automix, err = automix.New(db, config.AutoMixItemsCount)
+	mc.automix, err = automix.New(ctx, db, config.AutoMixItemsCount)
 	if err != nil {
 		return err
 	}
 
-	mc.mixondemand, err = mixondemand.New(db, config.MixOnDemandItemsCount)
+	mc.mixondemand, err = mixondemand.New(ctx, db, config.MixOnDemandItemsCount)
 	if err != nil {
 		return err
 	}
 
-	mc.spectagger, err = spectagger.New(db)
+	mc.spectagger, err = spectagger.New(ctx, db)
 	if err != nil {
 		return err
 	}

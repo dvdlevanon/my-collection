@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/ffmpeg"
@@ -9,9 +10,9 @@ import (
 	"os"
 )
 
-func refreshItemPreview(irw model.ItemReaderWriter, uploader model.StorageUploader,
+func refreshItemPreview(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader,
 	previewSceneCount int, previewSceneDuration int, id uint64) error {
-	item, err := irw.GetItem(id)
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -52,7 +53,7 @@ func refreshItemPreview(irw model.ItemReaderWriter, uploader model.StorageUpload
 	}
 
 	item.PreviewUrl = uploader.GetStorageUrl(relativeFile)
-	return irw.UpdateItem(item)
+	return irw.UpdateItem(ctx, item)
 }
 
 func getPreviewParts(uploader model.StorageUploader, item *model.Item,

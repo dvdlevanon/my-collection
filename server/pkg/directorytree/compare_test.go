@@ -1,6 +1,7 @@
 package directorytree
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	"os"
 	"path/filepath"
@@ -34,7 +35,7 @@ func skeleton(t *testing.T, extendsFs extendsFs, extendsDig extendsDig,
 
 	dig := buildTestDirectoryItemsGetter(ctrl)
 	extendsDig(dig)
-	dbRoot, err := BuildFromDb(buildTestDirectoryReader(ctrl, additionalDbDirs...), dig)
+	dbRoot, err := BuildFromDb(context.Background(), buildTestDirectoryReader(ctrl, additionalDbDirs...), dig)
 	assert.NoError(t, err)
 
 	fsRoot, err := BuildFromPath(rootDir, testFileFilter{})
@@ -159,9 +160,9 @@ func TestCompareExcluded(t *testing.T) {
 		_, err = os.Create(filepath.Join(rootDir, "1/2/ex/5/6/file2"))
 		assert.NoError(t, err)
 	}, func(dig *model.MockDirectoryItemsGetter) {
-		dig.EXPECT().GetBelongingItems("1/2/ex").Return(&[]model.Item{}, nil)
-		dig.EXPECT().GetBelongingItems("1/2/ex/5").Return(&[]model.Item{}, nil)
-		dig.EXPECT().GetBelongingItems("1/2/ex/5/6").Return(&[]model.Item{
+		dig.EXPECT().GetBelongingItems(context.Background(), "1/2/ex").Return(&[]model.Item{}, nil)
+		dig.EXPECT().GetBelongingItems(context.Background(), "1/2/ex/5").Return(&[]model.Item{}, nil)
+		dig.EXPECT().GetBelongingItems(context.Background(), "1/2/ex/5/6").Return(&[]model.Item{
 			{Title: "file"},
 		}, nil)
 	},
@@ -176,8 +177,8 @@ func TestCompareRootNotExists(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 	dr := model.NewMockDirectoryReader(ctrl)
-	dr.EXPECT().GetAllDirectories().Return(&[]model.Directory{}, nil)
-	dbRoot, err := BuildFromDb(dr, model.NewMockDirectoryItemsGetter(ctrl))
+	dr.EXPECT().GetAllDirectories(gomock.Any()).Return(&[]model.Directory{}, nil)
+	dbRoot, err := BuildFromDb(context.Background(), dr, model.NewMockDirectoryItemsGetter(ctrl))
 	assert.NoError(t, err)
 	fsRoot, _ := skeleton(t, func(rootDir string) {}, func(dig *model.MockDirectoryItemsGetter) {})
 	diff := Compare(fsRoot, dbRoot)

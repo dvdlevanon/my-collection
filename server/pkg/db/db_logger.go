@@ -1,8 +1,10 @@
 package db
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/utils"
 	"time"
 
 	"github.com/op/go-logging"
@@ -14,7 +16,7 @@ type dbLogger struct {
 	db *databaseImpl
 }
 
-func (d *dbLogger) log(operation string, start time.Time, err error, result interface{}) {
+func (d *dbLogger) log(ctx context.Context, operation string, start time.Time, err error, result interface{}) {
 	duration := time.Since(start)
 	ms := duration.Milliseconds()
 
@@ -24,14 +26,17 @@ func (d *dbLogger) log(operation string, start time.Time, err error, result inte
 	// Format operation name with fixed width (20 chars)
 	opStr := fmt.Sprintf("%-20s", operation)
 
+	subject := utils.GetSubject(ctx)
+	subjectStr := fmt.Sprintf("%-20s", subject)
+
 	if err != nil {
-		l.Errorf("%s %s error: %v", durationStr, opStr, err)
+		l.Errorf("[%s] %s %s error: %v", subjectStr, durationStr, opStr, err)
 		return
 	}
 
 	// Format result description
 	resultStr := formatResult(result)
-	l.Infof("%s %s %s", durationStr, opStr, resultStr)
+	l.Infof("[%s] %s %s %s", subjectStr, durationStr, opStr, resultStr)
 }
 
 func formatResult(result interface{}) string {
@@ -112,302 +117,302 @@ func formatResult(result interface{}) string {
 }
 
 // Directory operations
-func (d *dbLogger) CreateOrUpdateDirectory(directory *model.Directory) error {
+func (d *dbLogger) CreateOrUpdateDirectory(ctx context.Context, directory *model.Directory) error {
 	start := time.Now()
-	err := d.db.CreateOrUpdateDirectory(directory)
-	d.log("CreateUpdateDir", start, err, directory)
+	err := d.db.CreateOrUpdateDirectory(ctx, directory)
+	d.log(ctx, "CreateUpdateDir", start, err, directory)
 	return err
 }
 
-func (d *dbLogger) UpdateDirectory(directory *model.Directory) error {
+func (d *dbLogger) UpdateDirectory(ctx context.Context, directory *model.Directory) error {
 	start := time.Now()
-	err := d.db.UpdateDirectory(directory)
-	d.log("UpdateDir", start, err, directory)
+	err := d.db.UpdateDirectory(ctx, directory)
+	d.log(ctx, "UpdateDir", start, err, directory)
 	return err
 }
 
-func (d *dbLogger) RemoveDirectory(path string) error {
+func (d *dbLogger) RemoveDirectory(ctx context.Context, path string) error {
 	start := time.Now()
-	err := d.db.RemoveDirectory(path)
-	d.log("RemoveDir", start, err, fmt.Sprintf("path=%s", path))
+	err := d.db.RemoveDirectory(ctx, path)
+	d.log(ctx, "RemoveDir", start, err, fmt.Sprintf("path=%s", path))
 	return err
 }
 
-func (d *dbLogger) RemoveTagFromDirectory(directoryPath string, tagId uint64) error {
+func (d *dbLogger) RemoveTagFromDirectory(ctx context.Context, directoryPath string, tagId uint64) error {
 	start := time.Now()
-	err := d.db.RemoveTagFromDirectory(directoryPath, tagId)
-	d.log("RemoveTagFromDir", start, err, fmt.Sprintf("tag=%d", tagId))
+	err := d.db.RemoveTagFromDirectory(ctx, directoryPath, tagId)
+	d.log(ctx, "RemoveTagFromDir", start, err, fmt.Sprintf("tag=%d", tagId))
 	return err
 }
 
-func (d *dbLogger) GetDirectory(conds ...interface{}) (*model.Directory, error) {
+func (d *dbLogger) GetDirectory(ctx context.Context, conds ...interface{}) (*model.Directory, error) {
 	start := time.Now()
-	result, err := d.db.GetDirectory(conds...)
-	d.log("GetDir", start, err, result)
+	result, err := d.db.GetDirectory(ctx, conds...)
+	d.log(ctx, "GetDir", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetDirectories(conds ...interface{}) (*[]model.Directory, error) {
+func (d *dbLogger) GetDirectories(ctx context.Context, conds ...interface{}) (*[]model.Directory, error) {
 	start := time.Now()
-	result, err := d.db.GetDirectories(conds...)
-	d.log("GetDirs", start, err, result)
+	result, err := d.db.GetDirectories(ctx, conds...)
+	d.log(ctx, "GetDirs", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetAllDirectories() (*[]model.Directory, error) {
+func (d *dbLogger) GetAllDirectories(ctx context.Context) (*[]model.Directory, error) {
 	start := time.Now()
-	result, err := d.db.GetAllDirectories()
-	d.log("GetAllDirs", start, err, result)
+	result, err := d.db.GetAllDirectories(ctx)
+	d.log(ctx, "GetAllDirs", start, err, result)
 	return result, err
 }
 
 // Item operations
-func (d *dbLogger) CreateOrUpdateItem(item *model.Item) error {
+func (d *dbLogger) CreateOrUpdateItem(ctx context.Context, item *model.Item) error {
 	start := time.Now()
-	err := d.db.CreateOrUpdateItem(item)
-	d.log("CreateUpdateItem", start, err, item)
+	err := d.db.CreateOrUpdateItem(ctx, item)
+	d.log(ctx, "CreateUpdateItem", start, err, item)
 	return err
 }
 
-func (d *dbLogger) UpdateItem(item *model.Item) error {
+func (d *dbLogger) UpdateItem(ctx context.Context, item *model.Item) error {
 	start := time.Now()
-	err := d.db.UpdateItem(item)
-	d.log("UpdateItem", start, err, item)
+	err := d.db.UpdateItem(ctx, item)
+	d.log(ctx, "UpdateItem", start, err, item)
 	return err
 }
 
-func (d *dbLogger) RemoveItem(itemId uint64) error {
+func (d *dbLogger) RemoveItem(ctx context.Context, itemId uint64) error {
 	start := time.Now()
-	err := d.db.RemoveItem(itemId)
-	d.log("RemoveItem", start, err, fmt.Sprintf("id=%d", itemId))
+	err := d.db.RemoveItem(ctx, itemId)
+	d.log(ctx, "RemoveItem", start, err, fmt.Sprintf("id=%d", itemId))
 	return err
 }
 
-func (d *dbLogger) RemoveTagFromItem(itemId uint64, tagId uint64) error {
+func (d *dbLogger) RemoveTagFromItem(ctx context.Context, itemId uint64, tagId uint64) error {
 	start := time.Now()
-	err := d.db.RemoveTagFromItem(itemId, tagId)
-	d.log("RemoveTagFromItem", start, err, fmt.Sprintf("item=%d tag=%d", itemId, tagId))
+	err := d.db.RemoveTagFromItem(ctx, itemId, tagId)
+	d.log(ctx, "RemoveTagFromItem", start, err, fmt.Sprintf("item=%d tag=%d", itemId, tagId))
 	return err
 }
 
-func (d *dbLogger) GetItem(conds ...interface{}) (*model.Item, error) {
+func (d *dbLogger) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
 	start := time.Now()
-	result, err := d.db.GetItem(conds...)
-	d.log("GetItem", start, err, result)
+	result, err := d.db.GetItem(ctx, conds...)
+	d.log(ctx, "GetItem", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetItems(conds ...interface{}) (*[]model.Item, error) {
+func (d *dbLogger) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
 	start := time.Now()
-	result, err := d.db.GetItems(conds...)
-	d.log("GetItems", start, err, result)
+	result, err := d.db.GetItems(ctx, conds...)
+	d.log(ctx, "GetItems", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetAllItems() (*[]model.Item, error) {
+func (d *dbLogger) GetAllItems(ctx context.Context) (*[]model.Item, error) {
 	start := time.Now()
-	result, err := d.db.GetAllItems()
-	d.log("GetAllItems", start, err, result)
+	result, err := d.db.GetAllItems(ctx)
+	d.log(ctx, "GetAllItems", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetItemsCount() (int64, error) {
+func (d *dbLogger) GetItemsCount(ctx context.Context) (int64, error) {
 	start := time.Now()
-	result, err := d.db.GetItemsCount()
-	d.log("GetItemsCount", start, err, result)
+	result, err := d.db.GetItemsCount(ctx)
+	d.log(ctx, "GetItemsCount", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetTotalDurationSeconds() (float64, error) {
+func (d *dbLogger) GetTotalDurationSeconds(ctx context.Context) (float64, error) {
 	start := time.Now()
-	result, err := d.db.GetTotalDurationSeconds()
-	d.log("GetTotalDuration", start, err, result)
+	result, err := d.db.GetTotalDurationSeconds(ctx)
+	d.log(ctx, "GetTotalDuration", start, err, result)
 	return result, err
 }
 
 // Tag Annotation operations
-func (d *dbLogger) CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error {
+func (d *dbLogger) CreateTagAnnotation(ctx context.Context, tagAnnotation *model.TagAnnotation) error {
 	start := time.Now()
-	err := d.db.CreateTagAnnotation(tagAnnotation)
-	d.log("CreateAnnotation", start, err, tagAnnotation)
+	err := d.db.CreateTagAnnotation(ctx, tagAnnotation)
+	d.log(ctx, "CreateAnnotation", start, err, tagAnnotation)
 	return err
 }
 
-func (d *dbLogger) RemoveTag(tagId uint64) error {
+func (d *dbLogger) RemoveTag(ctx context.Context, tagId uint64) error {
 	start := time.Now()
-	err := d.db.RemoveTag(tagId)
-	d.log("RemoveTag", start, err, fmt.Sprintf("id=%d", tagId))
+	err := d.db.RemoveTag(ctx, tagId)
+	d.log(ctx, "RemoveTag", start, err, fmt.Sprintf("id=%d", tagId))
 	return err
 }
 
-func (d *dbLogger) RemoveTagAnnotationFromTag(tagId uint64, annotationId uint64) error {
+func (d *dbLogger) RemoveTagAnnotationFromTag(ctx context.Context, tagId uint64, annotationId uint64) error {
 	start := time.Now()
-	err := d.db.RemoveTagAnnotationFromTag(tagId, annotationId)
-	d.log("RemoveAnnotation", start, err, fmt.Sprintf("tag=%d ann=%d", tagId, annotationId))
+	err := d.db.RemoveTagAnnotationFromTag(ctx, tagId, annotationId)
+	d.log(ctx, "RemoveAnnotation", start, err, fmt.Sprintf("tag=%d ann=%d", tagId, annotationId))
 	return err
 }
 
-func (d *dbLogger) GetTagAnnotation(conds ...interface{}) (*model.TagAnnotation, error) {
+func (d *dbLogger) GetTagAnnotation(ctx context.Context, conds ...interface{}) (*model.TagAnnotation, error) {
 	start := time.Now()
-	result, err := d.db.GetTagAnnotation(conds...)
-	d.log("GetAnnotation", start, err, result)
+	result, err := d.db.GetTagAnnotation(ctx, conds...)
+	d.log(ctx, "GetAnnotation", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error) {
+func (d *dbLogger) GetTagAnnotations(ctx context.Context, tagId uint64) ([]model.TagAnnotation, error) {
 	start := time.Now()
-	result, err := d.db.GetTagAnnotations(tagId)
-	d.log("GetAnnotations", start, err, result)
+	result, err := d.db.GetTagAnnotations(ctx, tagId)
+	d.log(ctx, "GetAnnotations", start, err, result)
 	return result, err
 }
 
 // TagImageType operations
-func (d *dbLogger) CreateOrUpdateTagImageType(tit *model.TagImageType) error {
+func (d *dbLogger) CreateOrUpdateTagImageType(ctx context.Context, tit *model.TagImageType) error {
 	start := time.Now()
-	err := d.db.CreateOrUpdateTagImageType(tit)
-	d.log("CreateUpdateImgType", start, err, tit)
+	err := d.db.CreateOrUpdateTagImageType(ctx, tit)
+	d.log(ctx, "CreateUpdateImgType", start, err, tit)
 	return err
 }
 
-func (d *dbLogger) GetTagImageType(conds ...interface{}) (*model.TagImageType, error) {
+func (d *dbLogger) GetTagImageType(ctx context.Context, conds ...interface{}) (*model.TagImageType, error) {
 	start := time.Now()
-	result, err := d.db.GetTagImageType(conds...)
-	d.log("GetImgType", start, err, result)
+	result, err := d.db.GetTagImageType(ctx, conds...)
+	d.log(ctx, "GetImgType", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetTagImageTypes(conds ...interface{}) (*[]model.TagImageType, error) {
+func (d *dbLogger) GetTagImageTypes(ctx context.Context, conds ...interface{}) (*[]model.TagImageType, error) {
 	start := time.Now()
-	result, err := d.db.GetTagImageTypes(conds...)
-	d.log("GetImgTypes", start, err, result)
+	result, err := d.db.GetTagImageTypes(ctx, conds...)
+	d.log(ctx, "GetImgTypes", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetAllTagImageTypes() (*[]model.TagImageType, error) {
+func (d *dbLogger) GetAllTagImageTypes(ctx context.Context) (*[]model.TagImageType, error) {
 	start := time.Now()
-	result, err := d.db.GetAllTagImageTypes()
-	d.log("GetAllImgTypes", start, err, result)
+	result, err := d.db.GetAllTagImageTypes(ctx)
+	d.log(ctx, "GetAllImgTypes", start, err, result)
 	return result, err
 }
 
 // TagCustomCommand operations
-func (d *dbLogger) CreateOrUpdateTagCustomCommand(command *model.TagCustomCommand) error {
+func (d *dbLogger) CreateOrUpdateTagCustomCommand(ctx context.Context, command *model.TagCustomCommand) error {
 	start := time.Now()
-	err := d.db.CreateOrUpdateTagCustomCommand(command)
-	d.log("CreateUpdateCmd", start, err, command)
+	err := d.db.CreateOrUpdateTagCustomCommand(ctx, command)
+	d.log(ctx, "CreateUpdateCmd", start, err, command)
 	return err
 }
 
-func (d *dbLogger) GetTagCustomCommand(conds ...interface{}) (*[]model.TagCustomCommand, error) {
+func (d *dbLogger) GetTagCustomCommand(ctx context.Context, conds ...interface{}) (*[]model.TagCustomCommand, error) {
 	start := time.Now()
-	result, err := d.db.GetTagCustomCommand(conds...)
-	d.log("GetCmd", start, err, result)
+	result, err := d.db.GetTagCustomCommand(ctx, conds...)
+	d.log(ctx, "GetCmd", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetAllTagCustomCommands() (*[]model.TagCustomCommand, error) {
+func (d *dbLogger) GetAllTagCustomCommands(ctx context.Context) (*[]model.TagCustomCommand, error) {
 	start := time.Now()
-	result, err := d.db.GetAllTagCustomCommands()
-	d.log("GetAllCmds", start, err, result)
+	result, err := d.db.GetAllTagCustomCommands(ctx)
+	d.log(ctx, "GetAllCmds", start, err, result)
 	return result, err
 }
 
 // Tag operations
-func (d *dbLogger) CreateOrUpdateTag(tag *model.Tag) error {
+func (d *dbLogger) CreateOrUpdateTag(ctx context.Context, tag *model.Tag) error {
 	start := time.Now()
-	err := d.db.CreateOrUpdateTag(tag)
-	d.log("CreateUpdateTag", start, err, tag)
+	err := d.db.CreateOrUpdateTag(ctx, tag)
+	d.log(ctx, "CreateUpdateTag", start, err, tag)
 	return err
 }
 
-func (d *dbLogger) UpdateTag(tag *model.Tag) error {
+func (d *dbLogger) UpdateTag(ctx context.Context, tag *model.Tag) error {
 	start := time.Now()
-	err := d.db.UpdateTag(tag)
-	d.log("UpdateTag", start, err, tag)
+	err := d.db.UpdateTag(ctx, tag)
+	d.log(ctx, "UpdateTag", start, err, tag)
 	return err
 }
 
-func (d *dbLogger) GetTag(conds ...interface{}) (*model.Tag, error) {
+func (d *dbLogger) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
 	start := time.Now()
-	result, err := d.db.GetTag(conds...)
-	d.log("GetTag", start, err, result)
+	result, err := d.db.GetTag(ctx, conds...)
+	d.log(ctx, "GetTag", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
+func (d *dbLogger) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
 	start := time.Now()
-	result, err := d.db.GetTagsWithoutChildren(conds...)
-	d.log("GetTagsNoChildren", start, err, result)
+	result, err := d.db.GetTagsWithoutChildren(ctx, conds...)
+	d.log(ctx, "GetTagsNoChildren", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetTags(conds ...interface{}) (*[]model.Tag, error) {
+func (d *dbLogger) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
 	start := time.Now()
-	result, err := d.db.GetTags(conds...)
-	d.log("GetTags", start, err, result)
+	result, err := d.db.GetTags(ctx, conds...)
+	d.log(ctx, "GetTags", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetAllTags() (*[]model.Tag, error) {
+func (d *dbLogger) GetAllTags(ctx context.Context) (*[]model.Tag, error) {
 	start := time.Now()
-	result, err := d.db.GetAllTags()
-	d.log("GetAllTags", start, err, result)
+	result, err := d.db.GetAllTags(ctx)
+	d.log(ctx, "GetAllTags", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) RemoveTagImageFromTag(tagId uint64, imageId uint64) error {
+func (d *dbLogger) RemoveTagImageFromTag(ctx context.Context, tagId uint64, imageId uint64) error {
 	start := time.Now()
-	err := d.db.RemoveTagImageFromTag(tagId, imageId)
-	d.log("RemoveTagImage", start, err, fmt.Sprintf("tag=%d img=%d", tagId, imageId))
+	err := d.db.RemoveTagImageFromTag(ctx, tagId, imageId)
+	d.log(ctx, "RemoveTagImage", start, err, fmt.Sprintf("tag=%d img=%d", tagId, imageId))
 	return err
 }
 
-func (d *dbLogger) UpdateTagImage(image *model.TagImage) error {
+func (d *dbLogger) UpdateTagImage(ctx context.Context, image *model.TagImage) error {
 	start := time.Now()
-	err := d.db.UpdateTagImage(image)
-	d.log("UpdateTagImage", start, err, image)
+	err := d.db.UpdateTagImage(ctx, image)
+	d.log(ctx, "UpdateTagImage", start, err, image)
 	return err
 }
 
-func (d *dbLogger) GetTagsCount() (int64, error) {
+func (d *dbLogger) GetTagsCount(ctx context.Context) (int64, error) {
 	start := time.Now()
-	result, err := d.db.GetTagsCount()
-	d.log("GetTagsCount", start, err, result)
+	result, err := d.db.GetTagsCount(ctx)
+	d.log(ctx, "GetTagsCount", start, err, result)
 	return result, err
 }
 
 // Task operations
-func (d *dbLogger) CreateTask(task *model.Task) error {
+func (d *dbLogger) CreateTask(ctx context.Context, task *model.Task) error {
 	start := time.Now()
-	err := d.db.CreateTask(task)
-	d.log("CreateTask", start, err, task)
+	err := d.db.CreateTask(ctx, task)
+	d.log(ctx, "CreateTask", start, err, task)
 	return err
 }
 
-func (d *dbLogger) UpdateTask(task *model.Task) error {
+func (d *dbLogger) UpdateTask(ctx context.Context, task *model.Task) error {
 	start := time.Now()
-	err := d.db.UpdateTask(task)
-	d.log("UpdateTask", start, err, task)
+	err := d.db.UpdateTask(ctx, task)
+	d.log(ctx, "UpdateTask", start, err, task)
 	return err
 }
 
-func (d *dbLogger) RemoveTasks(conds ...interface{}) error {
+func (d *dbLogger) RemoveTasks(ctx context.Context, conds ...interface{}) error {
 	start := time.Now()
-	err := d.db.RemoveTasks(conds...)
-	d.log("RemoveTasks", start, err, nil)
+	err := d.db.RemoveTasks(ctx, conds...)
+	d.log(ctx, "RemoveTasks", start, err, nil)
 	return err
 }
 
-func (d *dbLogger) TasksCount(query interface{}, conds ...interface{}) (int64, error) {
+func (d *dbLogger) TasksCount(ctx context.Context, query interface{}, conds ...interface{}) (int64, error) {
 	start := time.Now()
-	result, err := d.db.TasksCount(query, conds...)
-	d.log("TasksCount", start, err, result)
+	result, err := d.db.TasksCount(ctx, query, conds...)
+	d.log(ctx, "TasksCount", start, err, result)
 	return result, err
 }
 
-func (d *dbLogger) GetTasks(offset int, limit int) (*[]model.Task, error) {
+func (d *dbLogger) GetTasks(ctx context.Context, offset int, limit int) (*[]model.Task, error) {
 	start := time.Now()
-	result, err := d.db.GetTasks(offset, limit)
-	d.log("GetTasks", start, err, result)
+	result, err := d.db.GetTasks(ctx, offset, limit)
+	d.log(ctx, "GetTasks", start, err, result)
 	return result, err
 }

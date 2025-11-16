@@ -1,6 +1,7 @@
 package tag_annotations
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
@@ -47,31 +48,31 @@ func TestAvailableTagAnnoations(t *testing.T) {
 		Title: "child2",
 	}
 
-	assert.NoError(t, db.CreateOrUpdateTag(&child1))
-	assert.NoError(t, db.CreateOrUpdateTag(&child2))
+	assert.NoError(t, db.CreateOrUpdateTag(context.Background(), &child1))
+	assert.NoError(t, db.CreateOrUpdateTag(context.Background(), &child2))
 
 	root := model.Tag{
 		Title:    "root",
 		Children: []*model.Tag{&child1, &child2},
 	}
 
-	assert.NoError(t, db.CreateOrUpdateTag(&root))
-	_, err := AddAnnotationToTag(trw, tarw, child1.Id, model.TagAnnotation{Title: "annotation1"})
+	assert.NoError(t, db.CreateOrUpdateTag(context.Background(), &root))
+	_, err := AddAnnotationToTag(context.Background(), trw, tarw, child1.Id, model.TagAnnotation{Title: "annotation1"})
 	assert.NoError(t, err)
-	_, err = AddAnnotationToTag(trw, tarw, child1.Id, model.TagAnnotation{Title: "annotation2"})
+	_, err = AddAnnotationToTag(context.Background(), trw, tarw, child1.Id, model.TagAnnotation{Title: "annotation2"})
 	assert.NoError(t, err)
-	_, err = AddAnnotationToTag(trw, tarw, child2.Id, model.TagAnnotation{Title: "annotation1"})
+	_, err = AddAnnotationToTag(context.Background(), trw, tarw, child2.Id, model.TagAnnotation{Title: "annotation1"})
 	assert.NoError(t, err)
-	_, err = AddAnnotationToTag(trw, tarw, child2.Id, model.TagAnnotation{Title: "annotation3"})
+	_, err = AddAnnotationToTag(context.Background(), trw, tarw, child2.Id, model.TagAnnotation{Title: "annotation3"})
 	assert.NoError(t, err)
 
-	annotations, err := GetTagAvailableAnnotations(trw, tarw, root.Id)
+	annotations, err := GetTagAvailableAnnotations(context.Background(), trw, tarw, root.Id)
 	assert.NoError(t, err)
 	assert.Equal(t, 3, len(annotations))
 	assert.True(t, annotaionExists(annotations, "annotation1"))
 	assert.True(t, annotaionExists(annotations, "annotation2"))
 	assert.True(t, annotaionExists(annotations, "annotation3"))
 
-	_, err = AddAnnotationToTag(trw, tarw, child2.Id, model.TagAnnotation{Title: "annotation3"})
+	_, err = AddAnnotationToTag(context.Background(), trw, tarw, child2.Id, model.TagAnnotation{Title: "annotation3"})
 	assert.NoError(t, err)
 }

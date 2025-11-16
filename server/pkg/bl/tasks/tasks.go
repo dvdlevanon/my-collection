@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 
 	"github.com/op/go-logging"
@@ -9,9 +10,9 @@ import (
 
 var logger = logging.MustGetLogger("tasks")
 
-func AddDescriptionToTasks(ir model.ItemReader, tasks *[]model.Task) {
+func AddDescriptionToTasks(ctx context.Context, ir model.ItemReader, tasks *[]model.Task) {
 	for i, task := range *tasks {
-		item, err := ir.GetItem(task.IdParam)
+		item, err := ir.GetItem(ctx, task.IdParam)
 		if err != nil {
 			(*tasks)[i].Description = task.TaskType.ToDescription("Unknown")
 		}
@@ -20,14 +21,14 @@ func AddDescriptionToTasks(ir model.ItemReader, tasks *[]model.Task) {
 	}
 }
 
-func BuildQueueMetadata(tr model.TaskReader, ps model.ProcessorStatus) (model.QueueMetadata, error) {
-	size, err := tr.TasksCount("")
+func BuildQueueMetadata(ctx context.Context, tr model.TaskReader, ps model.ProcessorStatus) (model.QueueMetadata, error) {
+	size, err := tr.TasksCount(ctx, "")
 	if err != nil {
 		logger.Errorf("Unable to get queue size %s", err)
 		return model.QueueMetadata{}, nil
 	}
 
-	unfinishedTasks, err := tr.TasksCount("processing_end is null")
+	unfinishedTasks, err := tr.TasksCount(ctx, "processing_end is null")
 	if err != nil {
 		logger.Errorf("Unable to get unfinished tasks count %s", err)
 		return model.QueueMetadata{}, nil

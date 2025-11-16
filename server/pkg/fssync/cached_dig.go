@@ -1,12 +1,14 @@
 package fssync
 
 import (
+	"context"
+	"fmt"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
 )
 
-func NewCachedDig(tr model.TagReader, ir model.ItemReader) (*CachedDig, error) {
-	tags, err := tr.GetAllTags()
+func NewCachedDig(ctx context.Context, tr model.TagReader, ir model.ItemReader) (*CachedDig, error) {
+	tags, err := tr.GetAllTags(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -21,7 +23,7 @@ func NewCachedDig(tr model.TagReader, ir model.ItemReader) (*CachedDig, error) {
 		}
 	}
 
-	items, err := ir.GetAllItems()
+	items, err := ir.GetAllItems(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,15 +44,15 @@ type CachedDig struct {
 	items map[uint64]model.Item
 }
 
-func (d *CachedDig) GetBelongingItems(path string) (*[]model.Item, error) {
-	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItems(d)
+func (d *CachedDig) GetBelongingItems(ctx context.Context, path string) (*[]model.Item, error) {
+	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItems(ctx, d)
 }
 
-func (d *CachedDig) GetBelongingItem(path string, filename string) (*model.Item, error) {
-	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItem(d, filename)
+func (d *CachedDig) GetBelongingItem(ctx context.Context, path string, filename string) (*model.Item, error) {
+	return newFsDirectory(directories.NormalizeDirectoryPath(path)).getItem(ctx, d, filename)
 }
 
-func (d *CachedDig) GetDirectoryTag(path string) (*model.Tag, error) {
+func (d *CachedDig) GetDirectoryTag(ctx context.Context, path string) (*model.Tag, error) {
 	tag, ok := d.tags[path]
 	if !ok {
 		return nil, nil
@@ -58,7 +60,7 @@ func (d *CachedDig) GetDirectoryTag(path string) (*model.Tag, error) {
 	return &tag, nil
 }
 
-func (d *CachedDig) GetItems(ids []uint64) (*[]model.Item, error) {
+func (d *CachedDig) GetItems(ctx context.Context, ids []uint64) (*[]model.Item, error) {
 	result := make([]model.Item, 0)
 	for _, id := range ids {
 		item, ok := d.items[id]
@@ -71,6 +73,6 @@ func (d *CachedDig) GetItems(ids []uint64) (*[]model.Item, error) {
 	return &result, nil
 }
 
-func (d *CachedDig) GetItemByTitle(tag *model.Tag, title string) (*model.Item, error) {
-	return nil, nil
+func (d *CachedDig) GetItemByTitle(ctx context.Context, tag *model.Tag, title string) (*model.Item, error) {
+	return nil, fmt.Errorf("not implemented")
 }

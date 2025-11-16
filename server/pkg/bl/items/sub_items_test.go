@@ -1,6 +1,7 @@
 package items
 
 import (
+	"context"
 	"errors"
 	"my-collection/server/pkg/model"
 	"testing"
@@ -96,10 +97,10 @@ func TestGetMainItem(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(mainItem, nil)
 
-		result, err := GetMainItem(mockItemReader, itemId)
+		result, err := GetMainItem(context.Background(), mockItemReader, itemId)
 
 		assert.NoError(t, err)
 		assert.Equal(t, mainItem, result)
@@ -120,13 +121,13 @@ func TestGetMainItem(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(subItem, nil)
 		mockItemReader.EXPECT().
-			GetItem(subItem.MainItemId).
+			GetItem(gomock.Any(), subItem.MainItemId).
 			Return(mainItem, nil)
 
-		result, err := GetMainItem(mockItemReader, itemId)
+		result, err := GetMainItem(context.Background(), mockItemReader, itemId)
 
 		assert.NoError(t, err)
 		assert.Equal(t, mainItem, result)
@@ -154,16 +155,16 @@ func TestGetMainItem(t *testing.T) {
 		}
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(subItem, nil)
 		mockItemReader.EXPECT().
-			GetItem(subItem.MainItemId).
+			GetItem(gomock.Any(), subItem.MainItemId).
 			Return(level1Item, nil)
 		mockItemReader.EXPECT().
-			GetItem(level1Item.MainItemId).
+			GetItem(gomock.Any(), level1Item.MainItemId).
 			Return(mainItem, nil)
 
-		result, err := GetMainItem(mockItemReader, itemId)
+		result, err := GetMainItem(context.Background(), mockItemReader, itemId)
 
 		assert.NoError(t, err)
 		assert.Equal(t, mainItem, result)
@@ -174,10 +175,10 @@ func TestGetMainItem(t *testing.T) {
 		expectedError := errors.New("item not found")
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(nil, expectedError)
 
-		result, err := GetMainItem(mockItemReader, itemId)
+		result, err := GetMainItem(context.Background(), mockItemReader, itemId)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -195,13 +196,13 @@ func TestGetMainItem(t *testing.T) {
 		expectedError := errors.New("main item not found")
 
 		mockItemReader.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(subItem, nil)
 		mockItemReader.EXPECT().
-			GetItem(subItem.MainItemId).
+			GetItem(gomock.Any(), subItem.MainItemId).
 			Return(nil, expectedError)
 
-		result, err := GetMainItem(mockItemReader, itemId)
+		result, err := GetMainItem(context.Background(), mockItemReader, itemId)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -342,11 +343,11 @@ func TestSplitMain(t *testing.T) {
 		splitSecond := 30.0
 
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(2)
 
-		result, err := splitMain(mockItemWriter, mainItem, splitSecond)
+		result, err := splitMain(context.Background(), mockItemWriter, mainItem, splitSecond)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 2)
@@ -377,10 +378,10 @@ func TestSplitMain(t *testing.T) {
 		expectedError := errors.New("create error")
 
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(expectedError)
 
-		result, err := splitMain(mockItemWriter, mainItem, splitSecond)
+		result, err := splitMain(context.Background(), mockItemWriter, mainItem, splitSecond)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -397,13 +398,13 @@ func TestSplitMain(t *testing.T) {
 		expectedError := errors.New("create error")
 
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil)
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(expectedError)
 
-		result, err := splitMain(mockItemWriter, mainItem, splitSecond)
+		result, err := splitMain(context.Background(), mockItemWriter, mainItem, splitSecond)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -435,13 +436,13 @@ func TestShrinkAndSplit(t *testing.T) {
 		splitSecond := 25.0
 
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil)
 		mockItemWriter.EXPECT().
-			UpdateItem(containedItem).
+			UpdateItem(gomock.Any(), containedItem).
 			Return(nil)
 
-		result, err := shrinkAndSplit(mockItemWriter, mainItem, containedItem, splitSecond)
+		result, err := shrinkAndSplit(context.Background(), mockItemWriter, mainItem, containedItem, splitSecond)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 2)
@@ -469,10 +470,10 @@ func TestShrinkAndSplit(t *testing.T) {
 		expectedError := errors.New("create error")
 
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(expectedError)
 
-		result, err := shrinkAndSplit(mockItemWriter, mainItem, containedItem, splitSecond)
+		result, err := shrinkAndSplit(context.Background(), mockItemWriter, mainItem, containedItem, splitSecond)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -491,13 +492,13 @@ func TestShrinkAndSplit(t *testing.T) {
 		expectedError := errors.New("update error")
 
 		mockItemWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil)
 		mockItemWriter.EXPECT().
-			UpdateItem(containedItem).
+			UpdateItem(gomock.Any(), containedItem).
 			Return(expectedError)
 
-		result, err := shrinkAndSplit(mockItemWriter, mainItem, containedItem, splitSecond)
+		result, err := shrinkAndSplit(context.Background(), mockItemWriter, mainItem, containedItem, splitSecond)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -524,17 +525,17 @@ func TestSplit(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(mainItem, nil)
 		mockItemReaderWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(2)
 		mockItemReaderWriter.EXPECT().
-			UpdateItem(mainItem).
+			UpdateItem(gomock.Any(), mainItem).
 			Return(nil)
 
-		result, err := Split(mockItemReaderWriter, itemId, splitSecond)
+		result, err := Split(context.Background(), mockItemReaderWriter, itemId, splitSecond)
 
 		assert.NoError(t, err)
 		assert.Len(t, result, 2)
@@ -551,10 +552,10 @@ func TestSplit(t *testing.T) {
 		expectedError := errors.New("get item error")
 
 		mockItemReaderWriter2.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(nil, expectedError)
 
-		result, err := Split(mockItemReaderWriter2, itemId, 25.0)
+		result, err := Split(context.Background(), mockItemReaderWriter2, itemId, 25.0)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -567,10 +568,10 @@ func TestSplit(t *testing.T) {
 		expectedError := errors.New("get main item error")
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(nil, expectedError)
 
-		result, err := Split(mockItemReaderWriter, itemId, splitSecond)
+		result, err := Split(context.Background(), mockItemReaderWriter, itemId, splitSecond)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -594,10 +595,10 @@ func TestSplit(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(mainItem, nil)
 
-		result, err := Split(mockItemReaderWriter, itemId, splitSecond)
+		result, err := Split(context.Background(), mockItemReaderWriter, itemId, splitSecond)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -618,17 +619,17 @@ func TestSplit(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(mainItem, nil)
 		mockItemReaderWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil).
 			Times(2)
 		mockItemReaderWriter.EXPECT().
-			UpdateItem(mainItem).
+			UpdateItem(gomock.Any(), mainItem).
 			Return(expectedError)
 
-		result, err := Split(mockItemReaderWriter, itemId, splitSecond)
+		result, err := Split(context.Background(), mockItemReaderWriter, itemId, splitSecond)
 
 		assert.Error(t, err)
 		assert.NotNil(t, result) // Items are still returned even if final update fails

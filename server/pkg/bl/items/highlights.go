@@ -1,6 +1,7 @@
 package items
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/model"
 )
@@ -10,10 +11,10 @@ var highlightsTag = &model.Tag{
 	ParentID: nil,
 }
 
-func InitHighlights(trw model.TagReaderWriter) error {
-	h, err := trw.GetTag(highlightsTag)
+func InitHighlights(ctx context.Context, trw model.TagReaderWriter) error {
+	h, err := trw.GetTag(ctx, highlightsTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(highlightsTag); err != nil {
+		if err := trw.CreateOrUpdateTag(ctx, highlightsTag); err != nil {
 			return err
 		}
 	} else {
@@ -44,19 +45,19 @@ func buildHighlight(item *model.Item, startPosition float64, endPosition float64
 	}
 }
 
-func MakeHighlight(irw model.ItemReaderWriter, itemId uint64, startPosition float64, endPosition float64, highlightId uint64) (*model.Item, error) {
-	item, err := irw.GetItem(itemId)
+func MakeHighlight(ctx context.Context, irw model.ItemReaderWriter, itemId uint64, startPosition float64, endPosition float64, highlightId uint64) (*model.Item, error) {
+	item, err := irw.GetItem(ctx, itemId)
 	if err != nil {
 		return nil, err
 	}
 
 	highlight := buildHighlight(item, startPosition, endPosition, highlightId)
-	if err := irw.CreateOrUpdateItem(highlight); err != nil {
+	if err := irw.CreateOrUpdateItem(ctx, highlight); err != nil {
 		return nil, err
 	}
 
 	item.Highlights = append(item.Highlights, highlight)
-	if err := irw.UpdateItem(item); err != nil {
+	if err := irw.UpdateItem(ctx, item); err != nil {
 		return nil, err
 	}
 

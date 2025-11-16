@@ -1,6 +1,7 @@
 package fs
 
 import (
+	"context"
 	"errors"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
@@ -67,16 +68,16 @@ func getNodeType(fi os.FileInfo) model.FsNodeType {
 	}
 }
 
-func includeDirWithParents(drw model.DirectoryReaderWriter, path string) error {
+func includeDirWithParents(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
 	if directories.NormalizeDirectoryPath(path) == model.ROOT_DIRECTORY_PATH {
 		return nil
 	}
 
-	if err := includeDirWithParents(drw, filepath.Dir(path)); err != nil {
+	if err := includeDirWithParents(ctx, drw, filepath.Dir(path)); err != nil {
 		return err
 	}
 
-	err := directories.IncludeOrCreateDirectory(drw, path)
+	err := directories.IncludeOrCreateDirectory(ctx, drw, path)
 	if err != nil {
 		return err
 	}
@@ -84,7 +85,7 @@ func includeDirWithParents(drw model.DirectoryReaderWriter, path string) error {
 	return nil
 }
 
-func includeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) error {
+func includeHierarchy(ctx context.Context, drw model.DirectoryReaderWriter, path string, depth int) error {
 	if depth == 0 {
 		return nil
 	}
@@ -102,11 +103,11 @@ func includeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) e
 		}
 
 		if info.IsDir() {
-			if err := directories.IncludeOrCreateDirectory(drw, subdir); err != nil {
+			if err := directories.IncludeOrCreateDirectory(ctx, drw, subdir); err != nil {
 				return err
 			}
 
-			if err := includeHierarchy(drw, subdir, depth-1); err != nil {
+			if err := includeHierarchy(ctx, drw, subdir, depth-1); err != nil {
 				return err
 			}
 		}
@@ -115,7 +116,7 @@ func includeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) e
 	return nil
 }
 
-func excludeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) error {
+func excludeHierarchy(ctx context.Context, drw model.DirectoryReaderWriter, path string, depth int) error {
 	if depth == 0 {
 		return nil
 	}
@@ -133,7 +134,7 @@ func excludeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) e
 		}
 
 		if info.IsDir() {
-			dir, err := directories.GetDirectory(drw, subdir)
+			dir, err := directories.GetDirectory(ctx, drw, subdir)
 			if err != nil {
 				if errors.Is(err, gorm.ErrRecordNotFound) {
 					continue
@@ -145,11 +146,11 @@ func excludeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) e
 				continue
 			}
 
-			if err := excludeHierarchy(drw, subdir, depth-1); err != nil {
+			if err := excludeHierarchy(ctx, drw, subdir, depth-1); err != nil {
 				return err
 			}
 
-			if err := directories.ExcludeDirectory(drw, subdir); err != nil {
+			if err := directories.ExcludeDirectory(ctx, drw, subdir); err != nil {
 				return err
 			}
 		}
@@ -158,33 +159,33 @@ func excludeHierarchy(drw model.DirectoryReaderWriter, path string, depth int) e
 	return nil
 }
 
-func ExcludeDir(drw model.DirectoryReaderWriter, path string) error {
-	if err := excludeHierarchy(drw, path, -1); err != nil {
+func ExcludeDir(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
+	if err := excludeHierarchy(ctx, drw, path, -1); err != nil {
 		return err
 	}
 
-	return directories.ExcludeDirectory(drw, path)
+	return directories.ExcludeDirectory(ctx, drw, path)
 }
 
-func IncludeDir(drw model.DirectoryReaderWriter, path string, subdirs bool, hierarchy bool) error {
-	if err := includeDirWithParents(drw, path); err != nil {
+func IncludeDir(ctx context.Context, drw model.DirectoryReaderWriter, path string, subdirs bool, hierarchy bool) error {
+	if err := includeDirWithParents(ctx, drw, path); err != nil {
 		return err
 	}
 
 	if subdirs {
-		if err := directories.AutoIncludeChildren(drw, path); err != nil {
+		if err := directories.AutoIncludeChildren(ctx, drw, path); err != nil {
 			return err
 		}
-		if err := includeHierarchy(drw, path, 1); err != nil {
+		if err := includeHierarchy(ctx, drw, path, 1); err != nil {
 			return err
 		}
 	}
 
 	if hierarchy {
-		if err := directories.AutoIncludeHierarchy(drw, path); err != nil {
+		if err := directories.AutoIncludeHierarchy(ctx, drw, path); err != nil {
 			return err
 		}
-		if err := includeHierarchy(drw, path, -1); err != nil {
+		if err := includeHierarchy(ctx, drw, path, -1); err != nil {
 			return err
 		}
 	}

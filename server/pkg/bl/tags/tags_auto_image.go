@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
@@ -13,7 +14,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func AutoImageChildren(storage model.StorageUploader, trw model.TagReaderWriter,
+func AutoImageChildren(ctx context.Context, storage model.StorageUploader, trw model.TagReaderWriter,
 	titrw model.TagImageTypeReaderWriter, tag *model.Tag, directoryPath string) error {
 	dirs, err := os.ReadDir(directoryPath)
 	if err != nil {
@@ -21,7 +22,7 @@ func AutoImageChildren(storage model.StorageUploader, trw model.TagReaderWriter,
 	}
 
 	for _, slimChildTag := range tag.Children {
-		childTag, err := trw.GetTag(slimChildTag.Id)
+		childTag, err := trw.GetTag(ctx, slimChildTag.Id)
 		if err != nil {
 			logger.Errorf("Error getting tag %v - %t", slimChildTag, err)
 		}
@@ -32,7 +33,7 @@ func AutoImageChildren(storage model.StorageUploader, trw model.TagReaderWriter,
 			}
 
 			imageTypePath := filepath.Join(directoryPath, dir.Name())
-			if err := autoImageTagType(storage, trw, titrw, childTag, imageTypePath, dir.Name()); err != nil {
+			if err := autoImageTagType(ctx, storage, trw, titrw, childTag, imageTypePath, dir.Name()); err != nil {
 				logger.Errorf("Error auto tagging %v from %s - %t", tag, imageTypePath, err)
 			}
 		}
@@ -41,22 +42,22 @@ func AutoImageChildren(storage model.StorageUploader, trw model.TagReaderWriter,
 	return nil
 }
 
-func autoImageTagType(storage model.StorageUploader, tw model.TagWriter,
+func autoImageTagType(ctx context.Context, storage model.StorageUploader, tw model.TagWriter,
 	titrw model.TagImageTypeReaderWriter, tag *model.Tag, directoryPath string, nickname string) error {
-	tit, err := getOrCreateTagImageType(titrw, nickname)
+	tit, err := getOrCreateTagImageType(ctx, titrw, nickname)
 	if err != nil {
 		logger.Errorf("Unable to get tag image type for %s - %s", nickname, err)
 		return err
 	}
 
-	if err := updateTagImageTypeIcon(storage, titrw, tit, directoryPath); err != nil {
+	if err := updateTagImageTypeIcon(ctx, storage, titrw, tit, directoryPath); err != nil {
 		return err
 	}
 
-	return autoImageTag(storage, tw, tag, directoryPath, tit)
+	return autoImageTag(ctx, storage, tw, tag, directoryPath, tit)
 }
 
-func updateTagImageTypeIcon(storage model.StorageUploader, titrw model.TagImageTypeReaderWriter, tit *model.TagImageType, directoryPath string) error {
+func updateTagImageTypeIcon(ctx context.Context, storage model.StorageUploader, titrw model.TagImageTypeReaderWriter, tit *model.TagImageType, directoryPath string) error {
 	if tit.IconUrl != "" {
 		return nil
 	}
@@ -81,7 +82,7 @@ func updateTagImageTypeIcon(storage model.StorageUploader, titrw model.TagImageT
 	}
 
 	tit.IconUrl = storage.GetStorageUrl(relativeFile)
-	return titrw.CreateOrUpdateTagImageType(tit)
+	return titrw.CreateOrUpdateTagImageType(ctx, tit)
 }
 
 func imageExists(tag *model.Tag, tit *model.TagImageType) bool {
@@ -94,8 +95,8 @@ func imageExists(tag *model.Tag, tit *model.TagImageType) bool {
 	return false
 }
 
-func getOrCreateTagImageType(titrw model.TagImageTypeReaderWriter, nickname string) (*model.TagImageType, error) {
-	tit, err := titrw.GetTagImageType("nickname = ?", nickname)
+func getOrCreateTagImageType(ctx context.Context, titrw model.TagImageTypeReaderWriter, nickname string) (*model.TagImageType, error) {
+	tit, err := titrw.GetTagImageType(ctx, "nickname = ?", nickname)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		return nil, err
 	}
@@ -107,14 +108,14 @@ func getOrCreateTagImageType(titrw model.TagImageTypeReaderWriter, nickname stri
 		Nickname: nickname,
 	}
 
-	if err := titrw.CreateOrUpdateTagImageType(tit); err != nil {
+	if err := titrw.CreateOrUpdateTagImageType(ctx, tit); err != nil {
 		return nil, err
 	}
 
 	return tit, nil
 }
 
-func autoImageTag(storage model.StorageUploader, tw model.TagWriter, tag *model.Tag,
+func autoImageTag(ctx context.Context, storage model.StorageUploader, tw model.TagWriter, tag *model.Tag,
 	directoryPath string, tit *model.TagImageType) error {
 	path, err := findExistingImage(tag.Title, directoryPath)
 	if err != nil {
@@ -144,7 +145,7 @@ func autoImageTag(storage model.StorageUploader, tw model.TagWriter, tag *model.
 		})
 	}
 
-	return tw.CreateOrUpdateTag(tag)
+	return tw.CreateOrUpdateTag(ctx, tag)
 }
 
 func findExistingImage(tagTitle string, directory string) (string, error) {

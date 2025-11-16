@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/ffmpeg"
@@ -11,8 +12,8 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-func refreshItemCovers(irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, coversCount int) error {
-	item, err := irw.GetItem(id)
+func refreshItemCovers(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, coversCount int) error {
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -20,7 +21,7 @@ func refreshItemCovers(irw model.ItemReaderWriter, uploader model.StorageUploade
 	item.Covers = make([]model.Cover, 0)
 
 	for i := 1; i <= int(coversCount); i++ {
-		if err := refreshItemCover(irw, uploader, item, coversCount, i); err != nil {
+		if err := refreshItemCover(ctx, irw, uploader, item, coversCount, i); err != nil {
 			return err
 		}
 	}
@@ -42,7 +43,7 @@ func getDurationForItem(item *model.Item, videoFile string) (float64, error) {
 	return duration, err
 }
 
-func refreshItemCover(irw model.ItemReaderWriter, uploader model.StorageUploader,
+func refreshItemCover(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader,
 	item *model.Item, coversCount int, coverNumber int) error {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	logger.Infof("Setting cover for item %d [coverNumber: %d] [videoFile: %s]", item.Id, coverNumber, videoFile)
@@ -74,11 +75,11 @@ func refreshItemCover(irw model.ItemReaderWriter, uploader model.StorageUploader
 		Url: uploader.GetStorageUrl(relativeFile),
 	})
 
-	return irw.UpdateItem(item)
+	return irw.UpdateItem(ctx, item)
 }
 
-func refreshMainCover(irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, second float64) error {
-	item, err := irw.GetItem(id)
+func refreshMainCover(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, second float64) error {
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}
@@ -101,5 +102,5 @@ func refreshMainCover(irw model.ItemReaderWriter, uploader model.StorageUploader
 	item.MainCoverSecond = second
 	item.MainCoverUrl = pointer.String(uploader.GetStorageUrl(relativeFile))
 	item.MainCoverNonce = time.Now().UnixNano()
-	return irw.UpdateItem(item)
+	return irw.UpdateItem(ctx, item)
 }

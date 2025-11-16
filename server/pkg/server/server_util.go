@@ -1,6 +1,7 @@
 package server
 
 import (
+	"context"
 	"my-collection/server/pkg/utils"
 	"net/http"
 	"time"
@@ -12,6 +13,15 @@ import (
 
 type Handler interface {
 	RegisterRoutes(rg *gin.RouterGroup)
+}
+
+func ContextWithSubject(c *gin.Context) context.Context {
+	endpoint := c.Request.Method + " " + c.FullPath()
+	if endpoint == " " {
+		// Fallback if FullPath is empty
+		endpoint = c.Request.Method + " " + c.Request.URL.Path
+	}
+	return utils.ContextWithSubject(c.Request.Context(), endpoint)
 }
 
 func HandleError(c *gin.Context, err error) bool {

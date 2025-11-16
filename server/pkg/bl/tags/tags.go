@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"context"
 	"errors"
 	"my-collection/server/pkg/model"
 
@@ -10,7 +11,7 @@ import (
 
 var logger = logging.MustGetLogger("tags")
 
-func GetItems(ir model.ItemReader, tag *model.Tag) (*[]model.Item, error) {
+func GetItems(ctx context.Context, ir model.ItemReader, tag *model.Tag) (*[]model.Item, error) {
 	itemIds := make([]uint64, 0)
 	for _, item := range tag.Items {
 		itemIds = append(itemIds, item.Id)
@@ -21,7 +22,7 @@ func GetItems(ir model.ItemReader, tag *model.Tag) (*[]model.Item, error) {
 		return &result, nil
 	}
 
-	items, err := ir.GetItems(itemIds)
+	items, err := ir.GetItems(ctx, itemIds)
 	if err != nil {
 		logger.Errorf("Error getting items of tag %t", err)
 		return nil, err
@@ -30,8 +31,8 @@ func GetItems(ir model.ItemReader, tag *model.Tag) (*[]model.Item, error) {
 	return items, nil
 }
 
-func GetItemByTitle(ir model.ItemReader, tag *model.Tag, title string) (*model.Item, error) {
-	items, err := GetItems(ir, tag)
+func GetItemByTitle(ctx context.Context, ir model.ItemReader, tag *model.Tag, title string) (*model.Item, error) {
+	items, err := GetItems(ctx, ir, tag)
 	if err != nil {
 		return nil, err
 	}
@@ -45,8 +46,8 @@ func GetItemByTitle(ir model.ItemReader, tag *model.Tag, title string) (*model.I
 	return nil, nil
 }
 
-func GetOrCreateTag(trw model.TagReaderWriter, tag *model.Tag) (*model.Tag, error) {
-	existing, err := trw.GetTag(tag)
+func GetOrCreateTag(ctx context.Context, trw model.TagReaderWriter, tag *model.Tag) (*model.Tag, error) {
+	existing, err := trw.GetTag(ctx, tag)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
 		logger.Errorf("Error getting tag %t", err)
 		return nil, err
@@ -56,7 +57,7 @@ func GetOrCreateTag(trw model.TagReaderWriter, tag *model.Tag) (*model.Tag, erro
 		return existing, nil
 	}
 
-	if err := trw.CreateOrUpdateTag(tag); err != nil {
+	if err := trw.CreateOrUpdateTag(ctx, tag); err != nil {
 		logger.Errorf("Error creating tag %v - %t", tag, err)
 		return nil, err
 	}
@@ -64,29 +65,29 @@ func GetOrCreateTag(trw model.TagReaderWriter, tag *model.Tag) (*model.Tag, erro
 	return tag, nil
 }
 
-func GetOrCreateChildTag(trw model.TagReaderWriter, parentId uint64, title string) (*model.Tag, error) {
+func GetOrCreateChildTag(ctx context.Context, trw model.TagReaderWriter, parentId uint64, title string) (*model.Tag, error) {
 	tag := model.Tag{
 		ParentID: &parentId,
 		Title:    title,
 	}
 
-	return GetOrCreateTag(trw, &tag)
+	return GetOrCreateTag(ctx, trw, &tag)
 }
 
-func GetChildTag(tr model.TagReader, parentId uint64, title string) (*model.Tag, error) {
+func GetChildTag(ctx context.Context, tr model.TagReader, parentId uint64, title string) (*model.Tag, error) {
 	tag := model.Tag{
 		ParentID: &parentId,
 		Title:    title,
 	}
 
-	return tr.GetTag(tag)
+	return tr.GetTag(ctx, tag)
 }
 
-func GetOrCreateTags(trw model.TagReaderWriter, tags []*model.Tag) ([]*model.Tag, error) {
+func GetOrCreateTags(ctx context.Context, trw model.TagReaderWriter, tags []*model.Tag) ([]*model.Tag, error) {
 	result := make([]*model.Tag, 0)
 
 	for _, tag := range tags {
-		tag, err := GetOrCreateTag(trw, tag)
+		tag, err := GetOrCreateTag(ctx, trw, tag)
 
 		if err != nil {
 			return nil, err
@@ -98,16 +99,16 @@ func GetOrCreateTags(trw model.TagReaderWriter, tags []*model.Tag) ([]*model.Tag
 	return result, nil
 }
 
-func RemoveTagAndItsAssociations(tw model.TagWriter, tag *model.Tag) []error {
+func RemoveTagAndItsAssociations(ctx context.Context, tw model.TagWriter, tag *model.Tag) []error {
 	errors := make([]error, 0)
-	if err := tw.RemoveTag(tag.Id); err != nil {
+	if err := tw.RemoveTag(ctx, tag.Id); err != nil {
 		errors = append(errors, err)
 	}
 
 	return errors
 }
 
-func GetFullTags(tr model.TagReader, tagIds []*model.Tag) (*[]model.Tag, error) {
+func GetFullTags(ctx context.Context, tr model.TagReader, tagIds []*model.Tag) (*[]model.Tag, error) {
 	ids := make([]uint64, len(tagIds))
 	for i, tag := range tagIds {
 		ids[i] = tag.Id
@@ -118,19 +119,19 @@ func GetFullTags(tr model.TagReader, tagIds []*model.Tag) (*[]model.Tag, error) 
 		return &result, nil
 	}
 
-	return tr.GetTags(ids)
+	return tr.GetTags(ctx, ids)
 }
 
-func GetCategories(tr model.TagReader) (*[]model.Tag, error) {
-	return tr.GetTags("parent_id is NULL")
+func GetCategories(ctx context.Context, tr model.TagReader) (*[]model.Tag, error) {
+	return tr.GetTags(ctx, "parent_id is NULL")
 }
 
 func IsBelongToCategory(tag *model.Tag, category *model.Tag) bool {
 	return tag.ParentID != nil && *tag.ParentID == category.Id
 }
 
-func RemoveTagImages(trw model.TagReaderWriter, tagId uint64, titId uint64) error {
-	tag, err := trw.GetTag(tagId)
+func RemoveTagImages(ctx context.Context, trw model.TagReaderWriter, tagId uint64, titId uint64) error {
+	tag, err := trw.GetTag(ctx, tagId)
 	if err != nil {
 		return err
 	}
@@ -140,7 +141,7 @@ func RemoveTagImages(trw model.TagReaderWriter, tagId uint64, titId uint64) erro
 			continue
 		}
 
-		if err := trw.RemoveTagImageFromTag(tagId, image.Id); err != nil {
+		if err := trw.RemoveTagImageFromTag(ctx, tagId, image.Id); err != nil {
 			return err
 		}
 	}

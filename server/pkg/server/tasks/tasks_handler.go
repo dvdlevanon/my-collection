@@ -1,6 +1,7 @@
 package tasks
 
 import (
+	"context"
 	"my-collection/server/pkg/bl/tasks"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
@@ -22,7 +23,7 @@ type queueProcessor interface {
 	model.ProcessorStatus
 	Continue()
 	Pause()
-	ClearFinishedTasks() error
+	ClearFinishedTasks(ctx context.Context) error
 }
 
 func NewHandler(db queueDb, processor queueProcessor) *tasksHandler {
@@ -48,7 +49,8 @@ func (s *tasksHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *tasksHandler) getQueueMetadata(c *gin.Context) {
-	queueMetadata, err := tasks.BuildQueueMetadata(s.db, s.processor)
+	ctx := server.ContextWithSubject(c)
+	queueMetadata, err := tasks.BuildQueueMetadata(ctx, s.db, s.processor)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -57,10 +59,12 @@ func (s *tasksHandler) getQueueMetadata(c *gin.Context) {
 }
 
 func (s *tasksHandler) clearFinishedTasks(c *gin.Context) {
-	server.HandleError(c, s.processor.ClearFinishedTasks())
+	ctx := server.ContextWithSubject(c)
+	server.HandleError(c, s.processor.ClearFinishedTasks(ctx))
 }
 
 func (s *tasksHandler) getTasks(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
 	if server.HandleError(c, err) {
 		return
@@ -71,12 +75,12 @@ func (s *tasksHandler) getTasks(c *gin.Context) {
 		return
 	}
 
-	t, err := s.db.GetTasks(int((page-1)*pageSize), int(pageSize))
+	t, err := s.db.GetTasks(ctx, int((page-1)*pageSize), int(pageSize))
 	if server.HandleError(c, err) {
 		return
 	}
 
-	tasks.AddDescriptionToTasks(s.db, t)
+	tasks.AddDescriptionToTasks(ctx, s.db, t)
 	c.JSON(http.StatusOK, t)
 }
 

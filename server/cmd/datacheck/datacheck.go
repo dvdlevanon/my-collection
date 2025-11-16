@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"my-collection/server/pkg/bl/items"
@@ -35,7 +36,7 @@ func run() error {
 		return err
 	}
 
-	allItems, err := db.GetAllItems()
+	allItems, err := db.GetAllItems(context.Background())
 	if err != nil {
 		return err
 	}

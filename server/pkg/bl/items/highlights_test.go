@@ -1,6 +1,7 @@
 package items
 
 import (
+	"context"
 	"errors"
 	"my-collection/server/pkg/model"
 	"testing"
@@ -24,10 +25,10 @@ func TestInitHighlights(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(gomock.Any()).
+			GetTag(gomock.Any(), gomock.Any()).
 			Return(existingTag, nil)
 
-		err := InitHighlights(mockTagReaderWriter)
+		err := InitHighlights(context.Background(), mockTagReaderWriter)
 
 		assert.NoError(t, err)
 		// Verify that the global highlightsTag was updated
@@ -36,13 +37,13 @@ func TestInitHighlights(t *testing.T) {
 
 	t.Run("highlights tag does not exist - create new", func(t *testing.T) {
 		mockTagReaderWriter.EXPECT().
-			GetTag(gomock.Any()).
+			GetTag(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("tag not found"))
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(gomock.Any()).
+			CreateOrUpdateTag(gomock.Any(), gomock.Any()).
 			Return(nil)
 
-		err := InitHighlights(mockTagReaderWriter)
+		err := InitHighlights(context.Background(), mockTagReaderWriter)
 
 		assert.NoError(t, err)
 	})
@@ -51,13 +52,13 @@ func TestInitHighlights(t *testing.T) {
 		expectedError := errors.New("create tag error")
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(gomock.Any()).
+			GetTag(gomock.Any(), gomock.Any()).
 			Return(nil, errors.New("tag not found"))
 		mockTagReaderWriter.EXPECT().
-			CreateOrUpdateTag(gomock.Any()).
+			CreateOrUpdateTag(gomock.Any(), gomock.Any()).
 			Return(expectedError)
 
-		err := InitHighlights(mockTagReaderWriter)
+		err := InitHighlights(context.Background(), mockTagReaderWriter)
 
 		assert.Error(t, err)
 		assert.Equal(t, expectedError, err)
@@ -166,16 +167,16 @@ func TestMakeHighlight(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(originalItem, nil)
 		mockItemReaderWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil)
 		mockItemReaderWriter.EXPECT().
-			UpdateItem(originalItem).
+			UpdateItem(gomock.Any(), originalItem).
 			Return(nil)
 
-		result, err := MakeHighlight(mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
+		result, err := MakeHighlight(context.Background(), mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, result)
@@ -199,10 +200,10 @@ func TestMakeHighlight(t *testing.T) {
 		expectedError := errors.New("item not found")
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(nil, expectedError)
 
-		result, err := MakeHighlight(mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
+		result, err := MakeHighlight(context.Background(), mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -223,13 +224,13 @@ func TestMakeHighlight(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(originalItem, nil)
 		mockItemReaderWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(expectedError)
 
-		result, err := MakeHighlight(mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
+		result, err := MakeHighlight(context.Background(), mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -250,16 +251,16 @@ func TestMakeHighlight(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(originalItem, nil)
 		mockItemReaderWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
 			Return(nil)
 		mockItemReaderWriter.EXPECT().
-			UpdateItem(originalItem).
+			UpdateItem(gomock.Any(), originalItem).
 			Return(expectedError)
 
-		result, err := MakeHighlight(mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
+		result, err := MakeHighlight(context.Background(), mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
 
 		assert.Error(t, err)
 		assert.Nil(t, result)
@@ -315,10 +316,10 @@ func TestHighlightsIntegration(t *testing.T) {
 		}
 
 		mockTagReaderWriter.EXPECT().
-			GetTag(gomock.Any()).
+			GetTag(gomock.Any(), gomock.Any()).
 			Return(existingHighlightsTag, nil)
 
-		err := InitHighlights(mockTagReaderWriter)
+		err := InitHighlights(context.Background(), mockTagReaderWriter)
 		assert.NoError(t, err)
 
 		// Step 2: Create a highlight
@@ -342,11 +343,11 @@ func TestHighlightsIntegration(t *testing.T) {
 		}
 
 		mockItemReaderWriter.EXPECT().
-			GetItem(itemId).
+			GetItem(gomock.Any(), itemId).
 			Return(originalItem, nil)
 		mockItemReaderWriter.EXPECT().
-			CreateOrUpdateItem(gomock.Any()).
-			DoAndReturn(func(item *model.Item) error {
+			CreateOrUpdateItem(gomock.Any(), gomock.Any()).
+			DoAndReturn(func(ctx context.Context, item *model.Item) error {
 				// Verify the highlight was built correctly
 				assert.Equal(t, originalItem.Title, item.Title)
 				assert.Equal(t, "videos/original-15.000000-45.000000", item.Origin)
@@ -360,10 +361,10 @@ func TestHighlightsIntegration(t *testing.T) {
 				return nil
 			})
 		mockItemReaderWriter.EXPECT().
-			UpdateItem(originalItem).
+			UpdateItem(gomock.Any(), originalItem).
 			Return(nil)
 
-		highlight, err := MakeHighlight(mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
+		highlight, err := MakeHighlight(context.Background(), mockItemReaderWriter, itemId, startPosition, endPosition, highlightId)
 
 		assert.NoError(t, err)
 		assert.NotNil(t, highlight)

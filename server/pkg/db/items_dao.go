@@ -1,6 +1,7 @@
 package db
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 
 	"github.com/go-errors/errors"
@@ -8,44 +9,44 @@ import (
 	"gorm.io/gorm"
 )
 
-func (d *databaseImpl) CreateOrUpdateItem(item *model.Item) error {
+func (d *databaseImpl) CreateOrUpdateItem(ctx context.Context, item *model.Item) error {
 	if item.Id == 0 && (item.Title == "" || item.Origin == "") {
 		return errors.Errorf("invalid item, missing ('id') or ('title' and 'origin') %v", item)
 	}
 
-	err := d.create(item)
+	err := d.create(ctx, item)
 
 	if err != nil && err.(*errors.Error).Err.(sqlite3.Error).Code == sqlite3.ErrConstraint {
 		if item.Id != 0 {
-			return d.update(item)
+			return d.update(ctx, item)
 		}
 
-		existing, err := d.GetItem("title = ? and origin = ?", item.Title, item.Origin)
+		existing, err := d.GetItem(ctx, "title = ? and origin = ?", item.Title, item.Origin)
 
 		if err != nil {
 			return err
 		}
 
 		item.Id = existing.Id
-		return d.update(item)
+		return d.update(ctx, item)
 	}
 
 	return err
 }
 
-func (d *databaseImpl) UpdateItem(item *model.Item) error {
-	return d.update(item)
+func (d *databaseImpl) UpdateItem(ctx context.Context, item *model.Item) error {
+	return d.update(ctx, item)
 }
 
-func (d *databaseImpl) RemoveItem(itemId uint64) error {
-	return d.deleteWithAssociations(model.Item{Id: itemId})
+func (d *databaseImpl) RemoveItem(ctx context.Context, itemId uint64) error {
+	return d.deleteWithAssociations(ctx, model.Item{Id: itemId})
 }
 
-func (d *databaseImpl) RemoveTagFromItem(itemId uint64, tagId uint64) error {
-	return d.deleteAssociation(model.Item{Id: itemId}, model.Tag{Id: tagId}, "Tags")
+func (d *databaseImpl) RemoveTagFromItem(ctx context.Context, itemId uint64, tagId uint64) error {
+	return d.deleteAssociation(ctx, model.Item{Id: itemId}, model.Tag{Id: tagId}, "Tags")
 }
 
-func (d *databaseImpl) getItemModel(includeTagIdsOnly bool) *gorm.DB {
+func (d *databaseImpl) getItemModel(ctx context.Context, includeTagIdsOnly bool) *gorm.DB {
 	tagsPreloading := func(db *gorm.DB) *gorm.DB {
 		if includeTagIdsOnly {
 			return db.Select("ID", "ParentID")
@@ -62,40 +63,40 @@ func (d *databaseImpl) getItemModel(includeTagIdsOnly bool) *gorm.DB {
 		return db.Preload("Covers").Preload("Tags", tagsPreloading)
 	}
 
-	return d.db.Model(&model.Item{}).
+	return d.db.WithContext(ctx).Model(&model.Item{}).
 		Preload("Tags", tagsPreloading).
 		Preload("Covers").
 		Preload("SubItems", subItemsPreloading).
 		Preload("Highlights", highlightsPreloading)
 }
 
-func (d *databaseImpl) GetItem(conds ...interface{}) (*model.Item, error) {
+func (d *databaseImpl) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
 	item := &model.Item{}
-	err := d.handleError(d.getItemModel(false).First(item, conds...).Error)
+	err := d.handleError(d.getItemModel(ctx, false).First(item, conds...).Error)
 	return item, err
 }
 
-func (d *databaseImpl) GetItems(conds ...interface{}) (*[]model.Item, error) {
+func (d *databaseImpl) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
 	var items []model.Item
-	err := d.handleError(d.getItemModel(false).Find(&items, conds...).Error)
+	err := d.handleError(d.getItemModel(ctx, false).Find(&items, conds...).Error)
 	return &items, err
 }
 
-func (d *databaseImpl) GetAllItems() (*[]model.Item, error) {
-	return d.GetItems()
+func (d *databaseImpl) GetAllItems(ctx context.Context) (*[]model.Item, error) {
+	return d.GetItems(ctx)
 }
 
-func (d *databaseImpl) GetItemsCount() (int64, error) {
+func (d *databaseImpl) GetItemsCount(ctx context.Context) (int64, error) {
 	var count int64
-	err := d.handleError(d.db.Model(&model.Item{}).Count(&count).Error)
+	err := d.handleError(d.db.Model(&model.Item{}).WithContext(ctx).Count(&count).Error)
 	return count, err
 }
 
-func (d *databaseImpl) GetTotalDurationSeconds() (float64, error) {
+func (d *databaseImpl) GetTotalDurationSeconds(ctx context.Context) (float64, error) {
 	var result struct {
 		Total float64
 	}
 
-	err := d.handleError(d.db.Model(&model.Item{}).Select("sum(duration_seconds) as total").Scan(&result).Error)
+	err := d.handleError(d.db.Model(&model.Item{}).WithContext(ctx).Select("sum(duration_seconds) as total").Scan(&result).Error)
 	return result.Total, err
 }

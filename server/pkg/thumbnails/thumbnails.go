@@ -29,10 +29,11 @@ type Thumbnails struct {
 }
 
 func (t *Thumbnails) Run(ctx context.Context) error {
+	ctx = utils.ContextWithSubject(ctx, "thumnails")
 	for {
 		select {
 		case <-time.After(1 * time.Minute):
-			if err := t.processThumbnails(); err != nil {
+			if err := t.processThumbnails(ctx); err != nil {
 				utils.LogError("Error processing thumbnails", err)
 			}
 		case <-ctx.Done():
@@ -41,8 +42,8 @@ func (t *Thumbnails) Run(ctx context.Context) error {
 	}
 }
 
-func (t *Thumbnails) processThumbnails() error {
-	tags, err := t.tr.GetAllTags()
+func (t *Thumbnails) processThumbnails(ctx context.Context) error {
+	tags, err := t.tr.GetAllTags(ctx)
 	if err != nil {
 		return err
 	}
@@ -53,7 +54,7 @@ func (t *Thumbnails) processThumbnails() error {
 				continue
 			}
 
-			if err := t.ProcessThumbnail(image); err != nil {
+			if err := t.ProcessThumbnail(ctx, image); err != nil {
 				utils.LogError("Error processing thumbnail", err)
 			}
 		}
@@ -62,7 +63,7 @@ func (t *Thumbnails) processThumbnails() error {
 	return nil
 }
 
-func (t *Thumbnails) ProcessThumbnail(image *model.TagImage) error {
+func (t *Thumbnails) ProcessThumbnail(ctx context.Context, image *model.TagImage) error {
 	relativeFile := filepath.Join("thumbnails", fmt.Sprint(image.TagId), fmt.Sprintf("%d.png", image.Id))
 	storageFile, err := t.storage.GetFileForWriting(relativeFile)
 	if err != nil {
@@ -76,7 +77,7 @@ func (t *Thumbnails) ProcessThumbnail(image *model.TagImage) error {
 	image.ThumbnailUrl = t.storage.GetStorageUrl(relativeFile)
 	image.ThumbnailUrlRect = image.ThumbnailRect
 	image.ThumbnailUrlNonce = time.Now().UnixNano()
-	return t.tiw.UpdateTagImage(image)
+	return t.tiw.UpdateTagImage(ctx, image)
 }
 
 func (t *Thumbnails) extractThumbnail(image *model.TagImage, outputFile string) error {

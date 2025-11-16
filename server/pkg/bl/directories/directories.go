@@ -1,6 +1,7 @@
 package directories
 
 import (
+	"context"
 	"errors"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -23,10 +24,10 @@ var directoriesTag = &model.Tag{
 
 var logger = logging.MustGetLogger("directories")
 
-func Init(trw model.TagReaderWriter) error {
-	d, err := trw.GetTag(directoriesTag)
+func Init(ctx context.Context, trw model.TagReaderWriter) error {
+	d, err := trw.GetTag(ctx, directoriesTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(directoriesTag); err != nil {
+		if err := trw.CreateOrUpdateTag(ctx, directoriesTag); err != nil {
 			return err
 		}
 	} else {
@@ -36,8 +37,8 @@ func Init(trw model.TagReaderWriter) error {
 	return nil
 }
 
-func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
-	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
+func ExcludeDirectory(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(ctx, drw, NormalizeDirectoryPath(path))
 	if err != nil {
 		return err
 	}
@@ -49,13 +50,13 @@ func ExcludeDirectory(drw model.DirectoryReaderWriter, path string) error {
 	directory.Excluded = pointer.Bool(true)
 	directory.AutoIncludeChildren = pointer.Bool(false)
 	directory.AutoIncludeHierarchy = pointer.Bool(false)
-	return drw.CreateOrUpdateDirectory(directory)
+	return drw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func IncludeOrCreateDirectory(drw model.DirectoryReaderWriter, path string) error {
-	if err := IncludeDirectory(drw, path); err != nil {
+func IncludeOrCreateDirectory(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
+	if err := IncludeDirectory(ctx, drw, path); err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			if err := CreateOrUpdateDirectory(drw, &model.Directory{Path: path, Excluded: pointer.Bool(false)}); err != nil {
+			if err := CreateOrUpdateDirectory(ctx, drw, &model.Directory{Path: path, Excluded: pointer.Bool(false)}); err != nil {
 				return err
 			}
 		} else {
@@ -66,8 +67,8 @@ func IncludeOrCreateDirectory(drw model.DirectoryReaderWriter, path string) erro
 	return nil
 }
 
-func AutoIncludeHierarchy(drw model.DirectoryReaderWriter, path string) error {
-	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
+func AutoIncludeHierarchy(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(ctx, drw, NormalizeDirectoryPath(path))
 	if err != nil {
 		return err
 	}
@@ -77,11 +78,11 @@ func AutoIncludeHierarchy(drw model.DirectoryReaderWriter, path string) error {
 	}
 
 	directory.AutoIncludeHierarchy = pointer.Bool(true)
-	return drw.CreateOrUpdateDirectory(directory)
+	return drw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func AutoIncludeChildren(drw model.DirectoryReaderWriter, path string) error {
-	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
+func AutoIncludeChildren(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(ctx, drw, NormalizeDirectoryPath(path))
 	if err != nil {
 		return err
 	}
@@ -91,11 +92,11 @@ func AutoIncludeChildren(drw model.DirectoryReaderWriter, path string) error {
 	}
 
 	directory.AutoIncludeChildren = pointer.Bool(true)
-	return drw.CreateOrUpdateDirectory(directory)
+	return drw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func IncludeDirectory(drw model.DirectoryReaderWriter, path string) error {
-	directory, err := GetDirectory(drw, NormalizeDirectoryPath(path))
+func IncludeDirectory(ctx context.Context, drw model.DirectoryReaderWriter, path string) error {
+	directory, err := GetDirectory(ctx, drw, NormalizeDirectoryPath(path))
 	if err != nil {
 		return err
 	}
@@ -105,7 +106,7 @@ func IncludeDirectory(drw model.DirectoryReaderWriter, path string) error {
 	}
 
 	directory.Excluded = pointer.Bool(false)
-	return drw.CreateOrUpdateDirectory(directory)
+	return drw.CreateOrUpdateDirectory(ctx, directory)
 }
 
 func DirectoryNameToTag(path string) string {
@@ -127,37 +128,37 @@ func TagExists(tags []*model.Tag, tag *model.Tag) bool {
 	return false
 }
 
-func RemoveMissingTags(drw model.DirectoryReaderWriter, directory *model.Directory, tags []*model.Tag) {
+func RemoveMissingTags(ctx context.Context, drw model.DirectoryReaderWriter, directory *model.Directory, tags []*model.Tag) {
 	for _, tag := range directory.Tags {
 		if TagExists(tags, tag) {
 			continue
 		}
 
-		if err := drw.RemoveTagFromDirectory(directory.Path, tag.Id); err != nil {
+		if err := drw.RemoveTagFromDirectory(ctx, directory.Path, tag.Id); err != nil {
 			logger.Warningf("Unable to remove tag %d from directory %s - %t",
 				directory.Path, tag.Id, err)
 		}
 	}
 }
 
-func UpdateDirectoryTags(drw model.DirectoryReaderWriter, directory *model.Directory) error {
-	existingDirectory, err := drw.GetDirectory("path = ?", directory.Path)
+func UpdateDirectoryTags(ctx context.Context, drw model.DirectoryReaderWriter, directory *model.Directory) error {
+	existingDirectory, err := drw.GetDirectory(ctx, "path = ?", directory.Path)
 	if err != nil {
 		logger.Errorf("Error getting exising directory %s %t", directory.Path, err)
 		return err
 	}
 
-	RemoveMissingTags(drw, existingDirectory, directory.Tags)
+	RemoveMissingTags(ctx, drw, existingDirectory, directory.Tags)
 
-	return drw.CreateOrUpdateDirectory(directory)
+	return drw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func GetDirectory(dr model.DirectoryReader, path string) (*model.Directory, error) {
-	return dr.GetDirectory("path = ?", NormalizeDirectoryPath(path))
+func GetDirectory(ctx context.Context, dr model.DirectoryReader, path string) (*model.Directory, error) {
+	return dr.GetDirectory(ctx, "path = ?", NormalizeDirectoryPath(path))
 }
 
-func DirectoryExists(dr model.DirectoryReader, path string) (bool, error) {
-	_, err := GetDirectory(dr, path)
+func DirectoryExists(ctx context.Context, dr model.DirectoryReader, path string) (bool, error) {
+	_, err := GetDirectory(ctx, dr, path)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return false, nil
@@ -169,17 +170,17 @@ func DirectoryExists(dr model.DirectoryReader, path string) (bool, error) {
 	return true, nil
 }
 
-func AddDirectory(dw model.DirectoryWriter, dir string, excluded bool) error {
+func AddDirectory(ctx context.Context, dw model.DirectoryWriter, dir string, excluded bool) error {
 	newDirectory := &model.Directory{
 		Path:     NormalizeDirectoryPath(dir),
 		Excluded: pointer.Bool(excluded),
 	}
 
-	return dw.CreateOrUpdateDirectory(newDirectory)
+	return dw.CreateOrUpdateDirectory(ctx, newDirectory)
 }
 
-func ShouldInclude(dr model.DirectoryReader, path string) bool {
-	dir, err := GetParent(dr, path)
+func ShouldInclude(ctx context.Context, dr model.DirectoryReader, path string) bool {
+	dir, err := GetParent(ctx, dr, path)
 	if err != nil {
 		return false
 	}
@@ -193,7 +194,7 @@ func ShouldInclude(dr model.DirectoryReader, path string) bool {
 			return true
 		}
 
-		dir, err = GetParent(dr, dir.Path)
+		dir, err = GetParent(ctx, dr, dir.Path)
 		if err != nil {
 			return false
 		}
@@ -203,16 +204,16 @@ func ShouldInclude(dr model.DirectoryReader, path string) bool {
 	}
 }
 
-func GetParent(dr model.DirectoryReader, path string) (*model.Directory, error) {
+func GetParent(ctx context.Context, dr model.DirectoryReader, path string) (*model.Directory, error) {
 	if path == model.ROOT_DIRECTORY_PATH {
 		return nil, nil
 	}
 	parentPath := filepath.Dir(path)
-	return GetDirectory(dr, parentPath)
+	return GetDirectory(ctx, dr, parentPath)
 }
 
-func AddDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string, excluded bool) error {
-	exists, err := DirectoryExists(drw, dir)
+func AddDirectoryIfMissing(ctx context.Context, drw model.DirectoryReaderWriter, dir string, excluded bool) error {
+	exists, err := DirectoryExists(ctx, drw, dir)
 	if err != nil {
 		return err
 	}
@@ -221,7 +222,7 @@ func AddDirectoryIfMissing(drw model.DirectoryReaderWriter, dir string, excluded
 		return nil
 	}
 
-	return AddDirectory(drw, dir, excluded)
+	return AddDirectory(ctx, drw, dir, excluded)
 }
 
 func BuildDirectoryTags(directory *model.Directory) []*model.Tag {
@@ -234,8 +235,8 @@ func BuildDirectoryTags(directory *model.Directory) []*model.Tag {
 	return result
 }
 
-func AddRootDirectory(drw model.DirectoryReaderWriter) error {
-	return AddDirectoryIfMissing(drw, model.ROOT_DIRECTORY_PATH, false)
+func AddRootDirectory(ctx context.Context, drw model.DirectoryReaderWriter) error {
+	return AddDirectoryIfMissing(ctx, drw, model.ROOT_DIRECTORY_PATH, false)
 }
 
 func NormalizeDirectoryPath(path string) string {
@@ -248,35 +249,35 @@ func NormalizeDirectoryPath(path string) string {
 	return normalizedPath
 }
 
-func CreateOrUpdateDirectory(dw model.DirectoryWriter, directory *model.Directory) error {
+func CreateOrUpdateDirectory(ctx context.Context, dw model.DirectoryWriter, directory *model.Directory) error {
 	directory.Excluded = pointer.Bool(false)
 	directory.Path = NormalizeDirectoryPath(directory.Path)
-	return dw.CreateOrUpdateDirectory(directory)
+	return dw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func UpdatePath(dw model.DirectoryWriter, directory *model.Directory, newpath string) error {
+func UpdatePath(ctx context.Context, dw model.DirectoryWriter, directory *model.Directory, newpath string) error {
 	oldPath := directory.Path
 	directory.Path = NormalizeDirectoryPath(newpath)
-	if err := dw.CreateOrUpdateDirectory(directory); err != nil {
+	if err := dw.CreateOrUpdateDirectory(ctx, directory); err != nil {
 		return err
 	}
 
-	return dw.RemoveDirectory(oldPath)
+	return dw.RemoveDirectory(ctx, oldPath)
 }
 
-func StartDirectoryProcessing(dw model.DirectoryWriter, directory *model.Directory) error {
+func StartDirectoryProcessing(ctx context.Context, dw model.DirectoryWriter, directory *model.Directory) error {
 	if directory.ProcessingStart != nil && *directory.ProcessingStart != 0 {
 		return nil
 	}
 
 	directory.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
-	return dw.CreateOrUpdateDirectory(directory)
+	return dw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func FinishDirectoryProcessing(dw model.DirectoryWriter, directory *model.Directory) error {
+func FinishDirectoryProcessing(ctx context.Context, dw model.DirectoryWriter, directory *model.Directory) error {
 	directory.LastSynced = time.Now().UnixMilli()
 	directory.ProcessingStart = pointer.Int64(0)
-	return dw.CreateOrUpdateDirectory(directory)
+	return dw.CreateOrUpdateDirectory(ctx, directory)
 }
 
 func GetDirectoryFiles(directory *model.Directory) ([]os.DirEntry, error) {
@@ -302,20 +303,20 @@ func IsExcluded(directory *model.Directory) bool {
 	return *directory.Excluded
 }
 
-func ValidateReadyDirectory(drw model.DirectoryReaderWriter, path string) (*model.Directory, error) {
+func ValidateReadyDirectory(ctx context.Context, drw model.DirectoryReaderWriter, path string) (*model.Directory, error) {
 	dirpath := NormalizeDirectoryPath(path)
-	if err := AddDirectoryIfMissing(drw, dirpath, false); err != nil {
+	if err := AddDirectoryIfMissing(ctx, drw, dirpath, false); err != nil {
 		return nil, err
 	}
 
-	dir, err := GetDirectory(drw, dirpath)
+	dir, err := GetDirectory(ctx, drw, dirpath)
 	if err != nil {
 		return nil, err
 	}
 
 	if IsExcluded(dir) {
 		dir.Excluded = pointer.Bool(false)
-		return dir, drw.CreateOrUpdateDirectory(dir)
+		return dir, drw.CreateOrUpdateDirectory(ctx, dir)
 	}
 
 	return dir, nil
@@ -325,8 +326,8 @@ func GetDirectoriesTagId() uint64 {
 	return directoriesTag.Id
 }
 
-func EnrichFsNode(dr model.DirectoryReader, node *model.FsNode) (*model.FsNode, error) {
-	dir, err := GetDirectory(dr, node.Path)
+func EnrichFsNode(ctx context.Context, dr model.DirectoryReader, node *model.FsNode) (*model.FsNode, error) {
+	dir, err := GetDirectory(ctx, dr, node.Path)
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return node, nil
@@ -337,7 +338,7 @@ func EnrichFsNode(dr model.DirectoryReader, node *model.FsNode) (*model.FsNode, 
 	node.DirInfo = dir
 
 	for i := 0; i < len(node.Children); i++ {
-		child, err := EnrichFsNode(dr, node.Children[i])
+		child, err := EnrichFsNode(ctx, dr, node.Children[i])
 		if err != nil {
 			return nil, err
 		}

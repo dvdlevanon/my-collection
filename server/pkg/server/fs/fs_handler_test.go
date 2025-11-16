@@ -2,6 +2,7 @@ package fs
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,47 +25,47 @@ type MockFsDb struct {
 	mock.Mock
 }
 
-func (m *MockFsDb) GetDirectory(conds ...interface{}) (*model.Directory, error) {
-	args := m.Called(conds...)
+func (m *MockFsDb) GetDirectory(ctx context.Context, conds ...interface{}) (*model.Directory, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Directory), args.Error(1)
 }
 
-func (m *MockFsDb) GetDirectories(conds ...interface{}) (*[]model.Directory, error) {
-	args := m.Called(conds...)
+func (m *MockFsDb) GetDirectories(ctx context.Context, conds ...interface{}) (*[]model.Directory, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Directory), args.Error(1)
 }
 
-func (m *MockFsDb) GetAllDirectories() (*[]model.Directory, error) {
-	args := m.Called()
+func (m *MockFsDb) GetAllDirectories(ctx context.Context) (*[]model.Directory, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Directory), args.Error(1)
 }
 
-func (m *MockFsDb) CreateOrUpdateDirectory(directory *model.Directory) error {
-	args := m.Called(directory)
+func (m *MockFsDb) CreateOrUpdateDirectory(ctx context.Context, directory *model.Directory) error {
+	args := m.Called(ctx, directory)
 	return args.Error(0)
 }
 
-func (m *MockFsDb) UpdateDirectory(directory *model.Directory) error {
-	args := m.Called(directory)
+func (m *MockFsDb) UpdateDirectory(ctx context.Context, directory *model.Directory) error {
+	args := m.Called(ctx, directory)
 	return args.Error(0)
 }
 
-func (m *MockFsDb) RemoveDirectory(path string) error {
-	args := m.Called(path)
+func (m *MockFsDb) RemoveDirectory(ctx context.Context, path string) error {
+	args := m.Called(ctx, path)
 	return args.Error(0)
 }
 
-func (m *MockFsDb) RemoveTagFromDirectory(directoryPath string, tagId uint64) error {
-	args := m.Called(directoryPath, tagId)
+func (m *MockFsDb) RemoveTagFromDirectory(ctx context.Context, directoryPath string, tagId uint64) error {
+	args := m.Called(ctx, directoryPath, tagId)
 	return args.Error(0)
 }
 
@@ -111,7 +112,7 @@ func TestFsGetFsDir(t *testing.T) {
 
 		// Mock the directory enrichment - return gorm.ErrRecordNotFound to indicate no directory info
 		// This is what EnrichFsNode expects to handle gracefully
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/fs?path=%s&depth=1", tempDir), nil)
@@ -140,7 +141,7 @@ func TestFsGetFsDir(t *testing.T) {
 			Path:     tempDir,
 			Excluded: &[]bool{false}[0],
 		}
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(dirInfo, nil)
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(dirInfo, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/fs?path=%s&depth=0", tempDir), nil)
@@ -185,7 +186,7 @@ func TestFsGetFsDir(t *testing.T) {
 		router := setupFsTestRouter(handler)
 
 		tempDir := t.TempDir()
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/fs?path=%s&depth=0", tempDir), nil)
@@ -212,8 +213,8 @@ func TestFsIncludeDir(t *testing.T) {
 		router := setupFsTestRouter(handler)
 
 		// Add minimal mocks for the database calls that will happen
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
-		mockDb.On("CreateOrUpdateDirectory", mock.AnythingOfType("*model.Directory")).Return(nil).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("CreateOrUpdateDirectory", mock.Anything, mock.AnythingOfType("*model.Directory")).Return(nil).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/fs/include?path=/nonexistent&subdirs=true&hierarchy=false", nil)
@@ -255,7 +256,7 @@ func TestFsIncludeDir(t *testing.T) {
 		tempDir := t.TempDir()
 
 		// Simulate a database error
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, fmt.Errorf("database error"))
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, fmt.Errorf("database error"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/fs/include?path=%s&subdirs=false&hierarchy=false", tempDir), nil)
@@ -275,8 +276,8 @@ func TestFsExcludeDir(t *testing.T) {
 		router := setupFsTestRouter(handler)
 
 		// Add minimal mocks for the database calls that fs.ExcludeDir might make
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
-		mockDb.On("CreateOrUpdateDirectory", mock.AnythingOfType("*model.Directory")).Return(nil).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("CreateOrUpdateDirectory", mock.Anything, mock.AnythingOfType("*model.Directory")).Return(nil).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/fs/exclude?path=/nonexistent", nil)
@@ -293,7 +294,7 @@ func TestFsExcludeDir(t *testing.T) {
 		tempDir := t.TempDir()
 
 		// Simulate a database error during exclusion
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, fmt.Errorf("database error"))
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, fmt.Errorf("database error"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/fs/exclude?path=%s", tempDir), nil)
@@ -338,9 +339,9 @@ func TestFsSetDirectoryTags(t *testing.T) {
 				{Id: 3, Title: "old-tag"},
 			},
 		}
-		mockDb.On("GetDirectory", "path = ?", "/test/path").Return(existingDir, nil)
-		mockDb.On("RemoveTagFromDirectory", "/test/path", uint64(3)).Return(nil)
-		mockDb.On("CreateOrUpdateDirectory", mock.MatchedBy(func(dir *model.Directory) bool {
+		mockDb.On("GetDirectory", mock.Anything, "path = ?", "/test/path").Return(existingDir, nil)
+		mockDb.On("RemoveTagFromDirectory", mock.Anything, "/test/path", uint64(3)).Return(nil)
+		mockDb.On("CreateOrUpdateDirectory", mock.Anything, mock.MatchedBy(func(dir *model.Directory) bool {
 			return dir.Path == "/test/path" && len(dir.Tags) == 2
 		})).Return(nil)
 
@@ -379,7 +380,7 @@ func TestFsSetDirectoryTags(t *testing.T) {
 		}
 
 		// Simulate database error
-		mockDb.On("GetDirectory", "path = ?", "/test/path").Return(nil, fmt.Errorf("database error"))
+		mockDb.On("GetDirectory", mock.Anything, "path = ?", "/test/path").Return(nil, fmt.Errorf("database error"))
 
 		body, _ := json.Marshal(directory)
 		w := httptest.NewRecorder()
@@ -400,8 +401,8 @@ func TestFsSetDirectoryTags(t *testing.T) {
 
 		// Mock for empty directory
 		existingDir := &model.Directory{Path: "", Tags: []*model.Tag{}}
-		mockDb.On("GetDirectory", "path = ?", "").Return(existingDir, nil)
-		mockDb.On("CreateOrUpdateDirectory", mock.AnythingOfType("*model.Directory")).Return(nil)
+		mockDb.On("GetDirectory", mock.Anything, "path = ?", "").Return(existingDir, nil)
+		mockDb.On("CreateOrUpdateDirectory", mock.Anything, mock.AnythingOfType("*model.Directory")).Return(nil)
 
 		mockListener.On("DirectoryChanged").Return()
 
@@ -511,7 +512,7 @@ func TestFsErrorScenarios(t *testing.T) {
 			}
 		}
 
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/fs?path=%s&depth=3", tempDir), nil)
@@ -535,7 +536,7 @@ func TestFsErrorScenarios(t *testing.T) {
 		err := os.Mkdir(specialDir, 0755)
 		require.NoError(t, err)
 
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/fs?path=%s&depth=1", specialDir), nil)
@@ -553,7 +554,7 @@ func TestFsErrorScenarios(t *testing.T) {
 		err := os.Mkdir(unicodeDir, 0755)
 		require.NoError(t, err)
 
-		mockDb.On("GetDirectory", mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
+		mockDb.On("GetDirectory", mock.Anything, mock.AnythingOfType("string"), mock.AnythingOfType("string")).Return(nil, gorm.ErrRecordNotFound).Maybe()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/fs?path=%s&depth=0", unicodeDir), nil)

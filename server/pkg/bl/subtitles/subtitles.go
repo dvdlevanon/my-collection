@@ -1,6 +1,7 @@
 package subtitles
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
@@ -50,8 +51,8 @@ func lookForAvailableSubtitles(dir string) ([]string, error) {
 	return names, nil
 }
 
-func GetSubtitle(ir model.ItemReader, itemId uint64, subtitleName string) (model.Subtitle, error) {
-	item, err := ir.GetItem(itemId)
+func GetSubtitle(ctx context.Context, ir model.ItemReader, itemId uint64, subtitleName string) (model.Subtitle, error) {
+	item, err := ir.GetItem(ctx, itemId)
 	if err != nil {
 		return model.Subtitle{}, err
 	}
@@ -75,8 +76,8 @@ func GetSubtitle(ir model.ItemReader, itemId uint64, subtitleName string) (model
 	return srt.LoadFile(subtitlePath)
 }
 
-func GetAvailableNames(ir model.ItemReader, itemId uint64) ([]string, error) {
-	item, err := ir.GetItem(itemId)
+func GetAvailableNames(ctx context.Context, ir model.ItemReader, itemId uint64) ([]string, error) {
+	item, err := ir.GetItem(ctx, itemId)
 	if err != nil {
 		return nil, err
 	}

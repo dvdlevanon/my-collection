@@ -1,6 +1,7 @@
 package directorytree
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	"os"
 	"path/filepath"
@@ -18,9 +19,9 @@ func TestStale(t *testing.T) {
 		_, err = os.Create(filepath.Join(rootDir, "1/2/ex/5/6/file2"))
 		assert.NoError(t, err)
 	}, func(dig *model.MockDirectoryItemsGetter) {
-		dig.EXPECT().GetBelongingItems("1/2/ex").Return(&[]model.Item{}, nil)
-		dig.EXPECT().GetBelongingItems("1/2/ex/5").Return(&[]model.Item{}, nil)
-		dig.EXPECT().GetBelongingItems("1/2/ex/5/6").Return(&[]model.Item{
+		dig.EXPECT().GetBelongingItems(context.Background(), "1/2/ex").Return(&[]model.Item{}, nil)
+		dig.EXPECT().GetBelongingItems(context.Background(), "1/2/ex/5").Return(&[]model.Item{}, nil)
+		dig.EXPECT().GetBelongingItems(context.Background(), "1/2/ex/5/6").Return(&[]model.Item{
 			{Title: "file"},
 		}, nil)
 	},

@@ -12,7 +12,7 @@ import (
 var logger = logging.MustGetLogger("itemsoptimizer")
 
 type Processor interface {
-	EnqueueChangeResolution(id uint64, newResolution string)
+	EnqueueChangeResolution(ctx context.Context, id uint64, newResolution string)
 }
 
 func New(ir model.ItemReader, processor Processor, maxResolution int) *ItemsOptimizer {
@@ -36,41 +36,42 @@ func (d *ItemsOptimizer) EnqueueItemOptimizer() {
 }
 
 func (d *ItemsOptimizer) Run(ctx context.Context) error {
+	ctx = utils.ContextWithSubject(ctx, "items-optimizer")
 	for {
 		select {
 		case <-d.triggerChannel:
-			d.runItemsOptimizer()
+			d.runItemsOptimizer(ctx)
 		case <-ctx.Done():
 			return nil
 		}
 	}
 }
 
-func (d *ItemsOptimizer) runItemsOptimizer() {
+func (d *ItemsOptimizer) runItemsOptimizer(ctx context.Context) {
 	logger.Infof("ItemsOptimizer started")
-	if err := d.optimizeItems(); err != nil {
+	if err := d.optimizeItems(ctx); err != nil {
 		utils.LogError("Error in optimizeItems", err)
 	}
 	logger.Infof("ItemsOptimizer finished")
 }
 
-func (d *ItemsOptimizer) HandleItem(item *model.Item) {
+func (d *ItemsOptimizer) HandleItem(ctx context.Context, item *model.Item) {
 	if item.Height <= d.maxResolution {
 		return
 	}
 
 	logger.Infof("Item with high resolution %v", item.Title)
-	d.processor.EnqueueChangeResolution(item.Id, ffmpeg.NewResolution(-1, d.maxResolution).String())
+	d.processor.EnqueueChangeResolution(ctx, item.Id, ffmpeg.NewResolution(-1, d.maxResolution).String())
 }
 
-func (d *ItemsOptimizer) optimizeItems() error {
-	allItems, err := d.ir.GetAllItems()
+func (d *ItemsOptimizer) optimizeItems(ctx context.Context) error {
+	allItems, err := d.ir.GetAllItems(ctx)
 	if err != nil {
 		return err
 	}
 
 	for _, item := range *allItems {
-		d.HandleItem(&item)
+		d.HandleItem(ctx, &item)
 	}
 
 	return nil

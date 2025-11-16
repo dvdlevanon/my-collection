@@ -1,14 +1,15 @@
 package directorytree
 
 import (
+	"context"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
 	"os"
 	"strings"
 )
 
-func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*DirectoryNode, error) {
-	dirs, err := dr.GetAllDirectories()
+func BuildFromDb(ctx context.Context, dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*DirectoryNode, error) {
+	dirs, err := dr.GetAllDirectories(context.Background())
 	if err != nil {
 		return nil, err
 	}
@@ -23,7 +24,7 @@ func BuildFromDb(dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*Dir
 		child := root.getOrCreateChild(path)
 		child.Excluded = directories.IsExcluded(&dir)
 
-		if err := child.readFilesFromDb(dig); err != nil {
+		if err := child.readFilesFromDb(ctx, dig); err != nil {
 			logger.Errorf("Error reading files from db %s", err)
 		}
 	}
@@ -54,8 +55,8 @@ func (dn *DirectoryNode) getOrCreateChild(path string) *DirectoryNode {
 	return child.getOrCreateChild(remainingDirs)
 }
 
-func (dn *DirectoryNode) readFilesFromDb(dig model.DirectoryItemsGetter) error {
-	items, err := dig.GetBelongingItems(dn.getPath())
+func (dn *DirectoryNode) readFilesFromDb(ctx context.Context, dig model.DirectoryItemsGetter) error {
+	items, err := dig.GetBelongingItems(ctx, dn.getPath())
 	if err != nil {
 		return err
 	}

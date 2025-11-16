@@ -1,6 +1,7 @@
 package tags
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"my-collection/server/pkg/automix"
@@ -31,7 +32,7 @@ type tagsHandlerDb interface {
 }
 
 type tagsHandlerProcessor interface {
-	ProcessThumbnail(image *model.TagImage) error
+	ProcessThumbnail(ctx context.Context, image *model.TagImage) error
 }
 
 func NewHandler(db tagsHandlerDb, storage model.StorageUploader, processor tagsHandlerProcessor) *tagsHandler {
@@ -70,6 +71,7 @@ func (s *tagsHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *tagsHandler) createTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
 	if server.HandleError(c, err) {
 		return
@@ -80,7 +82,7 @@ func (s *tagsHandler) createTag(c *gin.Context) {
 		return
 	}
 
-	if server.HandleError(c, s.db.CreateOrUpdateTag(&tag)) {
+	if server.HandleError(c, s.db.CreateOrUpdateTag(ctx, &tag)) {
 		return
 	}
 
@@ -88,6 +90,7 @@ func (s *tagsHandler) createTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) updateTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -109,7 +112,7 @@ func (s *tagsHandler) updateTag(c *gin.Context) {
 	}
 
 	tag.Id = tagId
-	if server.HandleError(c, s.db.UpdateTag(&tag)) {
+	if server.HandleError(c, s.db.UpdateTag(ctx, &tag)) {
 		return
 	}
 
@@ -117,12 +120,13 @@ func (s *tagsHandler) updateTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) getTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	tag, err := s.db.GetTag(tagId)
+	tag, err := s.db.GetTag(ctx, tagId)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -131,12 +135,13 @@ func (s *tagsHandler) getTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) removeTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	if server.HandleError(c, s.db.RemoveTag(tagId)) {
+	if server.HandleError(c, s.db.RemoveTag(ctx, tagId)) {
 		return
 	}
 
@@ -144,7 +149,8 @@ func (s *tagsHandler) removeTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) getTags(c *gin.Context) {
-	tags, err := s.db.GetAllTags()
+	ctx := server.ContextWithSubject(c)
+	tags, err := s.db.GetAllTags(ctx)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -154,7 +160,8 @@ func (s *tagsHandler) getTags(c *gin.Context) {
 }
 
 func (s *tagsHandler) getCategories(c *gin.Context) {
-	categories, err := tags.GetCategories(s.db)
+	ctx := server.ContextWithSubject(c)
+	categories, err := tags.GetCategories(ctx, s.db)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -164,7 +171,8 @@ func (s *tagsHandler) getCategories(c *gin.Context) {
 }
 
 func (s *tagsHandler) getSpecialTags(c *gin.Context) {
-	tags, err := s.db.GetTagsWithoutChildren(
+	ctx := server.ContextWithSubject(c)
+	tags, err := s.db.GetTagsWithoutChildren(ctx,
 		directories.GetDirectoriesTagId(),
 		automix.GetDailymixTagId(),
 		mixondemand.GetMixOnDemandTagId(),
@@ -180,12 +188,13 @@ func (s *tagsHandler) getSpecialTags(c *gin.Context) {
 }
 
 func (s *tagsHandler) autoImage(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	tag, err := s.db.GetTag(tagId)
+	tag, err := s.db.GetTag(ctx, tagId)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -201,7 +210,7 @@ func (s *tagsHandler) autoImage(c *gin.Context) {
 		return
 	}
 
-	if server.HandleError(c, tags.AutoImageChildren(s.storage, s.db, s.db, tag, fileUrl.Url)) {
+	if server.HandleError(c, tags.AutoImageChildren(ctx, s.storage, s.db, s.db, tag, fileUrl.Url)) {
 		return
 	}
 
@@ -209,7 +218,8 @@ func (s *tagsHandler) autoImage(c *gin.Context) {
 }
 
 func (s *tagsHandler) getAllTagCustomCommands(c *gin.Context) {
-	commands, err := s.db.GetAllTagCustomCommands()
+	ctx := server.ContextWithSubject(c)
+	commands, err := s.db.GetAllTagCustomCommands(ctx)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -219,6 +229,7 @@ func (s *tagsHandler) getAllTagCustomCommands(c *gin.Context) {
 }
 
 func (s *tagsHandler) removeTagImageFromTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -229,7 +240,7 @@ func (s *tagsHandler) removeTagImageFromTag(c *gin.Context) {
 		return
 	}
 
-	if server.HandleError(c, tags.RemoveTagImages(s.db, tagId, titId)) {
+	if server.HandleError(c, tags.RemoveTagImages(ctx, s.db, tagId, titId)) {
 		return
 	}
 
@@ -237,6 +248,7 @@ func (s *tagsHandler) removeTagImageFromTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) updateTagImage(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -267,28 +279,29 @@ func (s *tagsHandler) updateTagImage(c *gin.Context) {
 		return
 	}
 
-	if server.HandleError(c, s.db.UpdateTagImage(&image)) {
+	if server.HandleError(c, s.db.UpdateTagImage(ctx, &image)) {
 		return
 	}
 
-	go s.processor.ProcessThumbnail(&image)
+	go s.processor.ProcessThumbnail(ctx, &image)
 	c.Status(http.StatusOK)
 }
 
 func (s *tagsHandler) randomMixExclude(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	tag, err := s.db.GetTag(tagId)
+	tag, err := s.db.GetTag(ctx, tagId)
 	if server.HandleError(c, err) {
 		return
 	}
 
 	noRandom := true
 	tag.NoRandom = &noRandom
-	if server.HandleError(c, s.db.UpdateTag(tag)) {
+	if server.HandleError(c, s.db.UpdateTag(ctx, tag)) {
 		return
 	}
 
@@ -296,19 +309,20 @@ func (s *tagsHandler) randomMixExclude(c *gin.Context) {
 }
 
 func (s *tagsHandler) randomMixInclude(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	tag, err := s.db.GetTag(tagId)
+	tag, err := s.db.GetTag(ctx, tagId)
 	if server.HandleError(c, err) {
 		return
 	}
 
 	noRandom := false
 	tag.NoRandom = &noRandom
-	if server.HandleError(c, s.db.UpdateTag(tag)) {
+	if server.HandleError(c, s.db.UpdateTag(ctx, tag)) {
 		return
 	}
 
@@ -316,6 +330,7 @@ func (s *tagsHandler) randomMixInclude(c *gin.Context) {
 }
 
 func (s *tagsHandler) addAnnotationToTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -332,7 +347,7 @@ func (s *tagsHandler) addAnnotationToTag(c *gin.Context) {
 		return
 	}
 
-	annotationId, err := tag_annotations.AddAnnotationToTag(s.db, s.db, tagId, annotation)
+	annotationId, err := tag_annotations.AddAnnotationToTag(ctx, s.db, s.db, tagId, annotation)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -341,6 +356,7 @@ func (s *tagsHandler) addAnnotationToTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) removeAnnotationFromTag(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
@@ -351,7 +367,7 @@ func (s *tagsHandler) removeAnnotationFromTag(c *gin.Context) {
 		return
 	}
 
-	if server.HandleError(c, s.db.RemoveTagAnnotationFromTag(tagId, annotationId)) {
+	if server.HandleError(c, s.db.RemoveTagAnnotationFromTag(ctx, tagId, annotationId)) {
 		return
 	}
 
@@ -359,12 +375,13 @@ func (s *tagsHandler) removeAnnotationFromTag(c *gin.Context) {
 }
 
 func (s *tagsHandler) getTagAvailableAnnotations(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	availableAnnotations, err := tag_annotations.GetTagAvailableAnnotations(s.db, s.db, tagId)
+	availableAnnotations, err := tag_annotations.GetTagAvailableAnnotations(ctx, s.db, s.db, tagId)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -373,7 +390,8 @@ func (s *tagsHandler) getTagAvailableAnnotations(c *gin.Context) {
 }
 
 func (s *tagsHandler) getTagImageTypes(c *gin.Context) {
-	tits, err := s.db.GetAllTagImageTypes()
+	ctx := server.ContextWithSubject(c)
+	tits, err := s.db.GetAllTagImageTypes(ctx)
 	if server.HandleError(c, err) {
 		return
 	}

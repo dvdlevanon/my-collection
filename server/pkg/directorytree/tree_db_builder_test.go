@@ -1,6 +1,7 @@
 package directorytree
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	"testing"
 
@@ -17,19 +18,19 @@ func buildTestDirectoryReader(ctrl *gomock.Controller, additionalDirs ...model.D
 		{Path: "1/2/3.2"},
 		{Path: "1/2"},
 	}, additionalDirs...)
-	dr.EXPECT().GetAllDirectories().Return(&dirs, nil)
+	dr.EXPECT().GetAllDirectories(gomock.Any()).Return(&dirs, nil)
 	return dr
 }
 
 func buildTestDirectoryItemsGetter(ctrl *gomock.Controller) *model.MockDirectoryItemsGetter {
 	dig := model.NewMockDirectoryItemsGetter(ctrl)
-	dig.EXPECT().GetBelongingItems("1").Return(&[]model.Item{}, nil)
-	dig.EXPECT().GetBelongingItems("1/2").Return(&[]model.Item{
+	dig.EXPECT().GetBelongingItems(context.Background(), "1").Return(&[]model.Item{}, nil)
+	dig.EXPECT().GetBelongingItems(context.Background(), "1/2").Return(&[]model.Item{
 		{Title: "file2-1"},
 	}, nil)
-	dig.EXPECT().GetBelongingItems("1/2/3.1").Return(&[]model.Item{}, nil)
-	dig.EXPECT().GetBelongingItems("1/2/3.2").Return(&[]model.Item{}, nil)
-	dig.EXPECT().GetBelongingItems("1/2/3/4").Return(&[]model.Item{
+	dig.EXPECT().GetBelongingItems(context.Background(), "1/2/3.1").Return(&[]model.Item{}, nil)
+	dig.EXPECT().GetBelongingItems(context.Background(), "1/2/3.2").Return(&[]model.Item{}, nil)
+	dig.EXPECT().GetBelongingItems(context.Background(), "1/2/3/4").Return(&[]model.Item{
 		{Title: "file4-1"},
 		{Title: "file4-2"},
 		{Title: "file4-3"},
@@ -42,7 +43,7 @@ func TestBuildFromDb(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
 
-	root, err := BuildFromDb(buildTestDirectoryReader(ctrl), buildTestDirectoryItemsGetter(ctrl))
+	root, err := BuildFromDb(context.Background(), buildTestDirectoryReader(ctrl), buildTestDirectoryItemsGetter(ctrl))
 	assert.NoError(t, err)
 	assert.NotNil(t, root)
 	assert.Equal(t, 3, len(root.getOrCreateChild("1/2/3/4").Files))

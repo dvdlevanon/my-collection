@@ -1,6 +1,7 @@
 package suggestions
 
 import (
+	"context"
 	"math/rand"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/bl/special_tags"
@@ -8,28 +9,28 @@ import (
 	"my-collection/server/pkg/model"
 )
 
-func GetSuggestionsForItem(ir model.ItemReader, tr model.TagReader, itemId uint64, count int) ([]*model.Item, error) {
-	item, err := ir.GetItem(itemId)
+func GetSuggestionsForItem(ctx context.Context, ir model.ItemReader, tr model.TagReader, itemId uint64, count int) ([]*model.Item, error) {
+	item, err := ir.GetItem(ctx, itemId)
 	if err != nil {
 		return nil, err
 	}
 
-	t, err := tags.GetFullTags(tr, item.Tags)
+	t, err := tags.GetFullTags(ctx, tr, item.Tags)
 	if err != nil {
 		return nil, err
 	}
 
-	return GetSuggestionsForTags(ir, tr, t, count)
+	return GetSuggestionsForTags(ctx, ir, tr, t, count)
 }
 
-func GetSuggestionsForTags(ir model.ItemReader, tr model.TagReader, tags *[]model.Tag, count int) ([]*model.Item, error) {
-	relatedItems, err := getItemsOfTags(ir, tags)
+func GetSuggestionsForTags(ctx context.Context, ir model.ItemReader, tr model.TagReader, tags *[]model.Tag, count int) ([]*model.Item, error) {
+	relatedItems, err := getItemsOfTags(ctx, ir, tags)
 	if err != nil {
 		return nil, err
 	}
 
 	if len(relatedItems) < count {
-		randomItems, err := items.GetRandomItems(ir, count-len(relatedItems), func(item *model.Item) bool {
+		randomItems, err := items.GetRandomItems(ctx, ir, count-len(relatedItems), func(item *model.Item) bool {
 			return !items.IsHighlight(item) && !items.IsSplittedItem(item)
 		})
 		if err != nil {
@@ -57,7 +58,7 @@ func GetSuggestionsForTags(ir model.ItemReader, tr model.TagReader, tags *[]mode
 	return result, nil
 }
 
-func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) {
+func getItemsOfTags(ctx context.Context, ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) {
 	relatedItems := make([]*model.Item, 0)
 
 	for _, tag := range *t {
@@ -65,7 +66,7 @@ func getItemsOfTags(ir model.ItemReader, t *[]model.Tag) ([]*model.Item, error) 
 			continue
 		}
 
-		tagItems, err := tags.GetItems(ir, &tag)
+		tagItems, err := tags.GetItems(ctx, ir, &tag)
 		if err != nil {
 			return nil, err
 		}

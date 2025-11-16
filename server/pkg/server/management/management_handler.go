@@ -2,6 +2,7 @@ package management
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -25,11 +26,11 @@ type managementDb interface {
 }
 
 type managementProcessor interface {
-	EnqueueAllItemsCovers(force bool) error
-	EnqueueAllItemsFileMetadata() error
-	EnqueueAllItemsPreview(force bool) error
-	EnqueueAllItemsVideoMetadata(force bool) error
-	GenerateMixOnDemand(ctg model.CurrentTimeGetter, desc string, tags []model.Tag) (*model.Tag, error)
+	EnqueueAllItemsCovers(ctx context.Context, force bool) error
+	EnqueueAllItemsFileMetadata(ctx context.Context) error
+	EnqueueAllItemsPreview(ctx context.Context, force bool) error
+	EnqueueAllItemsVideoMetadata(ctx context.Context, force bool) error
+	GenerateMixOnDemand(ctx context.Context, ctg model.CurrentTimeGetter, desc string, tags []model.Tag) (*model.Tag, error)
 	EnqueueItemOptimizer()
 	EnqueueSpecTagger()
 }
@@ -64,19 +65,20 @@ func (s *managementHandler) runSpecTagger(c *gin.Context) {
 }
 
 func (s *managementHandler) getStats(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	logger.Infof("Getting server stats")
 
-	itemsCount, err := s.db.GetItemsCount()
+	itemsCount, err := s.db.GetItemsCount(ctx)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	tagsCount, err := s.db.GetTagsCount()
+	tagsCount, err := s.db.GetTagsCount(ctx)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	totalDurationSeconds, err := s.db.GetTotalDurationSeconds()
+	totalDurationSeconds, err := s.db.GetTotalDurationSeconds(ctx)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -89,12 +91,13 @@ func (s *managementHandler) getStats(c *gin.Context) {
 }
 
 func (s *managementHandler) refreshItemsCovers(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	force, err := strconv.ParseBool(c.Query("force"))
 	if err != nil {
 		force = false
 	}
 
-	if server.HandleError(c, s.processor.EnqueueAllItemsCovers(force)) {
+	if server.HandleError(c, s.processor.EnqueueAllItemsCovers(ctx, force)) {
 		return
 	}
 
@@ -102,12 +105,13 @@ func (s *managementHandler) refreshItemsCovers(c *gin.Context) {
 }
 
 func (s *managementHandler) refreshItemsPreview(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	force, err := strconv.ParseBool(c.Query("force"))
 	if err != nil {
 		force = false
 	}
 
-	if server.HandleError(c, s.processor.EnqueueAllItemsPreview(force)) {
+	if server.HandleError(c, s.processor.EnqueueAllItemsPreview(ctx, force)) {
 		return
 	}
 
@@ -115,13 +119,14 @@ func (s *managementHandler) refreshItemsPreview(c *gin.Context) {
 }
 
 func (s *managementHandler) refreshItemsVideoMetadata(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	forceParam := c.Query("force")
 	force, err := strconv.ParseBool(forceParam)
 	if err != nil {
 		force = false
 	}
 
-	if server.HandleError(c, s.processor.EnqueueAllItemsVideoMetadata(force)) {
+	if server.HandleError(c, s.processor.EnqueueAllItemsVideoMetadata(ctx, force)) {
 		return
 	}
 
@@ -129,7 +134,8 @@ func (s *managementHandler) refreshItemsVideoMetadata(c *gin.Context) {
 }
 
 func (s *managementHandler) refreshItemsFileMetadata(c *gin.Context) {
-	if server.HandleError(c, s.processor.EnqueueAllItemsFileMetadata()) {
+	ctx := server.ContextWithSubject(c)
+	if server.HandleError(c, s.processor.EnqueueAllItemsFileMetadata(ctx)) {
 		return
 	}
 
@@ -142,8 +148,9 @@ func (s *managementHandler) runItemsOptimizer(c *gin.Context) {
 }
 
 func (s *managementHandler) exportMetadata(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	jsonBytes := bytes.Buffer{}
-	if server.HandleError(c, backup.Export(s.db, s.db, &jsonBytes)) {
+	if server.HandleError(c, backup.Export(ctx, s.db, s.db, &jsonBytes)) {
 		return
 	}
 
@@ -153,6 +160,7 @@ func (s *managementHandler) exportMetadata(c *gin.Context) {
 }
 
 func (s *managementHandler) generateMixOnDemand(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
 	if server.HandleError(c, err) {
 		return
@@ -169,7 +177,7 @@ func (s *managementHandler) generateMixOnDemand(c *gin.Context) {
 		return
 	}
 
-	result, err := s.processor.GenerateMixOnDemand(utils.NowTimeGetter{}, desc, tags)
+	result, err := s.processor.GenerateMixOnDemand(ctx, utils.NowTimeGetter{}, desc, tags)
 	if server.HandleError(c, err) {
 		return
 	}

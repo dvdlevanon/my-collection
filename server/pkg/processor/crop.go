@@ -1,6 +1,7 @@
 package processor
 
 import (
+	"context"
 	"fmt"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
@@ -9,8 +10,8 @@ import (
 	"time"
 )
 
-func cropFrame(irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, second float64, rectStr string) error {
-	item, err := irw.GetItem(id)
+func cropFrame(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, second float64, rectStr string) error {
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}

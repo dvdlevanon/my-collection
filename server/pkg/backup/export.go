@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"context"
 	"encoding/json"
 	"io"
 	"my-collection/server/pkg/model"
@@ -10,13 +11,13 @@ import (
 
 var logger = logging.MustGetLogger("backup")
 
-func Export(ir model.ItemReader, tr model.TagReader, w io.Writer) error {
-	items, err := ir.GetAllItems()
+func Export(ctx context.Context, ir model.ItemReader, tr model.TagReader, w io.Writer) error {
+	items, err := ir.GetAllItems(ctx)
 	if err != nil {
 		return err
 	}
 
-	tags, err := tr.GetAllTags()
+	tags, err := tr.GetAllTags(ctx)
 	if err != nil {
 		return err
 	}

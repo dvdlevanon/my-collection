@@ -1,20 +1,21 @@
 package processor
 
 import (
+	"context"
 	"my-collection/server/pkg/bl/items"
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 )
 
-func refreshItemMetadata(irw model.ItemReaderWriter, id uint64) error {
-	item, err := irw.GetItem(id)
+func refreshItemMetadata(ctx context.Context, irw model.ItemReaderWriter, id uint64) error {
+	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err
 	}
 
 	if items.IsSubItem(item) || items.IsHighlight(item) {
-		if err := updateNonMainItemMetadata(irw, item); err != nil {
+		if err := updateNonMainItemMetadata(ctx, irw, item); err != nil {
 			return err
 		}
 	} else {
@@ -23,13 +24,13 @@ func refreshItemMetadata(irw model.ItemReaderWriter, id uint64) error {
 		}
 	}
 
-	return irw.UpdateItem(item)
+	return irw.UpdateItem(ctx, item)
 }
 
-func updateNonMainItemMetadata(ir model.ItemReader, item *model.Item) error {
+func updateNonMainItemMetadata(ctx context.Context, ir model.ItemReader, item *model.Item) error {
 	item.DurationSeconds = item.EndPosition - item.StartPosition
 
-	mainItem, err := ir.GetItem(item.MainItemId)
+	mainItem, err := ir.GetItem(ctx, item.MainItemId)
 	if err != nil {
 		return err
 	}

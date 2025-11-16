@@ -2,6 +2,7 @@ package items
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -20,76 +21,76 @@ type MockItemsHandlerDb struct {
 	mock.Mock
 }
 
-func (m *MockItemsHandlerDb) GetItem(conds ...interface{}) (*model.Item, error) {
-	args := m.Called(conds...)
+func (m *MockItemsHandlerDb) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Item), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetItems(conds ...interface{}) (*[]model.Item, error) {
-	args := m.Called(conds...)
+func (m *MockItemsHandlerDb) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Item), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetAllItems() (*[]model.Item, error) {
-	args := m.Called()
+func (m *MockItemsHandlerDb) GetAllItems(ctx context.Context) (*[]model.Item, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Item), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) CreateOrUpdateItem(item *model.Item) error {
-	args := m.Called(item)
+func (m *MockItemsHandlerDb) CreateOrUpdateItem(ctx context.Context, item *model.Item) error {
+	args := m.Called(ctx, item)
 	return args.Error(0)
 }
 
-func (m *MockItemsHandlerDb) UpdateItem(item *model.Item) error {
-	args := m.Called(item)
+func (m *MockItemsHandlerDb) UpdateItem(ctx context.Context, item *model.Item) error {
+	args := m.Called(ctx, item)
 	return args.Error(0)
 }
 
-func (m *MockItemsHandlerDb) RemoveItem(itemId uint64) error {
-	args := m.Called(itemId)
+func (m *MockItemsHandlerDb) RemoveItem(ctx context.Context, itemId uint64) error {
+	args := m.Called(ctx, itemId)
 	return args.Error(0)
 }
 
-func (m *MockItemsHandlerDb) RemoveTagFromItem(itemId uint64, tagId uint64) error {
-	args := m.Called(itemId, tagId)
+func (m *MockItemsHandlerDb) RemoveTagFromItem(ctx context.Context, itemId uint64, tagId uint64) error {
+	args := m.Called(ctx, itemId, tagId)
 	return args.Error(0)
 }
 
-func (m *MockItemsHandlerDb) GetTag(conds ...interface{}) (*model.Tag, error) {
-	args := m.Called(conds...)
+func (m *MockItemsHandlerDb) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Tag), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetTags(conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(conds...)
+func (m *MockItemsHandlerDb) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetAllTags() (*[]model.Tag, error) {
-	args := m.Called()
+func (m *MockItemsHandlerDb) GetAllTags(ctx context.Context) (*[]model.Tag, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(conds...)
+func (m *MockItemsHandlerDb) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -101,28 +102,28 @@ type MockItemsHandlerProcessor struct {
 	mock.Mock
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemVideoMetadata(id uint64) {
-	m.Called(id)
+func (m *MockItemsHandlerProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64) {
+	m.Called(ctx, id)
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemCovers(id uint64) {
-	m.Called(id)
+func (m *MockItemsHandlerProcessor) EnqueueItemCovers(ctx context.Context, id uint64) {
+	m.Called(ctx, id)
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueCropFrame(id uint64, second float64, rect model.RectFloat) {
-	m.Called(id, second, rect)
+func (m *MockItemsHandlerProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat) {
+	m.Called(ctx, id, second, rect)
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemPreview(id uint64) {
-	m.Called(id)
+func (m *MockItemsHandlerProcessor) EnqueueItemPreview(ctx context.Context, id uint64) {
+	m.Called(ctx, id)
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemFileMetadata(id uint64) {
-	m.Called(id)
+func (m *MockItemsHandlerProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64) {
+	m.Called(ctx, id)
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueMainCover(id uint64, second float64) {
-	m.Called(id, second)
+func (m *MockItemsHandlerProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64) {
+	m.Called(ctx, id, second)
 }
 
 // MockItemsHandlerOptimizer is a mock implementation of itemsHandlerOptimizer interface
@@ -130,8 +131,8 @@ type MockItemsHandlerOptimizer struct {
 	mock.Mock
 }
 
-func (m *MockItemsHandlerOptimizer) HandleItem(item *model.Item) {
-	m.Called(item)
+func (m *MockItemsHandlerOptimizer) HandleItem(ctx context.Context, item *model.Item) {
+	m.Called(ctx, item)
 }
 
 // Test setup helper
@@ -167,7 +168,7 @@ func TestGetItems(t *testing.T) {
 			{Id: 2, Title: "Item 2", Origin: "/path/to/item2"},
 		}
 
-		mockDb.On("GetAllItems").Return(expectedItems, nil)
+		mockDb.On("GetAllItems", mock.Anything).Return(expectedItems, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/items", nil)
@@ -188,7 +189,7 @@ func TestGetItems(t *testing.T) {
 		handler, mockDb, _, _ := setupTestHandler()
 		router := setupTestRouter(handler)
 
-		mockDb.On("GetAllItems").Return(nil, fmt.Errorf("database error"))
+		mockDb.On("GetAllItems", mock.Anything).Return(nil, fmt.Errorf("database error"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/items", nil)
@@ -211,12 +212,12 @@ func TestCreateItem(t *testing.T) {
 			Url:    "/absolute/path/to/item/file.mp4",
 		}
 
-		mockDb.On("CreateOrUpdateItem", mock.MatchedBy(func(item *model.Item) bool {
+		mockDb.On("CreateOrUpdateItem", mock.Anything, mock.MatchedBy(func(item *model.Item) bool {
 			return item.Title == inputItem.Title &&
 				item.Origin != "" && // Should be relativized
 				item.Url != "" // Should be relativized
 		})).Run(func(args mock.Arguments) {
-			item := args.Get(0).(*model.Item)
+			item := args.Get(1).(*model.Item)
 			item.Id = 123 // Simulate DB assigning ID
 		}).Return(nil)
 
@@ -251,7 +252,7 @@ func TestCreateItem(t *testing.T) {
 			Origin: "/path/to/item",
 		}
 
-		mockDb.On("CreateOrUpdateItem", mock.AnythingOfType("*model.Item")).Return(fmt.Errorf("database error"))
+		mockDb.On("CreateOrUpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(fmt.Errorf("database error"))
 
 		jsonBody, _ := json.Marshal(inputItem)
 		w := httptest.NewRecorder()
@@ -277,7 +278,7 @@ func TestUpdateItem(t *testing.T) {
 			Origin: "/path/to/item",
 		}
 
-		mockDb.On("UpdateItem", mock.MatchedBy(func(item *model.Item) bool {
+		mockDb.On("UpdateItem", mock.Anything, mock.MatchedBy(func(item *model.Item) bool {
 			return item.Id == itemId && item.Title == inputItem.Title
 		})).Return(nil)
 
@@ -331,7 +332,7 @@ func TestGetItem(t *testing.T) {
 			Origin: "/path/to/item",
 		}
 
-		mockDb.On("GetItem", itemId).Return(expectedItem, nil)
+		mockDb.On("GetItem", mock.Anything, itemId).Return(expectedItem, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d", itemId), nil)
@@ -349,7 +350,7 @@ func TestGetItem(t *testing.T) {
 
 	t.Run("Item Not Found", func(t *testing.T) {
 		itemId := uint64(999)
-		mockDb.On("GetItem", itemId).Return(nil, fmt.Errorf("item not found"))
+		mockDb.On("GetItem", mock.Anything, itemId).Return(nil, fmt.Errorf("item not found"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d", itemId), nil)
@@ -376,7 +377,7 @@ func TestDeleteItem(t *testing.T) {
 	t.Run("Success Without Deleting Real File", func(t *testing.T) {
 		itemId := uint64(123)
 
-		mockDb.On("RemoveItem", itemId).Return(nil)
+		mockDb.On("RemoveItem", mock.Anything, itemId).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/items/%d?deleteRealFile=false", itemId), nil)
@@ -396,8 +397,8 @@ func TestDeleteItem(t *testing.T) {
 			Url:    "/tmp/test.mp4",
 		}
 
-		mockDb.On("GetItem", itemId).Return(testItem, nil)
-		mockDb.On("RemoveItem", itemId).Return(nil)
+		mockDb.On("GetItem", mock.Anything, itemId).Return(testItem, nil)
+		mockDb.On("RemoveItem", mock.Anything, itemId).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/items/%d?deleteRealFile=true", itemId), nil)
@@ -425,7 +426,7 @@ func TestDeleteItem(t *testing.T) {
 
 		itemId := uint64(123)
 
-		mockDb.On("RemoveItem", itemId).Return(fmt.Errorf("database error"))
+		mockDb.On("RemoveItem", mock.Anything, itemId).Return(fmt.Errorf("database error"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/items/%d?deleteRealFile=false", itemId), nil)
@@ -450,7 +451,7 @@ func TestGetItemLocation(t *testing.T) {
 			Url:    "/relative/path/test.mp4",
 		}
 
-		mockDb.On("GetItem", itemId).Return(testItem, nil)
+		mockDb.On("GetItem", mock.Anything, itemId).Return(testItem, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d/location", itemId), nil)
@@ -468,7 +469,7 @@ func TestGetItemLocation(t *testing.T) {
 
 	t.Run("Item Not Found", func(t *testing.T) {
 		itemId := uint64(999)
-		mockDb.On("GetItem", itemId).Return(nil, fmt.Errorf("item not found"))
+		mockDb.On("GetItem", mock.Anything, itemId).Return(nil, fmt.Errorf("item not found"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d/location", itemId), nil)
@@ -488,7 +489,7 @@ func TestRemoveTagFromItem(t *testing.T) {
 		itemId := uint64(123)
 		tagId := uint64(456)
 
-		mockDb.On("RemoveTagFromItem", itemId, tagId).Return(nil)
+		mockDb.On("RemoveTagFromItem", mock.Anything, itemId, tagId).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/remove-tag/%d", itemId, tagId), nil)
@@ -507,7 +508,7 @@ func TestRemoveTagFromItem(t *testing.T) {
 		itemId := uint64(123)
 		tagId := uint64(456)
 
-		mockDb.On("RemoveTagFromItem", itemId, tagId).Return(fmt.Errorf("database error"))
+		mockDb.On("RemoveTagFromItem", mock.Anything, itemId, tagId).Return(fmt.Errorf("database error"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/remove-tag/%d", itemId, tagId), nil)
@@ -543,7 +544,7 @@ func TestSetMainCover(t *testing.T) {
 		itemId := uint64(123)
 		second := 5.5
 
-		mockProcessor.On("EnqueueMainCover", itemId, second).Return()
+		mockProcessor.On("EnqueueMainCover", mock.Anything, itemId, second).Return()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/main-cover?second=%f", itemId, second), nil)
@@ -580,10 +581,10 @@ func TestRefreshItem(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		itemId := uint64(123)
 
-		mockProcessor.On("EnqueueItemVideoMetadata", itemId).Return()
-		mockProcessor.On("EnqueueItemCovers", itemId).Return()
-		mockProcessor.On("EnqueueItemPreview", itemId).Return()
-		mockProcessor.On("EnqueueItemFileMetadata", itemId).Return()
+		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, itemId).Return()
+		mockProcessor.On("EnqueueItemCovers", mock.Anything, itemId).Return()
+		mockProcessor.On("EnqueueItemPreview", mock.Anything, itemId).Return()
+		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, itemId).Return()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/process", itemId), nil)
@@ -615,8 +616,8 @@ func TestOptimizeItem(t *testing.T) {
 			Origin: "/path/to/item",
 		}
 
-		mockDb.On("GetItem", itemId).Return(testItem, nil)
-		mockOptimizer.On("HandleItem", testItem).Return()
+		mockDb.On("GetItem", mock.Anything, itemId).Return(testItem, nil)
+		mockOptimizer.On("HandleItem", mock.Anything, testItem).Return()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/optimize", itemId), nil)
@@ -630,7 +631,7 @@ func TestOptimizeItem(t *testing.T) {
 
 	t.Run("Item Not Found", func(t *testing.T) {
 		itemId := uint64(999)
-		mockDb.On("GetItem", itemId).Return(nil, fmt.Errorf("item not found"))
+		mockDb.On("GetItem", mock.Anything, itemId).Return(nil, fmt.Errorf("item not found"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/optimize", itemId), nil)
@@ -661,7 +662,7 @@ func TestCropFrame(t *testing.T) {
 			H: cropHeight,
 		}
 
-		mockProcessor.On("EnqueueCropFrame", itemId, second, expectedRect).Return()
+		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect).Return()
 
 		url := fmt.Sprintf("/api/items/%d/crop-frame?second=%f&crop-x=%f&crop-y=%f&crop-width=%f&crop-height=%f",
 			itemId, second, cropX, cropY, cropWidth, cropHeight)
@@ -724,15 +725,15 @@ func TestSplitItem(t *testing.T) {
 			DurationSeconds: 100.0,
 		}
 
-		mockDb.On("GetItem", itemId).Return(mainItem, nil)
+		mockDb.On("GetItem", mock.Anything, itemId).Return(mainItem, nil)
 		// Mock additional calls that Split might make
-		mockDb.On("CreateOrUpdateItem", mock.AnythingOfType("*model.Item")).Return(nil)
-		mockDb.On("UpdateItem", mock.AnythingOfType("*model.Item")).Return(nil)
+		mockDb.On("CreateOrUpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(nil)
+		mockDb.On("UpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(nil)
 
 		// Mock processor calls for the result items
-		mockProcessor.On("EnqueueItemVideoMetadata", mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemCovers", mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemFileMetadata", mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemCovers", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/split?second=%f", itemId, second), nil)
@@ -788,15 +789,15 @@ func TestMakeHighlight(t *testing.T) {
 			Origin:          "/path/to/item",
 		}
 
-		mockDb.On("GetItem", itemId).Return(mainItem, nil)
-		mockDb.On("CreateOrUpdateItem", mock.AnythingOfType("*model.Item")).Return(nil)
-		mockDb.On("UpdateItem", mock.AnythingOfType("*model.Item")).Return(nil)
+		mockDb.On("GetItem", mock.Anything, itemId).Return(mainItem, nil)
+		mockDb.On("CreateOrUpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(nil)
+		mockDb.On("UpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(nil)
 
 		// Mock processor calls for the highlight (use flexible matching since the ID might be different)
-		mockProcessor.On("EnqueueItemVideoMetadata", mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemCovers", mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemPreview", mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemFileMetadata", mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemCovers", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemPreview", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
 
 		url := fmt.Sprintf("/api/items/%d/make-highlight?start=%f&end=%f&highlight-id=%d",
 			itemId, startSecond, endSecond, highlightId)
@@ -867,8 +868,8 @@ func TestGetSuggestionsForItem(t *testing.T) {
 			{Id: 9, Title: "item9.mp4", Tags: []*model.Tag{}},
 		}
 
-		mockDb.On("GetItem", itemId).Return(testItem, nil)
-		mockDb.On("GetAllItems").Return(allItems, nil)
+		mockDb.On("GetItem", mock.Anything, itemId).Return(testItem, nil)
+		mockDb.On("GetAllItems", mock.Anything).Return(allItems, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d/suggestions", itemId), nil)
@@ -898,7 +899,7 @@ func TestErrorHandling(t *testing.T) {
 	router := setupTestRouter(handler)
 
 	t.Run("Database Connection Error", func(t *testing.T) {
-		mockDb.On("GetAllItems").Return(nil, fmt.Errorf("connection refused"))
+		mockDb.On("GetAllItems", mock.Anything).Return(nil, fmt.Errorf("connection refused"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/items", nil)
@@ -925,7 +926,7 @@ func TestEdgeCases(t *testing.T) {
 
 	t.Run("Large Item ID", func(t *testing.T) {
 		itemId := uint64(18446744073709551615) // Max uint64
-		mockDb.On("GetItem", itemId).Return(nil, fmt.Errorf("item not found"))
+		mockDb.On("GetItem", mock.Anything, itemId).Return(nil, fmt.Errorf("item not found"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d", itemId), nil)
@@ -937,7 +938,7 @@ func TestEdgeCases(t *testing.T) {
 
 	t.Run("Zero Item ID", func(t *testing.T) {
 		itemId := uint64(0)
-		mockDb.On("GetItem", itemId).Return(nil, fmt.Errorf("item not found"))
+		mockDb.On("GetItem", mock.Anything, itemId).Return(nil, fmt.Errorf("item not found"))
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", fmt.Sprintf("/api/items/%d", itemId), nil)
@@ -949,7 +950,7 @@ func TestEdgeCases(t *testing.T) {
 
 	t.Run("Empty Item Creation", func(t *testing.T) {
 		emptyItem := model.Item{}
-		mockDb.On("CreateOrUpdateItem", mock.AnythingOfType("*model.Item")).Return(fmt.Errorf("validation error"))
+		mockDb.On("CreateOrUpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(fmt.Errorf("validation error"))
 
 		jsonBody, _ := json.Marshal(emptyItem)
 		w := httptest.NewRecorder()
@@ -966,7 +967,7 @@ func TestEdgeCases(t *testing.T) {
 		second := 5.5
 		expectedRect := model.RectFloat{X: 0, Y: 0, W: 0, H: 0}
 
-		mockProcessor.On("EnqueueCropFrame", itemId, second, expectedRect).Return()
+		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect).Return()
 
 		url := fmt.Sprintf("/api/items/%d/crop-frame?second=%f&crop-x=0&crop-y=0&crop-width=0&crop-height=0",
 			itemId, second)
@@ -984,7 +985,7 @@ func TestEdgeCases(t *testing.T) {
 		second := 5.5
 		expectedRect := model.RectFloat{X: -10, Y: -20, W: -100, H: -200}
 
-		mockProcessor.On("EnqueueCropFrame", itemId, second, expectedRect).Return()
+		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect).Return()
 
 		url := fmt.Sprintf("/api/items/%d/crop-frame?second=%f&crop-x=-10&crop-y=-20&crop-width=-100&crop-height=-200",
 			itemId, second)
@@ -1012,7 +1013,7 @@ func TestConcurrentAccess(t *testing.T) {
 				{Id: 2, Title: "Item 2"},
 			}
 
-			mockDb.On("GetAllItems").Return(expectedItems, nil)
+			mockDb.On("GetAllItems", mock.Anything).Return(expectedItems, nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("GET", "/api/items", nil)
@@ -1034,7 +1035,7 @@ func BenchmarkGetItems(b *testing.B) {
 		{Id: 2, Title: "Item 2"},
 	}
 
-	mockDb.On("GetAllItems").Return(expectedItems, nil)
+	mockDb.On("GetAllItems", mock.Anything).Return(expectedItems, nil)
 
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {

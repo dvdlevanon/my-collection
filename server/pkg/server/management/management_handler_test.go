@@ -2,6 +2,7 @@ package management
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
@@ -20,74 +21,74 @@ type MockManagementDb struct {
 	mock.Mock
 }
 
-func (m *MockManagementDb) GetAllItems() (*[]model.Item, error) {
-	args := m.Called()
+func (m *MockManagementDb) GetAllItems(ctx context.Context) (*[]model.Item, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Item), args.Error(1)
 }
 
-func (m *MockManagementDb) GetItem(conds ...interface{}) (*model.Item, error) {
-	args := m.Called(conds)
+func (m *MockManagementDb) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Item), args.Error(1)
 }
 
-func (m *MockManagementDb) GetItems(conds ...interface{}) (*[]model.Item, error) {
-	args := m.Called(conds)
+func (m *MockManagementDb) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Item), args.Error(1)
 }
 
-func (m *MockManagementDb) GetItemsCount() (int64, error) {
-	args := m.Called()
+func (m *MockManagementDb) GetItemsCount(ctx context.Context) (int64, error) {
+	args := m.Called(ctx)
 	return args.Get(0).(int64), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTotalDurationSeconds() (float64, error) {
-	args := m.Called()
+func (m *MockManagementDb) GetTotalDurationSeconds(ctx context.Context) (float64, error) {
+	args := m.Called(ctx)
 	return args.Get(0).(float64), args.Error(1)
 }
 
-func (m *MockManagementDb) GetAllTags() (*[]model.Tag, error) {
-	args := m.Called()
+func (m *MockManagementDb) GetAllTags(ctx context.Context) (*[]model.Tag, error) {
+	args := m.Called(ctx)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTag(conds ...interface{}) (*model.Tag, error) {
-	args := m.Called(conds)
+func (m *MockManagementDb) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTags(conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(conds)
+func (m *MockManagementDb) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(conds)
+func (m *MockManagementDb) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+	args := m.Called(append([]interface{}{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTagsCount() (int64, error) {
-	args := m.Called()
+func (m *MockManagementDb) GetTagsCount(ctx context.Context) (int64, error) {
+	args := m.Called(ctx)
 	return args.Get(0).(int64), args.Error(1)
 }
 
@@ -96,28 +97,28 @@ type MockManagementProcessor struct {
 	mock.Mock
 }
 
-func (m *MockManagementProcessor) EnqueueAllItemsCovers(force bool) error {
-	args := m.Called(force)
+func (m *MockManagementProcessor) EnqueueAllItemsCovers(ctx context.Context, force bool) error {
+	args := m.Called(ctx, force)
 	return args.Error(0)
 }
 
-func (m *MockManagementProcessor) EnqueueAllItemsFileMetadata() error {
-	args := m.Called()
+func (m *MockManagementProcessor) EnqueueAllItemsFileMetadata(ctx context.Context) error {
+	args := m.Called(ctx)
 	return args.Error(0)
 }
 
-func (m *MockManagementProcessor) EnqueueAllItemsPreview(force bool) error {
-	args := m.Called(force)
+func (m *MockManagementProcessor) EnqueueAllItemsPreview(ctx context.Context, force bool) error {
+	args := m.Called(ctx, force)
 	return args.Error(0)
 }
 
-func (m *MockManagementProcessor) EnqueueAllItemsVideoMetadata(force bool) error {
-	args := m.Called(force)
+func (m *MockManagementProcessor) EnqueueAllItemsVideoMetadata(ctx context.Context, force bool) error {
+	args := m.Called(ctx, force)
 	return args.Error(0)
 }
 
-func (m *MockManagementProcessor) GenerateMixOnDemand(ctg model.CurrentTimeGetter, desc string, tags []model.Tag) (*model.Tag, error) {
-	args := m.Called(ctg, desc, tags)
+func (m *MockManagementProcessor) GenerateMixOnDemand(ctx context.Context, ctg model.CurrentTimeGetter, desc string, tags []model.Tag) (*model.Tag, error) {
+	args := m.Called(ctx, ctg, desc, tags)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -155,9 +156,9 @@ func TestManagementGetStats(t *testing.T) {
 	router := setupManagementTestRouter(handler)
 
 	t.Run("Success", func(t *testing.T) {
-		mockDb.On("GetItemsCount").Return(int64(100), nil)
-		mockDb.On("GetTagsCount").Return(int64(50), nil)
-		mockDb.On("GetTotalDurationSeconds").Return(3600.5, nil)
+		mockDb.On("GetItemsCount", mock.Anything).Return(int64(100), nil)
+		mockDb.On("GetTagsCount", mock.Anything).Return(int64(50), nil)
+		mockDb.On("GetTotalDurationSeconds", mock.Anything).Return(3600.5, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/stats", nil)
@@ -180,7 +181,7 @@ func TestManagementGetStats(t *testing.T) {
 		handler, mockDb, _ := setupManagementTestHandler()
 		router := setupManagementTestRouter(handler)
 
-		mockDb.On("GetItemsCount").Return(int64(0), assert.AnError)
+		mockDb.On("GetItemsCount", mock.Anything).Return(int64(0), assert.AnError)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/stats", nil)
@@ -198,7 +199,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 		router := setupManagementTestRouter(handler)
 
 		t.Run("With Force=true", func(t *testing.T) {
-			mockProcessor.On("EnqueueAllItemsCovers", true).Return(nil)
+			mockProcessor.On("EnqueueAllItemsCovers", mock.Anything, true).Return(nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/api/items/refresh-covers?force=true", nil)
@@ -212,7 +213,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 			handler, _, mockProcessor := setupManagementTestHandler()
 			router := setupManagementTestRouter(handler)
 
-			mockProcessor.On("EnqueueAllItemsCovers", false).Return(nil)
+			mockProcessor.On("EnqueueAllItemsCovers", mock.Anything, false).Return(nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/api/items/refresh-covers?force=false", nil)
@@ -226,7 +227,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 			handler, _, mockProcessor := setupManagementTestHandler()
 			router := setupManagementTestRouter(handler)
 
-			mockProcessor.On("EnqueueAllItemsCovers", false).Return(nil)
+			mockProcessor.On("EnqueueAllItemsCovers", mock.Anything, false).Return(nil)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/api/items/refresh-covers", nil)
@@ -240,7 +241,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 			handler, _, mockProcessor := setupManagementTestHandler()
 			router := setupManagementTestRouter(handler)
 
-			mockProcessor.On("EnqueueAllItemsCovers", false).Return(assert.AnError)
+			mockProcessor.On("EnqueueAllItemsCovers", mock.Anything, false).Return(assert.AnError)
 
 			w := httptest.NewRecorder()
 			req, _ := http.NewRequest("POST", "/api/items/refresh-covers", nil)
@@ -255,7 +256,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 		handler, _, mockProcessor := setupManagementTestHandler()
 		router := setupManagementTestRouter(handler)
 
-		mockProcessor.On("EnqueueAllItemsPreview", true).Return(nil)
+		mockProcessor.On("EnqueueAllItemsPreview", mock.Anything, true).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/items/refresh-preview?force=true", nil)
@@ -269,7 +270,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 		handler, _, mockProcessor := setupManagementTestHandler()
 		router := setupManagementTestRouter(handler)
 
-		mockProcessor.On("EnqueueAllItemsVideoMetadata", false).Return(nil)
+		mockProcessor.On("EnqueueAllItemsVideoMetadata", mock.Anything, false).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/items/refresh-video-metadata", nil)
@@ -283,7 +284,7 @@ func TestManagementRefreshOperations(t *testing.T) {
 		handler, _, mockProcessor := setupManagementTestHandler()
 		router := setupManagementTestRouter(handler)
 
-		mockProcessor.On("EnqueueAllItemsFileMetadata").Return(nil)
+		mockProcessor.On("EnqueueAllItemsFileMetadata", mock.Anything).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/items/refresh-file-metadata", nil)
@@ -337,7 +338,7 @@ func TestManagementGenerateMixOnDemand(t *testing.T) {
 		}
 
 		expectedTag := &model.Tag{Id: 123, Title: "generated-mix"}
-		mockProcessor.On("GenerateMixOnDemand", mock.AnythingOfType("utils.NowTimeGetter"), "My Mix", tags).Return(expectedTag, nil)
+		mockProcessor.On("GenerateMixOnDemand", mock.Anything, mock.AnythingOfType("utils.NowTimeGetter"), "My Mix", tags).Return(expectedTag, nil)
 
 		body, _ := json.Marshal(tags)
 		w := httptest.NewRecorder()
@@ -378,7 +379,7 @@ func TestManagementGenerateMixOnDemand(t *testing.T) {
 
 	t.Run("Processor Error", func(t *testing.T) {
 		tags := []model.Tag{{Id: 1, Title: "rock"}}
-		mockProcessor.On("GenerateMixOnDemand", mock.AnythingOfType("utils.NowTimeGetter"), "My Mix", tags).Return(nil, assert.AnError)
+		mockProcessor.On("GenerateMixOnDemand", mock.Anything, mock.AnythingOfType("utils.NowTimeGetter"), "My Mix", tags).Return(nil, assert.AnError)
 
 		body, _ := json.Marshal(tags)
 		w := httptest.NewRecorder()
@@ -398,8 +399,8 @@ func TestManagementExportMetadata(t *testing.T) {
 
 	t.Run("Success", func(t *testing.T) {
 		// Mock the backup.Export function by setting up the required data
-		mockDb.On("GetAllItems").Return(&[]model.Item{{Id: 1, Title: "test.mp4"}}, nil)
-		mockDb.On("GetAllTags").Return(&[]model.Tag{{Id: 1, Title: "test-tag"}}, nil)
+		mockDb.On("GetAllItems", mock.Anything).Return(&[]model.Item{{Id: 1, Title: "test.mp4"}}, nil)
+		mockDb.On("GetAllTags", mock.Anything).Return(&[]model.Tag{{Id: 1, Title: "test-tag"}}, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("GET", "/api/export-metadata.json", nil)
