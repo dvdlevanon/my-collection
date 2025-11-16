@@ -500,9 +500,7 @@ func TestRenameDirs_Success(t *testing.T) {
 	dirTag := createTestTag(1, "new-dir", nil)
 	dirTag.Items = []*model.Item{} // Empty items list
 	mockTRW.EXPECT().GetTag(gomock.Any()).Return(dirTag, nil)
-	// Even with empty items, GetItems([]) is still called
-	emptyItems := &[]model.Item{}
-	mockIRW.EXPECT().GetItems([]uint64{}).Return(emptyItems, nil)
+	// Note: GetItems is not called when items list is empty because dbBelongingItemDbReader.GetItems returns early
 
 	errs := renameDirs(mockTRW, mockDRW, mockIRW, changes)
 
@@ -583,9 +581,7 @@ func TestSyncAutoTags_Success(t *testing.T) {
 		tag := createTestTag(uint64(i+1), dir.Path, nil)
 		tag.Items = []*model.Item{} // Empty items list
 		mockTR.EXPECT().GetTag(gomock.Any()).Return(tag, nil)
-		// Even with empty items, GetItems([]) is still called in getItems
-		emptyItems := &[]model.Item{}
-		mockIRW.EXPECT().GetItems([]uint64{}).Return(emptyItems, nil)
+		// Note: GetItems is not called when items list is empty because dbBelongingItemDbReader.GetItems returns early
 	}
 
 	_, errs := syncAutoTags(mockTR, mockIRW, mockDR, mockDATG)
