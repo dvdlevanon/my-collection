@@ -30,7 +30,7 @@ func run() error {
 		return err
 	}
 
-	db, err := db.New(*dbFile)
+	db, err := db.New(*dbFile, false)
 	if err != nil {
 		return err
 	}

@@ -45,7 +45,7 @@ func NewIntegrationTestFramework(t *testing.T) *IntegrationTestFramework {
 	require.NoError(t, os.Mkdir(rootDir, 0755))
 
 	dbFile := filepath.Join(tempDir, "test.db")
-	database, err := db.New(dbFile)
+	database, err := db.New(dbFile, false)
 	require.NoError(t, err)
 
 	// Initialize relativasor with our test directory

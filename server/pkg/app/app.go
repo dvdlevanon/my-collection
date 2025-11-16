@@ -62,7 +62,7 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 
 	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(filepath.Join(dataDir, "db.sqlite"))
+	db, err := db.New(filepath.Join(dataDir, "db.sqlite"), true)
 	if err != nil {
 		return err
 	}

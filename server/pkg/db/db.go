@@ -15,60 +15,13 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 )
 
-var logger = logging.MustGetLogger("server")
-
-type Database interface {
-	CreateOrUpdateDirectory(directory *model.Directory) error
-	UpdateDirectory(directory *model.Directory) error
-	RemoveDirectory(path string) error
-	RemoveTagFromDirectory(direcotryPath string, tagId uint64) error
-	getDirectoryModel() *gorm.DB
-	GetDirectory(conds ...interface{}) (*model.Directory, error)
-	GetDirectories(conds ...interface{}) (*[]model.Directory, error)
-	GetAllDirectories() (*[]model.Directory, error)
-	CreateOrUpdateItem(item *model.Item) error
-	UpdateItem(item *model.Item) error
-	RemoveItem(itemId uint64) error
-	RemoveTagFromItem(itemId uint64, tagId uint64) error
-	GetItem(conds ...interface{}) (*model.Item, error)
-	GetItems(conds ...interface{}) (*[]model.Item, error)
-	GetAllItems() (*[]model.Item, error)
-	GetItemsCount() (int64, error)
-	GetTotalDurationSeconds() (float64, error)
-	CreateTagAnnotation(tagAnnotation *model.TagAnnotation) error
-	RemoveTag(tagId uint64) error
-	RemoveTagAnnotationFromTag(tagId uint64, annotationId uint64) error
-	GetTagAnnotation(conds ...interface{}) (*model.TagAnnotation, error)
-	GetTagAnnotations(tagId uint64) ([]model.TagAnnotation, error)
-	CreateOrUpdateTagImageType(tit *model.TagImageType) error
-	GetTagImageType(conds ...interface{}) (*model.TagImageType, error)
-	GetTagImageTypes(conds ...interface{}) (*[]model.TagImageType, error)
-	GetAllTagImageTypes() (*[]model.TagImageType, error)
-	CreateOrUpdateTagCustomCommand(command *model.TagCustomCommand) error
-	GetTagCustomCommand(conds ...interface{}) (*[]model.TagCustomCommand, error)
-	GetAllTagCustomCommands() (*[]model.TagCustomCommand, error)
-	CreateOrUpdateTag(tag *model.Tag) error
-	UpdateTag(tag *model.Tag) error
-	getTagModel(withChildren bool) *gorm.DB
-	GetTag(conds ...interface{}) (*model.Tag, error)
-	GetTagsWithoutChildren(conds ...interface{}) (*[]model.Tag, error)
-	GetTags(conds ...interface{}) (*[]model.Tag, error)
-	GetAllTags() (*[]model.Tag, error)
-	RemoveTagImageFromTag(tagId uint64, imageId uint64) error
-	UpdateTagImage(image *model.TagImage) error
-	GetTagsCount() (int64, error)
-	CreateTask(task *model.Task) error
-	UpdateTask(task *model.Task) error
-	RemoveTasks(conds ...interface{}) error
-	TasksCount(query interface{}, conds ...interface{}) (int64, error)
-	GetTasks(offset int, limit int) (*[]model.Task, error)
-}
+var logger = logging.MustGetLogger("db")
 
 type databaseImpl struct {
 	db *gorm.DB
 }
 
-func New(dbfile string) (*databaseImpl, error) {
+func New(dbfile string, shouldLog bool) (Database, error) {
 	newLogger := gormlogger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		gormlogger.Config{
@@ -124,9 +77,16 @@ func New(dbfile string) (*databaseImpl, error) {
 
 	logger.Infof("DB initialized with db file: %s", dbfile)
 
-	return &databaseImpl{
+	result := &databaseImpl{
 		db: db,
-	}, nil
+	}
+	if shouldLog {
+		return &dbLogger{
+			db: result,
+		}, nil
+	}
+
+	return result, nil
 }
 
 func (d *databaseImpl) handleError(err error) error {

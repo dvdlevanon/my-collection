@@ -13,13 +13,13 @@ import (
 	"k8s.io/utils/pointer"
 )
 
-func setupNewDb(t *testing.T, filename string) (*databaseImpl, error) {
+func setupNewDb(t *testing.T, filename string) (Database, error) {
 	assert.NoError(t, os.MkdirAll(".tests", 0750))
 	dbpath := fmt.Sprintf(".tests/%s", filename)
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	return New(filepath.Join("", dbpath))
+	return New(filepath.Join("", dbpath), false)
 }
 
 func TestItem(t *testing.T) {
