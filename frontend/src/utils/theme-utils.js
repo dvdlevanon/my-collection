@@ -42,6 +42,7 @@ export default class ThemeUtil {
 				primary: {
 					main: '#ff4400',
 					light: '#ff8844',
+					disabled: '#aaaaaa',
 				},
 				secondary: {
 					main: '#0D9352',
@@ -70,6 +71,7 @@ export default class ThemeUtil {
 				primary: {
 					main: '#BB00FF',
 					light: '#F7E3FF',
+					disabled: '#aaaaaa',
 				},
 				secondary: {
 					main: '#44FF00',
@@ -98,6 +100,7 @@ export default class ThemeUtil {
 				primary: {
 					main: '#009DFF',
 					light: '#CDECFF',
+					disabled: '#aaaaaa',
 				},
 				secondary: {
 					main: '#FF751E',
@@ -126,6 +129,7 @@ export default class ThemeUtil {
 				primary: {
 					main: '#FF0072',
 					light: '#FFDFEE',
+					disabled: '#aaaaaa',
 				},
 				secondary: {
 					main: '#00FF8D',

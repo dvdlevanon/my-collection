@@ -10,6 +10,7 @@ import (
 	"my-collection/server/pkg/fssync"
 	"my-collection/server/pkg/itemsoptimizer"
 	"my-collection/server/pkg/mixondemand"
+	"my-collection/server/pkg/opensubtitles"
 	"my-collection/server/pkg/processor"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
@@ -49,6 +50,7 @@ type MyCollection struct {
 	thumbnails     *thumbnails.Thumbnails
 	server         *server.Server
 	push           push.PushHandler
+	opensubtitles  *opensubtitles.OpenSubtitiles
 }
 
 func (mc *MyCollection) initialize(config MyCollectionConfig) error {
@@ -65,7 +67,7 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 
 	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(filepath.Join(dataDir, "db.sqlite"), true)
+	db, err := db.New(filepath.Join(dataDir, "db.sqlite"), false)
 	if err != nil {
 		return err
 	}
@@ -105,6 +107,8 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 	if err != nil {
 		return err
 	}
+
+	mc.opensubtitles = opensubtitles.NewOpenSubtitles(config.OpenSubtitleApiKeys)
 
 	mc.itemsoptimizer = itemsoptimizer.New(db, mc.processor, config.ItemsOptimizerMaxResolution)
 	mc.thumbnails = thumbnails.New(db, db, storage, 100, 100)

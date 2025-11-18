@@ -32,12 +32,12 @@ function getCurrentSubtitle(currentTimeSeconds, subtitleData, currentIndexRef, s
 	return '';
 }
 
-function Subtitles({ itemId }) {
+function Subtitles() {
 	const playerStore = usePlayerStore();
 	const subtitleStore = useSubtitleStore();
 	const [text, setText] = useState('');
 	const currentIndexRef = useRef(-1);
-	const subtitleQuery = useQuery(ReactQueryUtil.subtitleQuery(itemId, subtitleStore.selectedSubtitleName));
+	const subtitleQuery = useQuery(ReactQueryUtil.subtitleQuery(subtitleStore.selectedSubtitleUrl));
 
 	useEffect(() => {
 		subtitleStore.loadFromLocalStorage();

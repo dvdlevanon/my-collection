@@ -23,7 +23,7 @@ func (mc *MyCollection) registerHandlers(db db.Database, storage *storage.Storag
 	mc.server.RegisterHandler(storageHandler.NewHandler(storage))
 	mc.server.RegisterHandler(fs.NewHandler(db, fsm))
 	mc.server.RegisterHandler(tasks.NewHandler(db, mc.processor))
-	mc.server.RegisterHandler(subtitles.NewHandler(db))
+	mc.server.RegisterHandler(subtitles.NewHandler(db, mc.opensubtitles))
 	mc.server.RegisterHandler(mc.push)
 	mc.server.RegisterHandler(management.NewHandler(db, &struct {
 		processor.Processor

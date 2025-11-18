@@ -13,4 +13,5 @@ type MyCollectionConfig struct {
 	CoversCount                 int
 	PreviewSceneCount           int
 	PreviewSceneDuration        int
+	OpenSubtitleApiKeys         []string
 }

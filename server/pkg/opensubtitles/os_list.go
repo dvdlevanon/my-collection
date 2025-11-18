@@ -15,7 +15,7 @@ type listResponse struct {
 	} `json:"data"`
 }
 
-func (s *OpenSubtitiles) List(imdbId string) ([]model.SubtitleMetadata, error) {
+func (s *OpenSubtitiles) List(imdbId string, lang string, aiTranslated bool) ([]model.SubtitleMetadata, error) {
 	url, err := s.buildUrl("subtitles")
 	if err != nil {
 		return nil, err
@@ -23,8 +23,8 @@ func (s *OpenSubtitiles) List(imdbId string) ([]model.SubtitleMetadata, error) {
 
 	query := url.Query()
 	query.Set("imdb_id", imdbId)
-	query.Set("languages", s.language)
-	if !s.aiTranslated {
+	query.Set("languages", lang)
+	if !aiTranslated {
 		query.Set("ai_translated", "exclude")
 	}
 	url.RawQuery = query.Encode()
@@ -50,8 +50,8 @@ func (s *OpenSubtitiles) parseListResponse(body []byte) ([]model.SubtitleMetadat
 	results := make([]model.SubtitleMetadata, 0, len(apiResp.Data))
 	for _, item := range apiResp.Data {
 		results = append(results, model.SubtitleMetadata{
-			Id:      item.ID,
-			Release: item.Attributes.Release,
+			Id:    item.ID,
+			Title: item.Attributes.Release,
 		})
 	}
 

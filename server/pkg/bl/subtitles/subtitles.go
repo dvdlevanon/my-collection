@@ -6,77 +6,45 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/srt"
-	"my-collection/server/pkg/utils"
 	"os"
 	"path/filepath"
+	"regexp"
+	"strings"
 )
+
+const onlineSubsDir = ".online-subs"
+
+type SubtitlesLister interface {
+	List(imdbId string, lang string, aiTranslated bool) ([]model.SubtitleMetadata, error)
+}
 
 var ErrSubtitileNotFound = fmt.Errorf("subtitle not found")
 
-func getSubtitleByName(dir string, subtitleName string) (string, error) {
-	path := filepath.Join(dir, subtitleName)
-	_, err := os.Stat(path)
-	if err != nil {
-		return "", err
-	}
-
-	return path, nil
-}
-
-func lookForSubtitles(dir string, movieName string) (string, error) {
-	specificSubtitle := filepath.Join(dir, fmt.Sprintf("%s.srt", movieName))
-	if _, err := os.Stat(specificSubtitle); err == nil {
-		return specificSubtitle, nil
-	}
-
-	srtFiles, err := filepath.Glob(filepath.Join(dir, "*.srt"))
-	if err != nil || len(srtFiles) == 0 {
-		return "", err
-	}
-
-	return srtFiles[0], nil
-}
-
-func lookForAvailableSubtitles(dir string) ([]string, error) {
-	names := make([]string, 0)
-	srtFiles, err := filepath.Glob(filepath.Join(dir, "*.srt"))
+func lookForAvailableSubtitles(dir string) ([]model.SubtitleMetadata, error) {
+	names := make([]model.SubtitleMetadata, 0)
+	entries, err := os.ReadDir(dir)
 	if err != nil {
 		return nil, err
 	}
 
-	for _, srt := range srtFiles {
-		names = append(names, filepath.Base(srt))
+	for _, entry := range entries {
+		if !entry.IsDir() && strings.HasSuffix(strings.ToLower(entry.Name()), ".srt") {
+			names = append(names, model.SubtitleMetadata{
+				Id:    "local",
+				Title: entry.Name(),
+				Url:   relativasor.GetRelativePath(filepath.Join(dir, entry.Name())),
+			})
+		}
 	}
 
 	return names, nil
 }
 
-func GetSubtitle(ctx context.Context, ir model.ItemReader, itemId uint64, subtitleName string) (model.Subtitle, error) {
-	item, err := ir.GetItem(ctx, itemId)
-	if err != nil {
-		return model.Subtitle{}, err
-	}
-
-	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	videoDir := filepath.Dir(videoFile)
-
-	var subtitlePath string
-	if subtitleName == "" {
-		subtitlePath, err = lookForSubtitles(videoDir, utils.BaseRemoveExtension(videoFile))
-	} else {
-		subtitlePath, err = getSubtitleByName(videoDir, subtitleName)
-	}
-	if err != nil {
-		return model.Subtitle{}, err
-	}
-	if subtitlePath == "" {
-		return model.Subtitle{}, ErrSubtitileNotFound
-	}
-
-	return srt.LoadFile(subtitlePath)
+func GetSubtitle(ctx context.Context, url string) (model.Subtitle, error) {
+	return srt.LoadFile(relativasor.GetAbsoluteFile(url))
 }
 
-func GetAvailableNames(ctx context.Context, ir model.ItemReader, itemId uint64) ([]string, error) {
+func GetAvailableNames(ctx context.Context, ir model.ItemReader, itemId uint64) ([]model.SubtitleMetadata, error) {
 	item, err := ir.GetItem(ctx, itemId)
 	if err != nil {
 		return nil, err
@@ -85,4 +53,51 @@ func GetAvailableNames(ctx context.Context, ir model.ItemReader, itemId uint64) 
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	videoDir := filepath.Dir(videoFile)
 	return lookForAvailableSubtitles(videoDir)
+}
+
+func extractIMDbID(path string) string {
+	re := regexp.MustCompile(`\[imdbid-(tt\d+)\]`)
+	matches := re.FindStringSubmatch(path)
+
+	if len(matches) > 1 {
+		return matches[1]
+	}
+
+	return ""
+}
+
+func GetOnlineNames(ctx context.Context, ir model.ItemReader, l SubtitlesLister, itemId uint64, lang string, aiTranslated bool) ([]model.SubtitleMetadata, error) {
+	item, err := ir.GetItem(ctx, itemId)
+	if err != nil {
+		return nil, err
+	}
+
+	imdbId := extractIMDbID(item.Url)
+
+	subtitles, err := l.List(imdbId, lang, aiTranslated)
+	if err != nil {
+		return nil, err
+	}
+
+	subtitles = addUrls(item, subtitles)
+	return subtitles, nil
+}
+
+func getDownloadedSubUrl(item *model.Item, subtitle model.SubtitleMetadata) string {
+	videoFile := relativasor.GetAbsoluteFile(item.Url)
+	videoDir := filepath.Dir(videoFile)
+	return filepath.Join(videoDir, onlineSubsDir, subtitle.Id, fmt.Sprintf("%s.%s", subtitle.Title, ".srt"))
+}
+
+func addUrls(item *model.Item, subtitles []model.SubtitleMetadata) []model.SubtitleMetadata {
+	for _, s := range subtitles {
+		url := getDownloadedSubUrl(item, s)
+
+		_, err := os.Stat(url)
+		if err == nil {
+			s.Url = relativasor.GetRelativePath(url)
+		}
+	}
+
+	return subtitles
 }

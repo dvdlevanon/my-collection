@@ -104,14 +104,22 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/items`).then((response) => response.json());
 	};
 
-	static getSubtitle = async (itemId, subtitleName) => {
-		return await fetch(`${Client.apiUrl}/subtitles/${itemId}?name=${encodeURIComponent(subtitleName)}`).then(
-			(response) => response.json()
+	static getSubtitle = async (url) => {
+		return await fetch(`${Client.apiUrl}/subtitles?url=${encodeURIComponent(url)}`).then((response) =>
+			response.json()
 		);
 	};
 
 	static getAvailableSubtitle = async (itemId) => {
 		return await fetch(`${Client.apiUrl}/subtitles/${itemId}/available`).then((response) => response.json());
+	};
+
+	static getOnlineSubtitle = async (itemId, lang, aiTranslated) => {
+		return await fetch(
+			`${Client.apiUrl}/subtitles/${itemId}/online?lang=${encodeURIComponent(
+				lang
+			)}&aiTranslated={${encodeURIComponent(aiTranslated)}}`
+		).then((response) => response.json());
 	};
 
 	static getSuggestedItems = async (itemId) => {

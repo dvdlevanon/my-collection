@@ -22,12 +22,13 @@ import (
 // MockProcessor implements a simple mock for the processor interface
 type MockProcessor struct{}
 
-func (m *MockProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64)                               {}
-func (m *MockProcessor) EnqueueItemCovers(ctx context.Context, id uint64)                                      {}
-func (m *MockProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat) {}
-func (m *MockProcessor) EnqueueItemPreview(ctx context.Context, id uint64)                                     {}
-func (m *MockProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64)                                {}
-func (m *MockProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64)                       {}
+func (m *MockProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64) {}
+func (m *MockProcessor) EnqueueItemCovers(ctx context.Context, id uint64)        {}
+func (m *MockProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat) {
+}
+func (m *MockProcessor) EnqueueItemPreview(ctx context.Context, id uint64)               {}
+func (m *MockProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64)          {}
+func (m *MockProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64) {}
 
 // MockOptimizer implements a simple mock for the optimizer interface
 type MockOptimizer struct{}

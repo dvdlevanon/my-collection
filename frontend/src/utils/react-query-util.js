@@ -24,12 +24,16 @@ export default class ReactQueryUtil {
 		return ['items', { id: String(itemId) }];
 	};
 
-	static subtitleQueryKey = (itemId, subtitleName) => {
-		return ['subtitle', { id: String(itemId), name: subtitleName }];
+	static subtitleQueryKey = (url) => {
+		return ['subtitle', { id: url }];
 	};
 
 	static availableSubtitleQueryKey = (itemId) => {
 		return ['available-subtitle', { id: String(itemId) }];
+	};
+
+	static onlineSubtitleQueryKey = (itemId, lang, aiTranslated) => {
+		return ['online-subtitle', { id: String(itemId), lang: lang, aiTranslated: String(aiTranslated) }];
 	};
 
 	static tagKey = (tagId) => {
@@ -112,10 +116,10 @@ export default class ReactQueryUtil {
 		};
 	};
 
-	static subtitleQuery = (itemId, subtitleName) => {
+	static subtitleQuery = (url) => {
 		return {
-			queryKey: ReactQueryUtil.subtitleQueryKey(itemId, subtitleName),
-			queryFn: () => Client.getSubtitle(itemId, subtitleName),
+			queryKey: ReactQueryUtil.subtitleQueryKey(url),
+			queryFn: () => Client.getSubtitle(url),
 		};
 	};
 
@@ -123,6 +127,13 @@ export default class ReactQueryUtil {
 		return {
 			queryKey: ReactQueryUtil.availableSubtitleQueryKey(itemId),
 			queryFn: () => Client.getAvailableSubtitle(itemId),
+		};
+	};
+
+	static onlineSubtitleQuery = (itemId, lang, aiTranslated) => {
+		return {
+			queryKey: ReactQueryUtil.onlineSubtitleQueryKey(itemId, lang, aiTranslated),
+			queryFn: () => Client.getOnlineSubtitle(itemId, lang, aiTranslated),
 		};
 	};
 }

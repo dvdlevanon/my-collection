@@ -1,17 +1,18 @@
-import { FormControl, MenuItem, Select, Stack } from '@mui/material';
+import { CircularProgress, List, ListItem, ListItemButton, ListItemText, Stack, useTheme } from '@mui/material';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import ReactQueryUtil from '../../../utils/react-query-util';
 import { usePlayerStore } from '../PlayerStore';
-import { useSubtitleStore } from './SubtitlesStore';
+import SubtitleListItem from './SubtitleListItem';
 
 const NO_SUBTITLE = 'No Subtitles Available';
 
 function AvailableSubtitlesChooser() {
+	const theme = useTheme();
 	const containerRef = useRef();
 	const playerStore = usePlayerStore();
-	const subtitleStore = useSubtitleStore();
 	const availableSubtitleQuery = useQuery(ReactQueryUtil.availableSubtitleQuery(playerStore.itemId));
+	const onlineSubtitleQuery = useQuery(ReactQueryUtil.onlineSubtitleQuery(playerStore.itemId, 'he', false));
 	const [selectedSubtitle, setSelectedSubtitle] = useState(NO_SUBTITLE);
 
 	useEffect(() => {
@@ -31,35 +32,42 @@ function AvailableSubtitlesChooser() {
 		return availableSubtitleQuery.data;
 	};
 
-	const onChange = (event) => {
-		let value = event.target.value;
+	const getOnlineSubtitles = () => {
+		if (!onlineSubtitleQuery.data) {
+			return [];
+		}
 
-		setSelectedSubtitle(value);
-		subtitleStore.setSelectedSubtitleName(value);
+		return onlineSubtitleQuery.data;
 	};
 
 	return (
-		<Stack ref={containerRef}>
-			<FormControl fullWidth>
-				<Select
-					onChange={onChange}
-					value={selectedSubtitle}
-					MenuProps={{
-						container: containerRef.current,
-						PaperProps: {
-							container: containerRef.current,
-						},
-					}}
-				>
-					{getSubtitles().map((subtitle) => {
-						return (
-							<MenuItem key={subtitle} value={subtitle}>
-								{subtitle}
-							</MenuItem>
-						);
-					})}
-				</Select>
-			</FormControl>
+		<Stack ref={containerRef} maxHeight={'30vh'} overflow={'auto'}>
+			<List>
+				{getSubtitles().map((subtitle) => {
+					return (
+						<ListItem key={subtitle.url} value={subtitle.url}>
+							<SubtitleListItem subtitle={subtitle} />
+						</ListItem>
+					);
+				})}
+				{!onlineSubtitleQuery.data && (
+					<ListItem key={'loading'} value={'loading'}>
+						<ListItemButton disabled sx={{ gap: theme.spacing(1) }}>
+							<CircularProgress size={24} />
+							<ListItemText sx={{ color: theme.palette.primary.disabled }}>
+								Loading Online Subtitles...
+							</ListItemText>
+						</ListItemButton>
+					</ListItem>
+				)}
+				{getOnlineSubtitles().map((subtitle) => {
+					return (
+						<ListItem key={subtitle.id} value={subtitle.url}>
+							<SubtitleListItem subtitle={subtitle} />
+						</ListItem>
+					);
+				})}
+			</List>
 		</Stack>
 	);
 }

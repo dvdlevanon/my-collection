@@ -2,7 +2,6 @@ import CloseIcon from '@mui/icons-material/Close';
 import { IconButton, Stack, Tab, Tabs, useTheme } from '@mui/material';
 import { useState } from 'react';
 import SubtitlesAppearanceControls from './SubtitlesAppearanceControls';
-import SubtitlesFinder from './SubtitlesFinder';
 import SubtitlesSettings from './SubtitlesSettings';
 import { useSubtitleStore } from './SubtitlesStore';
 
@@ -19,6 +18,7 @@ function SubtitlesControls() {
 		subtitleStore.controlsShown && (
 			<Stack
 				flexDirection="column"
+				maxHeight={'70vh'}
 				sx={{
 					gap: theme.spacing(1),
 					background: theme.palette.gradient.color2,
@@ -43,12 +43,10 @@ function SubtitlesControls() {
 					</IconButton>
 					<Tabs value={selectedTab} onChange={handleChange}>
 						<Tab label="Settings" value="settings" />
-						<Tab label="Finder" value="finder" />
 						<Tab label="Appearnace" value="appearnace" />
 					</Tabs>
 				</Stack>
 				{selectedTab == 'settings' && <SubtitlesSettings />}
-				{selectedTab == 'finder' && <SubtitlesFinder />}
 				{selectedTab == 'appearnace' && <SubtitlesAppearanceControls />}
 			</Stack>
 		)

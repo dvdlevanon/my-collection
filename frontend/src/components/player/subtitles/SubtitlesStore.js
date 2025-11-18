@@ -7,7 +7,7 @@ export const useSubtitleStore = create((set, get) => ({
 	fontColor: '#ffffff',
 	fontShadowColor: '#000000',
 	subtitleOffsetMillis: 0,
-	selectedSubtitleName: '',
+	selectedSubtitleUrl: '',
 
 	loadFromLocalStorage: () => {
 		const { setFontColor, setFontShadowColor, setFontSize, setFontShadowWidth } = get();
@@ -38,7 +38,7 @@ export const useSubtitleStore = create((set, get) => ({
 		localStorage.setItem('subtitles-font-shadow-width', fontShadowWidth);
 	},
 
-	setSelectedSubtitleName: (selectedSubtitleName) => set({ selectedSubtitleName }),
+	setSelectedSubtitleUrl: (selectedSubtitleUrl) => set({ selectedSubtitleUrl }),
 	setSubtitleOffsetMillis: (subtitleOffsetMillis) => set({ subtitleOffsetMillis }),
 
 	toggleSubtitlesControls: () => {

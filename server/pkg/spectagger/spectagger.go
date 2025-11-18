@@ -129,11 +129,6 @@ func (d *Spectagger) autoSpectag(ctx context.Context) error {
 		}
 
 		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(ctx, d.db, categories, &item)
-		if err != nil {
-			utils.LogError("Error getting category tags", err)
-			continue
-		}
-
 		tagsToAdd := append(categoryTagsToAdd, videoCodecTag, audioCodecTag, durationTag, typeTag)
 		tagsToAdd = append(tagsToAdd, resolutionTags...)
 		tagsToAdd = removeNils(tagsToAdd)

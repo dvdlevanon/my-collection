@@ -11,12 +11,14 @@ import PlayerControls from './PlayerControls';
 import { usePlayerStore } from './PlayerStore';
 import Subtitles from './subtitles/Subtitiles';
 import SubtitlesControls from './subtitles/SubtitlesControls';
+import { useSubtitleStore } from './subtitles/SubtitlesStore';
 import useVideoController from './VideoController';
 import VideoElement from './VideoElement';
 
 function Player({ itemId }) {
 	const videoController = useVideoController();
 	const playerStore = usePlayerStore();
+	const subtitleStore = useSubtitleStore();
 	const [playerWidth] = useSize(videoController.videoElement);
 	const itemQuery = useQuery(ReactQueryUtil.itemQuery(itemId));
 	const suggestedQuery = useQuery(ReactQueryUtil.suggestionQuery(itemId));
@@ -105,7 +107,7 @@ function Player({ itemId }) {
 			<HighlightControls />
 			<CropFrame videoRef={videoController.videoElement} isPlaying={playerStore.isPlaying} />
 			<PlayerControls />
-			<Subtitles itemId={itemId} />
+			{subtitleStore.selectedSubtitleUrl && <Subtitles />}
 			<SubtitlesControls />
 		</Stack>
 	);

@@ -16,12 +16,12 @@ func TestList_RealAPI(t *testing.T) {
 	// Using the API key from the curl example
 	apiKey := "DICiZ00oTTHgYMZsjI2Iue87PWJQ5fqE"
 
-	client := opensubtitles.NewOpenSubtitles([]string{apiKey}, "he", false)
+	client := opensubtitles.NewOpenSubtitles([]string{apiKey})
 
 	// Test with the IMDB ID from the curl example: tt0120631
 	imdbID := "tt0120631"
 
-	result, err := client.List(imdbID)
+	result, err := client.List(imdbID, "he", false)
 
 	// Print results for debugging
 	t.Logf("IMDB ID: %s", imdbID)
@@ -43,7 +43,7 @@ func TestList_RealAPI(t *testing.T) {
 
 	// Verify we got results
 	if len(result) > 0 {
-		t.Logf("First result - ID: %s, Release: %s", result[0].Id, result[0].Release)
+		t.Logf("First result - ID: %s, Release: %s", result[0].Id, result[0].Title)
 		assert.NotEmpty(t, result[0].Id, "Subtitle ID should not be empty")
 		// Release might be empty, so we'll just log it
 		t.Logf("Sample results:")
@@ -51,7 +51,7 @@ func TestList_RealAPI(t *testing.T) {
 			if i >= 5 { // Limit to first 5 for logging
 				break
 			}
-			t.Logf("  [%d] ID: %s, Release: %s", i+1, sub.Id, sub.Release)
+			t.Logf("  [%d] ID: %s, Release: %s", i+1, sub.Id, sub.Title)
 		}
 	} else {
 		t.Logf("No subtitles found for IMDB ID %s with language 'he'", imdbID)
@@ -65,13 +65,13 @@ func TestDownload_RealAPI(t *testing.T) {
 	// Using the API key from the curl example
 	apiKey := "DICiZ00oTTHgYMZsjI2Iue87PWJQ5fqE"
 
-	client := opensubtitles.NewOpenSubtitles([]string{apiKey}, "he", false)
+	client := opensubtitles.NewOpenSubtitles([]string{apiKey})
 
 	// First, get a list of subtitles
 	imdbID := "tt0120631"
 	t.Logf("Step 1: Listing subtitles for IMDB ID: %s", imdbID)
 
-	subtitles, err := client.List(imdbID)
+	subtitles, err := client.List(imdbID, "he", false)
 	if err != nil {
 		t.Logf("Failed to list subtitles: %v", err)
 		t.Logf("Skipping download test - cannot proceed without subtitle list")
@@ -88,7 +88,7 @@ func TestDownload_RealAPI(t *testing.T) {
 	subtitle := subtitles[0]
 	t.Logf("Step 2: Downloading subtitle")
 	t.Logf("  Subtitle ID: %s", subtitle.Id)
-	t.Logf("  Release: %s", subtitle.Release)
+	t.Logf("  Release: %s", subtitle.Title)
 
 	// Create a temporary file for the download
 	tempDir := t.TempDir()
@@ -147,7 +147,7 @@ func TestListAndDownload_RealAPI(t *testing.T) {
 	// Using the API key from the curl example
 	apiKey := "DICiZ00oTTHgYMZsjI2Iue87PWJQ5fqE"
 
-	client := opensubtitles.NewOpenSubtitles([]string{apiKey}, "he", false)
+	client := opensubtitles.NewOpenSubtitles([]string{apiKey})
 
 	// Test with the IMDB ID from the curl example: tt0120631
 	imdbID := "tt0120631"
@@ -159,7 +159,7 @@ func TestListAndDownload_RealAPI(t *testing.T) {
 
 	// Step 1: List subtitles
 	t.Logf("\n--- Step 1: Listing subtitles ---")
-	result, err := client.List(imdbID)
+	result, err := client.List(imdbID, "he", false)
 
 	if err != nil {
 		t.Logf("List API Error: %v", err)
@@ -180,14 +180,14 @@ func TestListAndDownload_RealAPI(t *testing.T) {
 		if i >= 3 {
 			break
 		}
-		t.Logf("  [%d] ID: %s, Release: %s", i+1, sub.Id, sub.Release)
+		t.Logf("  [%d] ID: %s, Release: %s", i+1, sub.Id, sub.Title)
 	}
 
 	// Step 2: Download first subtitle
 	firstSubtitle := result[0]
 	t.Logf("\n--- Step 2: Downloading subtitle ---")
 	t.Logf("Subtitle ID: %s", firstSubtitle.Id)
-	t.Logf("Release: %s", firstSubtitle.Release)
+	t.Logf("Release: %s", firstSubtitle.Title)
 
 	tempDir := t.TempDir()
 	outputFile := filepath.Join(tempDir, "test_subtitle.srt")

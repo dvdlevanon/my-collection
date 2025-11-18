@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/go-errors/errors"
 	"github.com/op/go-logging"
@@ -36,8 +37,12 @@ func LogError(message string, err error) {
 	if errors.As(err, &e) {
 		logger.Errorf("Error: %s %v", message, e.ErrorStack())
 	} else {
-		logger.Errorf("Error: %s %v", message, err)
+		logger.Errorf("Error: %s %s", message, squashString(fmt.Sprintf("%v", err)))
 	}
+}
+
+func squashString(str string) string {
+	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), "\r", "")
 }
 
 func ContextWithSubject(parent context.Context, subject string) context.Context {

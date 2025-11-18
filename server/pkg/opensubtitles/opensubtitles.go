@@ -8,18 +8,14 @@ import (
 	"strings"
 )
 
-func NewOpenSubtitles(apiKeys []string, language string, aiTranslated bool) OpenSubtitiles {
-	return OpenSubtitiles{
-		apiKeys:      apiKeys,
-		language:     language,
-		aiTranslated: aiTranslated,
+func NewOpenSubtitles(apiKeys []string) *OpenSubtitiles {
+	return &OpenSubtitiles{
+		apiKeys: apiKeys,
 	}
 }
 
 type OpenSubtitiles struct {
-	apiKeys      []string
-	language     string
-	aiTranslated bool
+	apiKeys []string
 }
 
 func (s *OpenSubtitiles) apiBaseUrl() string {

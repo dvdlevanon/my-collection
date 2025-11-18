@@ -74,8 +74,9 @@ type SubtitleItem struct {
 }
 
 type SubtitleMetadata struct {
-	Id      string
-	Release string
+	Id    string `json:"id"`
+	Title string `json:"title"`
+	Url   string `json:"url"`
 }
 
 type Cover struct {

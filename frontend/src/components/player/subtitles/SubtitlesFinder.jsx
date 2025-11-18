@@ -11,6 +11,7 @@ function SubtitlesFinder() {
 		<Stack gap={theme.spacing(1)}>
 			<SubtitlesFilter />
 			<SubtitileSyncer />
+			{/* <DownloadSubtitleButton /> */}
 		</Stack>
 	);
 }
