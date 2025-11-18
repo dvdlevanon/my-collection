@@ -1,15 +1,20 @@
 import LocalIcon from '@mui/icons-material/Description';
 import OnlineIcon from '@mui/icons-material/Language';
 import { Box, ListItemButton, ListItemIcon, ListItemText, useTheme } from '@mui/material';
+import SubtitleDeleteButton from './SubtitleDeleteButton';
 import SubtitleDownloadButton from './SubtitleDownloadButton';
 import { useSubtitleStore } from './SubtitlesStore';
 
-function SubtitleListItem({ subtitle }) {
+function SubtitleListItem({ subtitle, refetchOnlineSubtitles }) {
 	const theme = useTheme();
 	const subtitleStore = useSubtitleStore();
 
 	const isReady = () => {
 		return subtitle.id === 'local' || subtitle.url !== '';
+	};
+
+	const isOnlineAndReady = () => {
+		return subtitle.id !== 'local' && subtitle.url !== '';
 	};
 
 	const clicked = () => {
@@ -32,7 +37,12 @@ function SubtitleListItem({ subtitle }) {
 			</ListItemText>
 			{!isReady() && (
 				<Box sx={{ pointerEvents: 'auto' }}>
-					<SubtitleDownloadButton />
+					<SubtitleDownloadButton subtitle={subtitle} refetchOnlineSubtitles={refetchOnlineSubtitles} />
+				</Box>
+			)}
+			{isOnlineAndReady() && (
+				<Box sx={{ pointerEvents: 'auto' }}>
+					<SubtitleDeleteButton subtitle={subtitle} refetchOnlineSubtitles={refetchOnlineSubtitles} />
 				</Box>
 			)}
 		</ListItemButton>

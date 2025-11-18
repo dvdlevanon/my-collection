@@ -13,6 +13,10 @@ import (
 )
 
 func refreshItemCovers(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader, id uint64, coversCount int) error {
+	if coversCount == 0 {
+		return nil
+	}
+
 	item, err := irw.GetItem(ctx, id)
 	if err != nil {
 		return err

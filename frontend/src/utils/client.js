@@ -122,6 +122,23 @@ export default class Client {
 		).then((response) => response.json());
 	};
 
+	static downloadSubtitle = async (itemId, id, title) => {
+		return await fetch(
+			`${Client.apiUrl}/subtitles/${itemId}/download?id=${encodeURIComponent(id)}&title=${encodeURIComponent(
+				title
+			)}`,
+			{
+				method: 'POST',
+			}
+		);
+	};
+
+	static deleteSubtitle = async (url) => {
+		return await fetch(`${Client.apiUrl}/subtitles/delete?url=${encodeURIComponent(url)}`, {
+			method: 'DELETE',
+		});
+	};
+
 	static getSuggestedItems = async (itemId) => {
 		return await fetch(`${Client.apiUrl}/items/${itemId}/suggestions`).then((response) => response.json());
 	};

@@ -21,6 +21,10 @@ func refreshItemPreview(ctx context.Context, irw model.ItemReaderWriter, uploade
 		return nil
 	}
 
+	if previewSceneCount == 0 {
+		return nil
+	}
+
 	logger.Infof("Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
 		item.Id, item.Url, previewSceneCount, previewSceneDuration)
 

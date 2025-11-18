@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"my-collection/server/pkg/model"
+	"strconv"
 )
 
 type listResponse struct {
@@ -11,6 +12,9 @@ type listResponse struct {
 		ID         string `json:"id"`
 		Attributes struct {
 			Release string `json:"release"`
+			Files   []struct {
+				FileID int `json:"file_id"`
+			} `json:"files"`
 		} `json:"attributes"`
 	} `json:"data"`
 }
@@ -49,8 +53,11 @@ func (s *OpenSubtitiles) parseListResponse(body []byte) ([]model.SubtitleMetadat
 
 	results := make([]model.SubtitleMetadata, 0, len(apiResp.Data))
 	for _, item := range apiResp.Data {
+		if len(item.Attributes.Files) < 1 {
+			continue
+		}
 		results = append(results, model.SubtitleMetadata{
-			Id:    item.ID,
+			Id:    strconv.Itoa(item.Attributes.Files[0].FileID), // for now we only support the first file
 			Title: item.Attributes.Release,
 		})
 	}

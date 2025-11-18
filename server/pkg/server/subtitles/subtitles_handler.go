@@ -19,6 +19,8 @@ type subtitleHandlerDb interface {
 
 type subtitleHandlerOp interface {
 	subtitles.SubtitlesLister
+	subtitles.SubtitlesDownloader
+	model.TempFileProvider
 }
 
 func NewHandler(db subtitleHandlerDb, op subtitleHandlerOp) *subtitleHandler {
@@ -35,9 +37,11 @@ type subtitleHandler struct {
 
 func (s *subtitleHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg = rg.Group("subtitles")
-	rg.GET("/", s.getSubtitle)
+	rg.GET("", s.getSubtitle)
 	rg.GET("/:item/available", s.getAvailalbeNames)
 	rg.GET("/:item/online", s.getOnlineNames)
+	rg.POST("/:item/download", s.downloadSubtitle)
+	rg.DELETE("/delete", s.deleteSubtitle)
 }
 
 func (s *subtitleHandler) getSubtitle(c *gin.Context) {
@@ -90,4 +94,38 @@ func (s *subtitleHandler) getOnlineNames(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, availableNames)
+}
+
+func (s *subtitleHandler) downloadSubtitle(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
+	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if server.HandleError(c, err) {
+		return
+	}
+
+	subtitleId := c.Query("id")
+	subtitleTitle := c.Query("title")
+	subtitle := model.SubtitleMetadata{
+		Id:    subtitleId,
+		Title: subtitleTitle,
+	}
+
+	err = subtitles.Download(ctx, s.db, s.op, s.op, itemId, subtitle)
+	if server.HandleError(c, err) {
+		return
+	}
+
+	c.Status(http.StatusOK)
+}
+
+func (s *subtitleHandler) deleteSubtitle(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
+
+	url := c.Query("url")
+	err := subtitles.Delete(ctx, url)
+	if server.HandleError(c, err) {
+		return
+	}
+
+	c.Status(http.StatusOK)
 }

@@ -1,6 +1,7 @@
 package opensubtitles
 
 import (
+	"bytes"
 	"fmt"
 	"io"
 	"net/http"
@@ -15,7 +16,8 @@ func NewOpenSubtitles(apiKeys []string) *OpenSubtitiles {
 }
 
 type OpenSubtitiles struct {
-	apiKeys []string
+	apiKeys         []string
+	defaultKeyIndex int
 }
 
 func (s *OpenSubtitiles) apiBaseUrl() string {
@@ -49,14 +51,32 @@ func (s *OpenSubtitiles) buildRequest(method string, url *url.URL, body io.Reade
 	return req, nil
 }
 
-func (s *OpenSubtitiles) fetch(req *http.Request) ([]byte, error) {
+func (s *OpenSubtitiles) fetch(origReq *http.Request) ([]byte, error) {
 	if len(s.apiKeys) == 0 {
 		return nil, fmt.Errorf("no API keys available")
 	}
 	client := &http.Client{}
 	var lastErr error
 
-	for i, apiKey := range s.apiKeys {
+	var bodyBytes []byte
+	if origReq.Body != nil {
+		var err error
+		bodyBytes, err = io.ReadAll(origReq.Body)
+		if err != nil {
+			return nil, fmt.Errorf("failed to read request body: %w", err)
+		}
+		origReq.Body.Close()
+	}
+
+	for i := 0; i < len(s.apiKeys); i++ {
+		keyIndex := (s.defaultKeyIndex + i) % len(s.apiKeys)
+		apiKey := s.apiKeys[keyIndex]
+
+		req := origReq.Clone(origReq.Context())
+		if bodyBytes != nil {
+			req.Body = io.NopCloser(bytes.NewReader(bodyBytes))
+		}
+
 		req.Header.Set("Api-Key", apiKey)
 
 		resp, err := client.Do(req)
@@ -77,6 +97,7 @@ func (s *OpenSubtitiles) fetch(req *http.Request) ([]byte, error) {
 		if resp.StatusCode == http.StatusTooManyRequests {
 			resp.Body.Close()
 			lastErr = fmt.Errorf("rate limit exceeded for API key %d", i)
+			s.defaultKeyIndex++
 			continue
 		}
 
@@ -86,6 +107,7 @@ func (s *OpenSubtitiles) fetch(req *http.Request) ([]byte, error) {
 			bodyStr := string(body)
 			if containsQuotaError(bodyStr) {
 				lastErr = fmt.Errorf("quota exceeded for API key %d: %s", i, bodyStr)
+				s.defaultKeyIndex++
 				continue
 			}
 

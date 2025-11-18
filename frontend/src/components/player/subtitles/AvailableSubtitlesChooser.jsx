@@ -1,11 +1,9 @@
 import { CircularProgress, List, ListItem, ListItemButton, ListItemText, Stack, useTheme } from '@mui/material';
-import { useQuery } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef } from 'react';
 import ReactQueryUtil from '../../../utils/react-query-util';
 import { usePlayerStore } from '../PlayerStore';
 import SubtitleListItem from './SubtitleListItem';
-
-const NO_SUBTITLE = 'No Subtitles Available';
 
 function AvailableSubtitlesChooser() {
 	const theme = useTheme();
@@ -13,20 +11,22 @@ function AvailableSubtitlesChooser() {
 	const playerStore = usePlayerStore();
 	const availableSubtitleQuery = useQuery(ReactQueryUtil.availableSubtitleQuery(playerStore.itemId));
 	const onlineSubtitleQuery = useQuery(ReactQueryUtil.onlineSubtitleQuery(playerStore.itemId, 'he', false));
-	const [selectedSubtitle, setSelectedSubtitle] = useState(NO_SUBTITLE);
+	const queryClient = useQueryClient();
 
 	useEffect(() => {
 		if (availableSubtitleQuery.data) {
 		}
 	}, [availableSubtitleQuery.data]);
 
+	const refetchOnlineSubtitles = () => {
+		queryClient.invalidateQueries({
+			queryKey: ReactQueryUtil.onlineSubtitleQueryKey(playerStore.itemId, 'he', false),
+		});
+	};
+
 	const getSubtitles = () => {
 		if (!availableSubtitleQuery.data) {
-			return [NO_SUBTITLE];
-		}
-
-		if (selectedSubtitle == NO_SUBTITLE) {
-			setSelectedSubtitle(availableSubtitleQuery.data[0]);
+			return [];
 		}
 
 		return availableSubtitleQuery.data;
@@ -53,7 +53,7 @@ function AvailableSubtitlesChooser() {
 				{!onlineSubtitleQuery.data && (
 					<ListItem key={'loading'} value={'loading'}>
 						<ListItemButton disabled sx={{ gap: theme.spacing(1) }}>
-							<CircularProgress size={24} />
+							<CircularProgress />
 							<ListItemText sx={{ color: theme.palette.primary.disabled }}>
 								Loading Online Subtitles...
 							</ListItemText>
@@ -63,7 +63,7 @@ function AvailableSubtitlesChooser() {
 				{getOnlineSubtitles().map((subtitle) => {
 					return (
 						<ListItem key={subtitle.id} value={subtitle.url}>
-							<SubtitleListItem subtitle={subtitle} />
+							<SubtitleListItem subtitle={subtitle} refetchOnlineSubtitles={refetchOnlineSubtitles} />
 						</ListItem>
 					);
 				})}

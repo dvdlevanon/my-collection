@@ -5,6 +5,8 @@ import (
 	"my-collection/server/pkg/fssync"
 	"my-collection/server/pkg/itemsoptimizer"
 	"my-collection/server/pkg/mixondemand"
+	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/opensubtitles"
 	"my-collection/server/pkg/processor"
 	"my-collection/server/pkg/server/fs"
 	"my-collection/server/pkg/server/items"
@@ -23,7 +25,10 @@ func (mc *MyCollection) registerHandlers(db db.Database, storage *storage.Storag
 	mc.server.RegisterHandler(storageHandler.NewHandler(storage))
 	mc.server.RegisterHandler(fs.NewHandler(db, fsm))
 	mc.server.RegisterHandler(tasks.NewHandler(db, mc.processor))
-	mc.server.RegisterHandler(subtitles.NewHandler(db, mc.opensubtitles))
+	mc.server.RegisterHandler(subtitles.NewHandler(db, &struct {
+		opensubtitles.OpenSubtitiles
+		model.TempFileProvider
+	}{*mc.opensubtitles, storage}))
 	mc.server.RegisterHandler(mc.push)
 	mc.server.RegisterHandler(management.NewHandler(db, &struct {
 		processor.Processor

@@ -7,15 +7,24 @@ import (
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/srt"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
+
+	"github.com/op/go-logging"
 )
+
+var logger = logging.MustGetLogger("subtitles")
 
 const onlineSubsDir = ".online-subs"
 
 type SubtitlesLister interface {
 	List(imdbId string, lang string, aiTranslated bool) ([]model.SubtitleMetadata, error)
+}
+
+type SubtitlesDownloader interface {
+	Download(subtitle model.SubtitleMetadata, outputFile string) error
 }
 
 var ErrSubtitileNotFound = fmt.Errorf("subtitle not found")
@@ -86,18 +95,44 @@ func GetOnlineNames(ctx context.Context, ir model.ItemReader, l SubtitlesLister,
 func getDownloadedSubUrl(item *model.Item, subtitle model.SubtitleMetadata) string {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	videoDir := filepath.Dir(videoFile)
-	return filepath.Join(videoDir, onlineSubsDir, subtitle.Id, fmt.Sprintf("%s.%s", subtitle.Title, ".srt"))
+
+	return filepath.Join(videoDir, onlineSubsDir, subtitle.Id, fmt.Sprintf("%s.srt", subtitle.Title))
 }
 
 func addUrls(item *model.Item, subtitles []model.SubtitleMetadata) []model.SubtitleMetadata {
-	for _, s := range subtitles {
-		url := getDownloadedSubUrl(item, s)
+	for i := range subtitles {
+		url := getDownloadedSubUrl(item, subtitles[i])
 
 		_, err := os.Stat(url)
 		if err == nil {
-			s.Url = relativasor.GetRelativePath(url)
+			subtitles[i].Url = relativasor.GetRelativePath(url)
 		}
 	}
 
 	return subtitles
+}
+
+func Download(ctx context.Context, ir model.ItemReader, d SubtitlesDownloader, tp model.TempFileProvider, itemId uint64, subtitle model.SubtitleMetadata) error {
+	item, err := ir.GetItem(ctx, itemId)
+	if err != nil {
+		return err
+	}
+
+	tempFile := tp.GetTempFile() // TODO: In case of error the temp file stays
+	err = d.Download(subtitle, tempFile)
+	if err != nil {
+		return err
+	}
+
+	targetFile := getDownloadedSubUrl(item, subtitle)
+	if err := os.MkdirAll(path.Dir(targetFile), 0755); err != nil {
+		return err
+	}
+
+	return os.Rename(tempFile, targetFile)
+}
+
+func Delete(ctx context.Context, url string) error {
+	subtitleFile := relativasor.GetAbsoluteFile(url)
+	return os.Remove(subtitleFile)
 }

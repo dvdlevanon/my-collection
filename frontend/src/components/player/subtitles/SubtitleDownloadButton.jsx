@@ -1,23 +1,36 @@
 import DownloadIcon from '@mui/icons-material/Download';
-import { IconButton, Tooltip, useTheme } from '@mui/material';
-import { useRef } from 'react';
-import { useSubtitleStore } from './SubtitlesStore';
+import { CircularProgress, IconButton, Tooltip, useTheme } from '@mui/material';
+import { useState } from 'react';
+import Client from '../../../utils/client';
+import { usePlayerStore } from '../PlayerStore';
 
-function SubtitleDownloadButton({ subtitle }) {
+function SubtitleDownloadButton({ subtitle, refetchOnlineSubtitles }) {
 	const theme = useTheme();
-	const subtitleStore = useSubtitleStore();
-	const timeoutRef = useRef(null);
+	const playerStore = usePlayerStore();
+	const [isDownloading, setIsDownloading] = useState(false);
 
 	const clicked = (e) => {
 		e.preventDefault();
 		e.stopPropagation();
-		console.log('download clicked');
+		if (isDownloading) {
+			return;
+		}
+
+		setIsDownloading(true);
+		Client.downloadSubtitle(playerStore.itemId, subtitle.id, subtitle.title).then(() => {
+			setIsDownloading(false);
+			refetchOnlineSubtitles();
+		});
 	};
 
 	return (
 		<Tooltip title="Download">
 			<IconButton onClick={clicked} sx={{ color: theme.palette.secondary.main }}>
-				<DownloadIcon />
+				{isDownloading ? (
+					<CircularProgress size={theme.iconSize(1)} />
+				) : (
+					<DownloadIcon size={theme.iconSize(1)} />
+				)}
 			</IconButton>
 		</Tooltip>
 	);
