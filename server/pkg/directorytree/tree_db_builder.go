@@ -9,7 +9,7 @@ import (
 )
 
 func BuildFromDb(ctx context.Context, dr model.DirectoryReader, dig model.DirectoryItemsGetter) (*DirectoryNode, error) {
-	dirs, err := dr.GetAllDirectories(context.Background())
+	dirs, err := dr.GetAllDirectories(ctx)
 	if err != nil {
 		return nil, err
 	}

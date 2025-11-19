@@ -3,10 +3,12 @@ import { CircularProgress, IconButton, Tooltip, useTheme } from '@mui/material';
 import { useState } from 'react';
 import Client from '../../../utils/client';
 import { usePlayerStore } from '../PlayerStore';
+import { useSubtitleStore } from './SubtitlesStore';
 
 function SubtitleDownloadButton({ subtitle, refetchOnlineSubtitles }) {
 	const theme = useTheme();
 	const playerStore = usePlayerStore();
+	const subtitleStore = useSubtitleStore();
 	const [isDownloading, setIsDownloading] = useState(false);
 
 	const clicked = (e) => {
@@ -17,8 +19,9 @@ function SubtitleDownloadButton({ subtitle, refetchOnlineSubtitles }) {
 		}
 
 		setIsDownloading(true);
-		Client.downloadSubtitle(playerStore.itemId, subtitle.id, subtitle.title).then(() => {
+		Client.downloadSubtitle(playerStore.itemId, subtitle.id, subtitle.title).then((url) => {
 			setIsDownloading(false);
+			subtitleStore.setSelectedSubtitleUrl(url);
 			refetchOnlineSubtitles();
 		});
 	};

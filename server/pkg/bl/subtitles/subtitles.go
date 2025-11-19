@@ -112,24 +112,25 @@ func addUrls(item *model.Item, subtitles []model.SubtitleMetadata) []model.Subti
 	return subtitles
 }
 
-func Download(ctx context.Context, ir model.ItemReader, d SubtitlesDownloader, tp model.TempFileProvider, itemId uint64, subtitle model.SubtitleMetadata) error {
+func Download(ctx context.Context, ir model.ItemReader, d SubtitlesDownloader,
+	tp model.TempFileProvider, itemId uint64, subtitle model.SubtitleMetadata) (string, error) {
 	item, err := ir.GetItem(ctx, itemId)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	tempFile := tp.GetTempFile() // TODO: In case of error the temp file stays
 	err = d.Download(subtitle, tempFile)
 	if err != nil {
-		return err
+		return "", err
 	}
 
 	targetFile := getDownloadedSubUrl(item, subtitle)
 	if err := os.MkdirAll(path.Dir(targetFile), 0755); err != nil {
-		return err
+		return "", err
 	}
 
-	return os.Rename(tempFile, targetFile)
+	return relativasor.GetRelativePath(targetFile), os.Rename(tempFile, targetFile)
 }
 
 func Delete(ctx context.Context, url string) error {

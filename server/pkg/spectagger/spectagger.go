@@ -97,38 +97,40 @@ func (d *Spectagger) autoSpectag(ctx context.Context) error {
 
 	tagTitleToId := make(map[string]uint64)
 
+	cachedTarw := newCachedTarw(d.db)
+
 	for _, item := range *allItems {
-		resolutionTags, err := getResolutionTags(ctx, d.db, &item)
+		resolutionTags, err := getResolutionTags(ctx, cachedTarw, &item)
 		if err != nil {
 			utils.LogError("Error getting resolution tags", err)
 			continue
 		}
 
-		videoCodecTag, err := getVideoCodecTag(ctx, d.db, &item)
+		videoCodecTag, err := getVideoCodecTag(ctx, cachedTarw, &item)
 		if err != nil {
 			utils.LogError("Error getting video codec tag", err)
 			continue
 		}
 
-		audioCodecTag, err := getAudioCodecTag(ctx, d.db, &item)
+		audioCodecTag, err := getAudioCodecTag(ctx, cachedTarw, &item)
 		if err != nil {
 			utils.LogError("Error getting audio codec tag", err)
 			continue
 		}
 
-		durationTag, err := getDurationTag(ctx, d.db, &item)
+		durationTag, err := getDurationTag(ctx, cachedTarw, &item)
 		if err != nil {
 			utils.LogError("Error getting duration tag", err)
 			continue
 		}
 
-		typeTag, typeToRemove, err := getTypeTag(ctx, d.db, &item)
+		typeTag, typeToRemove, err := getTypeTag(ctx, cachedTarw, &item)
 		if err != nil {
 			utils.LogError("Error getting type tag", err)
 			continue
 		}
 
-		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(ctx, d.db, categories, &item)
+		categoryTagsToAdd, categoryTagsToRemove := getCategoryTags(ctx, cachedTarw, categories, &item)
 		tagsToAdd := append(categoryTagsToAdd, videoCodecTag, audioCodecTag, durationTag, typeTag)
 		tagsToAdd = append(tagsToAdd, resolutionTags...)
 		tagsToAdd = removeNils(tagsToAdd)

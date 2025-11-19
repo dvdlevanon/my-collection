@@ -17,6 +17,10 @@ function SubtitleListItem({ subtitle, refetchOnlineSubtitles }) {
 		return subtitle.id !== 'local' && subtitle.url !== '';
 	};
 
+	const isSelected = () => {
+		return subtitle.url != '' && subtitleStore.selectedSubtitleUrl == subtitle.url;
+	};
+
 	const clicked = () => {
 		if (isReady()) {
 			subtitleStore.setSelectedSubtitleUrl(subtitle.url);
@@ -29,6 +33,7 @@ function SubtitleListItem({ subtitle, refetchOnlineSubtitles }) {
 			sx={{
 				pointerEvents: !isReady() ? 'none' : 'auto',
 				gap: theme.spacing(1),
+				border: isSelected() ? theme.border(1, 'solid', theme.palette.primary.main) : 'auto',
 			}}
 		>
 			<ListItemIcon>{subtitle.id == 'local' ? <LocalIcon /> : <OnlineIcon />}</ListItemIcon>

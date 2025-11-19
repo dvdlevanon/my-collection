@@ -36,7 +36,7 @@ func (d *dbLogger) log(ctx context.Context, operation string, start time.Time, e
 
 	// Format result description
 	resultStr := formatResult(result)
-	l.Infof("[%s] %s %s %s", subjectStr, durationStr, opStr, resultStr)
+	l.Debugf("[%s] %s %s %s", subjectStr, durationStr, opStr, resultStr)
 }
 
 func formatResult(result interface{}) string {

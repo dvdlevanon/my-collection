@@ -62,6 +62,10 @@ func (d *Automix) GetCurrentTime() time.Time {
 }
 
 func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
+	if d.dailyMixItemsCount == 0 {
+		return nil
+	}
+
 	tag, err := d.prepareDailymixTag(d.db, ctg)
 	if err != nil {
 		return err

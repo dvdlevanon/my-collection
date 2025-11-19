@@ -23,7 +23,7 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, names, 1)
-		assert.Equal(t, "test.srt", names[0])
+		assert.Equal(t, "test.srt", names[0].Title)
 	})
 
 	t.Run("finds multiple srt files", func(t *testing.T) {
@@ -45,7 +45,14 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 		assert.Len(t, names, 3)
 		// Verify all expected files are found
 		for _, expectedFile := range files {
-			assert.Contains(t, names, expectedFile)
+			found := false
+			for _, name := range names {
+				if name.Title == expectedFile {
+					found = true
+					break
+				}
+			}
+			assert.True(t, found, "Expected to find %s", expectedFile)
 		}
 	})
 
@@ -63,7 +70,7 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, names, 1)
-		assert.Equal(t, "my subtitle.srt", names[0])
+		assert.Equal(t, "my subtitle.srt", names[0].Title)
 	})
 
 	t.Run("finds srt file when directory path has spaces", func(t *testing.T) {
@@ -86,7 +93,7 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, names, 1)
-		assert.Equal(t, "subtitle.srt", names[0])
+		assert.Equal(t, "subtitle.srt", names[0].Title)
 	})
 
 	t.Run("finds multiple srt files in directory with spaces", func(t *testing.T) {
@@ -114,7 +121,14 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 		assert.Len(t, names, 3)
 		// Verify all expected files are found
 		for _, expectedFile := range files {
-			assert.Contains(t, names, expectedFile)
+			found := false
+			for _, name := range names {
+				if name.Title == expectedFile {
+					found = true
+					break
+				}
+			}
+			assert.True(t, found, "Expected to find %s", expectedFile)
 		}
 	})
 
@@ -152,7 +166,7 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 
 		assert.NoError(t, err)
 		assert.Len(t, names, 1)
-		assert.Equal(t, "subtitle.srt", names[0])
+		assert.Equal(t, "subtitle.srt", names[0].Title)
 	})
 
 	t.Run("returns only base names, not full paths", func(t *testing.T) {
@@ -170,8 +184,8 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, names, 1)
 		// Verify it's just the filename, not the full path
-		assert.Equal(t, "test.srt", names[0])
-		assert.NotContains(t, names[0], tempDir)
+		assert.Equal(t, "test.srt", names[0].Title)
+		assert.NotContains(t, names[0].Title, tempDir)
 	})
 
 	t.Run("finds srt file in directory with spaces, parentheses and brackets - real world example", func(t *testing.T) {
@@ -195,7 +209,7 @@ func TestLookForAvailableSubtitles(t *testing.T) {
 		assert.NoError(t, err)
 		assert.Len(t, names, 1, "Expected to find 1 subtitle file")
 		if len(names) > 0 {
-			assert.Equal(t, "Inside.Llewyn.Davis.2013.1080p.BluRay.x264.YIFY.srt", names[0])
+			assert.Equal(t, "Inside.Llewyn.Davis.2013.1080p.BluRay.x264.YIFY.srt", names[0].Title)
 		}
 	})
 }

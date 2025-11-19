@@ -110,12 +110,12 @@ func (s *subtitleHandler) downloadSubtitle(c *gin.Context) {
 		Title: subtitleTitle,
 	}
 
-	err = subtitles.Download(ctx, s.db, s.op, s.op, itemId, subtitle)
+	url, err := subtitles.Download(ctx, s.db, s.op, s.op, itemId, subtitle)
 	if server.HandleError(c, err) {
 		return
 	}
 
-	c.Status(http.StatusOK)
+	c.JSON(http.StatusOK, url)
 }
 
 func (s *subtitleHandler) deleteSubtitle(c *gin.Context) {
