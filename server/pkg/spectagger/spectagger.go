@@ -77,11 +77,11 @@ func (d *Spectagger) Run(ctx context.Context) error {
 }
 
 func (d *Spectagger) runSpectagger(ctx context.Context) {
-	logger.Infof("Spectagger started")
+	logger.Debugf("Spectagger started")
 	if err := d.autoSpectag(ctx); err != nil {
 		utils.LogError("Error in autoSpectag", err)
 	}
-	logger.Infof("Spectagger finished")
+	logger.Debugf("Spectagger finished")
 }
 
 func (d *Spectagger) autoSpectag(ctx context.Context) error {
