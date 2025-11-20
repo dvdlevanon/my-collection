@@ -33,13 +33,13 @@ func (d *databaseImpl) CreateOrUpdateTagImageType(ctx context.Context, tit *mode
 	return err
 }
 
-func (d *databaseImpl) GetTagImageType(ctx context.Context, conds ...interface{}) (*model.TagImageType, error) {
+func (d *databaseImpl) GetTagImageType(ctx context.Context, conds ...any) (*model.TagImageType, error) {
 	tit := &model.TagImageType{}
 	err := d.handleError(d.db.WithContext(ctx).Model(tit).First(tit, conds...).Error)
 	return tit, err
 }
 
-func (d *databaseImpl) GetTagImageTypes(ctx context.Context, conds ...interface{}) (*[]model.TagImageType, error) {
+func (d *databaseImpl) GetTagImageTypes(ctx context.Context, conds ...any) (*[]model.TagImageType, error) {
 	var tits []model.TagImageType
 	err := d.handleError(d.db.WithContext(ctx).Model(model.TagImageType{}).Find(&tits, conds...).Error)
 	return &tits, err

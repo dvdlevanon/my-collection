@@ -59,19 +59,19 @@ func (d *databaseImpl) getTagModel(ctx context.Context, withChildren bool) *gorm
 	return model
 }
 
-func (d *databaseImpl) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
+func (d *databaseImpl) GetTag(ctx context.Context, conds ...any) (*model.Tag, error) {
 	tag := &model.Tag{}
 	err := d.handleError(d.getTagModel(ctx, true).First(tag, conds...).Error)
 	return tag, err
 }
 
-func (d *databaseImpl) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+func (d *databaseImpl) GetTagsWithoutChildren(ctx context.Context, conds ...any) (*[]model.Tag, error) {
 	var tags []model.Tag
 	err := d.handleError(d.getTagModel(ctx, false).Find(&tags, conds...).Error)
 	return &tags, err
 }
 
-func (d *databaseImpl) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
+func (d *databaseImpl) GetTags(ctx context.Context, conds ...any) (*[]model.Tag, error) {
 	var tags []model.Tag
 	err := d.handleError(d.getTagModel(ctx, true).Find(&tags, conds...).Error)
 	return &tags, err

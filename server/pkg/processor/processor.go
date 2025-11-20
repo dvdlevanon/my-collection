@@ -21,7 +21,7 @@ import (
 
 var logger = logging.MustGetLogger("item-processor")
 
-func taskBuilder() interface{} {
+func taskBuilder() any {
 	return &model.Task{}
 }
 

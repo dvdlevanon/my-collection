@@ -21,16 +21,16 @@ type MockItemsHandlerDb struct {
 	mock.Mock
 }
 
-func (m *MockItemsHandlerDb) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockItemsHandlerDb) GetItem(ctx context.Context, conds ...any) (*model.Item, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Item), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockItemsHandlerDb) GetItems(ctx context.Context, conds ...any) (*[]model.Item, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -65,16 +65,16 @@ func (m *MockItemsHandlerDb) RemoveTagFromItem(ctx context.Context, itemId uint6
 	return args.Error(0)
 }
 
-func (m *MockItemsHandlerDb) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockItemsHandlerDb) GetTag(ctx context.Context, conds ...any) (*model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Tag), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockItemsHandlerDb) GetTags(ctx context.Context, conds ...any) (*[]model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -89,8 +89,8 @@ func (m *MockItemsHandlerDb) GetAllTags(ctx context.Context) (*[]model.Tag, erro
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockItemsHandlerDb) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockItemsHandlerDb) GetTagsWithoutChildren(ctx context.Context, conds ...any) (*[]model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -142,7 +142,7 @@ func (m *MockItemsHandlerOptimizer) HandleItem(ctx context.Context, item *model.
 }
 
 // Test setup helper
-func setupTestHandler() (interface{}, *MockItemsHandlerDb, *MockItemsHandlerProcessor, *MockItemsHandlerOptimizer) {
+func setupTestHandler() (any, *MockItemsHandlerDb, *MockItemsHandlerProcessor, *MockItemsHandlerOptimizer) {
 	mockDb := new(MockItemsHandlerDb)
 	mockProcessor := new(MockItemsHandlerProcessor)
 	mockOptimizer := new(MockItemsHandlerOptimizer)
@@ -153,7 +153,7 @@ func setupTestHandler() (interface{}, *MockItemsHandlerDb, *MockItemsHandlerProc
 }
 
 // Test setup for Gin router
-func setupTestRouter(handler interface{}) *gin.Engine {
+func setupTestRouter(handler any) *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
 	rg := router.Group("/api")

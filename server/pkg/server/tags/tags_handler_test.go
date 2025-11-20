@@ -31,24 +31,24 @@ func (m *MockTagsHandlerDb) GetAllTags(ctx context.Context) (*[]model.Tag, error
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockTagsHandlerDb) GetTag(ctx context.Context, conds ...any) (*model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockTagsHandlerDb) GetTags(ctx context.Context, conds ...any) (*[]model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockTagsHandlerDb) GetTagsWithoutChildren(ctx context.Context, conds ...any) (*[]model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -75,8 +75,8 @@ func (m *MockTagsHandlerDb) RemoveTagImageFromTag(ctx context.Context, tagId uin
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) GetTagCustomCommand(ctx context.Context, conds ...interface{}) (*[]model.TagCustomCommand, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockTagsHandlerDb) GetTagCustomCommand(ctx context.Context, conds ...any) (*[]model.TagCustomCommand, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -104,8 +104,8 @@ func (m *MockTagsHandlerDb) GetAllTagImageTypes(ctx context.Context) (*[]model.T
 	return args.Get(0).(*[]model.TagImageType), args.Error(1)
 }
 
-func (m *MockTagsHandlerDb) GetTagImageType(ctx context.Context, conds ...interface{}) (*model.TagImageType, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockTagsHandlerDb) GetTagImageType(ctx context.Context, conds ...any) (*model.TagImageType, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -117,8 +117,8 @@ func (m *MockTagsHandlerDb) CreateOrUpdateTagImageType(ctx context.Context, tit 
 	return args.Error(0)
 }
 
-func (m *MockTagsHandlerDb) GetTagAnnotation(ctx context.Context, conds ...interface{}) (*model.TagAnnotation, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockTagsHandlerDb) GetTagAnnotation(ctx context.Context, conds ...any) (*model.TagAnnotation, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

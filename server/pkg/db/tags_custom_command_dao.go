@@ -33,7 +33,7 @@ func (d *databaseImpl) CreateOrUpdateTagCustomCommand(ctx context.Context, comma
 	return err
 }
 
-func (d *databaseImpl) GetTagCustomCommand(ctx context.Context, conds ...interface{}) (*[]model.TagCustomCommand, error) {
+func (d *databaseImpl) GetTagCustomCommand(ctx context.Context, conds ...any) (*[]model.TagCustomCommand, error) {
 	var commands []model.TagCustomCommand
 	err := d.handleError(d.db.WithContext(ctx).Model(model.TagCustomCommand{}).Find(&commands, conds...).Error)
 	return &commands, err

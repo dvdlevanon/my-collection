@@ -13,11 +13,11 @@ func (d *databaseImpl) UpdateTask(ctx context.Context, task *model.Task) error {
 	return d.update(ctx, task)
 }
 
-func (d *databaseImpl) RemoveTasks(ctx context.Context, conds ...interface{}) error {
+func (d *databaseImpl) RemoveTasks(ctx context.Context, conds ...any) error {
 	return d.delete(ctx, model.Task{}, conds...)
 }
 
-func (d *databaseImpl) TasksCount(ctx context.Context, query interface{}, conds ...interface{}) (int64, error) {
+func (d *databaseImpl) TasksCount(ctx context.Context, query any, conds ...any) (int64, error) {
 	var count int64
 	err := d.handleError(d.db.WithContext(ctx).Model(model.Task{}).Where(query, conds...).Count(&count).Error)
 	return count, err

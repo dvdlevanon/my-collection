@@ -70,13 +70,13 @@ func (d *databaseImpl) getItemModel(ctx context.Context, includeTagIdsOnly bool)
 		Preload("Highlights", highlightsPreloading)
 }
 
-func (d *databaseImpl) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
+func (d *databaseImpl) GetItem(ctx context.Context, conds ...any) (*model.Item, error) {
 	item := &model.Item{}
 	err := d.handleError(d.getItemModel(ctx, false).First(item, conds...).Error)
 	return item, err
 }
 
-func (d *databaseImpl) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
+func (d *databaseImpl) GetItems(ctx context.Context, conds ...any) (*[]model.Item, error) {
 	var items []model.Item
 	err := d.handleError(d.getItemModel(ctx, false).Find(&items, conds...).Error)
 	return &items, err

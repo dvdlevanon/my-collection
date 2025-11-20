@@ -17,7 +17,7 @@ type cachedTarw struct {
 	cache map[string]*model.TagAnnotation
 }
 
-func (c *cachedTarw) GetTagAnnotation(ctx context.Context, conds ...interface{}) (*model.TagAnnotation, error) {
+func (c *cachedTarw) GetTagAnnotation(ctx context.Context, conds ...any) (*model.TagAnnotation, error) {
 	if len(conds) == 1 {
 		if tagAnnotation, ok := conds[0].(*model.TagAnnotation); ok && tagAnnotation != nil && tagAnnotation.Title != "" {
 			cached, ok := c.cache[tagAnnotation.Title]

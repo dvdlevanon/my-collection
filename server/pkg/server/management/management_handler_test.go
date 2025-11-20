@@ -29,16 +29,16 @@ func (m *MockManagementDb) GetAllItems(ctx context.Context) (*[]model.Item, erro
 	return args.Get(0).(*[]model.Item), args.Error(1)
 }
 
-func (m *MockManagementDb) GetItem(ctx context.Context, conds ...interface{}) (*model.Item, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockManagementDb) GetItem(ctx context.Context, conds ...any) (*model.Item, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Item), args.Error(1)
 }
 
-func (m *MockManagementDb) GetItems(ctx context.Context, conds ...interface{}) (*[]model.Item, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockManagementDb) GetItems(ctx context.Context, conds ...any) (*[]model.Item, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
@@ -63,24 +63,24 @@ func (m *MockManagementDb) GetAllTags(ctx context.Context) (*[]model.Tag, error)
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTag(ctx context.Context, conds ...interface{}) (*model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockManagementDb) GetTag(ctx context.Context, conds ...any) (*model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTags(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockManagementDb) GetTags(ctx context.Context, conds ...any) (*[]model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*[]model.Tag), args.Error(1)
 }
 
-func (m *MockManagementDb) GetTagsWithoutChildren(ctx context.Context, conds ...interface{}) (*[]model.Tag, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockManagementDb) GetTagsWithoutChildren(ctx context.Context, conds ...any) (*[]model.Tag, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

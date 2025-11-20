@@ -17,7 +17,7 @@ func (d *databaseImpl) RemoveTagAnnotationFromTag(ctx context.Context, tagId uin
 	return d.deleteAssociation(ctx, model.Tag{Id: tagId}, model.TagAnnotation{Id: annotationId}, "Annotations")
 }
 
-func (d *databaseImpl) GetTagAnnotation(ctx context.Context, conds ...interface{}) (*model.TagAnnotation, error) {
+func (d *databaseImpl) GetTagAnnotation(ctx context.Context, conds ...any) (*model.TagAnnotation, error) {
 	tagAnnotation := &model.TagAnnotation{}
 	err := d.handleError(d.db.WithContext(ctx).Model(tagAnnotation).First(tagAnnotation, conds...).Error)
 	return tagAnnotation, err

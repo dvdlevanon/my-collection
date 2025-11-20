@@ -25,16 +25,16 @@ type MockFsDb struct {
 	mock.Mock
 }
 
-func (m *MockFsDb) GetDirectory(ctx context.Context, conds ...interface{}) (*model.Directory, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockFsDb) GetDirectory(ctx context.Context, conds ...any) (*model.Directory, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}
 	return args.Get(0).(*model.Directory), args.Error(1)
 }
 
-func (m *MockFsDb) GetDirectories(ctx context.Context, conds ...interface{}) (*[]model.Directory, error) {
-	args := m.Called(append([]interface{}{ctx}, conds...)...)
+func (m *MockFsDb) GetDirectories(ctx context.Context, conds ...any) (*[]model.Directory, error) {
+	args := m.Called(append([]any{ctx}, conds...)...)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
 	}

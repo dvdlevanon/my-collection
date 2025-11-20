@@ -39,13 +39,13 @@ func (d *databaseImpl) getDirectoryModel(ctx context.Context) *gorm.DB {
 	return d.db.WithContext(ctx).Model(model.Directory{}).Preload("Tags", tagsPreloading)
 }
 
-func (d *databaseImpl) GetDirectory(ctx context.Context, conds ...interface{}) (*model.Directory, error) {
+func (d *databaseImpl) GetDirectory(ctx context.Context, conds ...any) (*model.Directory, error) {
 	directory := &model.Directory{}
 	err := d.handleError(d.getDirectoryModel(ctx).First(directory, conds...).Error)
 	return directory, err
 }
 
-func (d *databaseImpl) GetDirectories(ctx context.Context, conds ...interface{}) (*[]model.Directory, error) {
+func (d *databaseImpl) GetDirectories(ctx context.Context, conds ...any) (*[]model.Directory, error) {
 	var directories []model.Directory
 	err := d.handleError(d.getDirectoryModel(ctx).Find(&directories, conds...).Error)
 	return &directories, err

@@ -87,7 +87,7 @@ func (t Rect) Value() (driver.Value, error) {
 	return json.Marshal(t)
 }
 
-func (t *Rect) Scan(value interface{}) error {
+func (t *Rect) Scan(value any) error {
 	b, ok := value.([]byte)
 	if !ok {
 		return errors.Errorf("type assertion to []byte failed %v", value)
