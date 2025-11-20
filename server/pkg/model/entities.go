@@ -119,10 +119,8 @@ type Task struct {
 	ProcessingStart *int64   `json:"processingStart,omitempty"`
 	ProcessingEnd   *int64   `json:"processingEnd,omitempty"`
 	TaskType        TaskType `json:"type,omitempty"`
-	IdParam         uint64   `json:"idParam,omitempty"`
-	FloatParam      float64  `json:"floatParam,omitempty"`
-	StringParam     string   `json:"stringParam,omitempty"`
 	Description     string   `json:"description,omitempty" gorm:"-:all"`
+	Params          string   // a json string containing specific task parameters based on its type
 }
 
 type QueueMetadata struct {
@@ -133,7 +131,7 @@ type QueueMetadata struct {
 
 type PushMessage struct {
 	MessageType PushMessageType `json:"type,omitempty"`
-	Payload     interface{}     `json:"payload,omitempty"`
+	Payload     any             `json:"payload,omitempty"`
 }
 
 type TagCustomCommand struct {

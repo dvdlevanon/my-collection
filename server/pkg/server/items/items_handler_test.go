@@ -102,28 +102,34 @@ type MockItemsHandlerProcessor struct {
 	mock.Mock
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64) {
-	m.Called(ctx, id)
+func (m *MockItemsHandlerProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64, title string) error {
+	m.Called(ctx, id, title)
+	return nil
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemCovers(ctx context.Context, id uint64) {
-	m.Called(ctx, id)
+func (m *MockItemsHandlerProcessor) EnqueueItemCovers(ctx context.Context, id uint64, title string) error {
+	m.Called(ctx, id, title)
+	return nil
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat) {
-	m.Called(ctx, id, second, rect)
+func (m *MockItemsHandlerProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat, title string) error {
+	m.Called(ctx, id, second, rect, title)
+	return nil
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemPreview(ctx context.Context, id uint64) {
-	m.Called(ctx, id)
+func (m *MockItemsHandlerProcessor) EnqueueItemPreview(ctx context.Context, id uint64, title string) error {
+	m.Called(ctx, id, title)
+	return nil
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64) {
-	m.Called(ctx, id)
+func (m *MockItemsHandlerProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64, title string) error {
+	m.Called(ctx, id, title)
+	return nil
 }
 
-func (m *MockItemsHandlerProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64) {
-	m.Called(ctx, id, second)
+func (m *MockItemsHandlerProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64, title string) error {
+	m.Called(ctx, id, second, title)
+	return nil
 }
 
 // MockItemsHandlerOptimizer is a mock implementation of itemsHandlerOptimizer interface
@@ -537,14 +543,16 @@ func TestRemoveTagFromItem(t *testing.T) {
 }
 
 func TestSetMainCover(t *testing.T) {
-	handler, _, mockProcessor, _ := setupTestHandler()
-	router := setupTestRouter(handler)
-
 	t.Run("Success", func(t *testing.T) {
+		handler, mockDb, mockProcessor, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		itemId := uint64(123)
 		second := 5.5
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
 
-		mockProcessor.On("EnqueueMainCover", mock.Anything, itemId, second).Return()
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
+		mockProcessor.On("EnqueueMainCover", mock.Anything, itemId, second, item.Title).Return()
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/main-cover?second=%f", itemId, second), nil)
@@ -552,10 +560,14 @@ func TestSetMainCover(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
+		mockDb.AssertExpectations(t)
 		mockProcessor.AssertExpectations(t)
 	})
 
 	t.Run("Invalid Item ID", func(t *testing.T) {
+		handler, _, _, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/items/invalid/main-cover?second=5.5", nil)
 		router.ServeHTTP(w, req)
@@ -564,27 +576,36 @@ func TestSetMainCover(t *testing.T) {
 	})
 
 	t.Run("Invalid Second Parameter", func(t *testing.T) {
+		handler, mockDb, _, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		itemId := uint64(123)
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
+
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/main-cover?second=invalid", itemId), nil)
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		mockDb.AssertExpectations(t)
 	})
 }
 
 func TestRefreshItem(t *testing.T) {
-	handler, _, mockProcessor, _ := setupTestHandler()
-	router := setupTestRouter(handler)
-
 	t.Run("Success", func(t *testing.T) {
-		itemId := uint64(123)
+		handler, mockDb, mockProcessor, _ := setupTestHandler()
+		router := setupTestRouter(handler)
 
-		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, itemId).Return()
-		mockProcessor.On("EnqueueItemCovers", mock.Anything, itemId).Return()
-		mockProcessor.On("EnqueueItemPreview", mock.Anything, itemId).Return()
-		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, itemId).Return()
+		itemId := uint64(123)
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
+
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
+		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, itemId, item.Title).Return(nil)
+		mockProcessor.On("EnqueueItemCovers", mock.Anything, itemId, item.Title).Return(nil)
+		mockProcessor.On("EnqueueItemPreview", mock.Anything, itemId, item.Title).Return(nil)
+		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, itemId, item.Title).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/process", itemId), nil)
@@ -592,10 +613,14 @@ func TestRefreshItem(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
+		mockDb.AssertExpectations(t)
 		mockProcessor.AssertExpectations(t)
 	})
 
 	t.Run("Invalid Item ID", func(t *testing.T) {
+		handler, _, _, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", "/api/items/invalid/process", nil)
 		router.ServeHTTP(w, req)
@@ -644,16 +669,17 @@ func TestOptimizeItem(t *testing.T) {
 }
 
 func TestCropFrame(t *testing.T) {
-	handler, _, mockProcessor, _ := setupTestHandler()
-	router := setupTestRouter(handler)
-
 	t.Run("Success", func(t *testing.T) {
+		handler, mockDb, mockProcessor, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		itemId := uint64(123)
 		second := 5.5
 		cropX := 10.0
 		cropY := 20.0
 		cropWidth := 100.0
 		cropHeight := 200.0
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
 
 		expectedRect := model.RectFloat{
 			X: cropX,
@@ -662,7 +688,8 @@ func TestCropFrame(t *testing.T) {
 			H: cropHeight,
 		}
 
-		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect).Return()
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
+		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect, item.Title).Return()
 
 		url := fmt.Sprintf("/api/items/%d/crop-frame?second=%f&crop-x=%f&crop-y=%f&crop-width=%f&crop-height=%f",
 			itemId, second, cropX, cropY, cropWidth, cropHeight)
@@ -673,17 +700,25 @@ func TestCropFrame(t *testing.T) {
 
 		assert.Equal(t, http.StatusOK, w.Code)
 
+		mockDb.AssertExpectations(t)
 		mockProcessor.AssertExpectations(t)
 	})
 
 	t.Run("Invalid Parameters", func(t *testing.T) {
+		handler, mockDb, _, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		itemId := uint64(123)
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
+
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/crop-frame?second=invalid", itemId), nil)
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusInternalServerError, w.Code)
+		mockDb.AssertExpectations(t)
 	})
 }
 
@@ -731,9 +766,10 @@ func TestSplitItem(t *testing.T) {
 		mockDb.On("UpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(nil)
 
 		// Mock processor calls for the result items
-		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemCovers", mock.Anything, mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
+		mockProcessor.On("EnqueueItemCovers", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
+		mockProcessor.On("EnqueueItemPreview", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
+		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
 
 		w := httptest.NewRecorder()
 		req, _ := http.NewRequest("POST", fmt.Sprintf("/api/items/%d/split?second=%f", itemId, second), nil)
@@ -794,10 +830,10 @@ func TestMakeHighlight(t *testing.T) {
 		mockDb.On("UpdateItem", mock.Anything, mock.AnythingOfType("*model.Item")).Return(nil)
 
 		// Mock processor calls for the highlight (use flexible matching since the ID might be different)
-		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemCovers", mock.Anything, mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemPreview", mock.Anything, mock.AnythingOfType("uint64")).Return()
-		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, mock.AnythingOfType("uint64")).Return()
+		mockProcessor.On("EnqueueItemVideoMetadata", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
+		mockProcessor.On("EnqueueItemCovers", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
+		mockProcessor.On("EnqueueItemPreview", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
+		mockProcessor.On("EnqueueItemFileMetadata", mock.Anything, mock.AnythingOfType("uint64"), mock.Anything).Return(nil)
 
 		url := fmt.Sprintf("/api/items/%d/make-highlight?start=%f&end=%f&highlight-id=%d",
 			itemId, startSecond, endSecond, highlightId)
@@ -921,7 +957,7 @@ func TestErrorHandling(t *testing.T) {
 
 // Test edge cases and boundary conditions
 func TestEdgeCases(t *testing.T) {
-	handler, mockDb, mockProcessor, _ := setupTestHandler()
+	handler, mockDb, _, _ := setupTestHandler()
 	router := setupTestRouter(handler)
 
 	t.Run("Large Item ID", func(t *testing.T) {
@@ -963,11 +999,16 @@ func TestEdgeCases(t *testing.T) {
 	})
 
 	t.Run("Crop Frame with Zero Dimensions", func(t *testing.T) {
+		handler, mockDb, mockProcessor, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		itemId := uint64(123)
 		second := 5.5
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
 		expectedRect := model.RectFloat{X: 0, Y: 0, W: 0, H: 0}
 
-		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect).Return()
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
+		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect, item.Title).Return()
 
 		url := fmt.Sprintf("/api/items/%d/crop-frame?second=%f&crop-x=0&crop-y=0&crop-width=0&crop-height=0",
 			itemId, second)
@@ -977,15 +1018,21 @@ func TestEdgeCases(t *testing.T) {
 		router.ServeHTTP(w, req)
 
 		assert.Equal(t, http.StatusOK, w.Code)
+		mockDb.AssertExpectations(t)
 		mockProcessor.AssertExpectations(t)
 	})
 
 	t.Run("Negative Crop Values", func(t *testing.T) {
+		handler, mockDb, mockProcessor, _ := setupTestHandler()
+		router := setupTestRouter(handler)
+
 		itemId := uint64(123)
 		second := 5.5
+		item := &model.Item{Id: itemId, Title: "test.mp4"}
 		expectedRect := model.RectFloat{X: -10, Y: -20, W: -100, H: -200}
 
-		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect).Return()
+		mockDb.On("GetItem", mock.Anything, itemId).Return(item, nil)
+		mockProcessor.On("EnqueueCropFrame", mock.Anything, itemId, second, expectedRect, item.Title).Return()
 
 		url := fmt.Sprintf("/api/items/%d/crop-frame?second=%f&crop-x=-10&crop-y=-20&crop-width=-100&crop-height=-200",
 			itemId, second)

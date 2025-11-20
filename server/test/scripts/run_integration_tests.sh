@@ -17,6 +17,7 @@ NC='\033[0m' # No Color
 VERBOSE=true
 STRESS_TESTS=false
 COVERAGE=false
+NO_CACHE=false
 PACKAGE="./test/integration"
 TEST_PATTERN=""
 SUITE=""
@@ -39,6 +40,7 @@ print_usage() {
     echo "  -c, --coverage   Generate test coverage report"
     echo "  -p, --pattern    Run specific test pattern (e.g., 'TestBasic*')"
     echo "  --short          Run tests in short mode (skip long-running tests)"
+    echo "  --no-cache       Disable test caching (run all tests fresh)"
     echo ""
     echo "Examples:"
     echo "  $0                           # Run all integration tests"
@@ -105,9 +107,13 @@ build_test_command() {
         cmd="$cmd -v"
     fi
     
+    if [ "$NO_CACHE" = true ]; then
+        cmd="$cmd -count=1"
+    fi
+    
     if [ "$COVERAGE" = true ]; then
         local coverage_file="coverage_${test_file}.out"
-        cmd="$cmd -coverprofile=$coverage_file"
+        cmd="$cmd -coverprofile=$coverage_file -coverpkg=./..."
     fi
     
     if [ "$SHORT_MODE" = true ]; then
@@ -257,8 +263,11 @@ run_all_tests() {
     if [ "$VERBOSE" = true ]; then
         cmd="$cmd -v"
     fi
+    if [ "$NO_CACHE" = true ]; then
+        cmd="$cmd -count=1"
+    fi
     if [ "$COVERAGE" = true ]; then
-        cmd="$cmd -coverprofile=coverage_integration_all.out"
+        cmd="$cmd -coverprofile=coverage_integration_all.out -coverpkg=./..."
     fi
     if [ "$SHORT_MODE" = true ]; then
         cmd="$cmd -short"
@@ -312,8 +321,9 @@ generate_coverage_report() {
                 log_info "Total coverage: $coverage_percent"
             fi
             
-            # Cleanup individual coverage files
-            rm -f coverage_*.out 2>/dev/null || true
+            # Cleanup individual coverage files (keep the main one for reference)
+            # Remove only the per-suite coverage files, keep coverage_integration_all.out
+            find . -name "coverage_*.out" ! -name "coverage_integration_all.out" ! -name "coverage_integration_merged.out" -delete 2>/dev/null || true
         else
             log_warning "No coverage files found"
         fi
@@ -381,6 +391,10 @@ while [[ $# -gt 0 ]]; do
             SHORT_MODE=true
             shift
             ;;
+        --no-cache)
+            NO_CACHE=true
+            shift
+            ;;
         fssync|autotags|server|tags|stress|all)
             SUITE="$1"
             shift
@@ -415,6 +429,9 @@ main() {
     fi
     if [ "$SHORT_MODE" = true ]; then
         log_info "Short mode enabled (skipping long-running tests)"
+    fi
+    if [ "$NO_CACHE" = true ]; then
+        log_info "Test caching disabled (all tests will run fresh)"
     fi
     if [ -n "$TEST_PATTERN" ]; then
         log_info "Test pattern: $TEST_PATTERN"

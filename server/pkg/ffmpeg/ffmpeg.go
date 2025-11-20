@@ -180,10 +180,10 @@ func OptimizeVideoForPreview(videoFile string, tempFile string) error {
 	return os.Rename(tempFile, videoFile)
 }
 
-func ChangeVideoResolution(videoFile string, tempFile string, newResolution string) error {
-	logger.Infof("Changing video resolution for %s to %s", videoFile, newResolution)
+func ChangeVideoResolution(videoFile string, tempFile string, w int, h int) error {
+	logger.Infof("Changing video resolution for %s to %d:%d", videoFile, w, h)
 
-	_, err := execute("ffmpeg", "-i", videoFile, "-vf", fmt.Sprintf("scale=%s", newResolution), "-c:a", "copy", tempFile)
+	_, err := execute("ffmpeg", "-i", videoFile, "-vf", fmt.Sprintf("scale=%d:%d", w, h), "-c:a", "copy", tempFile)
 	if err != nil {
 		return err
 	}

@@ -80,7 +80,6 @@ func (s *tasksHandler) getTasks(c *gin.Context) {
 		return
 	}
 
-	tasks.AddDescriptionToTasks(ctx, s.db, t)
 	c.JSON(http.StatusOK, t)
 }
 

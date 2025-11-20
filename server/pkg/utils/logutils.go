@@ -41,6 +41,14 @@ func LogError(message string, err error) {
 	}
 }
 
+func LogWarning(message string, err error) {
+	if err == nil {
+		return
+	}
+
+	logger.Warningf("Warning: %s %s", message, squashString(fmt.Sprintf("%v", err)))
+}
+
 func squashString(str string) string {
 	return strings.ReplaceAll(strings.ReplaceAll(str, "\n", ""), "\r", "")
 }

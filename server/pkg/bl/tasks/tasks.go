@@ -10,17 +10,6 @@ import (
 
 var logger = logging.MustGetLogger("tasks")
 
-func AddDescriptionToTasks(ctx context.Context, ir model.ItemReader, tasks *[]model.Task) {
-	for i, task := range *tasks {
-		item, err := ir.GetItem(ctx, task.IdParam)
-		if err != nil {
-			(*tasks)[i].Description = task.TaskType.ToDescription("Unknown")
-		}
-
-		(*tasks)[i].Description = task.TaskType.ToDescription(item.Title)
-	}
-}
-
 func BuildQueueMetadata(ctx context.Context, tr model.TaskReader, ps model.ProcessorStatus) (model.QueueMetadata, error) {
 	size, err := tr.TasksCount(ctx, "")
 	if err != nil {

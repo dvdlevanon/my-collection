@@ -22,13 +22,24 @@ import (
 // MockProcessor implements a simple mock for the processor interface
 type MockProcessor struct{}
 
-func (m *MockProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64) {}
-func (m *MockProcessor) EnqueueItemCovers(ctx context.Context, id uint64)        {}
-func (m *MockProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat) {
+func (m *MockProcessor) EnqueueItemVideoMetadata(ctx context.Context, id uint64, title string) error {
+	return nil
 }
-func (m *MockProcessor) EnqueueItemPreview(ctx context.Context, id uint64)               {}
-func (m *MockProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64)          {}
-func (m *MockProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64) {}
+func (m *MockProcessor) EnqueueItemCovers(ctx context.Context, id uint64, title string) error {
+	return nil
+}
+func (m *MockProcessor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat, title string) error {
+	return nil
+}
+func (m *MockProcessor) EnqueueItemPreview(ctx context.Context, id uint64, title string) error {
+	return nil
+}
+func (m *MockProcessor) EnqueueItemFileMetadata(ctx context.Context, id uint64, title string) error {
+	return nil
+}
+func (m *MockProcessor) EnqueueMainCover(ctx context.Context, id uint64, second float64, title string) error {
+	return nil
+}
 
 // MockOptimizer implements a simple mock for the optimizer interface
 type MockOptimizer struct{}
@@ -466,11 +477,20 @@ func TestServerErrorHandling(t *testing.T) {
 	})
 
 	t.Run("Invalid Parameters in Advanced Operations", func(t *testing.T) {
+		// Create a test file first so we have an item to work with
+		framework.CreateFile("test_error.mp4", "test content")
+		framework.Sync()
+
+		items, err := framework.GetAllItemsViaAPI()
+		require.NoError(t, err)
+		require.NotEmpty(t, items)
+		itemID := items[0].Id
+
 		// Test invalid second parameter
 		query := map[string]string{
 			"second": "invalid",
 		}
-		resp, err := framework.makeRequestWithQuery("POST", "/api/items/1/main-cover", query, nil)
+		resp, err := framework.makeRequestWithQuery("POST", fmt.Sprintf("/api/items/%d/main-cover", itemID), query, nil)
 		require.NoError(t, err)
 		defer resp.Body.Close()
 
@@ -484,7 +504,7 @@ func TestServerErrorHandling(t *testing.T) {
 			"crop-width":  "100",
 			"crop-height": "200",
 		}
-		resp2, err := framework.makeRequestWithQuery("POST", "/api/items/1/crop-frame", invalidCropQuery, nil)
+		resp2, err := framework.makeRequestWithQuery("POST", fmt.Sprintf("/api/items/%d/crop-frame", itemID), invalidCropQuery, nil)
 		require.NoError(t, err)
 		defer resp2.Body.Close()
 

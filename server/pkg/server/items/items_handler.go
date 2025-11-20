@@ -9,6 +9,7 @@ import (
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/suggestions"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"strconv"
 
@@ -25,12 +26,12 @@ type itemsHandlerDb interface {
 }
 
 type itemsHandlerProcessor interface {
-	EnqueueItemVideoMetadata(ctx context.Context, id uint64)
-	EnqueueItemCovers(ctx context.Context, id uint64)
-	EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat)
-	EnqueueItemPreview(ctx context.Context, id uint64)
-	EnqueueItemFileMetadata(ctx context.Context, id uint64)
-	EnqueueMainCover(ctx context.Context, id uint64, second float64)
+	EnqueueItemVideoMetadata(ctx context.Context, id uint64, title string) error
+	EnqueueItemCovers(ctx context.Context, id uint64, title string) error
+	EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat, title string) error
+	EnqueueItemPreview(ctx context.Context, id uint64, title string) error
+	EnqueueItemFileMetadata(ctx context.Context, id uint64, title string) error
+	EnqueueMainCover(ctx context.Context, id uint64, second float64, title string) error
 }
 
 type itemsHandlerOptimizer interface {
@@ -216,6 +217,10 @@ func (s *itemsHandler) setMainCover(c *gin.Context) {
 	if server.HandleError(c, err) {
 		return
 	}
+	item, err := s.db.GetItem(ctx, itemId)
+	if server.HandleError(c, err) {
+		return
+	}
 
 	second, err := strconv.ParseFloat(c.Query("second"), 64)
 	if server.HandleError(c, err) {
@@ -223,7 +228,7 @@ func (s *itemsHandler) setMainCover(c *gin.Context) {
 	}
 
 	logger.Infof("Setting main cover for item %d at %d", itemId, second)
-	s.processor.EnqueueMainCover(ctx, itemId, second)
+	utils.LogWarning("EnqueueMainCover", s.processor.EnqueueMainCover(ctx, itemId, second, item.Title))
 	c.Status(http.StatusOK)
 }
 
@@ -246,10 +251,10 @@ func (s *itemsHandler) splitItem(c *gin.Context) {
 	}
 
 	for _, item := range changedItems {
-		s.processor.EnqueueItemVideoMetadata(ctx, item.Id)
-		s.processor.EnqueueItemCovers(ctx, item.Id)
-		s.processor.EnqueueItemFileMetadata(ctx, item.Id)
-		// s.processor.EnqueueItemPreview(item.Id)
+		utils.LogWarning("EnqueueItemVideoMetadata", s.processor.EnqueueItemVideoMetadata(ctx, item.Id, item.Title))
+		utils.LogWarning("EnqueueItemCovers", s.processor.EnqueueItemCovers(ctx, item.Id, item.Title))
+		utils.LogWarning("EnqueueItemFileMetadata", s.processor.EnqueueItemFileMetadata(ctx, item.Id, item.Title))
+		utils.LogWarning("EnqueueItemPreview", s.processor.EnqueueItemPreview(ctx, item.Id, item.Title))
 	}
 
 	c.Status(http.StatusOK)
@@ -283,16 +288,20 @@ func (s *itemsHandler) makeHighlight(c *gin.Context) {
 		return
 	}
 
-	s.processor.EnqueueItemVideoMetadata(ctx, highlightItem.Id)
-	s.processor.EnqueueItemCovers(ctx, highlightItem.Id)
-	s.processor.EnqueueItemPreview(ctx, highlightItem.Id)
-	s.processor.EnqueueItemFileMetadata(ctx, highlightItem.Id)
+	utils.LogWarning("EnqueueItemVideoMetadata", s.processor.EnqueueItemVideoMetadata(ctx, highlightItem.Id, highlightItem.Title))
+	utils.LogWarning("EnqueueItemCovers", s.processor.EnqueueItemCovers(ctx, highlightItem.Id, highlightItem.Title))
+	utils.LogWarning("EnqueueItemPreview", s.processor.EnqueueItemPreview(ctx, highlightItem.Id, highlightItem.Title))
+	utils.LogWarning("EnqueueItemFileMetadata", s.processor.EnqueueItemFileMetadata(ctx, highlightItem.Id, highlightItem.Title))
 	c.Status(http.StatusOK)
 }
 
 func (s *itemsHandler) cropFrame(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
+	if server.HandleError(c, err) {
+		return
+	}
+	item, err := s.db.GetItem(ctx, itemId)
 	if server.HandleError(c, err) {
 		return
 	}
@@ -330,7 +339,7 @@ func (s *itemsHandler) cropFrame(c *gin.Context) {
 	}
 
 	logger.Infof("Cropping frame for item %d at %f %s", itemId, second, rect)
-	s.processor.EnqueueCropFrame(ctx, itemId, second, rect)
+	utils.LogWarning("EnqueueCropFrame", s.processor.EnqueueCropFrame(ctx, itemId, second, rect, item.Title))
 }
 
 func (s *itemsHandler) getSuggestionsForItem(c *gin.Context) {
@@ -354,11 +363,15 @@ func (s *itemsHandler) refreshItem(c *gin.Context) {
 	if server.HandleError(c, err) {
 		return
 	}
+	item, err := s.db.GetItem(ctx, itemId)
+	if server.HandleError(c, err) {
+		return
+	}
 
-	s.processor.EnqueueItemVideoMetadata(ctx, itemId)
-	s.processor.EnqueueItemCovers(ctx, itemId)
-	s.processor.EnqueueItemPreview(ctx, itemId)
-	s.processor.EnqueueItemFileMetadata(ctx, itemId)
+	utils.LogWarning("EnqueueItemVideoMetadata", s.processor.EnqueueItemVideoMetadata(ctx, item.Id, item.Title))
+	utils.LogWarning("EnqueueItemCovers", s.processor.EnqueueItemCovers(ctx, item.Id, item.Title))
+	utils.LogWarning("EnqueueItemPreview", s.processor.EnqueueItemPreview(ctx, item.Id, item.Title))
+	utils.LogWarning("EnqueueItemFileMetadata", s.processor.EnqueueItemFileMetadata(ctx, item.Id, item.Title))
 
 	c.Status(http.StatusOK)
 }

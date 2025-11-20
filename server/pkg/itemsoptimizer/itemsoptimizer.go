@@ -2,7 +2,6 @@ package itemsoptimizer
 
 import (
 	"context"
-	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
 
@@ -12,7 +11,7 @@ import (
 var logger = logging.MustGetLogger("itemsoptimizer")
 
 type Processor interface {
-	EnqueueChangeResolution(ctx context.Context, id uint64, newResolution string)
+	EnqueueChangeResolution(ctx context.Context, id uint64, w int, h int, title string) error
 }
 
 func New(ir model.ItemReader, processor Processor, maxResolution int) *ItemsOptimizer {
@@ -61,7 +60,7 @@ func (d *ItemsOptimizer) HandleItem(ctx context.Context, item *model.Item) {
 	}
 
 	logger.Infof("Item with high resolution %v", item.Title)
-	d.processor.EnqueueChangeResolution(ctx, item.Id, ffmpeg.NewResolution(-1, d.maxResolution).String())
+	d.processor.EnqueueChangeResolution(ctx, item.Id, -1, d.maxResolution, item.Title)
 }
 
 func (d *ItemsOptimizer) optimizeItems(ctx context.Context) error {

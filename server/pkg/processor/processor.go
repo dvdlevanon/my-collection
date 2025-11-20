@@ -7,13 +7,16 @@ import (
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/storage"
+	general_tasks "my-collection/server/pkg/tasks/general"
+	video_tasks "my-collection/server/pkg/tasks/videos"
 	"my-collection/server/pkg/utils"
 	"os"
 	"time"
 
+	"github.com/go-errors/errors"
 	"github.com/joncrlsn/dque"
 	"github.com/op/go-logging"
-	"k8s.io/utils/pointer"
+	"k8s.io/utils/ptr"
 )
 
 var logger = logging.MustGetLogger("item-processor")
@@ -63,14 +66,14 @@ func New(db db.Database, storage *storage.Storage, paused bool, coversCount int,
 	}, nil
 }
 
-func (p *Processor) pushQueueMetadata(ctx context.Context) {
+func (p *Processor) pushQueueMetadata(ctx context.Context) error {
 	queueMetadata, err := tasks.BuildQueueMetadata(ctx, p.db, p)
 	if err != nil {
-		logger.Errorf("Unable to build queue metadata %s", err)
-		return
+		return err
 	}
 
 	p.Push(model.PushMessage{MessageType: model.PUSH_QUEUE_METADATA, Payload: queueMetadata})
+	return nil
 }
 
 func (p *Processor) ClearFinishedTasks(ctx context.Context) error {
@@ -96,6 +99,15 @@ func (p *Processor) Pause() {
 
 func (p *Processor) Continue() {
 	p.pauseChannel <- false
+}
+
+func (p *Processor) GetFileMetadata(path string) (int64, int64, error) {
+	file, err := os.Stat(path)
+	if err != nil {
+		return 0, 0, errors.Wrap(err, 1)
+	}
+
+	return file.ModTime().UnixMilli(), file.Size(), nil
 }
 
 func (p *Processor) Run(ctx context.Context) error {
@@ -136,17 +148,17 @@ func (p *Processor) process(ctx context.Context) {
 	}
 
 	startMillis := time.Now().UnixMilli()
-	task.ProcessingStart = pointer.Int64(time.Now().UnixMilli())
+	task.ProcessingStart = ptr.To(time.Now().UnixMilli())
 	if err := p.db.UpdateTask(ctx, task); err != nil {
 		logger.Warningf("Unable to update task processing start time %s %s", task.Id, err)
 	}
 
 	logger.Infof("Start processing task %+v", task)
 	if err := p.processTask(ctx, task); err != nil {
-		logger.Errorf("Error processing task %+v for id: %d - %s", task.TaskType.String(), task.IdParam, err)
+		logger.Errorf("Error processing task %+v for params: %s - %s", task.TaskType.String(), task.Params, err)
 	}
 
-	task.ProcessingEnd = pointer.Int64(time.Now().UnixMilli())
+	task.ProcessingEnd = ptr.To(time.Now().UnixMilli())
 	if err := p.db.UpdateTask(ctx, task); err != nil {
 		logger.Warningf("Unable to update task processing end time %s %s", task.Id, err)
 	}
@@ -164,19 +176,19 @@ func (p *Processor) process(ctx context.Context) {
 func (p *Processor) processTask(ctx context.Context, t *model.Task) error {
 	switch t.TaskType {
 	case model.REFRESH_COVER_TASK:
-		return refreshItemCovers(ctx, p.db, p.storage, t.IdParam, p.coversCount)
+		return video_tasks.RefreshVideoCovers(ctx, p.db, p.storage, t.Params)
 	case model.SET_MAIN_COVER:
-		return refreshMainCover(ctx, p.db, p.storage, t.IdParam, t.FloatParam)
+		return video_tasks.UpdateVideoMainCover(ctx, p.db, p.storage, t.Params)
 	case model.CROP_FRAME:
-		return cropFrame(ctx, p.db, p.storage, t.IdParam, t.FloatParam, t.StringParam)
+		return video_tasks.CropVideoFrame(ctx, p.db, p.storage, t.Params)
 	case model.REFRESH_PREVIEW_TASK:
-		return refreshItemPreview(ctx, p.db, p.storage, p.previewSceneCount, p.previewSceneDuration, t.IdParam)
+		return video_tasks.RefreshVideoPreview(ctx, p.db, p.storage, t.Params)
 	case model.REFRESH_METADATA_TASK:
-		return refreshItemMetadata(ctx, p.db, t.IdParam)
+		return video_tasks.UpdateVideoMetadata(ctx, p.db, t.Params)
 	case model.REFRESH_FILE_TASK:
-		return refreshFileMetadata(ctx, p.db, t.IdParam)
+		return general_tasks.UpdateFileMetadata(ctx, p.db, t.Params)
 	case model.CHANGE_RESOLUTION:
-		return changeResolution(ctx, p.db, p.storage, t.IdParam, t.StringParam)
+		return video_tasks.ChangeVideoResolution(ctx, p.db, p.storage, t.Params)
 	default:
 		return fmt.Errorf("unknown task %+v", t)
 	}
