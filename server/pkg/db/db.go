@@ -98,22 +98,22 @@ func (d *databaseImpl) handleError(err error) error {
 	return nil
 }
 
-func (d *databaseImpl) deleteAssociation(ctx context.Context, value interface{}, association interface{}, name string) error {
+func (d *databaseImpl) deleteAssociation(ctx context.Context, value any, association any, name string) error {
 	return d.handleError(d.db.WithContext(ctx).Model(value).Association(name).Delete(association))
 }
 
-func (d *databaseImpl) delete(ctx context.Context, value interface{}, conds ...interface{}) error {
+func (d *databaseImpl) delete(ctx context.Context, value any, conds ...any) error {
 	return d.handleError(d.db.WithContext(ctx).Delete(value, conds...).Error)
 }
 
-func (d *databaseImpl) deleteWithAssociations(ctx context.Context, value interface{}, conds ...interface{}) error {
+func (d *databaseImpl) deleteWithAssociations(ctx context.Context, value any, conds ...any) error {
 	return d.handleError(d.db.WithContext(ctx).Select(clause.Associations).Delete(value, conds...).Error)
 }
 
-func (d *databaseImpl) create(ctx context.Context, value interface{}) error {
+func (d *databaseImpl) create(ctx context.Context, value any) error {
 	return d.handleError(d.db.WithContext(ctx).Create(value).Error)
 }
 
-func (d *databaseImpl) update(ctx context.Context, value interface{}) error {
+func (d *databaseImpl) update(ctx context.Context, value any) error {
 	return d.handleError(d.db.WithContext(ctx).Updates(value).Error)
 }

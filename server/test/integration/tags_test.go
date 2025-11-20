@@ -116,7 +116,7 @@ func (f *TagsServerIntegrationFramework) Cleanup() {
 // HTTP Helper Methods
 
 // makeRequest makes an HTTP request and returns the response
-func (f *TagsServerIntegrationFramework) makeRequest(method, path string, body interface{}) (*http.Response, error) {
+func (f *TagsServerIntegrationFramework) makeRequest(method, path string, body any) (*http.Response, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
@@ -139,7 +139,7 @@ func (f *TagsServerIntegrationFramework) makeRequest(method, path string, body i
 }
 
 // makeRequestWithQuery makes an HTTP request with query parameters
-func (f *TagsServerIntegrationFramework) makeRequestWithQuery(method, path string, query map[string]string, body interface{}) (*http.Response, error) {
+func (f *TagsServerIntegrationFramework) makeRequestWithQuery(method, path string, query map[string]string, body any) (*http.Response, error) {
 	var bodyReader io.Reader
 	if body != nil {
 		jsonBody, err := json.Marshal(body)
@@ -169,7 +169,7 @@ func (f *TagsServerIntegrationFramework) makeRequestWithQuery(method, path strin
 }
 
 // parseJSONResponse parses a JSON response into the given interface
-func (f *TagsServerIntegrationFramework) parseJSONResponse(resp *http.Response, target interface{}) error {
+func (f *TagsServerIntegrationFramework) parseJSONResponse(resp *http.Response, target any) error {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
