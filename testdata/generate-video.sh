@@ -13,6 +13,8 @@ DEFAULT_COUNTER_FONTSIZE=72
 DEFAULT_TEXT_FONTSIZE=36
 DEFAULT_COUNTER_COLOR="white"
 DEFAULT_TEXT_COLOR="yellow"
+DEFAULT_VIDEO_CODEC="libx264"
+DEFAULT_AUDIO_CODEC="aac"
 
 # Function to show usage
 show_usage() {
@@ -32,6 +34,10 @@ Options:
     --text-size SIZE    Text font size (default: $DEFAULT_TEXT_FONTSIZE)
     --counter-color COLOR Counter color (default: $DEFAULT_COUNTER_COLOR)
     --text-color COLOR  Text color (default: $DEFAULT_TEXT_COLOR)
+    --video-codec CODEC Video codec (default: $DEFAULT_VIDEO_CODEC)
+                        Options: libx264, libx265, libvpx-vp9, libsvtav1 (recommended), libaom-av1, etc.
+    --audio-codec CODEC Audio codec (default: $DEFAULT_AUDIO_CODEC)
+                        Options: aac, libmp3lame, ac3, libopus, etc.
     --no-audio         Generate video without audio
     --help, -h         Show this help message
 
@@ -39,6 +45,8 @@ Examples:
     $0 "Hello World" 30 output.mp4
     $0 "Test Video" 60 test.mp4 custom_audio.wav --resolution 1280x720
     $0 "Silent Video" 15 silent.mp4 --no-audio --bg-color blue
+    $0 "VP9 Video" 30 output.webm --video-codec libvpx-vp9 --audio-codec libopus
+    $0 "AV1 Video" 45 output.mp4 --video-codec libsvtav1 --audio-codec libopus
 EOF
 }
 
@@ -101,6 +109,8 @@ COUNTER_FONTSIZE="$DEFAULT_COUNTER_FONTSIZE"
 TEXT_FONTSIZE="$DEFAULT_TEXT_FONTSIZE"
 COUNTER_COLOR="$DEFAULT_COUNTER_COLOR"
 TEXT_COLOR="$DEFAULT_TEXT_COLOR"
+VIDEO_CODEC="$DEFAULT_VIDEO_CODEC"
+AUDIO_CODEC="$DEFAULT_AUDIO_CODEC"
 USE_AUDIO=true
 
 # Parse remaining arguments
@@ -128,6 +138,14 @@ while [[ $# -gt 0 ]]; do
             ;;
         --text-color)
             TEXT_COLOR="$2"
+            shift 2
+            ;;
+        --video-codec)
+            VIDEO_CODEC="$2"
+            shift 2
+            ;;
+        --audio-codec)
+            AUDIO_CODEC="$2"
             shift 2
             ;;
         --no-audio)
@@ -215,7 +233,9 @@ echo "  Text: $TEXT"
 echo "  Duration: ${LENGTH}s"
 echo "  Resolution: $RESOLUTION"
 echo "  Background: $BG_COLOR"
+echo "  Video codec: $VIDEO_CODEC"
 echo "  Audio: $([ "$USE_AUDIO" == true ] && echo "Yes ($AUDIO_FILE)" || echo "No")"
+[ "$USE_AUDIO" == true ] && echo "  Audio codec: $AUDIO_CODEC"
 echo "  Output: $OUTPUT_FILE"
 echo
 
@@ -232,10 +252,36 @@ FILTER_COMPLEX="[0:v]drawtext=text='%{eif\\:n\\:d}':fontsize=$COUNTER_FONTSIZE:f
 FFMPEG_CMD="$FFMPEG_CMD -filter_complex \"$FILTER_COMPLEX\" -map \"[v]\""
 
 if [ "$USE_AUDIO" == true ]; then
-    FFMPEG_CMD="$FFMPEG_CMD -map 1:a -c:a aac -shortest"
+    FFMPEG_CMD="$FFMPEG_CMD -map 1:a -c:a $AUDIO_CODEC -shortest"
 fi
 
-FFMPEG_CMD="$FFMPEG_CMD -c:v libx264 -pix_fmt yuv420p -t $LENGTH \"$OUTPUT_FILE\""
+# Add codec-specific optimizations
+CODEC_PARAMS=""
+case "$VIDEO_CODEC" in
+    libsvtav1)
+        # SVT-AV1: Much faster than libaom-av1 (5-10x speed improvement)
+        # Preset 12 = fastest, 0 = slowest/best quality
+        CODEC_PARAMS="-preset 12 -crf 35 -g 240 -svtav1-params fast-decode=1:tune=0"
+        ;;
+    libaom-av1)
+        # AV1 (libaom) is EXTREMELY slow - use fastest settings for testing
+        CODEC_PARAMS="-cpu-used 8 -row-mt 1 -tiles 2x2 -crf 40"
+        ;;
+    libx265)
+        # Speed up H.265 encoding
+        CODEC_PARAMS="-preset ultrafast -crf 28"
+        ;;
+    libvpx-vp9)
+        # Speed up VP9 encoding
+        CODEC_PARAMS="-deadline realtime -cpu-used 5 -row-mt 1 -crf 35"
+        ;;
+    libx264)
+        # Speed up H.264 encoding for test videos
+        CODEC_PARAMS="-preset ultrafast -crf 28"
+        ;;
+esac
+
+FFMPEG_CMD="$FFMPEG_CMD -c:v $VIDEO_CODEC $CODEC_PARAMS -pix_fmt yuv420p -t $LENGTH \"$OUTPUT_FILE\""
 
 # Execute FFmpeg command
 echo "Running FFmpeg..."
@@ -250,13 +296,26 @@ if eval "$FFMPEG_CMD"; then
     if command_exists ffprobe; then
         echo
         echo "Video information:"
-        ffprobe -v quiet -show_entries format=duration,size -show_entries stream=width,height,codec_name -of csv=p=0 "$OUTPUT_FILE" 2>/dev/null | while IFS=',' read -r width height vcodec duration size acodec; do
-            echo "  Resolution: ${width}x${height}"
-            echo "  Duration: ${duration}s"
-            echo "  Size: $(( size / 1024 / 1024 ))MB"
-            echo "  Video codec: $vcodec"
-            [ -n "$acodec" ] && echo "  Audio codec: $acodec"
-        done
+        
+        # Get format info
+        FORMAT_INFO=$(ffprobe -v quiet -show_entries format=duration,size -of csv=p=0 "$OUTPUT_FILE" 2>/dev/null)
+        DURATION=$(echo "$FORMAT_INFO" | cut -d',' -f1)
+        SIZE=$(echo "$FORMAT_INFO" | cut -d',' -f2)
+        
+        # Get video stream info
+        VIDEO_INFO=$(ffprobe -v quiet -select_streams v:0 -show_entries stream=width,height,codec_name -of csv=p=0 "$OUTPUT_FILE" 2>/dev/null)
+        WIDTH=$(echo "$VIDEO_INFO" | cut -d',' -f1)
+        HEIGHT=$(echo "$VIDEO_INFO" | cut -d',' -f2)
+        VCODEC=$(echo "$VIDEO_INFO" | cut -d',' -f3)
+        
+        # Get audio stream info (if exists)
+        ACODEC=$(ffprobe -v quiet -select_streams a:0 -show_entries stream=codec_name -of csv=p=0 "$OUTPUT_FILE" 2>/dev/null)
+        
+        echo "  Resolution: ${WIDTH}x${HEIGHT}"
+        echo "  Duration: ${DURATION}s"
+        echo "  Size: $(( SIZE / 1024 / 1024 ))MB"
+        echo "  Video codec: $VCODEC"
+        [ -n "$ACODEC" ] && echo "  Audio codec: $ACODEC"
     fi
 else
     echo "✗ Error: Failed to generate video"
