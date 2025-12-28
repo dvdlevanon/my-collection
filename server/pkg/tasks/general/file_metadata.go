@@ -6,13 +6,13 @@ import (
 	"fmt"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"os"
 
 	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
 )
 
-var fmLogger = logging.MustGetLogger("file-metadata")
+var fmLogger = utils.MustGetLogger("file-metadata")
 
 type fileMetadataParams struct {
 	ItemId uint64 `json:"id,omitempty"`
@@ -54,16 +54,16 @@ func updateFileMetadata(ctx context.Context, irw model.ItemReaderWriter, p fileM
 		return err
 	}
 
-	if err := updateMetadata(item); err != nil {
+	if err := updateMetadata(ctx, item); err != nil {
 		return err
 	}
 
 	return irw.UpdateItem(ctx, item)
 }
 
-func updateMetadata(item *model.Item) error {
+func updateMetadata(ctx context.Context, item *model.Item) error {
 	path := relativasor.GetAbsoluteFile(item.Url)
-	fmLogger.Infof("Refreshing file metadata for item %d  [file: %s]", item.Id, path)
+	fmLogger.Infof(ctx, "Refreshing file metadata for item %d  [file: %s]", item.Id, path)
 
 	file, err := os.Stat(path)
 	if err != nil {

@@ -4,11 +4,9 @@ import (
 	"context"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
-
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("itemsoptimizer")
+var logger = utils.MustGetLogger("itemsoptimizer")
 
 type Processor interface {
 	EnqueueChangeResolution(ctx context.Context, id uint64, w int, h int, title string) error
@@ -47,11 +45,11 @@ func (d *ItemsOptimizer) Run(ctx context.Context) error {
 }
 
 func (d *ItemsOptimizer) runItemsOptimizer(ctx context.Context) {
-	logger.Infof("ItemsOptimizer started")
+	logger.Infof(ctx, "ItemsOptimizer started")
 	if err := d.optimizeItems(ctx); err != nil {
-		utils.LogError("Error in optimizeItems", err)
+		utils.LogError(ctx, logger, "Error in optimizeItems", err)
 	}
-	logger.Infof("ItemsOptimizer finished")
+	logger.Infof(ctx, "ItemsOptimizer finished")
 }
 
 func (d *ItemsOptimizer) HandleItem(ctx context.Context, item *model.Item) {
@@ -59,7 +57,7 @@ func (d *ItemsOptimizer) HandleItem(ctx context.Context, item *model.Item) {
 		return
 	}
 
-	logger.Infof("Item with high resolution %v", item.Title)
+	logger.Infof(ctx, "Item with high resolution %v", item.Title)
 	d.processor.EnqueueChangeResolution(ctx, item.Id, -1, d.maxResolution, item.Title)
 }
 

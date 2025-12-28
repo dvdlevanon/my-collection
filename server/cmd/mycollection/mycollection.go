@@ -7,27 +7,26 @@ import (
 	"os"
 	"strings"
 
-	"github.com/op/go-logging"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
 
-var logger = logging.MustGetLogger("main")
+var logger = utils.MustGetLogger("main")
 var cfgFile string
 
 var rootCmd = &cobra.Command{
 	Use:   "my-collection",
-	Short: "TBD",
-	Long:  `TBD`,
+	Short: "Media collection management server",
+	Long:  `My Collection is a server application for managing and organizing your media collection.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		if err := run(); err != nil {
-			utils.LogError("Error in main", err)
+		if err := run(cmd.Context()); err != nil {
+			utils.LogError(cmd.Context(), logger, "Error in main", err)
 			os.Exit(1)
 		}
 	},
 }
 
-func run() error {
+func run(ctx context.Context) error {
 	config := app.MyCollectionConfig{
 		RootDir:                     viper.GetString("root-directory"),
 		ListenAddress:               viper.GetString("address"),
@@ -42,18 +41,18 @@ func run() error {
 		OpenSubtitleApiKeys:         viper.GetStringSlice("open-subtitle-api-keys"),
 	}
 
-	config.DebugPrint()
+	config.DebugPrint(ctx)
 
-	mc, err := app.New(config)
+	mc, err := app.New(ctx, config)
 	if err != nil {
 		return err
 	}
 
-	return mc.Run(context.Background())
+	return mc.Run(ctx)
 }
 
 func Execute() {
-	err := rootCmd.Execute()
+	err := rootCmd.ExecuteContext(utils.ContextWithSubject(context.Background(), "main"))
 	if err != nil {
 		os.Exit(1)
 	}
@@ -64,7 +63,8 @@ func main() {
 }
 
 func init() {
-	if err := utils.ConfigureLogger(); err != nil {
+	ctx := utils.ContextWithSubject(context.Background(), "cobra-init")
+	if err := utils.ConfigureLogger(ctx); err != nil {
 		panic(err)
 	}
 
@@ -92,6 +92,8 @@ func init() {
 }
 
 func initConfig() {
+	ctx := utils.ContextWithSubject(context.Background(), "cobra-init")
+
 	// 1. First, set up config file reading
 	if cfgFile != "" {
 		viper.SetConfigFile(cfgFile)
@@ -112,7 +114,7 @@ func initConfig() {
 
 	// 2. Read config file (lowest priority)
 	if err := viper.ReadInConfig(); err == nil {
-		logger.Infof("Using config file: %s", viper.ConfigFileUsed())
+		logger.Infof(ctx, "Using config file: %s", viper.ConfigFileUsed())
 	}
 
 	// 3. Set up environment variables (middle priority)
@@ -121,12 +123,12 @@ func initConfig() {
 	viper.AutomaticEnv()
 	for _, env := range os.Environ() {
 		if strings.HasPrefix(env, "MY_COLLECTION_") {
-			logger.Debugf(env)
+			logger.Debugf(ctx, env)
 		}
 	}
 
 	// 4. Bind CLI flags LAST (highest priority)
 	// This must happen after ReadInConfig() so flags override config file values
 	viper.BindPFlags(rootCmd.Flags())
-	logger.Debugf("Command Line Args: %v", os.Args)
+	logger.Debugf(ctx, "Command Line Args: %v", os.Args)
 }

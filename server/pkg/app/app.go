@@ -26,15 +26,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/op/go-logging"
 	"golang.org/x/sync/errgroup"
 )
 
-var logger = logging.MustGetLogger("mycollection")
+var logger = utils.MustGetLogger("mycollection")
 
-func New(config MyCollectionConfig) (*MyCollection, error) {
+func New(ctx context.Context, config MyCollectionConfig) (*MyCollection, error) {
 	mc := &MyCollection{}
-	if err := mc.initialize(config); err != nil {
+	if err := mc.initialize(ctx, config); err != nil {
 		return nil, err
 	}
 	return mc, nil
@@ -53,8 +52,8 @@ type MyCollection struct {
 	opensubtitles  *opensubtitles.OpenSubtitiles
 }
 
-func (mc *MyCollection) initialize(config MyCollectionConfig) error {
-	ctx := utils.ContextWithSubject(context.TODO(), "init")
+func (mc *MyCollection) initialize(ctx context.Context, config MyCollectionConfig) error {
+	ctx = utils.ContextWithSubject(ctx, "init")
 
 	if err := relativasor.Init(config.RootDir); err != nil {
 		return err
@@ -65,19 +64,19 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 		return err
 	}
 
-	logger.Infof("Root directory is: %s", relativasor.GetRootDirectory())
+	logger.Infof(ctx, "Root directory is: %s", relativasor.GetRootDirectory())
 
-	db, err := db.New(filepath.Join(dataDir, "db.sqlite"), false)
+	db, err := db.New(ctx, filepath.Join(dataDir, "db.sqlite"), true)
 	if err != nil {
 		return err
 	}
 
-	storage, err := storage.New(filepath.Join(dataDir, "storage"))
+	storage, err := storage.New(ctx, filepath.Join(dataDir, "storage"))
 	if err != nil {
 		return err
 	}
 
-	mc.processor, err = processor.New(db, storage, config.ProcessorPaused, config.CoversCount, config.PreviewSceneCount, config.PreviewSceneDuration)
+	mc.processor, err = processor.New(ctx, db, storage, config.ProcessorPaused, config.CoversCount, config.PreviewSceneCount, config.PreviewSceneDuration)
 	if err != nil {
 		return err
 	}
@@ -88,7 +87,7 @@ func (mc *MyCollection) initialize(config MyCollectionConfig) error {
 	if err := directories.Init(ctx, db); err != nil {
 		return err
 	}
-	mc.fsManager, err = fssync.NewFsManager(ctx, db, config.FilesFilter, 60*time.Second)
+	mc.fsManager, err = fssync.NewFsManager(ctx, db, config.FilesFilter, time.Hour) // ToDo make interval configurable
 	if err != nil {
 		return err
 	}

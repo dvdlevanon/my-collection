@@ -168,7 +168,7 @@ func TestUpdateMetadata(t *testing.T) {
 		Url:   tmpFile,
 	}
 
-	err = updateMetadata(item)
+	err = updateMetadata(t.Context(), item)
 	assert.NoError(t, err)
 	assert.Equal(t, expectedSize, item.FileSize)
 	// ModTime should be set (might be slightly different due to timing)
@@ -182,6 +182,6 @@ func TestUpdateMetadata_FileNotFound(t *testing.T) {
 		Url:   "/nonexistent/path/file.mp4",
 	}
 
-	err := updateMetadata(item)
+	err := updateMetadata(t.Context(), item)
 	assert.Error(t, err)
 }

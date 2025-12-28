@@ -13,15 +13,15 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/spectagger"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("tags-handler")
+var logger = utils.MustGetLogger("tags-handler")
 
 type tagsHandlerDb interface {
 	model.TagReaderWriter
@@ -73,16 +73,16 @@ func (s *tagsHandler) RegisterRoutes(rg *gin.RouterGroup) {
 func (s *tagsHandler) createTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	var tag model.Tag
-	if server.HandleError(c, json.Unmarshal(body, &tag)) {
+	if server.HandleError(ctx, c, json.Unmarshal(body, &tag)) {
 		return
 	}
 
-	if server.HandleError(c, s.db.CreateOrUpdateTag(ctx, &tag)) {
+	if server.HandleError(ctx, c, s.db.CreateOrUpdateTag(ctx, &tag)) {
 		return
 	}
 
@@ -92,27 +92,27 @@ func (s *tagsHandler) createTag(c *gin.Context) {
 func (s *tagsHandler) updateTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	var tag model.Tag
-	if server.HandleError(c, json.Unmarshal(body, &tag)) {
+	if server.HandleError(ctx, c, json.Unmarshal(body, &tag)) {
 		return
 	}
 
 	if tag.Id != 0 && tag.Id != tagId {
-		server.HandleError(c, errors.Errorf("Mismatch IDs %d != %d", tag.Id, tagId))
+		server.HandleError(ctx, c, errors.Errorf("Mismatch IDs %d != %d", tag.Id, tagId))
 		return
 	}
 
 	tag.Id = tagId
-	if server.HandleError(c, s.db.UpdateTag(ctx, &tag)) {
+	if server.HandleError(ctx, c, s.db.UpdateTag(ctx, &tag)) {
 		return
 	}
 
@@ -122,12 +122,12 @@ func (s *tagsHandler) updateTag(c *gin.Context) {
 func (s *tagsHandler) getTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	tag, err := s.db.GetTag(ctx, tagId)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -137,11 +137,11 @@ func (s *tagsHandler) getTag(c *gin.Context) {
 func (s *tagsHandler) removeTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	if server.HandleError(c, s.db.RemoveTag(ctx, tagId)) {
+	if server.HandleError(ctx, c, s.db.RemoveTag(ctx, tagId)) {
 		return
 	}
 
@@ -151,22 +151,22 @@ func (s *tagsHandler) removeTag(c *gin.Context) {
 func (s *tagsHandler) getTags(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tags, err := s.db.GetAllTags(ctx)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	logger.Infof("Get tags return %d tags", len(*tags))
+	logger.Infof(ctx, "Get tags return %d tags", len(*tags))
 	c.JSON(http.StatusOK, tags)
 }
 
 func (s *tagsHandler) getCategories(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	categories, err := tags.GetCategories(ctx, s.db)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	logger.Infof("Get categories return %d tags", len(*categories))
+	logger.Infof(ctx, "Get categories return %d tags", len(*categories))
 	c.JSON(http.StatusOK, categories)
 }
 
@@ -179,38 +179,38 @@ func (s *tagsHandler) getSpecialTags(c *gin.Context) {
 		spectagger.GetSpecTagId(),
 		items.GetHighlightsTagId())
 
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	logger.Infof("Get special tags return %d tags", len(*tags))
+	logger.Infof(ctx, "Get special tags return %d tags", len(*tags))
 	c.JSON(http.StatusOK, tags)
 }
 
 func (s *tagsHandler) autoImage(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	tag, err := s.db.GetTag(ctx, tagId)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	var fileUrl model.FileUrl
 	if err = json.Unmarshal(body, &fileUrl); err != nil {
-		server.HandleError(c, err)
+		server.HandleError(ctx, c, err)
 		return
 	}
 
-	if server.HandleError(c, tags.AutoImageChildren(ctx, s.storage, s.db, s.db, tag, fileUrl.Url)) {
+	if server.HandleError(ctx, c, tags.AutoImageChildren(ctx, s.storage, s.db, s.db, tag, fileUrl.Url)) {
 		return
 	}
 
@@ -220,27 +220,27 @@ func (s *tagsHandler) autoImage(c *gin.Context) {
 func (s *tagsHandler) getAllTagCustomCommands(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	commands, err := s.db.GetAllTagCustomCommands(ctx)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	logger.Infof("Get tags custom commands return %d commands", len(*commands))
+	logger.Infof(ctx, "Get tags custom commands return %d commands", len(*commands))
 	c.JSON(http.StatusOK, commands)
 }
 
 func (s *tagsHandler) removeTagImageFromTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	titId, err := strconv.ParseUint(c.Param("tit"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	if server.HandleError(c, tags.RemoveTagImages(ctx, s.db, tagId, titId)) {
+	if server.HandleError(ctx, c, tags.RemoveTagImages(ctx, s.db, tagId, titId)) {
 		return
 	}
 
@@ -250,36 +250,36 @@ func (s *tagsHandler) removeTagImageFromTag(c *gin.Context) {
 func (s *tagsHandler) updateTagImage(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	imageId, err := strconv.ParseUint(c.Param("image"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	var image model.TagImage
-	if server.HandleError(c, json.Unmarshal(body, &image)) {
+	if server.HandleError(ctx, c, json.Unmarshal(body, &image)) {
 		return
 	}
 
 	if image.Id != imageId {
-		server.HandleError(c, errors.Errorf("Mismatch IDs %d != %d", image.Id, imageId))
+		server.HandleError(ctx, c, errors.Errorf("Mismatch IDs %d != %d", image.Id, imageId))
 		return
 	}
 
 	if image.TagId != tagId {
-		server.HandleError(c, errors.Errorf("Mismatch IDs %d != %d", image.TagId, tagId))
+		server.HandleError(ctx, c, errors.Errorf("Mismatch IDs %d != %d", image.TagId, tagId))
 		return
 	}
 
-	if server.HandleError(c, s.db.UpdateTagImage(ctx, &image)) {
+	if server.HandleError(ctx, c, s.db.UpdateTagImage(ctx, &image)) {
 		return
 	}
 
@@ -290,18 +290,18 @@ func (s *tagsHandler) updateTagImage(c *gin.Context) {
 func (s *tagsHandler) randomMixExclude(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	tag, err := s.db.GetTag(ctx, tagId)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	noRandom := true
 	tag.NoRandom = &noRandom
-	if server.HandleError(c, s.db.UpdateTag(ctx, tag)) {
+	if server.HandleError(ctx, c, s.db.UpdateTag(ctx, tag)) {
 		return
 	}
 
@@ -311,18 +311,18 @@ func (s *tagsHandler) randomMixExclude(c *gin.Context) {
 func (s *tagsHandler) randomMixInclude(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	tag, err := s.db.GetTag(ctx, tagId)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	noRandom := false
 	tag.NoRandom = &noRandom
-	if server.HandleError(c, s.db.UpdateTag(ctx, tag)) {
+	if server.HandleError(ctx, c, s.db.UpdateTag(ctx, tag)) {
 		return
 	}
 
@@ -332,23 +332,23 @@ func (s *tagsHandler) randomMixInclude(c *gin.Context) {
 func (s *tagsHandler) addAnnotationToTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	var annotation model.TagAnnotation
 	if err = json.Unmarshal(body, &annotation); err != nil {
-		server.HandleError(c, err)
+		server.HandleError(ctx, c, err)
 		return
 	}
 
 	annotationId, err := tag_annotations.AddAnnotationToTag(ctx, s.db, s.db, tagId, annotation)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -358,16 +358,16 @@ func (s *tagsHandler) addAnnotationToTag(c *gin.Context) {
 func (s *tagsHandler) removeAnnotationFromTag(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	annotationId, err := strconv.ParseUint(c.Param("annotation-id"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	if server.HandleError(c, s.db.RemoveTagAnnotationFromTag(ctx, tagId, annotationId)) {
+	if server.HandleError(ctx, c, s.db.RemoveTagAnnotationFromTag(ctx, tagId, annotationId)) {
 		return
 	}
 
@@ -377,12 +377,12 @@ func (s *tagsHandler) removeAnnotationFromTag(c *gin.Context) {
 func (s *tagsHandler) getTagAvailableAnnotations(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tagId, err := strconv.ParseUint(c.Param("tag"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	availableAnnotations, err := tag_annotations.GetTagAvailableAnnotations(ctx, s.db, s.db, tagId)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -392,10 +392,10 @@ func (s *tagsHandler) getTagAvailableAnnotations(c *gin.Context) {
 func (s *tagsHandler) getTagImageTypes(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	tits, err := s.db.GetAllTagImageTypes(ctx)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	logger.Infof("Get tag image types return %d tag image types", len(*tits))
+	logger.Infof(ctx, "Get tag image types return %d tag image types", len(*tits))
 	c.JSON(http.StatusOK, tits)
 }

@@ -24,7 +24,7 @@ func newFsSyncer(ctx context.Context, path string, db model.Database, dig model.
 		return nil, errors.Errorf("directory not found in db %s", path)
 	}
 
-	rootfs, err := directorytree.BuildFromPath(path, filter)
+	rootfs, err := directorytree.BuildFromPath(ctx, path, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func (f *fsSyncer) sync(ctx context.Context, db model.Database, digs model.Direc
 	errs = append(errs, addMissingDirectoryTags(ctx, db, db)...)
 
 	if f.hasFsChanges() {
-		f.debugPrint()
+		f.debugPrint(ctx)
 		errs = append(errs, removeStaleItems(ctx, digs, db, f.stales.Files)...)
 		errs = append(errs, removeStaleDirs(ctx, db, db, f.stales.Dirs)...)
 		errs = append(errs, addMissingDirs(ctx, db, f.diff.AddedDirectories)...)
@@ -85,39 +85,39 @@ func (f *fsSyncer) sync(ctx context.Context, db model.Database, digs model.Direc
 	return f.hasFsChanges() || anyItemChanged, errs
 }
 
-func (f *fsSyncer) debugPrint() {
-	logger.Debugf("Sync starting")
+func (f *fsSyncer) debugPrint(ctx context.Context) {
+	logger.Debugf(ctx, "Sync starting")
 
 	if len(f.stales.Dirs) > 0 {
-		logger.Debugf("%d Stale directories - [%s]", len(f.stales.Dirs), strings.Join(f.stales.Dirs, ", "))
+		logger.Debugf(ctx, "%d Stale directories - [%s]", len(f.stales.Dirs), strings.Join(f.stales.Dirs, ", "))
 	}
 
 	if len(f.stales.Files) > 0 {
-		logger.Debugf("%d Stale files - [%s]", len(f.stales.Files), strings.Join(f.stales.Files, ", "))
+		logger.Debugf(ctx, "%d Stale files - [%s]", len(f.stales.Files), strings.Join(f.stales.Files, ", "))
 	}
 
 	if len(f.diff.AddedDirectories) > 0 {
-		logger.Debugf("%d Added directories - [%s]", len(f.diff.AddedDirectories), strings.Join(f.diff.ChangesToString(f.diff.AddedDirectories), ", "))
+		logger.Debugf(ctx, "%d Added directories - [%s]", len(f.diff.AddedDirectories), strings.Join(f.diff.ChangesToString(f.diff.AddedDirectories), ", "))
 	}
 
 	if len(f.diff.RemovedDirectories) > 0 {
-		logger.Debugf("%d Removed directories - [%s]", len(f.diff.RemovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.RemovedDirectories), ", "))
+		logger.Debugf(ctx, "%d Removed directories - [%s]", len(f.diff.RemovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.RemovedDirectories), ", "))
 	}
 
 	if len(f.diff.AddedFiles) > 0 {
-		logger.Debugf("%d Added files - [%s]", len(f.diff.AddedFiles), strings.Join(f.diff.ChangesToString(f.diff.AddedFiles), ", "))
+		logger.Debugf(ctx, "%d Added files - [%s]", len(f.diff.AddedFiles), strings.Join(f.diff.ChangesToString(f.diff.AddedFiles), ", "))
 	}
 
 	if len(f.diff.RemovedFiles) > 0 {
-		logger.Debugf("%d Removed files - [%s]", len(f.diff.RemovedFiles), strings.Join(f.diff.ChangesToString(f.diff.RemovedFiles), ", "))
+		logger.Debugf(ctx, "%d Removed files - [%s]", len(f.diff.RemovedFiles), strings.Join(f.diff.ChangesToString(f.diff.RemovedFiles), ", "))
 	}
 
 	if len(f.diff.MovedDirectories) > 0 {
-		logger.Debugf("%d Moved directories - [%s]", len(f.diff.MovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.MovedDirectories), ", "))
+		logger.Debugf(ctx, "%d Moved directories - [%s]", len(f.diff.MovedDirectories), strings.Join(f.diff.ChangesToString(f.diff.MovedDirectories), ", "))
 	}
 
 	if len(f.diff.MovedFiles) > 0 {
-		logger.Debugf("%d Moved files - [%s]", len(f.diff.MovedFiles), strings.Join(f.diff.ChangesToString(f.diff.MovedFiles), ", "))
+		logger.Debugf(ctx, "%d Moved files - [%s]", len(f.diff.MovedFiles), strings.Join(f.diff.ChangesToString(f.diff.MovedFiles), ", "))
 	}
 }
 
@@ -133,7 +133,7 @@ func addMissingDirectoryTags(ctx context.Context, dr model.DirectoryReader, trw 
 			errs = append(errs, err)
 		}
 		if i+1%100 == 0 {
-			logger.Debugf("Added %d/%d directory tags", i, len(*allDirectories))
+			logger.Debugf(ctx, "Added %d/%d directory tags", i, len(*allDirectories))
 		}
 	}
 
@@ -207,7 +207,7 @@ func addMissingDirs(ctx context.Context, drw model.DirectoryReaderWriter, addedD
 			errs = append(errs, err)
 		}
 		if i+1%100 == 0 {
-			logger.Debugf("Added %d/%d directories", i, len(addedDirectories))
+			logger.Debugf(ctx, "Added %d/%d directories", i, len(addedDirectories))
 		}
 	}
 	return errs
@@ -228,7 +228,7 @@ func addNewFiles(ctx context.Context, iw model.ItemWriter, digs model.DirectoryI
 			errs = append(errs, err)
 		}
 		if i+1%100 == 0 {
-			logger.Debugf("Added %d/%d files", i, len(addedFiles))
+			logger.Debugf(ctx, "Added %d/%d files", i, len(addedFiles))
 		}
 	}
 

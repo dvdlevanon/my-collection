@@ -13,11 +13,9 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
 	"time"
-
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("spectagger")
+var logger = utils.MustGetLogger("spectagger")
 
 func GetSpecTagId() uint64 {
 	return special_tags.SpecTag.Id
@@ -77,11 +75,11 @@ func (d *Spectagger) Run(ctx context.Context) error {
 }
 
 func (d *Spectagger) runSpectagger(ctx context.Context) {
-	logger.Debugf("Spectagger started")
+	logger.Debugf(ctx, "Spectagger started")
 	if err := d.autoSpectag(ctx); err != nil {
-		utils.LogError("Error in autoSpectag", err)
+		utils.LogError(ctx, logger, "Error in autoSpectag", err)
 	}
-	logger.Debugf("Spectagger finished")
+	logger.Debugf(ctx, "Spectagger finished")
 }
 
 func (d *Spectagger) autoSpectag(ctx context.Context) error {
@@ -102,31 +100,31 @@ func (d *Spectagger) autoSpectag(ctx context.Context) error {
 	for _, item := range *allItems {
 		resolutionTags, err := getResolutionTags(ctx, cachedTarw, &item)
 		if err != nil {
-			utils.LogError("Error getting resolution tags", err)
+			utils.LogError(ctx, logger, "Error getting resolution tags", err)
 			continue
 		}
 
 		videoCodecTag, err := getVideoCodecTag(ctx, cachedTarw, &item)
 		if err != nil {
-			utils.LogError("Error getting video codec tag", err)
+			utils.LogError(ctx, logger, "Error getting video codec tag", err)
 			continue
 		}
 
 		audioCodecTag, err := getAudioCodecTag(ctx, cachedTarw, &item)
 		if err != nil {
-			utils.LogError("Error getting audio codec tag", err)
+			utils.LogError(ctx, logger, "Error getting audio codec tag", err)
 			continue
 		}
 
 		durationTag, err := getDurationTag(ctx, cachedTarw, &item)
 		if err != nil {
-			utils.LogError("Error getting duration tag", err)
+			utils.LogError(ctx, logger, "Error getting duration tag", err)
 			continue
 		}
 
 		typeTag, typeToRemove, err := getTypeTag(ctx, cachedTarw, &item)
 		if err != nil {
-			utils.LogError("Error getting type tag", err)
+			utils.LogError(ctx, logger, "Error getting type tag", err)
 			continue
 		}
 
@@ -136,7 +134,7 @@ func (d *Spectagger) autoSpectag(ctx context.Context) error {
 		tagsToAdd = removeNils(tagsToAdd)
 
 		if err := addTagsToItem(ctx, &tagTitleToId, d.db, &item, tagsToAdd); err != nil {
-			utils.LogError("Error adding tags to item", err)
+			utils.LogError(ctx, logger, "Error adding tags to item", err)
 			continue
 		}
 
@@ -146,7 +144,7 @@ func (d *Spectagger) autoSpectag(ctx context.Context) error {
 		}
 
 		if err := removeTagsFromItem(ctx, &tagTitleToId, d.db, &item, tagsToRemove); err != nil {
-			utils.LogError("Error removing tags from item", err)
+			utils.LogError(ctx, logger, "Error removing tags from item", err)
 			continue
 		}
 	}
@@ -200,13 +198,13 @@ func getCategoryTags(ctx context.Context, tarw model.TagAnnotationReaderWriter, 
 	for i, category := range *categories {
 		missing, err := getMissingFromCategoryTag(ctx, tarw, &category)
 		if err != nil {
-			utils.LogError("Error getting missing from category tag", err)
+			utils.LogError(ctx, logger, "Error getting missing from category tag", err)
 			continue
 		}
 
 		belong, err := getBelongToCategoryTag(ctx, tarw, &category)
 		if err != nil {
-			utils.LogError("Error getting belong to category tag", err)
+			utils.LogError(ctx, logger, "Error getting belong to category tag", err)
 			continue
 		}
 

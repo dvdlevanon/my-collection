@@ -88,20 +88,19 @@ func TestGetDurationForItem_SubItem(t *testing.T) {
 		DurationSeconds: 50.0,
 	}
 
-	duration, err := getDurationForItem(item, "/path/to/video.mp4")
+	duration, err := getDurationForItem(t.Context(), item, "/path/to/video.mp4")
 	assert.NoError(t, err)
 	assert.Equal(t, 50.0, duration)
 }
 
 func TestGetDurationForItem_Highlight(t *testing.T) {
 	item := &model.Item{
-		Id:                   123,
+		Id:                    123,
 		HighlightParentItemId: func() *uint64 { id := uint64(100); return &id }(),
 		DurationSeconds:       30.0,
 	}
 
-	duration, err := getDurationForItem(item, "/path/to/video.mp4")
+	duration, err := getDurationForItem(t.Context(), item, "/path/to/video.mp4")
 	assert.NoError(t, err)
 	assert.Equal(t, 30.0, duration)
 }
-

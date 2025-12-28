@@ -65,7 +65,7 @@ func changeVideoResolution(ctx context.Context, irw model.ItemReaderWriter, temp
 
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
 	tempFile := fmt.Sprintf("%s.mp4", tempProvider.GetTempFile())
-	if err := ffmpeg.ChangeVideoResolution(videoFile, tempFile, p.Width, p.Height); err != nil {
+	if err := ffmpeg.ChangeVideoResolution(ctx, videoFile, tempFile, p.Width, p.Height); err != nil {
 		return err
 	}
 

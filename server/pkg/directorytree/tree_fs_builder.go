@@ -1,24 +1,25 @@
 package directorytree
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
 )
 
 type FilesFilter interface {
-	Filter(path string) bool
+	Filter(ctx context.Context, path string) bool
 }
 
-func BuildFromPath(path string, filter FilesFilter) (*DirectoryNode, error) {
-	root, err := buildFromDir(nil, path, filter)
+func BuildFromPath(ctx context.Context, path string, filter FilesFilter) (*DirectoryNode, error) {
+	root, err := buildFromDir(ctx, nil, path, filter)
 	if err != nil {
 		return nil, err
 	}
 	return root, nil
 }
 
-func buildFromDir(parent *DirectoryNode, path string, filter FilesFilter) (*DirectoryNode, error) {
+func buildFromDir(ctx context.Context, parent *DirectoryNode, path string, filter FilesFilter) (*DirectoryNode, error) {
 	files, err := os.ReadDir(path)
 	if err != nil {
 		return nil, err
@@ -36,13 +37,13 @@ func buildFromDir(parent *DirectoryNode, path string, filter FilesFilter) (*Dire
 		}
 
 		if file.IsDir() {
-			child, err := buildFromDir(node, filepath.Join(path, file.Name()), filter)
+			child, err := buildFromDir(ctx, node, filepath.Join(path, file.Name()), filter)
 			if err != nil {
 				return nil, err
 			}
 
 			node.Children = append(node.Children, child)
-		} else if filter.Filter(filepath.Join(path, file.Name())) {
+		} else if filter.Filter(ctx, filepath.Join(path, file.Name())) {
 			node.Files = append(node.Files, createFileNode(node, file.Name()))
 		}
 	}

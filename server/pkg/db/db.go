@@ -4,11 +4,11 @@ import (
 	"context"
 	"log"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/utils"
 	"os"
 	"time"
 
 	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
 
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
@@ -16,13 +16,13 @@ import (
 	gormlogger "gorm.io/gorm/logger"
 )
 
-var logger = logging.MustGetLogger("db")
+var logger = utils.MustGetLogger("db")
 
 type databaseImpl struct {
 	db *gorm.DB
 }
 
-func New(dbfile string, shouldLog bool) (Database, error) {
+func New(ctx context.Context, dbfile string, shouldLog bool) (Database, error) {
 	newLogger := gormlogger.New(
 		log.New(os.Stdout, "\r\n", log.LstdFlags), // io writer
 		gormlogger.Config{
@@ -76,7 +76,7 @@ func New(dbfile string, shouldLog bool) (Database, error) {
 		return nil, errors.Wrap(err, 0)
 	}
 
-	logger.Infof("DB initialized with db file: %s", dbfile)
+	logger.Infof(ctx, "DB initialized with db file: %s", dbfile)
 
 	result := &databaseImpl{
 		db: db,

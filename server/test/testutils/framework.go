@@ -32,7 +32,7 @@ type IntegrationTestFramework struct {
 type testFileFilter struct {
 }
 
-func (f testFileFilter) Filter(path string) bool {
+func (f testFileFilter) Filter(ctx context.Context, path string) bool {
 	// Accept all files except hidden ones for testing
 	base := filepath.Base(path)
 	return !strings.HasPrefix(base, ".")
@@ -46,7 +46,7 @@ func NewIntegrationTestFramework(t *testing.T) *IntegrationTestFramework {
 	require.NoError(t, os.Mkdir(rootDir, 0755))
 
 	dbFile := filepath.Join(tempDir, "test.db")
-	database, err := db.New(dbFile, false)
+	database, err := db.New(t.Context(), dbFile, false)
 	require.NoError(t, err)
 
 	// Initialize relativasor with our test directory

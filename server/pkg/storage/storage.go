@@ -1,6 +1,8 @@
 package storage
 
 import (
+	"context"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path"
 	"path/filepath"
@@ -8,7 +10,6 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/google/uuid"
-	"github.com/op/go-logging"
 	cp "github.com/otiai10/copy"
 )
 
@@ -17,13 +18,13 @@ const (
 	STORAGE_URL_PREFIX = ".internal-storage"
 )
 
-var logger = logging.MustGetLogger("storage")
+var logger = utils.MustGetLogger("storage")
 
 type Storage struct {
 	rootDirectory string
 }
 
-func New(rootDirectory string) (*Storage, error) {
+func New(ctx context.Context, rootDirectory string) (*Storage, error) {
 	if err := os.MkdirAll(rootDirectory, 0750); err != nil {
 		return nil, errors.Wrap(err, 0)
 	}
@@ -39,10 +40,10 @@ func New(rootDirectory string) (*Storage, error) {
 
 	storageTemplateDirectory := filepath.Join(cwd, "storage-template")
 	if err := cp.Copy(storageTemplateDirectory, rootDirectory, cp.Options{}); err != nil {
-		logger.Warningf("Error copying storage template from %s to %s - %s", storageTemplateDirectory, rootDirectory, err)
+		logger.Warningf(ctx, "Error copying storage template from %s to %s - %s", storageTemplateDirectory, rootDirectory, err)
 	}
 
-	logger.Infof("Srorage initialized in %s", rootDirectory)
+	logger.Infof(ctx, "Srorage initialized in %s", rootDirectory)
 
 	return &Storage{
 		rootDirectory: rootDirectory,

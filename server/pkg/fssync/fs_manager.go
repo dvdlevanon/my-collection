@@ -13,10 +13,9 @@ import (
 	"time"
 
 	"github.com/go-errors/errors"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("fsmanager")
+var logger = utils.MustGetLogger("fsmanager")
 
 func NewFsManager(ctx context.Context, db db.Database, filesFilter directorytree.FilesFilter, checkInterval time.Duration) (*FsManager, error) {
 	if err := directories.AddRootDirectory(ctx, db); err != nil {
@@ -43,20 +42,20 @@ func (f *FsManager) Watch(ctx context.Context) error {
 	ctx = utils.ContextWithSubject(ctx, "fs_manager")
 
 	if err := f.Sync(ctx); err != nil {
-		utils.LogError("Error in FS Watch", err)
+		utils.LogError(ctx, logger, "Error in FS Watch", err)
 	}
 
 	for {
 		select {
 		case <-f.changeChannel:
 			if err := f.Sync(ctx); err != nil {
-				utils.LogError("Error in FS Watch", err)
+				utils.LogError(ctx, logger, "Error in FS Watch", err)
 			}
 		case <-ctx.Done():
 			return nil
 		case <-time.After(f.checkInterval):
 			if err := f.Sync(ctx); err != nil {
-				utils.LogError("Error in FS Watch", err)
+				utils.LogError(ctx, logger, "Error in FS Watch", err)
 			}
 		}
 	}
@@ -112,9 +111,9 @@ func (f *FsManager) runSync(ctx context.Context) (bool, error) {
 	hasChanges, errors := fsSync.sync(ctx, f.db, f, f, f)
 
 	if len(errors) > 0 {
-		logger.Errorf("FS Sync finished with %d errors", len(errors))
+		logger.Errorf(ctx, "FS Sync finished with %d errors", len(errors))
 		for _, err := range errors {
-			utils.LogError("Error in FS Sync", err)
+			utils.LogError(ctx, logger, "Error in FS Sync", err)
 		}
 
 		return hasChanges, errors[0]

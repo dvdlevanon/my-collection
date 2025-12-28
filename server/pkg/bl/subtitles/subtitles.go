@@ -6,16 +6,15 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
 	"my-collection/server/pkg/srt"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strings"
-
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("subtitles")
+var logger = utils.MustGetLogger("subtitles")
 
 const onlineSubsDir = ".online-subs"
 

@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"my-collection/server/pkg/model"
+	"my-collection/server/pkg/utils"
 
-	"github.com/op/go-logging"
 	"gorm.io/gorm"
 )
 
-var logger = logging.MustGetLogger("tags")
+var logger = utils.MustGetLogger("tags")
 
 func GetItems(ctx context.Context, ir model.ItemReader, tag *model.Tag) (*[]model.Item, error) {
 	itemIds := make([]uint64, 0)
@@ -24,7 +24,7 @@ func GetItems(ctx context.Context, ir model.ItemReader, tag *model.Tag) (*[]mode
 
 	items, err := ir.GetItems(ctx, itemIds)
 	if err != nil {
-		logger.Errorf("Error getting items of tag %t", err)
+		logger.Errorf(ctx, "Error getting items of tag %t", err)
 		return nil, err
 	}
 
@@ -49,7 +49,7 @@ func GetItemByTitle(ctx context.Context, ir model.ItemReader, tag *model.Tag, ti
 func GetOrCreateTag(ctx context.Context, trw model.TagReaderWriter, tag *model.Tag) (*model.Tag, error) {
 	existing, err := trw.GetTag(ctx, tag)
 	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
-		logger.Errorf("Error getting tag %t", err)
+		logger.Errorf(ctx, "Error getting tag %t", err)
 		return nil, err
 	}
 
@@ -58,7 +58,7 @@ func GetOrCreateTag(ctx context.Context, trw model.TagReaderWriter, tag *model.T
 	}
 
 	if err := trw.CreateOrUpdateTag(ctx, tag); err != nil {
-		logger.Errorf("Error creating tag %v - %t", tag, err)
+		logger.Errorf(ctx, "Error creating tag %v - %t", tag, err)
 		return nil, err
 	}
 

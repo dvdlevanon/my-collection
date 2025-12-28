@@ -6,15 +6,14 @@ import (
 	"math/rand"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path/filepath"
 
 	"github.com/go-errors/errors"
-
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("items")
+var logger = utils.MustGetLogger("items")
 
 const PREVIEW_FROM_START_POSITION = "start-position" //items-util.js
 
@@ -152,9 +151,9 @@ func DeleteRealFile(ctx context.Context, ir model.ItemReader, itemId uint64) err
 	}
 
 	file := relativasor.GetAbsoluteFile(item.Url)
-	logger.Infof("About to delete real file %s", file)
+	logger.Infof(ctx, "About to delete real file %s", file)
 	if err := os.Remove(file); err != nil {
-		logger.Warningf("Unable to delete file %s, %s", file, err)
+		logger.Warningf(ctx, "Unable to delete file %s, %s", file, err)
 	}
 
 	return nil

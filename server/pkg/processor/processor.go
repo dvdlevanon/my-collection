@@ -15,11 +15,10 @@ import (
 
 	"github.com/go-errors/errors"
 	"github.com/joncrlsn/dque"
-	"github.com/op/go-logging"
 	"k8s.io/utils/ptr"
 )
 
-var logger = logging.MustGetLogger("item-processor")
+var logger = utils.MustGetLogger("item-processor")
 
 func taskBuilder() any {
 	return &model.Task{}
@@ -38,18 +37,19 @@ type Processor struct {
 	automaticProcessing  bool
 }
 
-func New(db db.Database, storage *storage.Storage, paused bool, coversCount int, previewSceneCount int, previewSceneDuration int) (*Processor, error) {
-	logger.Infof("Item processor initialized")
+func New(ctx context.Context, db db.Database, storage *storage.Storage, paused bool, coversCount int,
+	previewSceneCount int, previewSceneDuration int) (*Processor, error) {
+	logger.Infof(ctx, "Item processor initialized")
 
 	tasksDirectory := storage.GetStorageDirectory("tasks")
 	if err := os.MkdirAll(tasksDirectory, 0750); err != nil {
-		logger.Errorf("Error creating tasks directory %s", err)
+		logger.Errorf(ctx, "Error creating tasks directory %s", err)
 		return nil, err
 	}
 
 	dque, err := dque.NewOrOpen("tasks", tasksDirectory, 100, taskBuilder)
 	if err != nil {
-		logger.Errorf("Error creating tasks queue %s", err)
+		logger.Errorf(ctx, "Error creating tasks queue %s", err)
 		return nil, err
 	}
 
@@ -78,7 +78,7 @@ func (p *Processor) pushQueueMetadata(ctx context.Context) error {
 
 func (p *Processor) ClearFinishedTasks(ctx context.Context) error {
 	if err := p.db.RemoveTasks(ctx, "processing_end is not null"); err != nil {
-		logger.Errorf("Unable to clear finished tasks %s", err)
+		logger.Errorf(ctx, "Unable to clear finished tasks %s", err)
 		return err
 	}
 
@@ -115,7 +115,7 @@ func (p *Processor) Run(ctx context.Context) error {
 	for {
 		select {
 		case paused := <-p.pauseChannel:
-			logger.Infof("Queue paused changed from %t to %t", p.paused, paused)
+			logger.Infof(ctx, "Queue paused changed from %t to %t", p.paused, paused)
 			p.paused = paused
 			p.pushQueueMetadata(ctx)
 		case <-ctx.Done():
@@ -134,7 +134,7 @@ func (p *Processor) process(ctx context.Context) {
 	taskIfc, err := p.dque.Peek()
 	if err != nil {
 		if err != dque.ErrEmpty {
-			logger.Errorf("Error peeking tasks queue %s", err)
+			logger.Errorf(ctx, "Error peeking tasks queue %s", err)
 		}
 
 		time.Sleep(time.Second)
@@ -143,34 +143,34 @@ func (p *Processor) process(ctx context.Context) {
 
 	task, ok := taskIfc.(*model.Task)
 	if !ok {
-		logger.Errorf("Unable to convert interface to task %s", task)
+		logger.Errorf(ctx, "Unable to convert interface to task %s", task)
 		return
 	}
 
 	startMillis := time.Now().UnixMilli()
 	task.ProcessingStart = ptr.To(time.Now().UnixMilli())
 	if err := p.db.UpdateTask(ctx, task); err != nil {
-		logger.Warningf("Unable to update task processing start time %s %s", task.Id, err)
+		logger.Warningf(ctx, "Unable to update task processing start time %s %s", task.Id, err)
 	}
 
-	logger.Infof("Start processing task %+v", task)
+	logger.Infof(ctx, "Start processing task %+v", task)
 	if err := p.processTask(ctx, task); err != nil {
-		logger.Errorf("Error processing task %+v for params: %s - %s", task.TaskType.String(), task.Params, err)
+		logger.Errorf(ctx, "Error processing task %+v for params: %s - %s", task.TaskType.String(), task.Params, err)
 	}
 
 	task.ProcessingEnd = ptr.To(time.Now().UnixMilli())
 	if err := p.db.UpdateTask(ctx, task); err != nil {
-		logger.Warningf("Unable to update task processing end time %s %s", task.Id, err)
+		logger.Warningf(ctx, "Unable to update task processing end time %s %s", task.Id, err)
 	}
 
 	if _, err = p.dque.DequeueBlock(); err != nil {
-		logger.Errorf("Error dequeuing task %s - %+v", err, task)
+		logger.Errorf(ctx, "Error dequeuing task %s - %+v", err, task)
 	}
 
 	p.pushQueueMetadata(ctx)
 
 	processingMillis := time.Now().UnixMilli() - startMillis
-	logger.Infof("Done processing task in %dms %+v", processingMillis, task)
+	logger.Infof(ctx, "Done processing task in %dms %+v", processingMillis, task)
 }
 
 func (p *Processor) processTask(ctx context.Context, t *model.Task) error {

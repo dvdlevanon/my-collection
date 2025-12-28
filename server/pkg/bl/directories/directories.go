@@ -5,12 +5,12 @@ import (
 	"errors"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/op/go-logging"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 	"gorm.io/gorm"
@@ -22,7 +22,7 @@ var directoriesTag = &model.Tag{
 	ParentID: nil,
 }
 
-var logger = logging.MustGetLogger("directories")
+var logger = utils.MustGetLogger("directories")
 
 func Init(ctx context.Context, trw model.TagReaderWriter) error {
 	d, err := trw.GetTag(ctx, directoriesTag)
@@ -135,7 +135,7 @@ func RemoveMissingTags(ctx context.Context, drw model.DirectoryReaderWriter, dir
 		}
 
 		if err := drw.RemoveTagFromDirectory(ctx, directory.Path, tag.Id); err != nil {
-			logger.Warningf("Unable to remove tag %d from directory %s - %t",
+			logger.Warningf(ctx, "Unable to remove tag %d from directory %s - %t",
 				directory.Path, tag.Id, err)
 		}
 	}
@@ -144,7 +144,7 @@ func RemoveMissingTags(ctx context.Context, drw model.DirectoryReaderWriter, dir
 func UpdateDirectoryTags(ctx context.Context, drw model.DirectoryReaderWriter, directory *model.Directory) error {
 	existingDirectory, err := drw.GetDirectory(ctx, "path = ?", directory.Path)
 	if err != nil {
-		logger.Errorf("Error getting exising directory %s %t", directory.Path, err)
+		logger.Errorf(ctx, "Error getting exising directory %s %t", directory.Path, err)
 		return err
 	}
 
@@ -280,11 +280,11 @@ func FinishDirectoryProcessing(ctx context.Context, dw model.DirectoryWriter, di
 	return dw.CreateOrUpdateDirectory(ctx, directory)
 }
 
-func GetDirectoryFiles(directory *model.Directory) ([]os.DirEntry, error) {
+func GetDirectoryFiles(ctx context.Context, directory *model.Directory) ([]os.DirEntry, error) {
 	path := relativasor.GetAbsoluteFile(directory.Path)
 	files, err := os.ReadDir(path)
 	if err != nil {
-		logger.Errorf("Error getting directory files %s %s", path, err)
+		logger.Errorf(ctx, "Error getting directory files %s %s", path, err)
 	}
 
 	return files, err

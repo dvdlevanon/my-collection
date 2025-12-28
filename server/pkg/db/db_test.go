@@ -20,7 +20,7 @@ func setupNewDb(t *testing.T, filename string) (Database, error) {
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	return New(filepath.Join("", dbpath), false)
+	return New(t.Context(), filepath.Join("", dbpath), false)
 }
 
 func TestItem(t *testing.T) {

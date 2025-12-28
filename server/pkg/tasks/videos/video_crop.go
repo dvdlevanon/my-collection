@@ -7,13 +7,12 @@ import (
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"path/filepath"
 	"time"
-
-	"github.com/op/go-logging"
 )
 
-var cropLogger = logging.MustGetLogger("video-crop")
+var cropLogger = utils.MustGetLogger("video-crop")
 
 type videoCropParams struct {
 	ItemId uint64  `json:"id"`
@@ -63,20 +62,20 @@ func cropVideoFrame(ctx context.Context, irw model.ItemReaderWriter, uploader mo
 	rect := model.RectFloat{X: p.X, Y: p.Y, W: p.W, H: p.H}
 
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	cropLogger.Infof("Cropping frame %d [second: %s] [rect: %s]", item.Id, p.Second, rect)
+	cropLogger.Infof(ctx, "Cropping frame %d [second: %s] [rect: %s]", item.Id, p.Second, rect)
 
 	relativeFile := fmt.Sprintf("frames/%s_%s.png", filepath.Base(item.Url), time.Now().Format("2006-01-02_15_04_05"))
 	storageFile, err := uploader.GetFileForWriting(relativeFile)
 	if err != nil {
-		cropLogger.Errorf("Error getting cropped file from storage %v", err)
+		cropLogger.Errorf(ctx, "Error getting cropped file from storage %v", err)
 		return err
 	}
 
-	if err := ffmpeg.CropScreenshot(videoFile, p.Second, rect, storageFile); err != nil {
-		cropLogger.Errorf("Error cropping frame for item %d, error %v", item.Id, err)
+	if err := ffmpeg.CropScreenshot(ctx, videoFile, p.Second, rect, storageFile); err != nil {
+		cropLogger.Errorf(ctx, "Error cropping frame for item %d, error %v", item.Id, err)
 		return err
 	}
 
-	cropLogger.Infof("Frame cropped to %s", relativeFile)
+	cropLogger.Infof(ctx, "Frame cropped to %s", relativeFile)
 	return nil
 }

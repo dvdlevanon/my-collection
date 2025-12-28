@@ -3,6 +3,7 @@ package utils
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"image"
 	"image/png"
 	"io"
@@ -21,13 +22,12 @@ import (
 	"golang.org/x/text/transform"
 
 	"github.com/h2non/filetype"
-	"github.com/op/go-logging"
 	"github.com/saintfish/chardet"
 )
 
-var logger = logging.MustGetLogger("utils")
+var logger = MustGetLogger("utils")
 
-func IsVideo(trustFileExtenssion bool, path string) bool {
+func IsVideo(ctx context.Context, trustFileExtenssion bool, path string) bool {
 	if trustFileExtenssion {
 		path = strings.ToLower(path)
 		return strings.HasSuffix(path, ".avi") ||
@@ -40,20 +40,20 @@ func IsVideo(trustFileExtenssion bool, path string) bool {
 
 	file, err := os.Open(path)
 	if err != nil {
-		logger.Errorf("Error opening file for reading %s - %t", file, err)
+		logger.Errorf(ctx, "Error opening file for reading %s - %t", file, err)
 		return false
 	}
 
 	stat, err := file.Stat()
 	if err != nil {
-		logger.Errorf("Error getting stats of file %s - %t", path, err)
+		logger.Errorf(ctx, "Error getting stats of file %s - %t", path, err)
 		return false
 	}
 
 	header := make([]byte, int(math.Max(float64(stat.Size())-1, 1024)))
 	_, err = file.Read(header)
 	if err != nil {
-		logger.Errorf("Error reading from file %s - %t", path, err)
+		logger.Errorf(ctx, "Error reading from file %s - %t", path, err)
 		return false
 	}
 

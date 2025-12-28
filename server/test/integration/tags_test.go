@@ -49,7 +49,7 @@ func NewTagsServerIntegrationFramework(t *testing.T) *TagsServerIntegrationFrame
 
 	// Create storage directory for tag images
 	storageDir := filepath.Join(baseFramework.GetTempDir(), "storage")
-	mockStorage, err := storage.New(storageDir)
+	mockStorage, err := storage.New(t.Context(), storageDir)
 	require.NoError(t, err)
 
 	// Create tags handler with mock dependencies

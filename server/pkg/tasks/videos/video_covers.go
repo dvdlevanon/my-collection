@@ -8,11 +8,10 @@ import (
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
-
-	"github.com/op/go-logging"
+	"my-collection/server/pkg/utils"
 )
 
-var vcLogger = logging.MustGetLogger("video-covers")
+var vcLogger = utils.MustGetLogger("video-covers")
 
 type videoCoversParams struct {
 	ItemId uint64 `json:"id"`
@@ -70,14 +69,14 @@ func refreshVideoCovers(ctx context.Context, irw model.ItemReaderWriter, uploade
 	return nil
 }
 
-func getDurationForItem(item *model.Item, videoFile string) (float64, error) {
+func getDurationForItem(ctx context.Context, item *model.Item, videoFile string) (float64, error) {
 	if items.IsSubItem(item) || items.IsHighlight(item) {
 		return item.DurationSeconds, nil
 	}
 
-	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
+	duration, err := ffmpeg.GetDurationInSeconds(ctx, videoFile)
 	if err != nil {
-		vcLogger.Errorf("Error getting duration of a video %s", videoFile)
+		vcLogger.Errorf(ctx, "Error getting duration of a video %s", videoFile)
 		return 0, err
 	}
 
@@ -87,9 +86,9 @@ func getDurationForItem(item *model.Item, videoFile string) (float64, error) {
 func refreshItemCover(ctx context.Context, irw model.ItemReaderWriter, uploader model.StorageUploader,
 	item *model.Item, coversCount int, coverNumber int) error {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	vcLogger.Infof("Setting cover for item %d [coverNumber: %d] [videoFile: %s]", item.Id, coverNumber, videoFile)
+	vcLogger.Infof(ctx, "Setting cover for item %d [coverNumber: %d] [videoFile: %s]", item.Id, coverNumber, videoFile)
 
-	duration, err := getDurationForItem(item, videoFile)
+	duration, err := getDurationForItem(ctx, item, videoFile)
 	if err != nil {
 		return err
 	}
@@ -97,7 +96,7 @@ func refreshItemCover(ctx context.Context, irw model.ItemReaderWriter, uploader 
 	relativeFile := fmt.Sprintf("covers/%d/%d.png", item.Id, coverNumber)
 	storageFile, err := uploader.GetFileForWriting(relativeFile)
 	if err != nil {
-		vcLogger.Errorf("Error getting new cover file from storage %v", err)
+		vcLogger.Errorf(ctx, "Error getting new cover file from storage %v", err)
 		return err
 	}
 
@@ -107,8 +106,8 @@ func refreshItemCover(ctx context.Context, irw model.ItemReaderWriter, uploader 
 	}
 
 	screenshotSecond := startOffset + ((duration / float64(coversCount+1)) * float64(coverNumber))
-	if err := ffmpeg.TakeScreenshot(videoFile, screenshotSecond, storageFile); err != nil {
-		vcLogger.Errorf("Error taking screenshot for item %d, error %v", item.Id, err)
+	if err := ffmpeg.TakeScreenshot(ctx, videoFile, screenshotSecond, storageFile); err != nil {
+		vcLogger.Errorf(ctx, "Error taking screenshot for item %d, error %v", item.Id, err)
 		return err
 	}
 

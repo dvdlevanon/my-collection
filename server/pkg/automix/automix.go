@@ -12,6 +12,8 @@ import (
 	"time"
 )
 
+var logger = utils.MustGetLogger("automix")
+
 type autoMixDb interface {
 	model.TagReaderWriter
 	model.ItemReader
@@ -50,7 +52,7 @@ func (d *Automix) Run(ctx context.Context) error {
 		case <-time.After(1 * time.Minute):
 			if !d.isDailymixExists(d.db, d) {
 				if err := d.generateDailymix(d); err != nil {
-					utils.LogError("Error in generateDailymix", err)
+					utils.LogError(ctx, logger, "Error in generateDailymix", err)
 				}
 			}
 		}

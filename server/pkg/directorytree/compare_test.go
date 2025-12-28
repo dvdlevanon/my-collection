@@ -38,7 +38,7 @@ func skeleton(t *testing.T, extendsFs extendsFs, extendsDig extendsDig,
 	dbRoot, err := BuildFromDb(context.Background(), buildTestDirectoryReader(ctrl, additionalDbDirs...), dig)
 	assert.NoError(t, err)
 
-	fsRoot, err := BuildFromPath(rootDir, testFileFilter{})
+	fsRoot, err := BuildFromPath(t.Context(), rootDir, testFileFilter{})
 	assert.NoError(t, err)
 	return fsRoot, dbRoot
 }

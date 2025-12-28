@@ -18,7 +18,7 @@ func setupNewDb(t *testing.T, filename string) db.Database {
 	_, err := os.Create(dbpath)
 	assert.NoError(t, err)
 	assert.NoError(t, os.Remove(dbpath))
-	db, err := db.New(filepath.Join("", dbpath), false)
+	db, err := db.New(t.Context(), filepath.Join("", dbpath), false)
 	assert.NoError(t, err)
 	return db
 }

@@ -1,6 +1,7 @@
 package directorytree
 
 import (
+	"context"
 	"os"
 	"path/filepath"
 	"strings"
@@ -29,7 +30,7 @@ func buildTestFs(t *testing.T, rootDir string) {
 type testFileFilter struct {
 }
 
-func (f testFileFilter) Filter(path string) bool {
+func (f testFileFilter) Filter(ctx context.Context, path string) bool {
 	return !strings.HasSuffix(path, "file4-excluded")
 }
 
@@ -38,7 +39,7 @@ func TestBuildFromPath(t *testing.T) {
 	assert.NoError(t, err)
 	buildTestFs(t, rootDir)
 
-	root, err := BuildFromPath(rootDir, testFileFilter{})
+	root, err := BuildFromPath(t.Context(), rootDir, testFileFilter{})
 	assert.NoError(t, err)
 	assert.NotNil(t, root)
 	assert.Equal(t, 3, len(root.getOrCreateChild("1/2/3/4").Files))

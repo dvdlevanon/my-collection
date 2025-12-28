@@ -54,17 +54,17 @@ func updateVideoMainCover(ctx context.Context, irw model.ItemReaderWriter, uploa
 	}
 
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	vcLogger.Infof("Setting main cover for item %d [second: %s]", item.Id, p.Second)
+	vcLogger.Infof(ctx, "Setting main cover for item %d [second: %s]", item.Id, p.Second)
 
 	relativeFile := fmt.Sprintf("main-covers/%d/main.png", item.Id)
 	storageFile, err := uploader.GetFileForWriting(relativeFile)
 	if err != nil {
-		vcLogger.Errorf("Error getting main cover file from storage %v", err)
+		vcLogger.Errorf(ctx, "Error getting main cover file from storage %v", err)
 		return err
 	}
 
-	if err := ffmpeg.TakeScreenshot(videoFile, p.Second, storageFile); err != nil {
-		vcLogger.Errorf("Error taking screenshot for item %d, error %v", item.Id, err)
+	if err := ffmpeg.TakeScreenshot(ctx, videoFile, p.Second, storageFile); err != nil {
+		vcLogger.Errorf(ctx, "Error taking screenshot for item %d, error %v", item.Id, err)
 		return err
 	}
 

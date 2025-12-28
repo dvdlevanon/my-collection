@@ -14,10 +14,9 @@ import (
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("management-handler")
+var logger = utils.MustGetLogger("management-handler")
 
 type managementDb interface {
 	model.ItemReader
@@ -60,26 +59,27 @@ func (s *managementHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *managementHandler) runSpecTagger(c *gin.Context) {
-	logger.Infof("Triggering spec tagger")
+	ctx := server.ContextWithSubject(c)
+	logger.Infof(ctx, "Triggering spec tagger")
 	s.processor.EnqueueSpecTagger()
 }
 
 func (s *managementHandler) getStats(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
-	logger.Infof("Getting server stats")
+	logger.Infof(ctx, "Getting server stats")
 
 	itemsCount, err := s.db.GetItemsCount(ctx)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	tagsCount, err := s.db.GetTagsCount(ctx)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	totalDurationSeconds, err := s.db.GetTotalDurationSeconds(ctx)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -97,7 +97,7 @@ func (s *managementHandler) refreshItemsCovers(c *gin.Context) {
 		force = false
 	}
 
-	if server.HandleError(c, s.processor.EnqueueAllItemsCovers(ctx, force)) {
+	if server.HandleError(ctx, c, s.processor.EnqueueAllItemsCovers(ctx, force)) {
 		return
 	}
 
@@ -111,7 +111,7 @@ func (s *managementHandler) refreshItemsPreview(c *gin.Context) {
 		force = false
 	}
 
-	if server.HandleError(c, s.processor.EnqueueAllItemsPreview(ctx, force)) {
+	if server.HandleError(ctx, c, s.processor.EnqueueAllItemsPreview(ctx, force)) {
 		return
 	}
 
@@ -126,7 +126,7 @@ func (s *managementHandler) refreshItemsVideoMetadata(c *gin.Context) {
 		force = false
 	}
 
-	if server.HandleError(c, s.processor.EnqueueAllItemsVideoMetadata(ctx, force)) {
+	if server.HandleError(ctx, c, s.processor.EnqueueAllItemsVideoMetadata(ctx, force)) {
 		return
 	}
 
@@ -135,7 +135,7 @@ func (s *managementHandler) refreshItemsVideoMetadata(c *gin.Context) {
 
 func (s *managementHandler) refreshItemsFileMetadata(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
-	if server.HandleError(c, s.processor.EnqueueAllItemsFileMetadata(ctx)) {
+	if server.HandleError(ctx, c, s.processor.EnqueueAllItemsFileMetadata(ctx)) {
 		return
 	}
 
@@ -143,14 +143,15 @@ func (s *managementHandler) refreshItemsFileMetadata(c *gin.Context) {
 }
 
 func (s *managementHandler) runItemsOptimizer(c *gin.Context) {
-	logger.Infof("Triggering items optimizer")
+	ctx := server.ContextWithSubject(c)
+	logger.Infof(ctx, "Triggering items optimizer")
 	s.processor.EnqueueItemOptimizer()
 }
 
 func (s *managementHandler) exportMetadata(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	jsonBytes := bytes.Buffer{}
-	if server.HandleError(c, backup.Export(ctx, s.db, s.db, &jsonBytes)) {
+	if server.HandleError(ctx, c, backup.Export(ctx, s.db, s.db, &jsonBytes)) {
 		return
 	}
 
@@ -162,23 +163,23 @@ func (s *managementHandler) exportMetadata(c *gin.Context) {
 func (s *managementHandler) generateMixOnDemand(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	desc := c.Query("desc")
 	if desc == "" {
-		server.HandleError(c, fmt.Errorf("empty desc"))
+		server.HandleError(ctx, c, fmt.Errorf("empty desc"))
 		return
 	}
 
 	var tags []model.Tag
-	if server.HandleError(c, json.Unmarshal(body, &tags)) {
+	if server.HandleError(ctx, c, json.Unmarshal(body, &tags)) {
 		return
 	}
 
 	result, err := s.processor.GenerateMixOnDemand(ctx, utils.NowTimeGetter{}, desc, tags)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 

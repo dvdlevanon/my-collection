@@ -6,11 +6,9 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
 	"time"
-
-	"github.com/op/go-logging"
 )
 
-var l = logging.MustGetLogger("db-logger")
+var l = utils.MustGetLogger("db-logger")
 
 type dbLogger struct {
 	db *databaseImpl
@@ -26,17 +24,14 @@ func (d *dbLogger) log(ctx context.Context, operation string, start time.Time, e
 	// Format operation name with fixed width (20 chars)
 	opStr := fmt.Sprintf("%-20s", operation)
 
-	subject := utils.GetSubject(ctx)
-	subjectStr := fmt.Sprintf("%-20s", subject)
-
 	if err != nil {
-		l.Errorf("[%s] %s %s error: %v", subjectStr, durationStr, opStr, err)
+		l.Errorf(ctx, "%s %s error: %v", durationStr, opStr, err)
 		return
 	}
 
 	// Format result description
 	resultStr := formatResult(result)
-	l.Debugf("[%s] %s %s %s", subjectStr, durationStr, opStr, resultStr)
+	l.Debugf(ctx, "%s %s %s", durationStr, opStr, resultStr)
 }
 
 func formatResult(result any) string {

@@ -2,15 +2,15 @@ package server
 
 import (
 	"context"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("server")
+var logger = utils.MustGetLogger("server")
 
 type Server struct {
 	addr     string
@@ -22,6 +22,7 @@ func New(addr string) *Server {
 	gin.SetMode("release")
 
 	router := gin.New()
+	router.Use(contextInitializer)
 	router.Use(cors.Default())
 	router.Use(httpLogger)
 
@@ -48,7 +49,7 @@ func (s *Server) registerStaticHandlers() {
 }
 
 func (s *Server) Run(ctx context.Context) error {
-	logger.Infof("Starting server at address %s", s.addr)
+	logger.Infof(ctx, "Starting server at address %s", s.addr)
 
 	srv := &http.Server{
 		Addr:    s.addr,
@@ -64,16 +65,16 @@ func (s *Server) Run(ctx context.Context) error {
 
 	select {
 	case <-ctx.Done():
-		logger.Info("Context cancelled, shutting down server gracefully...")
+		logger.Infof(ctx, "Context cancelled, shutting down server gracefully...")
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 		defer cancel()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
-			logger.Errorf("Server forced to shutdown: %v", err)
+			logger.Errorf(ctx, "Server forced to shutdown: %v", err)
 			return err
 		}
 
-		logger.Info("Server exited gracefully")
+		logger.Infof(ctx, "Server exited gracefully")
 		return nil
 	case err := <-serverErr:
 		return err

@@ -2,15 +2,14 @@ package directorytree
 
 import (
 	"fmt"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path/filepath"
 	"sort"
 	"strings"
-
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("tree")
+var logger = utils.MustGetLogger("tree")
 
 type DirectoryNode struct {
 	Parent   *DirectoryNode

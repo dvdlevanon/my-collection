@@ -1,6 +1,7 @@
 package utils
 
 import (
+	"context"
 	"my-collection/server/pkg/model"
 	"time"
 )
@@ -15,8 +16,8 @@ func (d NowTimeGetter) GetCurrentTime() time.Time {
 type VideoFilter struct {
 }
 
-func (f VideoFilter) Filter(path string) bool {
-	return IsVideo(true, path)
+func (f VideoFilter) Filter(ctx context.Context, path string) bool {
+	return IsVideo(ctx, true, path)
 }
 
 type PushSender struct {

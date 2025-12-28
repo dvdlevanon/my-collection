@@ -5,14 +5,14 @@ import (
 	"my-collection/server/pkg/bl/tasks"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("tasks-handler")
+var logger = utils.MustGetLogger("tasks-handler")
 
 type queueDb interface {
 	model.TaskReader
@@ -51,7 +51,7 @@ func (s *tasksHandler) RegisterRoutes(rg *gin.RouterGroup) {
 func (s *tasksHandler) getQueueMetadata(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	queueMetadata, err := tasks.BuildQueueMetadata(ctx, s.db, s.processor)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -60,23 +60,23 @@ func (s *tasksHandler) getQueueMetadata(c *gin.Context) {
 
 func (s *tasksHandler) clearFinishedTasks(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
-	server.HandleError(c, s.processor.ClearFinishedTasks(ctx))
+	server.HandleError(ctx, c, s.processor.ClearFinishedTasks(ctx))
 }
 
 func (s *tasksHandler) getTasks(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	page, err := strconv.ParseInt(c.Query("page"), 10, 32)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	pageSize, err := strconv.ParseInt(c.Query("pageSize"), 10, 32)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	t, err := s.db.GetTasks(ctx, int((page-1)*pageSize), int(pageSize))
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 

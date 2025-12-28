@@ -24,7 +24,7 @@ func AutoImageChildren(ctx context.Context, storage model.StorageUploader, trw m
 	for _, slimChildTag := range tag.Children {
 		childTag, err := trw.GetTag(ctx, slimChildTag.Id)
 		if err != nil {
-			logger.Errorf("Error getting tag %v - %t", slimChildTag, err)
+			logger.Errorf(ctx, "Error getting tag %v - %t", slimChildTag, err)
 		}
 
 		for _, dir := range dirs {
@@ -34,7 +34,7 @@ func AutoImageChildren(ctx context.Context, storage model.StorageUploader, trw m
 
 			imageTypePath := filepath.Join(directoryPath, dir.Name())
 			if err := autoImageTagType(ctx, storage, trw, titrw, childTag, imageTypePath, dir.Name()); err != nil {
-				logger.Errorf("Error auto tagging %v from %s - %t", tag, imageTypePath, err)
+				logger.Errorf(ctx, "Error auto tagging %v from %s - %t", tag, imageTypePath, err)
 			}
 		}
 	}
@@ -46,7 +46,7 @@ func autoImageTagType(ctx context.Context, storage model.StorageUploader, tw mod
 	titrw model.TagImageTypeReaderWriter, tag *model.Tag, directoryPath string, nickname string) error {
 	tit, err := getOrCreateTagImageType(ctx, titrw, nickname)
 	if err != nil {
-		logger.Errorf("Unable to get tag image type for %s - %s", nickname, err)
+		logger.Errorf(ctx, "Unable to get tag image type for %s - %s", nickname, err)
 		return err
 	}
 
@@ -77,7 +77,7 @@ func updateTagImageTypeIcon(ctx context.Context, storage model.StorageUploader, 
 	}
 
 	if err = cp.Copy(path, storageFile); err != nil {
-		logger.Errorf("Error coping tit icon %s to %s - %s", path, storageFile, err)
+		logger.Errorf(ctx, "Error coping tit icon %s to %s - %s", path, storageFile, err)
 		return nil
 	}
 
@@ -132,7 +132,7 @@ func autoImageTag(ctx context.Context, storage model.StorageUploader, tw model.T
 	}
 
 	if err = cp.Copy(path, storageFile); err != nil {
-		logger.Errorf("Error coping %s to %s - %t", path, storageFile, err)
+		logger.Errorf(ctx, "Error coping %s to %s - %t", path, storageFile, err)
 		return nil
 	}
 

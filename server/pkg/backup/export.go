@@ -5,11 +5,10 @@ import (
 	"encoding/json"
 	"io"
 	"my-collection/server/pkg/model"
-
-	"github.com/op/go-logging"
+	"my-collection/server/pkg/utils"
 )
 
-var logger = logging.MustGetLogger("backup")
+var logger = utils.MustGetLogger("backup")
 
 func Export(ctx context.Context, ir model.ItemReader, tr model.TagReader, w io.Writer) error {
 	items, err := ir.GetAllItems(ctx)
@@ -22,7 +21,7 @@ func Export(ctx context.Context, ir model.ItemReader, tr model.TagReader, w io.W
 		return err
 	}
 
-	logger.Infof("Exporting %d items and %d tags", len(*items), len(*tags))
+	logger.Infof(ctx, "Exporting %d items and %d tags", len(*items), len(*tags))
 
 	itemsAndTags := model.ItemsAndTags{
 		Items: *items,

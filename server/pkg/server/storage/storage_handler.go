@@ -11,10 +11,9 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("storage-handler")
+var logger = utils.MustGetLogger("storage-handler")
 
 type storageHandlerStorage interface {
 	model.StorageDownloader
@@ -38,8 +37,9 @@ func (s *storageHandler) RegisterRoutes(rg *gin.RouterGroup) {
 }
 
 func (s *storageHandler) uploadFile(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	form, err := c.MultipartForm()
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -48,11 +48,11 @@ func (s *storageHandler) uploadFile(c *gin.Context) {
 	fileName := fmt.Sprintf("%s-%s", file.Filename, uuid.NewString())
 	relativeFile := filepath.Join(path, fileName)
 	storageFile, err := s.storage.GetFileForWriting(relativeFile)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	if server.HandleError(c, c.SaveUploadedFile(file, storageFile)) {
+	if server.HandleError(ctx, c, c.SaveUploadedFile(file, storageFile)) {
 		return
 	}
 
@@ -60,14 +60,15 @@ func (s *storageHandler) uploadFile(c *gin.Context) {
 }
 
 func (s *storageHandler) uploadFileFromUrl(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	url := c.Query("url")
 	path := c.Query("path")
 	storageFile, err := s.storage.GetFileForWriting(path)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
-	if server.HandleError(c, utils.DownloadFile(url, storageFile)) {
+	if server.HandleError(ctx, c, utils.DownloadFile(url, storageFile)) {
 		return
 	}
 
@@ -75,6 +76,7 @@ func (s *storageHandler) uploadFileFromUrl(c *gin.Context) {
 }
 
 func (s *storageHandler) getFile(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	path := c.Param("path")[1:]
 	var file string
 	if s.storage.IsStorageUrl(path) {
@@ -83,6 +85,6 @@ func (s *storageHandler) getFile(c *gin.Context) {
 		file = relativasor.GetAbsoluteFile(path)
 	}
 
-	logger.Infof("Getting file %v", file)
+	logger.Infof(ctx, "Getting file %v", file)
 	http.ServeFile(c.Writer, c.Request, file)
 }

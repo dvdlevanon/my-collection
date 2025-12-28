@@ -8,12 +8,11 @@ import (
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"os"
-
-	"github.com/op/go-logging"
 )
 
-var pLogger = logging.MustGetLogger("video-preview")
+var pLogger = utils.MustGetLogger("video-preview")
 
 type videoPreviewParams struct {
 	ItemId        uint64 `json:"id"`
@@ -65,10 +64,10 @@ func refreshVideoPreview(ctx context.Context, irw model.ItemReaderWriter, upload
 		return nil
 	}
 
-	pLogger.Infof("Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
+	pLogger.Infof(ctx, "Setting preview for item %d [videoFile: %s] [count: %d] [duration: %d]",
 		item.Id, item.Url, p.SceneCount, p.SceneDuration)
 
-	videoParts, err := getPreviewParts(uploader, item, p.SceneCount, p.SceneDuration)
+	videoParts, err := getPreviewParts(ctx, uploader, item, p.SceneCount, p.SceneDuration)
 	defer func() {
 		for _, file := range videoParts {
 			os.Remove(file)
@@ -85,14 +84,14 @@ func refreshVideoPreview(ctx context.Context, irw model.ItemReaderWriter, upload
 		return err
 	}
 
-	if err := ffmpeg.JoinVideoFiles(videoParts, storageFile); err != nil {
-		pLogger.Errorf("Error joining video files for item %d, error %v", item.Id, err)
+	if err := ffmpeg.JoinVideoFiles(ctx, videoParts, storageFile); err != nil {
+		pLogger.Errorf(ctx, "Error joining video files for item %d, error %v", item.Id, err)
 		return err
 	}
 
 	tempFile := fmt.Sprintf("%s.mp4", uploader.GetTempFile())
-	if err := ffmpeg.OptimizeVideoForPreview(storageFile, tempFile); err != nil {
-		pLogger.Errorf("Error optimizing video file for item %d, error %v", item.Id, err)
+	if err := ffmpeg.OptimizeVideoForPreview(ctx, storageFile, tempFile); err != nil {
+		pLogger.Errorf(ctx, "Error optimizing video file for item %d, error %v", item.Id, err)
 		return err
 	}
 
@@ -100,10 +99,10 @@ func refreshVideoPreview(ctx context.Context, irw model.ItemReaderWriter, upload
 	return irw.UpdateItem(ctx, item)
 }
 
-func getPreviewParts(uploader model.StorageUploader, item *model.Item,
+func getPreviewParts(ctx context.Context, uploader model.StorageUploader, item *model.Item,
 	previewSceneCount int, previewSceneDuration int) ([]string, error) {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	duration, err := getDurationForItem(item, videoFile)
+	duration, err := getDurationForItem(ctx, item, videoFile)
 	if err != nil {
 		return nil, err
 	}
@@ -119,8 +118,8 @@ func getPreviewParts(uploader model.StorageUploader, item *model.Item,
 		tempFile := fmt.Sprintf("%s.mp4", uploader.GetTempFile())
 		result = append(result, tempFile)
 
-		if err := ffmpeg.ExtractPartOfVideo(videoFile, startSecond, previewSceneDuration, tempFile); err != nil {
-			pLogger.Errorf("Error extracting part of video for item %d, error %v", item.Id, err)
+		if err := ffmpeg.ExtractPartOfVideo(ctx, videoFile, startSecond, previewSceneDuration, tempFile); err != nil {
+			pLogger.Errorf(ctx, "Error extracting part of video for item %d, error %v", item.Id, err)
 			return nil, err
 		}
 	}

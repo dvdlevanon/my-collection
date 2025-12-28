@@ -7,14 +7,14 @@ import (
 	"my-collection/server/pkg/bl/fs"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("fs-handler")
+var logger = utils.MustGetLogger("fs-handler")
 
 type fsDb interface {
 	model.DirectoryReaderWriter
@@ -48,17 +48,17 @@ func (s *fsHandler) getFsDir(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	path := c.Query("path")
 	depth, err := strconv.ParseInt(c.Query("depth"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	node, err := fs.GetFsTree(path, int(depth))
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	node, err = directories.EnrichFsNode(ctx, s.db, node)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -69,16 +69,16 @@ func (s *fsHandler) includeDir(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	path := c.Query("path")
 	subdirs, err := strconv.ParseBool(c.Query("subdirs"))
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 	hierarchy, err := strconv.ParseBool(c.Query("hierarchy"))
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	err = fs.IncludeDir(ctx, s.db, path, subdirs, hierarchy)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -91,7 +91,7 @@ func (s *fsHandler) excludeDir(c *gin.Context) {
 	path := c.Query("path")
 
 	err := fs.ExcludeDir(ctx, s.db, path)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -102,18 +102,18 @@ func (s *fsHandler) excludeDir(c *gin.Context) {
 func (s *fsHandler) SetDirectoryTags(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	body, err := io.ReadAll(c.Request.Body)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	var directory model.Directory
 	if err = json.Unmarshal(body, &directory); err != nil {
-		server.HandleError(c, err)
+		server.HandleError(ctx, c, err)
 		return
 	}
 
 	if err = directories.UpdateDirectoryTags(ctx, s.db, &directory); err != nil {
-		server.HandleError(c, err)
+		server.HandleError(ctx, c, err)
 		return
 	}
 
@@ -122,6 +122,7 @@ func (s *fsHandler) SetDirectoryTags(c *gin.Context) {
 }
 
 func (s *fsHandler) runDirectoriesScan(c *gin.Context) {
-	logger.Infof("Triggering directory scan")
+	ctx := server.ContextWithSubject(c)
+	logger.Infof(ctx, "Triggering directory scan")
 	s.changeListener.DirectoryChanged()
 }

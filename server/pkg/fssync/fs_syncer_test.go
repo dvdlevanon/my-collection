@@ -93,7 +93,7 @@ func createTestDir(path string, excluded bool) *model.Directory {
 type trueFileFilter struct {
 }
 
-func (f trueFileFilter) Filter(path string) bool {
+func (f trueFileFilter) Filter(ctx context.Context, path string) bool {
 	return true
 }
 

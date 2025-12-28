@@ -25,7 +25,7 @@ func BuildFromDb(ctx context.Context, dr model.DirectoryReader, dig model.Direct
 		child.Excluded = directories.IsExcluded(&dir)
 
 		if err := child.readFilesFromDb(ctx, dig); err != nil {
-			logger.Errorf("Error reading files from db %s", err)
+			logger.Errorf(ctx, "Error reading files from db %s", err)
 		}
 	}
 

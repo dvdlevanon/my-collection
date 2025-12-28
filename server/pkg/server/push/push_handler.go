@@ -4,16 +4,16 @@ import (
 	"context"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
+	"my-collection/server/pkg/utils"
 	"net"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("push")
+var logger = utils.MustGetLogger("push")
 
 type PushHandler interface {
 	server.Handler
@@ -56,7 +56,7 @@ func (p *push) Run(ctx context.Context) error {
 	for {
 		select {
 		case <-ctx.Done():
-			logger.Info("Push service shutting down...")
+			logger.Infof(ctx, "Push service shutting down...")
 			// Close all websocket connections
 			for _, socket := range p.sockets {
 				socket.Close()
@@ -65,21 +65,21 @@ func (p *push) Run(ctx context.Context) error {
 		case socket := <-p.socketsChannel:
 			p.sockets = append(p.sockets, socket)
 		case message := <-p.messages:
-			p.writeToAll(&message)
+			p.writeToAll(ctx, &message)
 		case <-ticker.C:
-			p.writeToAll(&model.PushMessage{MessageType: model.PUSH_PING})
+			p.writeToAll(ctx, &model.PushMessage{MessageType: model.PUSH_PING})
 		}
 	}
 }
 
-func (p *push) writeToAll(m *model.PushMessage) {
+func (p *push) writeToAll(ctx context.Context, m *model.PushMessage) {
 	for _, socket := range p.sockets {
 		err := socket.WriteJSON(m)
 		if err != nil {
 			if opErr, ok := err.(*net.OpError); ok && opErr.Err.Error() == "write: broken pipe" {
 				p.removeAndClose(socket)
 			} else {
-				logger.Warningf("Error writing to websocket %s", err)
+				logger.Warningf(ctx, "Error writing to websocket %s", err)
 			}
 		}
 	}
@@ -97,9 +97,10 @@ func (p *push) removeAndClose(socket *websocket.Conn) {
 }
 
 func (p *push) websocket(c *gin.Context) {
+	ctx := server.ContextWithSubject(c)
 	ws, err := p.upgrader.Upgrade(c.Writer, c.Request, nil)
 	if err != nil {
-		logger.Errorf("Unable to upgrade to websocket %s", err)
+		logger.Errorf(ctx, "Unable to upgrade to websocket %s", err)
 		c.AbortWithError(http.StatusInternalServerError, err)
 		return
 	}

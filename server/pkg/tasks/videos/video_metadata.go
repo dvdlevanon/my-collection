@@ -8,11 +8,10 @@ import (
 	"my-collection/server/pkg/ffmpeg"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
-
-	"github.com/op/go-logging"
+	"my-collection/server/pkg/utils"
 )
 
-var vmLogger = logging.MustGetLogger("file-metadata")
+var vmLogger = utils.MustGetLogger("file-metadata")
 
 type videoMetadataParams struct {
 	ItemId uint64 `json:"id,omitempty"`
@@ -59,7 +58,7 @@ func updateVideoMetadata(ctx context.Context, irw model.ItemReaderWriter, p vide
 			return err
 		}
 	} else {
-		if err := updateMainItemMetadata(item); err != nil {
+		if err := updateMainItemMetadata(ctx, item); err != nil {
 			return err
 		}
 	}
@@ -82,25 +81,25 @@ func updateNonMainItemMetadata(ctx context.Context, ir model.ItemReader, item *m
 	return nil
 }
 
-func updateMainItemMetadata(item *model.Item) error {
+func updateMainItemMetadata(ctx context.Context, item *model.Item) error {
 	videoFile := relativasor.GetAbsoluteFile(item.Url)
-	vmLogger.Infof("Refreshing video metadata for item %d  [videoFile: %s]", item.Id, videoFile)
+	vmLogger.Infof(ctx, "Refreshing video metadata for item %d  [videoFile: %s]", item.Id, videoFile)
 
-	duration, err := ffmpeg.GetDurationInSeconds(videoFile)
+	duration, err := ffmpeg.GetDurationInSeconds(ctx, videoFile)
 	if err != nil {
-		vmLogger.Errorf("Error getting duration of a video %s", videoFile)
+		vmLogger.Errorf(ctx, "Error getting duration of a video %s", videoFile)
 		return err
 	}
 
-	rawVideoMetadata, err := ffmpeg.GetVideoMetadata(videoFile)
+	rawVideoMetadata, err := ffmpeg.GetVideoMetadata(ctx, videoFile)
 	if err != nil {
-		vmLogger.Errorf("Error getting video metadata of %s", videoFile)
+		vmLogger.Errorf(ctx, "Error getting video metadata of %s", videoFile)
 		return err
 	}
 
-	rawAudioMetadata, err := ffmpeg.GetAudioMetadata(videoFile)
+	rawAudioMetadata, err := ffmpeg.GetAudioMetadata(ctx, videoFile)
 	if err != nil {
-		vmLogger.Errorf("Error getting audio metadata of %s", videoFile)
+		vmLogger.Errorf(ctx, "Error getting audio metadata of %s", videoFile)
 		return err
 	}
 

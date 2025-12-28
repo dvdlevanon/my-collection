@@ -4,14 +4,14 @@ import (
 	"my-collection/server/pkg/bl/subtitles"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
+	"my-collection/server/pkg/utils"
 	"net/http"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
-	"github.com/op/go-logging"
 )
 
-var logger = logging.MustGetLogger("subtitles-handler")
+var logger = utils.MustGetLogger("subtitles-handler")
 
 type subtitleHandlerDb interface {
 	model.ItemReader
@@ -52,7 +52,7 @@ func (s *subtitleHandler) getSubtitle(c *gin.Context) {
 		c.Status(http.StatusNoContent)
 		return
 	}
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -62,12 +62,12 @@ func (s *subtitleHandler) getSubtitle(c *gin.Context) {
 func (s *subtitleHandler) getAvailalbeNames(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
 	availableNames, err := subtitles.GetAvailableNames(ctx, s.db, itemId)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -77,7 +77,7 @@ func (s *subtitleHandler) getAvailalbeNames(c *gin.Context) {
 func (s *subtitleHandler) getOnlineNames(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -89,7 +89,7 @@ func (s *subtitleHandler) getOnlineNames(c *gin.Context) {
 	lang := c.Query("lang")
 
 	availableNames, err := subtitles.GetOnlineNames(ctx, s.db, s.op, itemId, lang, aiTranslated)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -99,7 +99,7 @@ func (s *subtitleHandler) getOnlineNames(c *gin.Context) {
 func (s *subtitleHandler) downloadSubtitle(c *gin.Context) {
 	ctx := server.ContextWithSubject(c)
 	itemId, err := strconv.ParseUint(c.Param("item"), 10, 64)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -111,7 +111,7 @@ func (s *subtitleHandler) downloadSubtitle(c *gin.Context) {
 	}
 
 	url, err := subtitles.Download(ctx, s.db, s.op, s.op, itemId, subtitle)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 
@@ -123,7 +123,7 @@ func (s *subtitleHandler) deleteSubtitle(c *gin.Context) {
 
 	url := c.Query("url")
 	err := subtitles.Delete(ctx, url)
-	if server.HandleError(c, err) {
+	if server.HandleError(ctx, c, err) {
 		return
 	}
 

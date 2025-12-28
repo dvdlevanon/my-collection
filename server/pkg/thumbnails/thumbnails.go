@@ -10,6 +10,8 @@ import (
 	"time"
 )
 
+var logger = utils.MustGetLogger("thumbnails")
+
 func New(tr model.TagReader, tiw model.TagImageWriter, storage *storage.Storage, thumbnailWidth int, thumbnailHeight int) *Thumbnails {
 	return &Thumbnails{
 		tr:              tr,
@@ -32,9 +34,9 @@ func (t *Thumbnails) Run(ctx context.Context) error {
 	ctx = utils.ContextWithSubject(ctx, "thumnails")
 	for {
 		select {
-		case <-time.After(1 * time.Minute):
+		case <-time.After(5 * time.Minute):
 			if err := t.processThumbnails(ctx); err != nil {
-				utils.LogError("Error processing thumbnails", err)
+				utils.LogError(ctx, logger, "Error processing thumbnails", err)
 			}
 		case <-ctx.Done():
 			return nil
@@ -55,7 +57,7 @@ func (t *Thumbnails) processThumbnails(ctx context.Context) error {
 			}
 
 			if err := t.ProcessThumbnail(ctx, image); err != nil {
-				utils.LogError("Error processing thumbnail", err)
+				utils.LogError(ctx, logger, "Error processing thumbnail", err)
 			}
 		}
 	}
