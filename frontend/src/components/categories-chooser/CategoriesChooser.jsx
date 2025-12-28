@@ -6,7 +6,15 @@ import ReactQueryUtil from '../../utils/react-query-util';
 import TagsUtil from '../../utils/tags-util';
 import AddTagDialog from '../dialogs/AddTagDialog';
 
-function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multiselect, placeholder }) {
+function CategoriesChooser({
+	selectedIds,
+	setCategories,
+	allowToCreate,
+	multiselect,
+	placeholder,
+	immutableIds,
+	immutablePlaceholder,
+}) {
 	const unknownCategoryId = -1;
 	const createCategoryId = -2;
 	const [open, setOpen] = useState(false);
@@ -29,13 +37,30 @@ function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multisel
 
 	const getCategories = () => {
 		let result = [];
-		result.push(getUnknownCategory());
+
 		if (allowToCreate) {
 			result.push(getCreateCategory());
 		}
 		result = result.concat(TagsUtil.getCategories(tagsQuery.data));
 		result = result.filter((category) => !TagsUtil.isSpecialCategory(category.id));
+
+		if (hasImmutableIds()) {
+			result = result.map((category) =>
+				immutableIds.includes(category.id)
+					? { ...category, title: `${category.title}${immutablePlaceholder}`, immutable: true }
+					: category
+			);
+		}
+
+		if (selectedIds.length == 0 && !hasImmutableIds()) {
+			result.unshift(getUnknownCategory());
+		}
+
 		return result;
+	};
+
+	const hasImmutableIds = () => {
+		return immutableIds && immutableIds.length > 0;
 	};
 
 	const onChange = (event) => {
@@ -47,7 +72,6 @@ function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multisel
 		}
 
 		if (value[value.length - 1] == unknownCategoryId) {
-			setCategories([]);
 			setOpen(false);
 			return;
 		}
@@ -60,6 +84,21 @@ function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multisel
 		setOpen(false);
 	};
 
+	const calcValue = () => {
+		if (selectedIds.length == 0 && !hasImmutableIds()) {
+			return [getUnknownCategory().id];
+		} else {
+			if (hasImmutableIds) {
+				let result = [];
+				result.push(...immutableIds);
+				result.push(...selectedIds);
+				return result;
+			} else {
+				return selectedIds;
+			}
+		}
+	};
+
 	return (
 		<Stack>
 			<FormControl fullWidth>
@@ -70,7 +109,7 @@ function CategoriesChooser({ selectedIds, setCategories, allowToCreate, multisel
 					onChange={onChange}
 					size="small"
 					multiple={multiselect}
-					value={selectedIds}
+					value={calcValue()}
 					displayEmpty
 				>
 					{getCategories().map((category) => {

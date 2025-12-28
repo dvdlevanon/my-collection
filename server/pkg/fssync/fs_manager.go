@@ -3,6 +3,7 @@ package fssync
 import (
 	"context"
 	"my-collection/server/pkg/bl/directories"
+	"my-collection/server/pkg/bl/fs"
 	"my-collection/server/pkg/bl/tags"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/directorytree"
@@ -81,12 +82,25 @@ func (f *FsManager) AddBelongingItem(ctx context.Context, item *model.Item) erro
 }
 
 func (f *FsManager) GetAutoTags(ctx context.Context, path string) ([]*model.Tag, error) {
-	directory, err := directories.GetDirectory(ctx, f.db, path)
+	dirs, err := fs.GetDirHierarchy(ctx, f.db, path)
 	if err != nil {
 		return nil, err
 	}
+	if len(dirs) == 0 {
+		return nil, nil
+	}
 
-	return tags.GetOrCreateTags(ctx, f.db, directories.BuildDirectoryTags(directory))
+	title := directories.DirectoryNameToTag(dirs[len(dirs)-1].Path)
+	result := make([]*model.Tag, 0)
+	for _, dir := range dirs {
+		tags, err := tags.GetOrCreateTags(ctx, f.db, directories.BuildDirectoryTags(dir, title))
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, tags...)
+	}
+
+	return result, nil
 }
 
 func (f *FsManager) GetFileMetadata(path string) (int64, int64, error) {

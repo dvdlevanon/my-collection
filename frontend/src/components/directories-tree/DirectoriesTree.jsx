@@ -11,8 +11,6 @@ import DirectorySettingsMenu from './DirectorySettingsMenu';
 import { useTreeStore } from './TreeStore';
 
 function DirectoriesTree() {
-	const unknownCategoryId = -1;
-
 	const { treeData, loadNode, updateNodeInfo, refreshNodeComplete } = useTreeStore();
 	const treeRef = useRef();
 	const { ref, width, height } = useResizeObserver();
@@ -47,6 +45,17 @@ function DirectoriesTree() {
 		});
 	};
 
+	const getParentsCategories = (dir) => {
+		let result = [];
+		while (dir) {
+			if (dir.dirinfo && dir.dirinfo.tags) {
+				result.push(...dir.dirinfo.tags.map((tag) => tag.id));
+			}
+			dir = dir.parent;
+		}
+		return result;
+	};
+
 	const renderDirInfo = (dir) => {
 		if (!dir.dirinfo) {
 			return;
@@ -56,9 +65,10 @@ function DirectoriesTree() {
 			return;
 		}
 
-		let selectedCategories = [unknownCategoryId];
+		let parentCategories = getParentsCategories(dir.parent);
+		let selectedCategories = [];
 		if (dir.dirinfo.tags) {
-			selectedCategories = dir.dirinfo.tags.map((dir) => dir.id);
+			selectedCategories = dir.dirinfo.tags.map((tag) => tag.id);
 		}
 
 		return (
@@ -68,6 +78,8 @@ function DirectoriesTree() {
 					multiselect={true}
 					allowToCreate={true}
 					placeholder="Not Specified"
+					immutableIds={parentCategories}
+					immutablePlaceholder={' (inherited)'}
 					selectedIds={selectedCategories}
 					setCategories={(categoriyIds) => {
 						setCategories(dir, categoriyIds);

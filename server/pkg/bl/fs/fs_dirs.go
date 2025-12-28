@@ -192,3 +192,24 @@ func IncludeDir(ctx context.Context, drw model.DirectoryReaderWriter, path strin
 
 	return nil
 }
+
+func GetDirHierarchy(ctx context.Context, dr model.DirectoryReader, path string) ([]*model.Directory, error) {
+	result := make([]*model.Directory, 0)
+	current := ""
+
+	for part := range strings.SplitSeq(path, string(filepath.Separator)) {
+		current = filepath.Join(current, part)
+
+		if directories.NormalizeDirectoryPath(current) == model.ROOT_DIRECTORY_PATH {
+			continue
+		}
+
+		directory, err := directories.GetDirectory(ctx, dr, current)
+		if err != nil {
+			return nil, err
+		}
+		result = append(result, directory)
+	}
+
+	return result, nil
+}
