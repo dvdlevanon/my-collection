@@ -25,8 +25,8 @@ func (p *Processor) enqueue(ctx context.Context, t *model.Task) error {
 	return p.pushQueueMetadata(ctx)
 }
 
-func createTask(taskType model.TaskType, params string, desc string) *model.Task {
-	return &model.Task{TaskType: taskType, Description: desc, Params: params}
+func createTask(taskType model.TaskType, params string, desc string, itemId uint64) *model.Task {
+	return &model.Task{TaskType: taskType, Description: desc, Params: params, ItemId: itemId}
 }
 
 func (p *Processor) EnqueueItemVideoMetadata(ctx context.Context, id uint64, title string) error {
@@ -36,7 +36,7 @@ func (p *Processor) EnqueueItemVideoMetadata(ctx context.Context, id uint64, tit
 	}
 
 	desc := video_tasks.MetadataDesc(id, title)
-	return p.enqueue(ctx, createTask(model.REFRESH_METADATA_TASK, params, desc))
+	return p.enqueue(ctx, createTask(model.REFRESH_METADATA_TASK, params, desc, id))
 }
 
 func (p *Processor) EnqueueItemPreview(ctx context.Context, id uint64, title string) error {
@@ -46,7 +46,7 @@ func (p *Processor) EnqueueItemPreview(ctx context.Context, id uint64, title str
 	}
 
 	desc := video_tasks.PreviewDesc(id, title, p.previewSceneCount, p.previewSceneDuration)
-	return p.enqueue(ctx, createTask(model.REFRESH_PREVIEW_TASK, params, desc))
+	return p.enqueue(ctx, createTask(model.REFRESH_PREVIEW_TASK, params, desc, id))
 }
 
 func (p *Processor) EnqueueMainCover(ctx context.Context, id uint64, second float64, title string) error {
@@ -56,7 +56,7 @@ func (p *Processor) EnqueueMainCover(ctx context.Context, id uint64, second floa
 	}
 
 	desc := video_tasks.MainCoverDesc(id, title, second)
-	return p.enqueue(ctx, createTask(model.SET_MAIN_COVER, params, desc))
+	return p.enqueue(ctx, createTask(model.SET_MAIN_COVER, params, desc, id))
 }
 
 func (p *Processor) EnqueueCropFrame(ctx context.Context, id uint64, second float64, rect model.RectFloat, title string) error {
@@ -66,7 +66,7 @@ func (p *Processor) EnqueueCropFrame(ctx context.Context, id uint64, second floa
 	}
 
 	desc := video_tasks.CropDesc(id, title, second, rect)
-	return p.enqueue(ctx, createTask(model.CROP_FRAME, params, desc))
+	return p.enqueue(ctx, createTask(model.CROP_FRAME, params, desc, id))
 }
 
 func (p *Processor) EnqueueChangeResolution(ctx context.Context, id uint64, w int, h int, title string) error {
@@ -76,7 +76,7 @@ func (p *Processor) EnqueueChangeResolution(ctx context.Context, id uint64, w in
 	}
 
 	desc := video_tasks.ResolutionDesc(id, title, w, h)
-	return p.enqueue(ctx, createTask(model.CHANGE_RESOLUTION, params, desc))
+	return p.enqueue(ctx, createTask(model.CHANGE_RESOLUTION, params, desc, id))
 }
 
 func (p *Processor) EnqueueItemCovers(ctx context.Context, id uint64, title string) error {
@@ -86,7 +86,7 @@ func (p *Processor) EnqueueItemCovers(ctx context.Context, id uint64, title stri
 	}
 
 	desc := video_tasks.CoversDesc(id, title, p.coversCount)
-	return p.enqueue(ctx, createTask(model.REFRESH_COVER_TASK, params, desc))
+	return p.enqueue(ctx, createTask(model.REFRESH_COVER_TASK, params, desc, id))
 }
 
 func (p *Processor) EnqueueItemFileMetadata(ctx context.Context, id uint64, title string) error {
@@ -96,5 +96,5 @@ func (p *Processor) EnqueueItemFileMetadata(ctx context.Context, id uint64, titl
 	}
 
 	desc := general_tasks.MetadataDesc(id, title)
-	return p.enqueue(ctx, createTask(model.REFRESH_FILE_TASK, params, desc))
+	return p.enqueue(ctx, createTask(model.REFRESH_FILE_TASK, params, desc, id))
 }

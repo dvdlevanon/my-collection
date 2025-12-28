@@ -121,6 +121,7 @@ type Task struct {
 	TaskType        TaskType `json:"type,omitempty"`
 	Description     string   `json:"description,omitempty" gorm:"-:all"`
 	Params          string   // a json string containing specific task parameters based on its type
+	ItemId          uint64
 }
 
 type QueueMetadata struct {
