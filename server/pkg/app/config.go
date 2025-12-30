@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"my-collection/server/pkg/directorytree"
+	"my-collection/server/pkg/model"
 	"strings"
 )
 
@@ -18,6 +19,9 @@ type MyCollectionConfig struct {
 	PreviewSceneCount           int
 	PreviewSceneDuration        int
 	OpenSubtitleApiKeys         []string
+	HighlightsEnabled           bool
+	SubtitilesEnabled           bool
+	SpecEnabled                 bool
 }
 
 func (c *MyCollectionConfig) DebugPrint(ctx context.Context) {
@@ -34,4 +38,14 @@ func (c *MyCollectionConfig) DebugPrint(ctx context.Context) {
 	logger.Debugf(ctx, "  %-30s %d", "PreviewSceneDuration:", c.PreviewSceneDuration)
 	logger.Debugf(ctx, "  %-30s %v", "OpenSubtitleApiKeys:", c.OpenSubtitleApiKeys)
 	logger.Debugf(ctx, strings.Repeat("-", 50))
+}
+
+func (c *MyCollectionConfig) ToSettings() model.Settings {
+	return model.Settings{
+		DailymixEnabled:    c.AutoMixItemsCount > 0,
+		MixOnDemandEnabled: c.MixOnDemandItemsCount > 0,
+		HighlightsEnabled:  c.HighlightsEnabled,
+		SubtitlesEnabled:   c.SubtitilesEnabled,
+		SpecEnabled:        c.SpecEnabled,
+	}
 }

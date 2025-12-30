@@ -6,6 +6,7 @@ import (
 	"my-collection/server/pkg/automix"
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/bl/items"
+	"my-collection/server/pkg/bl/settings"
 	"my-collection/server/pkg/db"
 	"my-collection/server/pkg/fssync"
 	"my-collection/server/pkg/itemsoptimizer"
@@ -55,6 +56,7 @@ type MyCollection struct {
 func (mc *MyCollection) initialize(ctx context.Context, config MyCollectionConfig) error {
 	ctx = utils.ContextWithSubject(ctx, "init")
 
+	settings.Init(config.ToSettings())
 	if err := relativasor.Init(config.RootDir); err != nil {
 		return err
 	}
@@ -63,7 +65,6 @@ func (mc *MyCollection) initialize(ctx context.Context, config MyCollectionConfi
 	if err := os.MkdirAll(dataDir, 0750); err != nil {
 		return err
 	}
-
 	logger.Infof(ctx, "Root directory is: %s", relativasor.GetRootDirectory())
 
 	db, err := db.New(ctx, filepath.Join(dataDir, "db.sqlite"), true)

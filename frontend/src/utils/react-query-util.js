@@ -4,6 +4,7 @@ import Client from './client';
 export default class ReactQueryUtil {
 	static ASYNC_TASKS_TIMEOUT = 1000;
 	static SPECIAL_TAGS_KEY = ['special-tags'];
+	static SETTINGS_KEY = ['settings'];
 	static CATEGORIES_KEY = ['categories'];
 	static TAGS_KEY = ['tags'];
 	static ITEMS_KEY = ['items'];

@@ -3,6 +3,7 @@ package items
 import (
 	"context"
 	"errors"
+	"my-collection/server/pkg/bl/special_tags"
 	"my-collection/server/pkg/model"
 	"testing"
 
@@ -293,7 +294,7 @@ func TestIsHighlight(t *testing.T) {
 func TestGetHighlightsTagId(t *testing.T) {
 	// Set up the highlights tag with a known ID
 	highlightTagId := uint64(789)
-	highlightsTag.Id = highlightTagId
+	special_tags.HighlightsTag.Id = highlightTagId
 
 	result := GetHighlightsTagId()
 	assert.Equal(t, highlightTagId, result)

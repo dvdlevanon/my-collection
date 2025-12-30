@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"my-collection/server/pkg/backup"
+	"my-collection/server/pkg/bl/settings"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/server"
 	"my-collection/server/pkg/utils"
@@ -56,6 +57,7 @@ func (s *managementHandler) RegisterRoutes(rg *gin.RouterGroup) {
 	rg.POST("/mix-on-demand", s.generateMixOnDemand)
 	rg.GET("/export-metadata.json", s.exportMetadata)
 	rg.GET("/stats", s.getStats)
+	rg.GET("/settings", s.getSettings)
 }
 
 func (s *managementHandler) runSpecTagger(c *gin.Context) {
@@ -184,4 +186,8 @@ func (s *managementHandler) generateMixOnDemand(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, result)
+}
+
+func (s *managementHandler) getSettings(c *gin.Context) {
+	c.JSON(http.StatusOK, settings.Settings)
 }

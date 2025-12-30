@@ -50,8 +50,8 @@ func execute(ctx context.Context, name string, arg ...string) ([]byte, error) {
 	}
 
 	if err := cmd.Wait(); err != nil {
-		return nil, errors.Errorf("Error running process, exit code: %d, err: %s %v",
-			cmd.ProcessState.ExitCode(), stderr.String(), err)
+		return nil, errors.Errorf("Error running process, exit code: %d, stderr: %s, stdout: %s, %v",
+			cmd.ProcessState.ExitCode(), stderr.String(), stdout.String(), err)
 	}
 
 	if cmd.ProcessState.ExitCode() != 0 {

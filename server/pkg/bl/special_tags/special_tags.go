@@ -21,6 +21,11 @@ var SpecTag = &model.Tag{
 	DefaultSorting: "items-count",
 }
 
+var HighlightsTag = &model.Tag{
+	Title:    "Highlights", // tags-utils.js
+	ParentID: nil,
+}
+
 func IsSpecial(tagId uint64) bool {
-	return tagId == DailymixTag.Id || tagId == SpecTag.Id || tagId == MixOnDemandTag.Id
+	return tagId == DailymixTag.Id || tagId == SpecTag.Id || tagId == MixOnDemandTag.Id || tagId == HighlightsTag.Id
 }

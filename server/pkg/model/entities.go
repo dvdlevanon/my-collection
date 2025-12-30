@@ -150,3 +150,11 @@ type Stats struct {
 	ItemsCount           int64   `json:"items_count,omitempty"`
 	TotalDurationSeconds float64 `json:"total_duration_seconds,omitempty"`
 }
+
+type Settings struct {
+	DailymixEnabled    bool `json:"dailymix_enabled"`
+	HighlightsEnabled  bool `json:"highlights_enabled"`
+	SubtitlesEnabled   bool `json:"subtitles_enabled"`
+	SpecEnabled        bool `json:"spec_enabled"`
+	MixOnDemandEnabled bool `json:"mod_enabled"`
+}

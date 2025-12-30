@@ -6,9 +6,14 @@ export default class TagsUtil {
 	static highlightsTag;
 	static specTag;
 	static categories = [];
+	static settings = [];
 
 	static initCategories(categories) {
 		TagsUtil.categories = categories;
+	}
+
+	static initSettings(settings) {
+		TagsUtil.settings = settings;
 	}
 
 	static initSpecialTags(specialTags) {
@@ -128,8 +133,24 @@ export default class TagsUtil {
 		if (!tags) {
 			return [];
 		}
+		if (!TagsUtil.settings) {
+			return [];
+		}
 
 		let result = tags.filter((tag) => {
+			if (!TagsUtil.settings.spec_enabled && TagsUtil.isSpecCategory(tag.id)) {
+				return false;
+			}
+			if (!TagsUtil.settings.mod_enabled && TagsUtil.isMixOnDemandCategory(tag.id)) {
+				return false;
+			}
+			if (!TagsUtil.settings.highlights_enabled && TagsUtil.isHighlightsCategory(tag.id)) {
+				return false;
+			}
+			if (!TagsUtil.settings.dailymix_enabled && TagsUtil.isDailymixCategory(tag.id)) {
+				return false;
+			}
+
 			return !tag.parentId;
 		});
 

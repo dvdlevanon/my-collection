@@ -18,6 +18,11 @@ function App() {
 		queryFn: Client.getSpecialTags,
 	});
 
+	const { data: settings } = useQuery({
+		queryKey: ReactQueryUtil.SETTINGS_KEY,
+		queryFn: Client.getSettings,
+	});
+
 	const { data: categories } = useQuery({
 		queryKey: ReactQueryUtil.CATEGORIES_KEY,
 		queryFn: Client.getCategories,
@@ -43,6 +48,12 @@ function App() {
 			TagsUtil.initSpecialTags(specialTags);
 		}
 	}, [specialTags]);
+
+	useEffect(() => {
+		if (settings) {
+			TagsUtil.initSettings(settings);
+		}
+	}, [settings]);
 
 	useEffect(() => {
 		if (categories) {

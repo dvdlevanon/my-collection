@@ -7,6 +7,10 @@ export default class Client {
 		return await fetch(`${Client.apiUrl}/special-tags`).then((response) => response.json());
 	};
 
+	static getSettings = async () => {
+		return await fetch(`${Client.apiUrl}/settings`).then((response) => response.json());
+	};
+
 	static getCategories = async () => {
 		return await fetch(`${Client.apiUrl}/categories`).then((response) => response.json());
 	};

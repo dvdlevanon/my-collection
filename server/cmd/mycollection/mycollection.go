@@ -39,6 +39,9 @@ func run(ctx context.Context) error {
 		PreviewSceneCount:           viper.GetInt("preview-scene-count"),
 		PreviewSceneDuration:        viper.GetInt("preview-scene-duration"),
 		OpenSubtitleApiKeys:         viper.GetStringSlice("open-subtitle-api-keys"),
+		HighlightsEnabled:           viper.GetBool("highlights-enabled"),
+		SubtitilesEnabled:           viper.GetBool("subtitles-enabled"),
+		SpecEnabled:                 viper.GetBool("spec-enabled"),
 	}
 
 	config.DebugPrint(ctx)
@@ -89,6 +92,11 @@ func init() {
 
 	// API keys flag (comma-separated or repeated)
 	rootCmd.Flags().StringSlice("open-subtitle-api-keys", []string{}, "OpenSubtitles API keys (comma-separated)")
+
+	// Feature toggle
+	rootCmd.Flags().StringSlice("highlights-enabled", []string{}, "Enable Highlights Feature")
+	rootCmd.Flags().StringSlice("subtitles-enabled", []string{}, "Enable Subtitles Feature")
+	rootCmd.Flags().StringSlice("spec-enabled", []string{}, "Enable Spec Feature")
 }
 
 func initConfig() {

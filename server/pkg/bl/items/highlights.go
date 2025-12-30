@@ -3,22 +3,18 @@ package items
 import (
 	"context"
 	"fmt"
+	"my-collection/server/pkg/bl/special_tags"
 	"my-collection/server/pkg/model"
 )
 
-var highlightsTag = &model.Tag{
-	Title:    "Highlights", // tags-utils.js
-	ParentID: nil,
-}
-
 func InitHighlights(ctx context.Context, trw model.TagReaderWriter) error {
-	h, err := trw.GetTag(ctx, highlightsTag)
+	h, err := trw.GetTag(ctx, special_tags.HighlightsTag)
 	if err != nil {
-		if err := trw.CreateOrUpdateTag(ctx, highlightsTag); err != nil {
+		if err := trw.CreateOrUpdateTag(ctx, special_tags.HighlightsTag); err != nil {
 			return err
 		}
 	} else {
-		highlightsTag = h
+		special_tags.HighlightsTag = h
 	}
 	return nil
 }
@@ -69,5 +65,5 @@ func IsHighlight(item *model.Item) bool {
 }
 
 func GetHighlightsTagId() uint64 {
-	return highlightsTag.Id
+	return special_tags.HighlightsTag.Id
 }

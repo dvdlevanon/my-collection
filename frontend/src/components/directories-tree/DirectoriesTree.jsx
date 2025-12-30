@@ -8,7 +8,7 @@ import Client from '../../utils/client';
 import PathUtil from '../../utils/path-util';
 import CategoriesChooser from '../categories-chooser/CategoriesChooser';
 import DirectorySettingsMenu from './DirectorySettingsMenu';
-import { useTreeStore } from './TreeStore';
+import { FS_NODE_DIR, FS_NODE_FILE, useTreeStore } from './TreeStore';
 
 function DirectoriesTree() {
 	const { treeData, loadNode, updateNodeInfo, refreshNodeComplete } = useTreeStore();
@@ -89,7 +89,7 @@ function DirectoriesTree() {
 		);
 	};
 
-	const renderRow = ({ node, style }) => {
+	const renderDirRow = (node, style) => {
 		const icon = node.isOpen ? '📂' : '📁';
 
 		return (
@@ -132,6 +132,72 @@ function DirectoriesTree() {
 				)}
 			</Stack>
 		);
+	};
+
+	const getFileIcon = (filename) => {
+		const ext = filename.split('.').pop()?.toLowerCase() || '';
+
+		// Movies/Video
+		if (['mp4', 'mkv', 'avi', 'mov', 'wmv', 'flv', 'webm', 'm4v'].includes(ext)) {
+			return '🎬';
+		}
+
+		// Audio
+		if (['mp3', 'wav', 'flac', 'aac', 'ogg', 'wma', 'm4a', 'opus'].includes(ext)) {
+			return '🎵';
+		}
+
+		// Text/Documents
+		if (['txt', 'md', 'doc', 'docx', 'pdf', 'rtf'].includes(ext)) {
+			return '📄';
+		}
+
+		// Scripts/Code
+		if (['js', 'py', 'go', 'sh', 'bash', 'ts', 'jsx', 'tsx', 'java', 'c', 'cpp', 'rs', 'rb'].includes(ext)) {
+			return '📜';
+		}
+
+		// Images
+		if (['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg', 'webp'].includes(ext)) {
+			return '🖼️';
+		}
+
+		// Archives
+		if (['zip', 'rar', '7z', 'tar', 'gz', 'bz2'].includes(ext)) {
+			return '📦';
+		}
+
+		// Other
+		return '📎';
+	};
+
+	const renderFileRow = (node, style) => {
+		const icon = getFileIcon(node.data.name);
+
+		return (
+			<Stack
+				flexDirection="row"
+				style={style}
+				sx={{
+					cursor: 'pointer',
+				}}
+				alignItems="center"
+				height="100%"
+				gap={theme.spacing(2)}
+			>
+				<Typography variant="h5">
+					{icon} {PathUtil.dirname(node.data.name)}
+				</Typography>
+			</Stack>
+		);
+	};
+
+	const renderRow = ({ node, style }) => {
+		if (node.data.type == FS_NODE_DIR) {
+			return renderDirRow(node, style);
+		} else if (node.data.type == FS_NODE_FILE) {
+			return renderFileRow(node, style);
+		}
 	};
 
 	return (

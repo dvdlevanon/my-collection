@@ -2,7 +2,8 @@ import { produce } from 'immer';
 import { create } from 'zustand';
 import Client from '../../utils/client';
 
-const FS_NODE_DIR = 1;
+export const FS_NODE_DIR = 1;
+export const FS_NODE_FILE = 2;
 const ROOT_DIR = '<root>';
 
 const findNode = (nodes, nodeId) => {
@@ -44,13 +45,23 @@ export const useTreeStore = create((set, get) => ({
 
 				if (loadedDir.children) {
 					const dirChildren = loadedDir.children.filter((child) => child.type === FS_NODE_DIR);
-					node.children = dirChildren.map((child) => ({
-						id: child.path,
-						name: child.path,
-						dirinfo: child.dirinfo,
-						children: [],
-						parent: node,
-					}));
+					const fileChildren = loadedDir.children.filter((child) => child.type === FS_NODE_FILE);
+					node.children = [
+						...dirChildren.map((child) => ({
+							id: child.path,
+							type: FS_NODE_DIR,
+							name: child.path,
+							dirinfo: child.dirinfo,
+							children: [],
+							parent: node,
+						})),
+						...fileChildren.map((child) => ({
+							id: child.path,
+							type: FS_NODE_FILE,
+							name: child.path,
+							parent: node,
+						})),
+					];
 				}
 			}),
 		});

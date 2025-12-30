@@ -62,9 +62,12 @@ func (d *Automix) Run(ctx context.Context) error {
 func (d *Automix) GetCurrentTime() time.Time {
 	return time.Now()
 }
+func (d *Automix) Enabled() bool {
+	return d.dailyMixItemsCount != 0
+}
 
 func (d *Automix) generateDailymix(ctg model.CurrentTimeGetter) error {
-	if d.dailyMixItemsCount == 0 {
+	if !d.Enabled() {
 		return nil
 	}
 
