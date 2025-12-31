@@ -35,7 +35,7 @@ Options:
     --counter-color COLOR Counter color (default: $DEFAULT_COUNTER_COLOR)
     --text-color COLOR  Text color (default: $DEFAULT_TEXT_COLOR)
     --video-codec CODEC Video codec (default: $DEFAULT_VIDEO_CODEC)
-                        Options: libx264, libx265, libvpx-vp9, libaom-av1, etc.
+                        Options: libx264, libx265, libvpx-vp9, libsvtav1 (recommended), libaom-av1, etc.
     --audio-codec CODEC Audio codec (default: $DEFAULT_AUDIO_CODEC)
                         Options: aac, libmp3lame, ac3, libopus, etc.
     --no-audio         Generate video without audio
@@ -46,7 +46,7 @@ Examples:
     $0 "Test Video" 60 test.mp4 custom_audio.wav --resolution 1280x720
     $0 "Silent Video" 15 silent.mp4 --no-audio --bg-color blue
     $0 "VP9 Video" 30 output.webm --video-codec libvpx-vp9 --audio-codec libopus
-    $0 "AV1 Video" 45 output.mp4 --video-codec libaom-av1 --audio-codec ac3
+    $0 "AV1 Video" 45 output.mp4 --video-codec libsvtav1 --audio-codec libopus
 EOF
 }
 
@@ -208,9 +208,15 @@ fi
 # Check if audio file exists (if using audio)
 if [ "$USE_AUDIO" == true ]; then
     if ! check_file_exists "$AUDIO_FILE"; then
-        echo "Hint: Use --no-audio flag to generate video without audio"
-        exit 1
+        echo "Warning: Audio file not found: $AUDIO_FILE"
+        echo "Generating synthetic audio instead..."
+        AUDIO_FILE=""
+        GENERATE_SYNTHETIC_AUDIO=true
+    else
+        GENERATE_SYNTHETIC_AUDIO=false
     fi
+else
+    GENERATE_SYNTHETIC_AUDIO=false
 fi
 
 # Check if output directory exists and is writable
@@ -234,8 +240,16 @@ echo "  Duration: ${LENGTH}s"
 echo "  Resolution: $RESOLUTION"
 echo "  Background: $BG_COLOR"
 echo "  Video codec: $VIDEO_CODEC"
-echo "  Audio: $([ "$USE_AUDIO" == true ] && echo "Yes ($AUDIO_FILE)" || echo "No")"
-[ "$USE_AUDIO" == true ] && echo "  Audio codec: $AUDIO_CODEC"
+if [ "$USE_AUDIO" == true ]; then
+    if [ "$GENERATE_SYNTHETIC_AUDIO" == true ]; then
+        echo "  Audio: Yes (synthetic tone)"
+    else
+        echo "  Audio: Yes ($AUDIO_FILE)"
+    fi
+    echo "  Audio codec: $AUDIO_CODEC"
+else
+    echo "  Audio: No"
+fi
 echo "  Output: $OUTPUT_FILE"
 echo
 
@@ -243,7 +257,13 @@ echo
 FFMPEG_CMD="ffmpeg -y -f lavfi -i color=c=$BG_COLOR:s=$RESOLUTION:d=$LENGTH"
 
 if [ "$USE_AUDIO" == true ]; then
-    FFMPEG_CMD="$FFMPEG_CMD -i \"$AUDIO_FILE\""
+    if [ "$GENERATE_SYNTHETIC_AUDIO" == true ]; then
+        # Add synthetic audio input (sine wave)
+        FFMPEG_CMD="$FFMPEG_CMD -f lavfi -i sine=frequency=440:duration=$LENGTH"
+    else
+        # Add real audio file input
+        FFMPEG_CMD="$FFMPEG_CMD -i \"$AUDIO_FILE\""
+    fi
 fi
 
 # Build filter complex
@@ -255,7 +275,33 @@ if [ "$USE_AUDIO" == true ]; then
     FFMPEG_CMD="$FFMPEG_CMD -map 1:a -c:a $AUDIO_CODEC -shortest"
 fi
 
-FFMPEG_CMD="$FFMPEG_CMD -c:v $VIDEO_CODEC -pix_fmt yuv420p -t $LENGTH \"$OUTPUT_FILE\""
+# Add codec-specific optimizations
+CODEC_PARAMS=""
+case "$VIDEO_CODEC" in
+    libsvtav1)
+        # SVT-AV1: Much faster than libaom-av1 (5-10x speed improvement)
+        # Preset 12 = fastest, 0 = slowest/best quality
+        CODEC_PARAMS="-preset 12 -crf 35 -g 240 -svtav1-params fast-decode=1:tune=0"
+        ;;
+    libaom-av1)
+        # AV1 (libaom) is EXTREMELY slow - use fastest settings for testing
+        CODEC_PARAMS="-cpu-used 8 -row-mt 1 -tiles 2x2 -crf 40"
+        ;;
+    libx265)
+        # Speed up H.265 encoding
+        CODEC_PARAMS="-preset ultrafast -crf 28"
+        ;;
+    libvpx-vp9)
+        # Speed up VP9 encoding
+        CODEC_PARAMS="-deadline realtime -cpu-used 5 -row-mt 1 -crf 35"
+        ;;
+    libx264)
+        # Speed up H.264 encoding for test videos
+        CODEC_PARAMS="-preset ultrafast -crf 28"
+        ;;
+esac
+
+FFMPEG_CMD="$FFMPEG_CMD -c:v $VIDEO_CODEC $CODEC_PARAMS -pix_fmt yuv420p -t $LENGTH \"$OUTPUT_FILE\""
 
 # Execute FFmpeg command
 echo "Running FFmpeg..."

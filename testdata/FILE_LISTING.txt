@@ -1,0 +1,220 @@
+COMPLETE TEST LIBRARY GENERATOR FOR MY-COLLECTION
+================================================
+
+All scripts are ready and executable. Here's what you have:
+
+DOCUMENTATION (Read These First)
+---------------------------------
+README.md              - Main overview and script inventory
+QUICKSTART.md          - Get started in 2 minutes
+OVERVIEW.md            - Complete architecture and usage guide
+FILE_LISTING.txt       - This file
+
+MASTER SCRIPTS (Run These)
+---------------------------
+build-test-library.sh  - Main orchestrator - RUN THIS FIRST
+                         Generates complete test library with both hierarchies
+                         Usage: ./build-test-library.sh [--clean] [--issue-only]
+
+build-by-issue-hierarchy.sh - Builds by_issue/ hierarchy
+                              Runs all issue generators
+
+create-media-library.sh     - Builds category hierarchy (lib1/lib2/lib3/by_codec)
+                              Tests filesystem organization
+
+BUILDING BLOCKS (Layer 1 - Primitives)
+---------------------------------------
+generate-video.sh      - Generate videos with specific codecs
+                         Supports H.264, H.265, VP9, AV1, etc.
+                         Usage: ./generate-video.sh "text" 20 output.mp4 [options]
+
+generate-audio.sh      - Generate audio with various formats
+                         Supports AAC, AC3, DTS, Opus, MP3, etc.
+                         Usage: ./generate-audio.sh 20 output.ac3 [options]
+
+generate-subtitle.sh   - Generate SRT subtitle files
+                         Usage: ./generate-subtitle.sh 20 "text" output.srt
+
+CONTAINER MUXER (Layer 2)
+--------------------------
+mux-container.sh       - Combine video/audio/subtitle streams
+                         Supports MKV, MP4, AVI, MOV, WebM
+                         Multi-audio and multi-subtitle support
+                         Usage: ./mux-container.sh --video v.mp4 --audio a.aac --output out.mkv
+
+ISSUE GENERATORS (Layer 3 - Domain Specific)
+---------------------------------------------
+generate-codec-variations.sh       - 11 codec combination test cases
+                                     Tests: H.264, H.265, VP9, AV1, DivX, XviD, MPEG2
+                                     + various audio codecs
+
+generate-audio-tracks.sh           - 6 multi-audio test cases
+                                     Tests: Dual language, stereo, 5.1, 7.1
+                                     Mixed codecs, no audio
+
+generate-subtitle-variations.sh    - 7 subtitle test cases
+                                     Tests: External, embedded, multi-language
+                                     Hebrew encoding, forced subtitles
+
+generate-resolution-variations.sh  - 16 resolution test cases
+                                     Tests: 480p-4K, DVD PAL/NTSC, portrait
+                                     Ultra-wide, wrong metadata
+
+generate-broken-files.sh           - 10 broken file test cases
+                                     Tests: Truncated, zero-byte, corrupted
+                                     Wrong extensions, special characters
+
+generate-metadata-issues.sh        - 10 metadata test cases
+                                     Tests: VFR, 23.976fps, interlaced
+                                     Color spaces, pixel formats, HDR
+
+QUICK START COMMANDS
+--------------------
+# Make all scripts executable
+chmod +x *.sh
+
+# Generate complete test library (10-30 minutes)
+./build-test-library.sh
+
+# Generate only edge cases (faster)
+./build-test-library.sh --issue-only
+
+# Generate to custom location
+./build-test-library.sh /path/to/output
+
+# Clean and rebuild
+./build-test-library.sh --clean
+
+# Run individual generators
+./generate-codec-variations.sh ./output
+./generate-audio-tracks.sh ./output
+./generate-broken-files.sh ./output
+
+OUTPUT STRUCTURE
+----------------
+test-library/
+├── by_issue/                    # Edge cases by problem type
+│   ├── codec_variations/        # 11 codec tests
+│   ├── audio_tracks/            # 6 audio tests
+│   ├── subtitle_variations/     # 7 subtitle tests
+│   ├── resolution_variations/   # 16 resolution tests
+│   ├── broken_files/            # 10 broken file tests
+│   └── metadata_issues/         # 10 metadata tests
+│
+├── lib1/                        # Movies (category hierarchy)
+├── lib2/                        # TV Series
+├── lib3/                        # Short clips
+└── by_codec/                    # Codec comparison tests
+    ├── h264/
+    ├── h265/
+    ├── vp9/
+    └── av1/
+
+WHAT YOU GET
+------------
+- 60+ edge case test scenarios
+- 100+ video files (10-20 seconds each)
+- ~500MB-2GB total size
+- Complete coverage of production library issues
+
+REQUIREMENTS
+------------
+Essential:
+- ffmpeg (with libx264, libx265, libvpx-vp9)
+- bash 4.0+
+
+Recommended:
+- libsvtav1 (for fast AV1 encoding)
+- ffprobe (for metadata display)
+
+Optional:
+- tree (view structure)
+- mediainfo (detailed inspection)
+
+TESTING WORKFLOW
+----------------
+1. Generate test library:
+   ./build-test-library.sh
+
+2. Run your media scanner:
+   my-collection scan test-library/by_issue
+   my-collection scan test-library/lib1
+
+3. Test specific scenarios:
+   my-collection scan test-library/by_issue/codec_variations
+   my-collection scan test-library/by_issue/broken_files
+   my-collection convert test-library/by_codec/h264 --target h265
+
+4. Fix bugs and add new test cases as needed
+
+5. Regenerate and retest:
+   ./build-test-library.sh --clean
+
+ARCHITECTURE
+------------
+Layer 5: build-test-library.sh (Master Orchestrator)
+           │
+           ├─→ Layer 4: build-by-issue-hierarchy.sh
+           │              │
+           │              └─→ Layer 3: Issue Generators
+           │                            (codec, audio, subtitle, etc.)
+           │                            │
+           │                            └─→ Layer 2: mux-container.sh
+           │                                          │
+           │                                          └─→ Layer 1: Primitives
+           │                                                       (video, audio, subtitle)
+           │
+           └─→ Layer 4: create-media-library.sh
+                          │
+                          └─→ Layer 1: Primitives
+
+TROUBLESHOOTING
+---------------
+Problem: "ffmpeg not found"
+Solution: Install ffmpeg
+  macOS:   brew install ffmpeg
+  Ubuntu:  sudo apt install ffmpeg
+  Arch:    sudo pacman -S ffmpeg
+
+Problem: AV1 encoding too slow
+Solution: Install libsvtav1 or skip AV1 tests
+  Edit generate-video.sh and change av1 codec
+
+Problem: Out of disk space
+Solution: Use --issue-only or run selective generators
+  ./build-test-library.sh --issue-only
+
+Problem: Permission denied
+Solution: chmod +x *.sh
+
+CUSTOMIZATION
+-------------
+To add new test cases:
+1. Create generate-my-test.sh following existing patterns
+2. Add to build-by-issue-hierarchy.sh generators array
+3. Rebuild: ./build-test-library.sh --clean
+
+NOTES
+-----
+- All videos are 10-20 seconds for fast testing
+- Videos optimized for speed (ultrafast presets)
+- Some files are placeholders to save generation time
+- Generated content is synthetic (no copyright issues)
+- Built specifically for testing my-collection's edge case handling
+
+NEXT STEPS
+----------
+1. ✓ Download all scripts
+2. ✓ Make executable: chmod +x *.sh
+3. ✓ Run: ./build-test-library.sh
+4. ✓ Test your media library against generated files
+5. ✓ Fix bugs and iterate
+
+For detailed documentation, see:
+- README.md for complete overview
+- QUICKSTART.md for immediate usage
+- OVERVIEW.md for architecture details
+
+================================================================================
+Ready to generate! Run: ./build-test-library.sh
+================================================================================

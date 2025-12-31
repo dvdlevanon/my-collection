@@ -24,7 +24,7 @@ declare -A CODEC_PROFILES=(
     ["h264"]="libx264:aac:mp4"
     ["h265"]="libx265:aac:mp4"
     ["vp9"]="libvpx-vp9:libopus:webm"
-    ["av1"]="libaom-av1:libopus:mp4"
+    ["av1"]="libsvtav1:libopus:mp4"
 )
 
 # Function to generate video with specific codec
@@ -59,12 +59,9 @@ movies=(
 )
 
 series_data=(
-    "drama_series:3:8,10,6"
-    "comedy_series:4:12,12,12,10"
-    "action_series:2:10,12"
-    "sci_fi_series:5:8,8,10,10,12"
-    "crime_series:3:6,8,8"
-    "fantasy_series:2:10,10"
+    "drama_series:2:3,3,3"
+    "comedy_series:2:10,10"
+    "action_series:1:1"
 )
 
 clip_categories=(
@@ -309,10 +306,10 @@ Structure: \`by_codec/{video_codec}/{content_type}/{title}/\`
 - Use case: Web streaming, open source codec testing
 
 #### AV1 (by_codec/av1/)
-- Video: AV1
+- Video: SVT-AV1 (libsvtav1)
 - Audio: Opus
 - Container: MP4
-- Use case: Next-gen codec, future-proofing tests
+- Use case: Next-gen codec, much faster than libaom-av1
 
 ### Codec Hierarchy Contents:
 
