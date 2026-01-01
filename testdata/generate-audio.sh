@@ -18,7 +18,7 @@ Arguments:
 Options:
     --source FILE   Source audio file to transcode (default: $DEFAULT_SOURCE_AUDIO)
     --codec CODEC   Audio codec (default: auto-detect from extension)
-                    Options: aac, libmp3lame, ac3, dts, libopus, flac, pcm_s16le
+                    Options: aac, libmp3lame, ac3, libopus, flac, pcm_s16le
     --channels N    Number of channels: 1 (mono), 2 (stereo), 6 (5.1), 8 (7.1)
     --sample-rate N Sample rate in Hz (default: 48000)
                     Common: 44100, 48000, 96000
@@ -33,9 +33,6 @@ Examples:
 
     # Generate synthetic stereo MP3
     $0 30 output.mp3 --generate --channels 2
-
-    # Create DTS audio from source
-    $0 15 audio.dts --codec dts --sample-rate 48000
 
     # Generate mono tone
     $0 10 beep.wav --generate --channels 1 --tone 1000
@@ -118,7 +115,6 @@ if [ -z "$CODEC" ]; then
         mp3) CODEC="libmp3lame" ;;
         aac|m4a) CODEC="aac" ;;
         ac3) CODEC="ac3" ;;
-        dts) CODEC="dts" ;;
         opus) CODEC="libopus" ;;
         flac) CODEC="flac" ;;
         wav) CODEC="pcm_s16le" ;;
@@ -167,11 +163,11 @@ FFMPEG_CMD="ffmpeg -y $INPUT_OPTS $OUTPUT_OPTS \"$OUTPUT_FILE\""
 echo "Command: $FFMPEG_CMD"
 echo
 
-if eval "$FFMPEG_CMD" 2>&1 | grep -v "^frame=\|^size=\|^time=\|^bitrate=\|^speed="; then
+if eval "$FFMPEG_CMD" 2>&1; then
     echo
     echo "✓ Audio file generated: $OUTPUT_FILE"
     
-    if command -v ffprobe >/dev/null 2>&1; then
+    if command -v ffprobe >/dev/null || exit 1; then
         PROBE_INFO=$(ffprobe -v quiet -select_streams a:0 -show_entries stream=codec_name,channels,sample_rate -of csv=p=0 "$OUTPUT_FILE" 2>/dev/null)
         IFS=',' read -r codec channels srate <<< "$PROBE_INFO"
         echo "  Codec: $codec"

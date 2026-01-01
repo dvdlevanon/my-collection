@@ -69,13 +69,13 @@ for test_case in "${test_cases[@]}"; do
     # Generate video at specific resolution
     if [ -f "$SCRIPT_DIR/generate-video.sh" ]; then
         $SCRIPT_DIR/generate-video.sh "$description" 15 "$test_dir/video.mp4" \
-            --resolution "$resolution" --video-codec libx264 --audio-codec aac >/dev/null 2>&1
+            --resolution "$resolution" --video-codec libx264 --audio-codec aac|| exit 1
     else
         # Fallback: generate with ffmpeg
         ffmpeg -y -f lavfi -i "color=c=orange:s=$resolution:d=15" \
                -f lavfi -i "sine=frequency=440:duration=15" \
                -c:v libx264 -preset ultrafast -c:a aac \
-               -t 15 "$test_dir/video.mp4" >/dev/null 2>&1
+               -t 15 "$test_dir/video.mp4"|| exit 1
     fi
     
     # Create README
@@ -106,7 +106,7 @@ for i in "${!resolutions[@]}"; do
     ffmpeg -y -f lavfi -i "color=c=blue:s=$res:d=10" \
            -f lavfi -i "sine=frequency=440:duration=10" \
            -c:v libx264 -preset ultrafast -c:a aac \
-           -t 10 "$test_dir/video_${res/x/_}.mp4" >/dev/null 2>&1
+           -t 10 "$test_dir/video_${res/x/_}.mp4"|| exit 1
     echo "  ✓ Created: video_${res/x/_}.mp4 ($res)"
 done
 
@@ -136,7 +136,7 @@ ffmpeg -y -f lavfi -i "color=c=red:s=1920x1080:d=15" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -aspect 4:3 \
-       -t 15 "$test_dir/video.mp4" >/dev/null 2>&1
+       -t 15 "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Wrong Aspect Ratio Metadata
@@ -162,7 +162,7 @@ ffmpeg -y -f lavfi -i "color=c=green:s=1080x1920:d=15" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -metadata:s:v:0 rotate=90 \
-       -t 15 "$test_dir/video.mp4" >/dev/null 2>&1
+       -t 15 "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Rotation Metadata

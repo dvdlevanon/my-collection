@@ -51,7 +51,7 @@ ffmpeg -y -f lavfi -i "color=c=navy:s=1920x1080:d=15" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -vsync vfr \
-       -t 15 "$test_dir/recording.mp4" >/dev/null 2>&1
+       -t 15 "$test_dir/recording.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Variable Frame Rate (VFR)
@@ -77,7 +77,7 @@ ffmpeg -y -f lavfi -i "color=c=sepia:s=1920x1080:d=15:rate=24000/1001" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -r 24000/1001 \
-       -t 15 "$test_dir/movie.mp4" >/dev/null 2>&1
+       -t 15 "$test_dir/movie.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: 23.976 fps
@@ -102,7 +102,7 @@ ffmpeg -y -f lavfi -i "color=c=teal:s=1280x720:d=15:rate=30000/1001" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -r 30000/1001 \
-       -t 15 "$test_dir/video.mp4" >/dev/null 2>&1
+       -t 15 "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: 29.97 fps
@@ -127,7 +127,7 @@ ffmpeg -y -f lavfi -i "color=c=lime:s=1280x720:d=10:rate=50" \
        -f lavfi -i "sine=frequency=440:duration=10" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -r 50 \
-       -t 10 "$test_dir/video.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: 50 fps
@@ -152,7 +152,7 @@ ffmpeg -y -f lavfi -i "color=c=red:s=1920x1080:d=10:rate=60" \
        -f lavfi -i "sine=frequency=440:duration=10" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -r 60 \
-       -t 10 "$test_dir/gameplay.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/gameplay.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: 60 fps
@@ -177,7 +177,7 @@ ffmpeg -y -f lavfi -i "color=c=purple:s=1920x1080:d=15" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -flags +ildct+ilme \
-       -t 15 "$test_dir/broadcast.mp4" >/dev/null 2>&1
+       -t 15 "$test_dir/broadcast.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Interlaced Video
@@ -204,14 +204,14 @@ ffmpeg -y -f lavfi -i "color=c=0xFF0000:s=1920x1080:d=10" \
        -f lavfi -i "sine=frequency=440:duration=10" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -colorspace bt709 -color_primaries bt709 -color_trc bt709 \
-       -t 10 "$test_dir/bt709_hd.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/bt709_hd.mp4"|| exit 1
 
 # BT.601 (SD standard)
 ffmpeg -y -f lavfi -i "color=c=0x00FF00:s=720x480:d=10" \
        -f lavfi -i "sine=frequency=440:duration=10" \
        -c:v libx264 -preset ultrafast -c:a aac \
        -colorspace bt470bg -color_primaries bt470bg -color_trc bt470bg \
-       -t 10 "$test_dir/bt601_sd.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/bt601_sd.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Color Space Variations
@@ -237,12 +237,12 @@ mkdir -p "$test_dir"
 # yuv420p (standard)
 ffmpeg -y -f lavfi -i "color=c=blue:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast -pix_fmt yuv420p \
-       -t 10 "$test_dir/yuv420p.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/yuv420p.mp4"|| exit 1
 
 # yuv422p (higher chroma)
 ffmpeg -y -f lavfi -i "color=c=green:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast -pix_fmt yuv422p \
-       -t 10 "$test_dir/yuv422p.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/yuv422p.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Pixel Format Variations
@@ -268,7 +268,7 @@ mkdir -p "$test_dir"
 ffmpeg -y -f lavfi -i "color=c=gray:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast \
        -fflags +bitexact -map_metadata -1 \
-       -t 10 "$test_dir/video.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Missing Creation Date
@@ -292,7 +292,7 @@ mkdir -p "$test_dir"
 ffmpeg -y -f lavfi -i "color=c=white:s=1920x1080:d=10" \
        -c:v libx265 -preset ultrafast \
        -x265-params "hdr-opt=1:repeat-headers=1:colorprim=bt2020:transfer=smpte2084:colormatrix=bt2020nc" \
-       -t 10 "$test_dir/hdr_video.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/hdr_video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: HDR Metadata

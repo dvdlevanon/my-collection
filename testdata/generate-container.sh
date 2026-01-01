@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# mux-container.sh
+# generate-container.sh
 # Mux video, audio, and subtitle streams into various container formats
 # Supports multiple audio tracks and subtitle tracks
 
@@ -276,11 +276,11 @@ FFMPEG_CMD="$FFMPEG_CMD \"$OUTPUT_FILE\""
 echo "Command: $FFMPEG_CMD"
 echo
 
-if eval "$FFMPEG_CMD" 2>&1 | grep -v "^frame=\|^size=\|^time=\|^bitrate=\|^speed="; then
+if eval "$FFMPEG_CMD" 2>&1; then
     echo
     echo "✓ Container created: $OUTPUT_FILE"
     
-    if command -v ffprobe >/dev/null 2>&1; then
+    if command -v ffprobe|| exit 1; then
         echo
         echo "Container info:"
         ffprobe -v quiet -show_entries stream=index,codec_type,codec_name:stream_tags=language,title \

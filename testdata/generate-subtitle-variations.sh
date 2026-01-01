@@ -45,14 +45,8 @@ generate_base_video() {
     local output="$1"
     local text="$2"
     
-    if [ -f "$SCRIPT_DIR/generate-video.sh" ]; then
-        $SCRIPT_DIR/generate-video.sh "$text" 15 "$output" \
-            --video-codec libx264 --audio-codec aac >/dev/null 2>&1
-    else
-        ffmpeg -y -f lavfi -i color=c=purple:s=1280x720:d=15 \
-               -f lavfi -i sine=frequency=440:duration=15 \
-               -c:v libx264 -preset ultrafast -c:a aac -t 15 "$output" >/dev/null 2>&1
-    fi
+    $SCRIPT_DIR/generate-video.sh "$text" 15 "$output" \
+        --video-codec libx264 --audio-codec aac|| exit 1
 }
 
 # Helper function to generate subtitle
@@ -61,25 +55,7 @@ generate_subtitle() {
     local text="$2"
     local duration="${3:-15}"
     
-    if [ -f "$SCRIPT_DIR/generate-subtitle.sh" ]; then
-        $SCRIPT_DIR/generate-subtitle.sh "$duration" "$text" "$output" >/dev/null 2>&1
-    else
-        # Fallback: simple SRT
-        cat > "$output" << EOF
-1
-00:00:00,000 --> 00:00:05,000
-$text - 1
-
-2
-00:00:05,000 --> 00:00:10,000
-$text - 2
-
-3
-00:00:10,000 --> 00:00:15,000
-$text - 3
-
-EOF
-    fi
+    $SCRIPT_DIR/generate-subtitle.sh "$duration" "$text" "$output"|| exit 1
 }
 
 #------------------------------------------------------------------------------
@@ -122,19 +98,10 @@ generate_base_video "$video_temp" "Embedded Subs Test"
 generate_subtitle "$sub1" "Embedded English"
 generate_subtitle "$sub2" "כתוביות משובצות"
 
-if [ -f "$SCRIPT_DIR/mux-container.sh" ]; then
-    $SCRIPT_DIR/mux-container.sh --video "$video_temp" \
-        --subtitle "$sub1" --sub-lang eng --sub-title "English" \
-        --subtitle "$sub2" --sub-lang heb --sub-title "Hebrew" \
-        --output "$test_dir/movie.mkv" --copy-codecs >/dev/null 2>&1
-else
-    ffmpeg -y -i "$video_temp" -i "$sub1" -i "$sub2" \
-           -map 0 -map 1 -map 2 \
-           -c copy -c:s srt \
-           -metadata:s:s:0 language=eng -metadata:s:s:0 title="English" \
-           -metadata:s:s:1 language=heb -metadata:s:s:1 title="Hebrew" \
-           "$test_dir/movie.mkv" >/dev/null 2>&1
-fi
+$SCRIPT_DIR/generate-container.sh --video "$video_temp" \
+    --subtitle "$sub1" --sub-lang eng --sub-title "English" \
+    --subtitle "$sub2" --sub-lang heb --sub-title "Hebrew" \
+    --output "$test_dir/movie.mkv" --copy-codecs|| exit 1
 
 rm -f "$video_temp" "$sub1" "$sub2"
 echo "  ✓ Created: $test_dir/movie.mkv"
@@ -175,7 +142,7 @@ ffmpeg -y -i "$video_temp" -i "$sub_eng" -i "$sub_heb" -i "$sub_forced" \
        -metadata:s:s:1 language=heb -metadata:s:s:1 title="Hebrew" \
        -metadata:s:s:2 language=eng -metadata:s:s:2 title="English Forced" \
        -disposition:s:2 forced \
-       "$test_dir/movie.mkv" >/dev/null 2>&1
+       "$test_dir/movie.mkv"|| exit 1
 
 rm -f "$video_temp" "$sub_eng" "$sub_heb" "$sub_forced"
 echo "  ✓ Created: $test_dir/movie.mkv"
@@ -199,7 +166,7 @@ ffmpeg -y -i "$video_temp" -i "$sub_embedded" \
        -map 0 -map 1 \
        -c copy -c:s srt \
        -metadata:s:s:0 language=eng \
-       "$test_dir/movie.mkv" >/dev/null 2>&1
+       "$test_dir/movie.mkv"|| exit 1
 
 # Also create external subtitle
 generate_subtitle "$test_dir/movie.srt" "External Subtitle"

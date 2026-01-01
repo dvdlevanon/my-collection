@@ -73,7 +73,7 @@ temp_video="$test_dir/temp_full.mp4"
 ffmpeg -y -f lavfi -i "color=c=gray:s=1280x720:d=15" \
        -f lavfi -i "sine=frequency=440:duration=15" \
        -c:v libx264 -preset ultrafast -c:a aac \
-       -t 15 "$temp_video" >/dev/null 2>&1
+       -t 15 "$temp_video"|| exit 1
 
 # Truncate to 30% of original size (simulates incomplete download)
 size=$(stat -f%z "$temp_video" 2>/dev/null || stat -c%s "$temp_video" 2>/dev/null)
@@ -106,13 +106,13 @@ mkdir -p "$test_dir"
 ffmpeg -y -f lavfi -i "color=c=yellow:s=1280x720:d=10" \
        -f lavfi -i "sine=frequency=440:duration=10" \
        -c:v libx264 -preset ultrafast -c:a aac \
-       -t 10 "$test_dir/movie.avi" >/dev/null 2>&1
+       -t 10 "$test_dir/movie.avi"|| exit 1
 
 # Create AVI but name it .mp4
 ffmpeg -y -f lavfi -i "color=c=cyan:s=1280x720:d=10" \
        -f lavfi -i "sine=frequency=440:duration=10" \
        -c:v mpeg4 -c:a libmp3lame \
-       -t 10 "$test_dir/video.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Wrong File Extension
@@ -138,7 +138,7 @@ mkdir -p "$test_dir"
 ffmpeg -y -f lavfi -i "color=c=pink:s=1280x720:d=0.5" \
        -f lavfi -i "sine=frequency=440:duration=0.5" \
        -c:v libx264 -preset ultrafast -c:a aac \
-       -t 0.5 "$test_dir/clip.mp4" >/dev/null 2>&1
+       -t 0.5 "$test_dir/clip.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Very Short Clip
@@ -162,7 +162,7 @@ mkdir -p "$test_dir"
 # Create video without proper duration metadata
 ffmpeg -y -f lavfi -i "color=c=brown:s=1280x720:d=15" \
        -c:v libx264 -preset ultrafast -copyts -fflags +bitexact \
-       "$test_dir/video.mp4" >/dev/null 2>&1
+       "$test_dir/video.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Missing Duration Metadata
@@ -187,7 +187,7 @@ mkdir -p "$test_dir"
 temp_video="$test_dir/temp.mp4"
 ffmpeg -y -f lavfi -i "color=c=black:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast \
-       -t 10 "$temp_video" >/dev/null 2>&1
+       -t 10 "$temp_video"|| exit 1
 
 # Corrupt header by overwriting first 100 bytes with random data
 dd if=/dev/urandom of="$test_dir/movie.mp4" bs=100 count=1 2>/dev/null
@@ -264,11 +264,11 @@ mkdir -p "$test_dir"
 
 ffmpeg -y -f lavfi -i "color=c=white:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast \
-       -t 10 "$test_dir/movie [2024] (1080p) {H.264}.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/movie [2024] (1080p) {H.264}.mp4"|| exit 1
 
 ffmpeg -y -f lavfi -i "color=c=black:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast \
-       -t 10 "$test_dir/file with spaces & symbols!.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/file with spaces & symbols!.mp4"|| exit 1
 
 cat > "$test_dir/README.txt" << EOF
 Test Case: Special Characters in Filename
@@ -292,7 +292,7 @@ mkdir -p "$test_dir"
 # Create actual video
 ffmpeg -y -f lavfi -i "color=c=blue:s=1280x720:d=10" \
        -c:v libx264 -preset ultrafast \
-       -t 10 "$test_dir/movie.mp4" >/dev/null 2>&1
+       -t 10 "$test_dir/movie.mp4"|| exit 1
 
 # Create hidden system files that should be ignored
 touch "$test_dir/.DS_Store"

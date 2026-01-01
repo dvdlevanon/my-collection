@@ -43,13 +43,8 @@ generate_base_video() {
     local output="$1"
     local text="$2"
     
-    if [ -f "$SCRIPT_DIR/generate-video.sh" ]; then
-        $SCRIPT_DIR/generate-video.sh "$text" 15 "$output" \
-            --video-codec libx264 --no-audio >/dev/null 2>&1
-    else
-        ffmpeg -y -f lavfi -i color=c=green:s=1280x720:d=15 \
-               -c:v libx264 -preset ultrafast -t 15 "$output" >/dev/null 2>&1
-    fi
+    $SCRIPT_DIR/generate-video.sh "$text" 15 "$output" \
+        --video-codec libx264 --no-audio|| exit 1
 }
 
 # Helper function to generate audio
@@ -57,18 +52,9 @@ generate_audio_track() {
     local output="$1"
     local codec="$2"
     local channels="$3"
-    
-    if [ -f "$SCRIPT_DIR/generate-audio.sh" ]; then
-        $SCRIPT_DIR/generate-audio.sh 15 "$output" \
-            --codec "$codec" --channels "$channels" >/dev/null 2>&1
-    else
-        if [ -f "$SCRIPT_DIR/audio.mp3" ]; then
-            ffmpeg -y -i "$SCRIPT_DIR/audio.mp3" -c:a "$codec" -ac "$channels" -t 15 "$output" >/dev/null 2>&1
-        else
-            ffmpeg -y -f lavfi -i "sine=frequency=440:duration=15" \
-                   -c:a "$codec" -ac "$channels" "$output" >/dev/null 2>&1
-        fi
-    fi
+
+    $SCRIPT_DIR/generate-audio.sh 15 "$output" \
+        --codec "$codec" --channels "$channels"|| exit 1
 }
 
 #------------------------------------------------------------------------------
@@ -82,23 +68,14 @@ video_temp="$test_dir/temp_video.mp4"
 audio1="$test_dir/temp_audio_eng.aac"
 audio2="$test_dir/temp_audio_heb.ac3"
 
-generate_base_video "$video_temp" "Dual Audio Test"
+generate_base_video "$video_temp" "Dual Audio Test (English AAC + Hebrew AC3)"
 generate_audio_track "$audio1" "aac" "2"
 generate_audio_track "$audio2" "ac3" "2"
 
-if [ -f "$SCRIPT_DIR/mux-container.sh" ]; then
-    $SCRIPT_DIR/mux-container.sh --video "$video_temp" \
-        --audio "$audio1" --audio-lang eng --audio-title "English" \
-        --audio "$audio2" --audio-lang heb --audio-title "Hebrew" \
-        --output "$test_dir/movie.mkv" --copy-codecs >/dev/null 2>&1
-else
-    ffmpeg -y -i "$video_temp" -i "$audio1" -i "$audio2" \
-           -map 0:v -map 1:a -map 2:a \
-           -c copy \
-           -metadata:s:a:0 language=eng -metadata:s:a:0 title="English" \
-           -metadata:s:a:1 language=heb -metadata:s:a:1 title="Hebrew" \
-           "$test_dir/movie.mkv" >/dev/null 2>&1
-fi
+$SCRIPT_DIR/generate-container.sh --video "$video_temp" \
+    --audio "$audio1" --audio-lang eng --audio-title "English" \
+    --audio "$audio2" --audio-lang heb --audio-title "Hebrew" \
+    --output "$test_dir/movie.mkv" --copy-codecs || exit 1
 
 rm -f "$video_temp" "$audio1" "$audio2"
 echo "  ✓ Created: $test_dir/movie.mkv"
@@ -124,7 +101,7 @@ ffmpeg -y -i "$video_temp" -i "$audio_stereo" -i "$audio_51" \
        -c copy \
        -metadata:s:a:0 title="Stereo" \
        -metadata:s:a:1 title="5.1 Surround" \
-       "$test_dir/movie.mkv" >/dev/null 2>&1
+       "$test_dir/movie.mkv"|| exit 1
 
 rm -f "$video_temp" "$audio_stereo" "$audio_51"
 echo "  ✓ Created: $test_dir/movie.mkv"
@@ -153,38 +130,35 @@ ffmpeg -y -i "$video_temp" -i "$audio1" -i "$audio2" -i "$audio3" \
        -metadata:s:a:0 language=eng -metadata:s:a:0 title="English Stereo" \
        -metadata:s:a:1 language=heb -metadata:s:a:1 title="Hebrew 5.1" \
        -metadata:s:a:2 language=eng -metadata:s:a:2 title="Director Commentary" \
-       "$test_dir/movie.mkv" >/dev/null 2>&1
+       "$test_dir/movie.mkv"|| exit 1
 
 rm -f "$video_temp" "$audio1" "$audio2" "$audio3"
 echo "  ✓ Created: $test_dir/movie.mkv"
 echo
 
 #------------------------------------------------------------------------------
-# Test Case 4: Mixed codecs (AAC, AC3, DTS in one file)
+# Test Case 4: Mixed codecs (AAC, AC3 in one file)
 #------------------------------------------------------------------------------
-echo "Creating: Mixed audio codecs (AAC + AC3 + DTS)"
+echo "Creating: Mixed audio codecs (AAC + AC3)"
 test_dir="$OUTPUT_DIR/mixed_audio_codecs"
 mkdir -p "$test_dir"
 
 video_temp="$test_dir/temp_video.mp4"
 audio_aac="$test_dir/temp.aac"
 audio_ac3="$test_dir/temp.ac3"
-audio_dts="$test_dir/temp.dts"
 
-generate_base_video "$video_temp" "Mixed Codec Test"
+generate_base_video "$video_temp" "Mixed audio codecs (AAC + AC3)"
 generate_audio_track "$audio_aac" "aac" "2"
 generate_audio_track "$audio_ac3" "ac3" "6"
-generate_audio_track "$audio_dts" "dts" "6"
 
-ffmpeg -y -i "$video_temp" -i "$audio_aac" -i "$audio_ac3" -i "$audio_dts" \
-       -map 0:v -map 1:a -map 2:a -map 3:a \
+ffmpeg -y -i "$video_temp" -i "$audio_aac" -i "$audio_ac3" \
+       -map 0:v -map 1:a -map 2:a \
        -c copy \
        -metadata:s:a:0 title="AAC Stereo" \
        -metadata:s:a:1 title="AC3 5.1" \
-       -metadata:s:a:2 title="DTS 5.1" \
-       "$test_dir/movie.mkv" >/dev/null 2>&1
+       "$test_dir/movie.mkv"|| exit 1
 
-rm -f "$video_temp" "$audio_aac" "$audio_ac3" "$audio_dts"
+rm -f "$video_temp" "$audio_aac" "$audio_ac3"
 echo "  ✓ Created: $test_dir/movie.mkv"
 echo
 
@@ -196,16 +170,16 @@ test_dir="$OUTPUT_DIR/71_surround"
 mkdir -p "$test_dir"
 
 video_temp="$test_dir/temp_video.mp4"
-audio_71="$test_dir/temp_71.ac3"
+audio_71="$test_dir/temp_71.aac"
 
 generate_base_video "$video_temp" "7.1 Surround Test"
-generate_audio_track "$audio_71" "ac3" "8"
+generate_audio_track "$audio_71" "aac" "8"
 
 ffmpeg -y -i "$video_temp" -i "$audio_71" \
        -map 0:v -map 1:a \
        -c copy \
        -metadata:s:a:0 title="7.1 Surround" \
-       "$test_dir/movie.mkv" >/dev/null 2>&1
+       "$test_dir/movie.mkv"|| exit 1
 
 rm -f "$video_temp" "$audio_71"
 echo "  ✓ Created: $test_dir/movie.mkv"
@@ -220,7 +194,7 @@ mkdir -p "$test_dir"
 
 ffmpeg -y -f lavfi -i color=c=red:s=1280x720:d=15 \
        -c:v libx264 -preset ultrafast -t 15 \
-       "$test_dir/video.mp4" >/dev/null 2>&1
+       "$test_dir/video.mp4"|| exit 1
 
 echo "  ✓ Created: $test_dir/video.mp4"
 echo

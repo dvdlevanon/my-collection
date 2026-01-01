@@ -52,7 +52,7 @@ EOF
 
 # Function to check if command exists
 command_exists() {
-    command -v "$1" >/dev/null 2>&1
+    command -v "$1" >/dev/null || exit 1
 }
 
 # Function to validate file exists
@@ -337,6 +337,7 @@ if eval "$FFMPEG_CMD"; then
         echo "  Video codec: $VCODEC"
         [ -n "$ACODEC" ] && echo "  Audio codec: $ACODEC"
     fi
+    exit 0
 else
     echo "✗ Error: Failed to generate video"
     exit 1
