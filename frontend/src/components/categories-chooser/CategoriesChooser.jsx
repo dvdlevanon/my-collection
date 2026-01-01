@@ -99,6 +99,10 @@ function CategoriesChooser({
 		}
 	};
 
+	const onNewTagAdded = (newTag) => {
+		setCategories([...selectedIds, newTag.id]);
+	};
+
 	return (
 		<Stack>
 			<FormControl fullWidth>
@@ -127,6 +131,7 @@ function CategoriesChooser({
 					parentId={null}
 					verb="Category"
 					onClose={() => setAddCategoryDialogOpened(false)}
+					onTagAdded={onNewTagAdded}
 				/>
 			)}
 		</Stack>

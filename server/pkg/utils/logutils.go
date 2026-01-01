@@ -143,7 +143,12 @@ func HasSubject(ctx context.Context) bool {
 }
 
 func GetSubject(ctx context.Context) string {
-	return fmt.Sprintf("%s", ctx.Value(subjectContextKey))
+	val := ctx.Value(subjectContextKey)
+	if val == nil {
+		return "unknown"
+	}
+
+	return fmt.Sprintf("%s", val)
 }
 
 func getCounter(ctx context.Context) uint64 {

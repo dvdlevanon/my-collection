@@ -6,6 +6,9 @@ import (
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/utils"
 	"time"
+
+	"github.com/go-errors/errors"
+	"gorm.io/gorm"
 )
 
 var l = utils.MustGetLogger("db-logger")
@@ -25,7 +28,11 @@ func (d *dbLogger) log(ctx context.Context, operation string, start time.Time, e
 	opStr := fmt.Sprintf("%-20s", operation)
 
 	if err != nil {
-		l.Errorf(ctx, "%s %s error: %v", durationStr, opStr, err)
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			l.Infof(ctx, "%s %s error: %v", durationStr, opStr, err)
+		} else {
+			l.Errorf(ctx, "%s %s error: %v", durationStr, opStr, err)
+		}
 		return
 	}
 

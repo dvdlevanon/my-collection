@@ -93,8 +93,14 @@ export const useTreeStore = create((set, get) => ({
 		}
 
 		for (const id of [...path, nodeId]) {
-			await get().loadNode(id, 0);
+			await get().loadNode(id, 1);
 		}
+	},
+
+	refreshNodeAndChildren: async (nodeId) => {
+		const { loadNode, refreshChildren } = get();
+		await loadNode(nodeId, 1);
+		await refreshChildren(nodeId);
 	},
 
 	refreshChildren: async (nodeId) => {
@@ -103,7 +109,7 @@ export const useTreeStore = create((set, get) => ({
 		if (!node || !node.children) return;
 
 		const refreshNodeAndChildren = async (currentNode) => {
-			await get().loadNode(currentNode.id, 0);
+			await get().loadNode(currentNode.id, 1);
 
 			const updatedNode = findNode(treeData, currentNode.id);
 			if (!updatedNode || !updatedNode.children) return;

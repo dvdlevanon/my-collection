@@ -8,6 +8,7 @@ export default class Websocket {
 	// values in types.go
 	static PUSH_PING = 1;
 	static PUSH_QUEUE_METADATA = 2;
+	static PUSH_FS_CHANGE = 3;
 
 	static initialize = (queryClient) => {
 		Websocket.socket = new WebSocket(Client.websocketUrl);
@@ -20,6 +21,8 @@ export default class Websocket {
 
 			if (message.type == Websocket.PUSH_QUEUE_METADATA) {
 				Websocket.queryClient.setQueryData(ReactQueryUtil.QUEUE_METADATA_KEY, message.payload);
+			} else if (message.type == Websocket.PUSH_FS_CHANGE) {
+				Websocket.queryClient.invalidateQueries();
 			} else if (message.type == Websocket.PUSH_PING) {
 			}
 		});

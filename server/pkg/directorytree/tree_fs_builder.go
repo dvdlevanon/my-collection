@@ -36,14 +36,21 @@ func buildFromDir(ctx context.Context, parent *DirectoryNode, path string, filte
 			continue
 		}
 
+		fullpath := filepath.Join(path, file.Name())
+		_, err := os.Stat(fullpath)
+		if err != nil {
+			// ignore files that we cant read their stat (broken symlink e.g.)
+			continue
+		}
+
 		if file.IsDir() {
-			child, err := buildFromDir(ctx, node, filepath.Join(path, file.Name()), filter)
+			child, err := buildFromDir(ctx, node, fullpath, filter)
 			if err != nil {
 				return nil, err
 			}
 
 			node.Children = append(node.Children, child)
-		} else if filter.Filter(ctx, filepath.Join(path, file.Name())) {
+		} else if filter.Filter(ctx, fullpath) {
 			node.Files = append(node.Files, createFileNode(node, file.Name()))
 		}
 	}

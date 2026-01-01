@@ -6,12 +6,15 @@ import (
 	"my-collection/server/pkg/bl/directories"
 	"my-collection/server/pkg/model"
 	"my-collection/server/pkg/relativasor"
+	"my-collection/server/pkg/utils"
 	"os"
 	"path/filepath"
 	"strings"
 
 	"gorm.io/gorm"
 )
+
+var logger = utils.MustGetLogger("fs-dir")
 
 func GetFsTree(path string, depth int) (*model.FsNode, error) {
 	if depth < 0 {
@@ -96,10 +99,16 @@ func includeHierarchy(ctx context.Context, drw model.DirectoryReaderWriter, path
 	}
 
 	for _, dir := range dirs {
+		if strings.HasPrefix(dir.Name(), ".") {
+			// ignore hidden files and dirs
+			continue
+		}
+
 		subdir := filepath.Join(path, dir.Name())
 		info, err := os.Stat(subdir)
 		if err != nil {
-			return err
+			logger.Warningf(ctx, "error getting file stat %s - %v", subdir, err)
+			continue
 		}
 
 		if info.IsDir() {
@@ -168,6 +177,10 @@ func ExcludeDir(ctx context.Context, drw model.DirectoryReaderWriter, path strin
 }
 
 func IncludeDir(ctx context.Context, drw model.DirectoryReaderWriter, path string, subdirs bool, hierarchy bool) error {
+	if path == model.ROOT_DIRECTORY_PATH {
+		path = relativasor.GetRootDirectory()
+	}
+
 	if err := includeDirWithParents(ctx, drw, path); err != nil {
 		return err
 	}

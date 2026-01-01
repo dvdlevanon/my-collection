@@ -11,7 +11,7 @@ import DirectorySettingsMenu from './DirectorySettingsMenu';
 import { FS_NODE_DIR, FS_NODE_FILE, useTreeStore } from './TreeStore';
 
 function DirectoriesTree() {
-	const { treeData, loadNode, updateNodeInfo, refreshNodeComplete } = useTreeStore();
+	const { treeData, loadNode, refreshNodeComplete, refreshNodeAndChildren } = useTreeStore();
 	const treeRef = useRef();
 	const { ref, width, height } = useResizeObserver();
 	const theme = useTheme();
@@ -39,10 +39,7 @@ function DirectoriesTree() {
 		}
 
 		await Client.setDirectoryCategories({ ...dir.dirinfo, tags: categories });
-		updateNodeInfo(dir.id, {
-			...dir.dirinfo,
-			tags: categories,
-		});
+		refreshNodeAndChildren(dir.id);
 	};
 
 	const getParentsCategories = (dir) => {

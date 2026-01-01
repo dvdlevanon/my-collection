@@ -5,7 +5,7 @@ ui:
 	cd ../frontend && yarn build && cd ../server && cp -r ../frontend/build output/ui
 
 my-collection:
-	go build -o output/my-collection
+	go build -o output/my-collection ./cmd/mycollection
 
 clean:
 	rm -rf output && mkdir output

@@ -52,6 +52,7 @@ function DirectorySettingsMenu({ anchorEl, anchorPosition, refreshDir, dir, onCl
 			{!included() && <MenuItem onClick={includeSubdirs}>Include With Sub Directories</MenuItem>}
 			{!included() && <MenuItem onClick={includeHierarchy}>Include With All Hierarchy</MenuItem>}
 			{included() && <MenuItem onClick={excludeDir}>Excluded Hierarchy</MenuItem>}
+			{included() && <MenuItem onClick={includeHierarchy}>Include All Hierarchy</MenuItem>}
 		</Menu>
 	);
 }

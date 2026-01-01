@@ -32,7 +32,7 @@ func New(ctx context.Context, dbfile string, shouldLog bool) (Database, error) {
 			Colorful:                  false,             // Disable color
 		},
 	)
-	db, err := gorm.Open(sqlite.Open(dbfile), &gorm.Config{
+	db, err := gorm.Open(sqlite.Open(dbfile+"?_journal_mode=WAL&_busy_timeout=5000"), &gorm.Config{
 		Logger: newLogger,
 	})
 
